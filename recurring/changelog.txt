@@ -1,5 +1,25 @@
 == Changelog ==
 
+= 2.2.9 =
+* Fix: Only show the recurring Checkout when there's a recurring product in your shopping cart.
+
+= 2.2.8 =
+* Fix: Standardize user generation by using the same hooks as express (woo_vipps_express_checkout_new_username and woo_vipps_express_checkout_new_customer).
+* Fix: Initial charge description can now correctly be up to 100 characters instead of 45.
+* Fix: Remove the sending of password reset emails when using Checkout.
+* Fix: Paying for a manual subscription renewal now works as intended.
+
+= 2.2.7 =
+* Fix: Conditionally set status to processing when a payment completes. This fixes a problem where when a payment initially fails, it could get stuck in "On hold".
+* Fix: Treat a canceled renewal charge as a failed payment.
+* Fix: If we have a trial, the campaign price should always be 0.
+
+= 2.2.6 =
+* Fix: Properly handle order ids when using the payment retry feature.
+
+= 2.2.5 =
+* Fix: Set language correctly in Checkout.
+
 = 2.2.4 =
 * Fix: Paying for a failed order with Vipps/MobilePay now works as intended. Previously the order would not be automatically charged, and marked with the correct renewal status.
 

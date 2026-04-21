@@ -28,11 +28,13 @@ SOFTWARE.
 */
 
 // Hook vippsInit to woocommerce/product-collection render event. LP 29.11.2024
+// IOK 2026-01-14 available from woo 9.4 - so the buy now block will not be available until that version
 document.body.addEventListener('wc-blocks_product_list_rendered',
   function (event) {
     document.body.dispatchEvent(new Event('vippsInit'));
   }
 );
+
 
 jQuery( document ).ready( function() {
 
@@ -56,26 +58,30 @@ jQuery( document ).ready( function() {
  
  // Hooks for the 'buy now with vipps' button on product pages etc
  jQuery('body').on('found_variation', function (e,variation) {
+   const form = jQuery(e.target);
+   const target = form.find(".button.single-product.vipps-buy-now.variable-product");
 
    var purchasable=true;
    if ( ! variation.is_purchasable || ! variation.is_in_stock || ! variation.variation_is_visible ) {
      purchasable = false;
    }
-   jQuery('form .button.single-product.vipps-buy-now').addClass('variation-found');
+   target.addClass('variation-found');
    if (purchasable) {
-    jQuery('form .button.single-product.vipps-buy-now').removeAttr('disabled');
-    jQuery('form .button.single-product.vipps-buy-now').removeClass('disabled');
+    target.removeAttr('disabled');
+    target.removeClass('disabled');
     removeErrorMessages();
    } else {
-    jQuery('form .button.single-product.vipps-buy-now').attr('disabled','disabled');
-    jQuery('form .button.single-product.vipps-buy-now').addClass('disabled');
+    target.attr('disabled','disabled');
+    target.addClass('disabled');
     removeErrorMessages();
    }
  });
- jQuery('body').on('reset_data', function () {
-    jQuery('form .button.single-product.vipps-buy-now').removeClass('variation-found');
-    jQuery('form .button.single-product.vipps-buy-now').attr('disabled','disabled');
-    jQuery('form .button.single-product.vipps-buy-now').addClass('disabled');
+ jQuery('body').on('reset_data', function (e) {
+    const form = jQuery(e.target)
+    const target = form.find(".button.single-product.vipps-buy-now.variable-product");
+    target.removeClass('variation-found');
+    target.attr('disabled','disabled');
+    target.addClass('disabled');
     removeErrorMessages();
  });
  // If this is triggered, somebody just loaded a variation form, so we need to redo the button init scripts
@@ -260,6 +266,29 @@ jQuery( document ).ready( function() {
       wp.hooks.doAction('vippsInit');
    }
  }
+
+ // For modern wp/woo we want to subscribe to events for the cart especially. IOK 2026-02-24
+ if( window.wp?.data) {
+     // The interactivity based minicart is only loaded once; so if the cart changes wrt supporting Vipps Checkout we must handle that 
+     // by subscribing to the cart data. IOK 2026-02-23
+     let prevCheckoutUrl = "";
+     function handleCartChanges () {
+         const minicartbutton = document.querySelector('a.wp-block-woocommerce-mini-cart-checkout-button-block');
+         if (!minicartbutton) return;
+
+         const cart = wp.data.select("wc/store/cart")?.getCartData?.();
+         if (!cart) return;
+         const vippsdata = cart?.extensions?.['woo-vipps'];
+         if (!vippsdata) return;
+         if (vippsdata['checkout_url'] && prevCheckoutUrl != vippsdata['checkout_url']) {
+             prevCheckoutUrl = vippsdata['checkout_url'];
+             minicartbutton.href = vippsdata['checkout_url'];
+         }
+     }
+     wp.data.subscribe(handleCartChanges);
+ }
+
+
  
  vippsInit();
 });

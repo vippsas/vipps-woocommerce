@@ -34,44 +34,6 @@ table.webhook-table td.actions {
    color: white;
 }
 
-/* IOK for the blocks editor, payment blocks  copied from vipps.css. 2020-08-10 */
-.wc-block-components-tabs .wc-block-components-tabs__list > .wc-block-components-tabs__item .wc-block-components-tabs__item-content > img.vipps-payment-logo {
- height: 2em;
- margin-bottom: -0.7em;
-}
-
-/* Ditto for the products blocks IOK 2020-09-03 */
-.wp-block-button__link.vipps-buy-now {
- color: #fff;
- display: inline-block;
- border:0;
-}
-
-.wp-block-button__link.vipps-buy-now img.vipps-logo.negative {
- display: inline-block;
- margin: 0 .2em;
- height: 2ex;
- vertical-align: text-bottom;
-}
-
-
-.editor-styles-wrapper .block-editor-block-icon .vipps-component-icon {
- max-width: 32px;
- max-height: 32px;
-}
-
-/* Gutenberg buy-now product block, copied from vipps.css LP 02.12.2024 */
-div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
-    text-align: center;
-}
-div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now{
-    /* margin-left: auto;
-    margin-right: auto; */
-    display: inline-block;
-}
-div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
-    max-width: 10rem;
-}
 
 /* Admin-menu for vipps */
 li#toplevel_page_vipps_admin_menu .wp-menu-image.dashicons-before img {
@@ -234,4 +196,29 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
 .woo-vipps-warning {
     font-size:larger;
     font-weight:medium;
+}
+
+/* Button page stuff */
+.vipps-button-settings label {
+    width: 20%;
+    display: inline-block;
+    font-weight: 550;
+}
+
+.vipps-button-settings-img-container {
+    max-width: 768px;
+    display: flex;
+    justify-content: center;
+}
+
+.vipps-button-settings-img-container img {
+    margin-top: 0.5rem;
+}
+
+.vipps-button-settings-section {
+    margin-bottom: 2rem;
+}
+
+.vipps-button-settings-express-force-mini-container {
+    margin-bottom: .5rem;
 }

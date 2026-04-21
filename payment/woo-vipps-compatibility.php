@@ -40,6 +40,41 @@ add_action('after_setup_theme', function () {
         }
     }
 
+    // Support Tutor LMS in express checkout/checkout. IOK 2026-02-18
+    if (class_exists('Tutor\WooCommerce')) {
+        // IOK 2026-02-18 Pretend express/checout orders are gifts for the purposes of tutor. This will stop the system from trying to enrollment when the order is still partial.
+        add_action('woo_vipps_before_create_express_checkout_order', function ($cart) {
+            add_filter('tutor_is_gift_item', function ($yesno, $item) {
+                return true;
+            }, 99,2 );
+        }, 10);
+        // After we have the customer, proceed with the tutor logic. IOK 2026-02-18
+        add_action('woo_vipps_set_order_shipping_details', function ($order, $shipping, $user) {
+            if (empty($order)) return;
+            $order_id = $order->get_id();
+            $enrolled = false;
+            // This logic is from the Admin Create Order branch of tutors' enrollment logic. IOK 2026-02-18
+            try {
+                foreach ( $order->get_items() as $item ) {
+                    $product_id    = $item->get_product_id();
+                    $if_has_course = tutor_utils()->product_belongs_with_course( $product_id );
+                    if ( $if_has_course ) {
+                        $course_id   = $if_has_course->post_id;
+                        $customer_id = $order->get_customer_id();
+                        tutor_utils()->do_enroll( $course_id, $order_id, $customer_id );
+                        $enrolled = true;
+                    }
+                }
+                if ($enrolled) {
+                    $order->save();
+                }
+            } catch (Exception $e) {
+                Vipps::instance()->log("An error occured while trying to enroll user: " . $e->getMessage(), 'debug');
+            }
+
+        }, 10, 3);
+    }
+
     // Snap Pixel for WooCommerce adds javascript to ajax functions if the do add-to-cart. We do that for single product express checkout,
     // so better remove that action. IOK 2022-05-13
     if (class_exists('snap_pixel_functions')) {

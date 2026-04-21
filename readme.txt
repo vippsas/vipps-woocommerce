@@ -3,14 +3,14 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.0.13
-Stable tag: 5.0.13
-Requires at least: 6.2
-Tested up to: 6.9.0
-Requires PHP: 7.4
+Version: 5.3.2
+Stable tag: 5.3.2
+Requires at least: 6.3
+Tested up to: 6.9.4
+Requires PHP: 8.0
 Requires Plugins: woocommerce
-WC requires at least: 3.3.4
-WC tested up to: 10.4.2
+WC requires at least: 8.0.0
+WC tested up to: 10.6.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -109,38 +109,15 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Version 5.0.13
-Fix: language in Checkout when using multilang plugins.
-Fix: encoding issue in Express checkout.
-Fix: manual Woo refund triggering Vipps MobilePay refund when the entire remaining amount is refunded
-Version 5.0.9
-Fixed incompatibility notice in the payment block
-Version 5.0.8
-Fix for Checkout Posti shipping method crash.
-Fix a bug where a log line did not show order id correctly.
-Version 5.0.7
-Add feature for deleting all settings when deactivating plugin (Under settings/advanced)
-Changed loading of certain web component scripts to async.
-Fix more logging print bugs
-Version 5.0.6
-Fix a bug in a rare logging print
-Version 5.0.5
-Fix an edge case concerning rounding of shipping prices
-Version 5.0.4
-Make express checkout provide addresses for virtual orders again (if requested)
-Version 5.0.3
-Properly handle shipping when coupons are added
-Fix spurious error logs when express checkout orders are cancelled.
-Version 5.0.2
-Fix phone numbers being stripped when using external payment methods
-Fix Checkout widgets on mobile
-Version 5.0.1
-Fix MobilePay buttons for Express for Finland
-Version 5.0.0
-Support for the new Express Checkout mechanism and the removal of the old code. Customers will need the updated app.
-Express Checkout now supported for MobilePay
-Express Checkout now supports Local Pickup locations.
-Fix in the session handling of Express Checkout and Checkout shipping
+Version 5.3.2
+Improve express checkout banner on legacy checkokut screens
+Add new setting for retryable orders so these can be set to "cancel" or "failed" as required
+Version 5.3.1
+Fix CSS issue with on-site messaging badges on small screens
+Ensure Express orders are always "cancelled", never "failed".
+Version 5.3.0
+Aborted Vipps MobilePay orders are now "failed" instead of "cancelled" and can be retried as a new Vipps MobilePay session
+Error that occasionally sent the user to the homepage instead of Checkout fixed
 
 == Frequently Asked Questions ==
 
@@ -313,6 +290,68 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2026-03-26 Version 5.3.2 =
+Improve express checkout banner on legacy checkokut screens
+Add new setting for retryable orders
+
+= 2026-03-23 Version 5.3.1 =
+Fix CSS issue with on-site messaging badges on small screens
+Ensure Express orders are always "cancelled", never "failed".
+
+= 2026-03-23 Version 5.3.0 =
+Aborted Vipps MobilePay orders are now "failed" instead of "cancelled" and can be retried as a new Vipps MobilePay session
+Error that occasionally sent the user to the homepage instead of Checkout fixed
+
+= 2026-03-11 Version 5.2.2 =
+Fix CSS issues in the standard Checkout
+
+= 2026-03-09 Version 5.2.1 =
+Fix: Only show the recurring Checkout when there's a recurring product in your shopping cart.
+
+= 2026-03-02 Version 5.2.0 =
+Bump required versions of php, WP and Woo to reasonably modern versions
+Fixed all blocks to be compatible with the new iframe based block editor
+Ensure Pickup Locations are editable if any are defined since these are available in Express and Checkout
+Make the new interactivity based minicart work correctly with Checkout
+
+= 2026-02-23 version 5.1.6 =
+Fix customer prefill in Checkout
+Add block to support new interactivity-API based minicart for Express Checkout
+Handle swedish and finnish phone numbers correctly when canonicalizing
+Support Tutor LMS in Express and Checkout
+All blocks updated to version 3 
+Show Express Checkout button in cart if the settings say so, even with Vipps Checkout active
+Suppress permission warnings
+
+= 2026-02-11 version 5.1.5 =
+Suppress REST warning about permission callback
+
+= 2026-02-04 version 5.1.4 =
+Fix translations
+Fix customer prefill in checkout when customer is known
+
+= 2026-02-04 version 5.1.3 =
+Fix: javascript crash in backend
+
+= 2026-02-03 version 5.1.2  =
+Allow the Buy Now block to be inserted in all contexts, providing a button to buy an arbitrary product via Express on any page
+Minor improvements for compatibility for translation plugins
+Improve error-handling when a shipping method has been paid for in Vipps MobilePay Express, but cannot be added to the Woo order
+
+= 2026-01-19 version 5.1.1  =
+Fix link to the settings-page for the login app
+Fix rendering of Buy-Now block in Product Collections block
+Improve user interface of Buy-Now block
+Style improvements for the express checkout block
+Improve logging for shipping for express checkout
+
+= 2026-01-06 version 5.1.0  =
+Fix errors preventing order completion in certain situations using Checkout and Klarna Payments
+New option in settings/advanced to modify phone numbers in Express or Checkout so that they either get an added "+" or the country prefix is removed
+New, more space-efficient buttons and a new button configurator interface
+
+= 2025-12-16 version 5.0.14  =
+Fixed fatal typo in express checkout
 = 2025-12-16 version 5.0.13  =
 Fix: language in Checkout when using multilang plugins.
 Fix: encoding issue in Express checkout.
@@ -367,600 +406,6 @@ Fix buttons for Express for finland
 Fix for session handling for shipping in Express checkout
 Now supports New Express Checkout, including support for pickup locations
 
-= 2025-06-16 version 4.1.7 =
-Small bug fixes
+= 2018.06 version 1.0 =
+Changelog trunated -- see payment/changelog.txt for the full log
 
-= 2025-06-16 version 4.1.6 =
-Added support for All Products for WooCommerce Subscriptions
-
-= 2025-06-11 version 4.1.5 =
-More issues with empty string cost values handled
-
-= 2025-06-10 version 4.1.4 =
-For some shipping methods, tax, or cost, were returned as "" instead of "0" or 0, which caused fatal errors in both Express Checkout shipping handling and epayment sessions
-
-= 2025-06-02 version 4.1.3 =
-Make CSS for Checkout Widgets more specific, add hook for enqueing scripts for checkout
-
-= 2025-06-02 version 4.1.2 =
-Ensure customer order notes from Checkout ends up in the right place
-
-= 2025-05-27 version 4.1.1 =
-Hotfixes for the recurring subsystem
-
-= 2025-05-26 version 4.1.0 =
-Support order notes and coupons in Vipps Checkout. This can be turned off in the Vipps Checkout settings.
-Developers can add more widgets using filters; including for actions that modify the session.
-
-= 2025-05-12 version 4.0.15 =
-Fix small bug in shipping handling in the cart(s).
-
-= 2025-05-12 version 4.0.14 =
-Support Pickup Locations in Vipps MobilePay Checkout
-
-= 2025-05-05 version 4.0.13 =
-Support recalculation of order value in Vipps Checkout when address/customer information changes, recalculating correct VAT in certain situations.
-
-= 2025-04-23 version 4.0.11, 4.0.12 =
-Add support for pickup points, lead time and home delivery timeslots in Vipps Checkout
-
-= 2025-04-09 version 4.0.10 =
-Fix render bug in the shortcode woo_vipps_buy_now.
-
-= 2025-04-08 version 4.0.9 =
-Support pickup-points in Vipps Checkout.
-A new filter,
-`$pickup_points = apply_filters('woo_vipps_shipping_method_pickup_points', [], $rate, $shipping_method, $order);`
-will allow merchants to add pickup points to shipping methods, as arrays with keys id, name, address, city, postalCode and country. It is also possible to add an array of openingHours (as strings).
-
-= 2025-04-08 version 4.0.8 =
-Various fixes in recurring-subsystem
-
-= 2025-03-24 version 4.0.7 =
-Slight improvements in order summary handling
-
-= 2025-03-19 version 4.0.6 =
-Added the QR api for Mobilpay sites
-Minor changes to texts 
-
-= 2025-02-17 version 4.0.5 =
-Fix webhooks handling for some edge cases
-New and improved Wizard for new users
-
-= 2025-02-04 version 4.0.4 =
-Ensure WooCommerce uses the singleton for the payment gateway
-Protect against errors when cancelling non-captured amounts from completed orders.
-
-= 2025-02-03 version 4.0.3 =
-Fix webhooks-initializing when recurring is present, and provide better feedback when testing connection to Vipp
-
-= 2025-01-20 version 4.0.2 =
-Fixes for crash on after_plugin_row
-
-= 2025-01-20 version 4.0.1 =
-Recurring updated to  2.1.4 
-
-= 2025-01-13 version 4.0.0 =
-This version integrates the Vipps MobilePay Recurring Payments plugin, adding support for recurring payments. (Recurring payments requires WooCommerce Subscriptions and a Vipps MobilePay MSN with recurring payments added).
-Fixes some spurious warnings
-
-= 2024-12-18 version 3.0.9 =
-Fix wrapper of Express Checkout button on the terms-and-condition page
-Preliminary Swedish translations
-
-= 2024-12-09 version 3.0.8 =
-Support for the Product Collection block with the new Buy-now block for Vipps MobilePay Express checkout. This new block being standard from Woo 9.5, support for the old "All products" block is removed. The other legacy collection blocks are still supported, since the framework for those is rather easier to maintain. If you are using the All Products block and want support for Express Checkout, we suggest moving on to the new Product Collection block.
-
-= 2024-12-02 version 3.0.7 =
-If an order has been edited so that its value is less than the reserved amount, cancel the rest of the reserved amount after capture
-Also, if an order that has not been captured yet needs repayment (in the Processing state) we now allow this. The money can only be refunded after capture, but in this case we will release the "refunded" money as soon as the order has been set to "complete".
-The On-Site messaging badge block will now use the 3.0 Block API
-
-Change epayment_cancel_payment logic to match documentation
-Update the Badge block to the latest specifications and enable it for MobilePay
-
-= 2024-11-18 version 3.0.6 =
-Two extremely dumb errors fixed that interacted with 3.0.5 to disable Vipps Checkout. Sorry.
-
-= 2024-11-18 version 3.0.5 =
-Fixes compatibility issues with Checkout, Checkout for Recurring, WooCommerce Subscriptions and Gutenberg Checkout block
-
-= 2024-11-12 version 3.0.4 =
-Fixes an issue with too small images being uploaded to Vipps for orders
-Does actions requiring translations in after_set_theme instead of plugins_loaded to avoid triggering "doing it wrong"-errors in WP 6.7.
-
-= 2024-10-28 version 3.0.3 =
-Fix issue with orders with zero-value fees
-Fix issue with not being able to turn off Klarna in Checkout
-Change settings-setup to require country to be selected first
-
-= 2024-10-14 version 3.0.2 =
-Fix support of Klarna Payments as an external payment method
-
-= 2024-10-07 version 3.0.1 =
-The Gutenberg Checkout block has changed it's treatment of the return value of Process Payment, which is now required to be an array (earlier documentation specified a NULL) even in case of errors. This caused problems with Vipps/Mobilpay to get turned into fatal errors; fixed in this version.
-
-= 2024-09-16 version 3.0.0 =
-In this version, we are introducing an all-new settings screen reached from the Vipps Mobilpay menu. The old settings page will redirect to this. It should look and feel familiar, but we're going to use this page to hopefully improve the configuraton experience as the features improve and the settings grow more complicated.
-We also support the new block-based product editor from this version on.
-
-To be able to do this, we are increasing the required version of Wordpress to version 6.2. If you are unable to upgrade wordpress to this version, you can still download versions from the 2.1.x branch on wordpress.org - but we'll only add essential and security fixes to this branch.
-
-= 2024-09-10 version 2.1.10 =
-Fix CSS on QR-code page
-
-= 2024-09-09 version 2.1.9 =
-Handle coupons for Vipps Checkout
-
-= 2024-08-26 version 2.1.8 =
-Change API to use taxRate instead of taxPercent to allow for VAT change in Finland 1. sep 2024.
-
-= 2024-08-16 version 2.1.7 =
-Allow Klarna as external payment method in Checkout
-Fix issue with session handling that would break shipping in Checkout in Woo 9.2
-
-= 2024-08-15 version 2.1.6 =
-Stop refunding cancelled orders when they are older than 30 days as a safety measure. This can be changed by the 'woo_vipps_cancel_refund_days_threshold' filter.
-
-= 2024-07-29 version 2.1.5 =
-Fix error handling when receiving callbacks to unknown orders
-Fix trying to use Woos logger when woo hasn't been loaded yet
-
-= 2024-06-18 version 2.1.4 =
-Fix untranslateable string and a sprintf format string with a bug in it (Thanks Knut Sparhell for reporting)
-
-= 2024-06-10 version 2.1.3 =
-Fix annoying regression where VippsCheckout would trigger the "Unknown order" branch on the thank you page
-
-= 2024-06-07 version 2.1.1, 2.1.2 =
-Fix issue where session was not active when computing checkout fields
-Fix previous fix for older php versions
-Bump required php version to 7.0
-
-= 2024-06-05 version 2.1.0 =
-Removed support for Instabox in Vipps Checkout Shipping
-Added support for external payment methods in some markets
-Changed gateway registering to use class name instead of instantiated objects to prevent unintended breakage
-
-
-= 2024-05-21 version 2.0.11 =
-Fixed some utranslatable strings and changed MobilePay reservation time notices to 14 days
-
-= 2024-04-22 version 2.0.10 =
-Added nocache-headers for nginx
-Fixed an issue that could delay order confirmations in rare situations
-Added a failsafe for certain situations that could destroy sessions in shipping computation
-
-= 2024-03-25 version 2.0.9 =
-Fixed some places where NOK were hard-coded in as currency.
-
-= 2024-03-18 version 2.0.8 =
-Create a limit of 10 attempts to capture an order; do not call API after this. The order will be uncapturable. It is possible to reset this by pressing "Get complete transaction details" in the Vipps metabox for the order.
-Fix in the logic for deleting webhooks
-
-= 2024-03-11 version 2.0.7 =
-Minor updates and language
-
-= 2024-02-19 version 2.0.6 =
-Made sure the filters for the_title on the checkout page works even with too few arguments
-Added notice and warning for MobilePay that capture must be done within 14 days
-
-= 2024-01-25 version 2.0.5 =
-Add workaround for Orderline issue with Checkout
-Use translate.wp.org for translations
-
-= 2024-01-25 version 2.0.3, 2.0.4  =
-Fix default payment status
-More protection against issues where settings are wrong and the plugin tries to instantiate webhooks
-
-= 2024-01-24 version 2.0.1, 2.0.2 =
-Fix bug in uninstall hook and activation hook when settings are wrong in the database
-
-= 2024-01-23 version 2.0.0 =
-Support MobilePay as a payment method in Finland
-Use the Epayment api for all transactions other than Vipps Express Checkout
-
-= 2024-01-17 version 1.14.21 and 1.14.23 =
-Disable support for order attribution by default - it can be added in the "Advanced" settings. Some sites got crashes due to memory use.
-
-= 2024-01-16 version 1.14.21 and 1.14.22 =
-Minor fix for 8.5.1 and express checkout
-
-= 2024-01-15 version 1.14.20 =
-Support Order Attribution in Vipps Checkout and Express Checkout
-
-= 2023-12-14 version 1.14.19 =
-Support for Mailchimp for WooCommerce, fixed regressions
-
-= 2023-12-14 version 1.14.18 =
-Debugging information added for situations where an order may be spuriously cancelled
-Fix regression error in activate/deactivate actions
-
-= 2023-12-13 version 1.14.17 =
-Fix for issues with stored admin notices in newer woos, small css fix
-
-= 2023-11-27 version 1.14.16 =
-Minor fixes, refactoring Checkout support for further features
-
-= 2023-10-16 version 1.14.15 =
-Stop zeroing out addressline 2 in checkout
-Fix polling when sessions are very long-lived in woo
-
-= 2023-10-06 version 1.14.14 =
-Fix sanitizion of output in Buy-Now button code; thanks to Darius Sveikauskas for reporting
-
-= 2023-09-18 version 1.14.13 =
-Check that images uploaded to receipts are either jpeg or png
-
-= 2023-08-22 version 1.14.12 =
-Fix edge cases where orders were wrongly cancelled in Vipps Checkout
-
-= 2023-08-22 version 1.14.11 =
-More filters/hooks: 
-   `do_action('woo_vipps_before_thankyou', $orderid, $order);`
-Runs before the thankyou page is reached, and can be used to finalize orders created using Checkout or Express Checkout, plus
-   `apply_filters('woo_vipps_express_checkout_new_username', '', $email, $userdata, $order);`
-Which can be used to customize the username for new users created using express checkout or Vipps Checkout.
-Supports MailerLite – WooCommerce integration (woo-mailerlite) in Vipps Checkout
-Fix crashing bug interaction with the Add-on WooCommerce – MailPoet plugin
-
-= 2023-07-31 version 1.14.10 =
-Handle the new Thankyou-page behavious in Vipps Checkout too, by adding a new option to register/log in users
-Prepare to handle other Checkout flows
-
-= 2023-07-19 version 1.14.9 =
-Support Free shipping for Porterbuddy in Vipps Checkout
-Fix issue with Woo 5.8.x and above where Express Checkout required email confirmation before the thankyou page was shown.
-
-= 2023-06-22 version 1.14.8 =
-Fix back button on express checkout
-
-= 2023-06-12 version 1.14.7 =
-Add protection against caches ignoring nocache-headers and rename the "limited session" parameter to something sane.
-
-= 2023-05-31 version 1.14.6 =
-Ensured admin notices do not crash newer versions of WooCommerce when Vipps is triggered with no current screen
-
-= 2023.04.25 version  1.14.5 =
-Changed descriptions on Bring shipping methods for Vipps Checkout
-Fixed typo which made the "Confirm terms and conditions" screen always appear if started from the Cart
-
-= 2023.03.16 version  1.14.4 =
-Apparently some setup got called woocommerce_init_shipping more than once, which crashed on the new Checkout shipping methods.
-
-= 2023.03.16 version  1.14.3 =
-Bugfix for some shipping methods in Vipps Checkout
-
-= 2023.03.13 version  1.14.2 =
-Ensures that orders that don't need shipping do not ask for addresses from customers unless you explicitly want to.
-Small bugfixes too.
-
-= 2023.03.06 version 1.14.1 =
-Set require_userInfo to false per default for Elemenor and other users of pre_handle_404
-Bugfixes
-
-= 2023.02.14 version 1.14.0 =
-Support Vipps Checkout version 3 with extended support for shipping methods in Vipps Checkout, allowing for the selection of pickup points and more.
-Remove default title on Vipps Checkout page
-Added filter to support for extra consent checkbox in Vipps Checkout
-
-= 2023.02.06 version 1.13.5 =
-Add failsafe for rare bug affecting some external payment method purchases with Klarna Checkout
-
-= 2023.01.25 version 1.13.4 =
-Remove lookup of orderid based on Vipps-orderid from database to improve speed and remove issues with transients etc.
-
-= 2023.01.02 version 1.13.3 =
-Workaround for WooCommerce Smart Coupons bug
-Let Vipps Checkout handle the WooCommerce endpoints for thankyou etc, for better Elementor compatibility
-Support for Pixel Your Site-like mechanisms for Vipps Checkout
-
-= 2022.12.21 version 1.13.2 =
-Fix for a php8 issue with unset options for the badge feature
-
-= 2022.12.13 version 1.13.1 =
-Changes required for newer version of epayment-api
-Changes in localization for blocks
-
-= 2022.12.12 version 1.13.0 =
-Added support for HPOS (https://woocommerce.com/document/high-performance-order-storage/)
-Added protection from Vipps being ran while WooCommerce is deactivated
-
-= 2022.11.28 version 1.12.1 =
-Added support for ecommerce-tracking in GAv4 and AdWords for Monster Insights, plus extra support for Express Checkout for Pixel Your Site.
-
-= 2022.11.21 version 1.12.0 =
-Added support for Vipps On-Site Messaging badges 
-
-= 2022.11.09 version 1.11.7 =
-Fix issue with duplicate order ID's, but for real this time
-
-= 2022.11.07 version 1.11.6 =
-Fix issue with duplicate order ID's
-
-= 2022.10.24 version 1.11.5 =
-Reorganization of banner code
-
-= 2022.10.10 version 1.11.4 =
-New option for turning off receipts, better support for tax-free shipping
-
-= 2022.10.05 version 1.11.3 =
-* Fix admin javascript bug that kept dismissible banners non-dismissed
-
-= 2022.09.29 version 1.11.2 =
-* Fix string concatenation bug crashing php8.x
-
-= 2022.09.27 version 1.11.1 =
-* Fix default-setting of new settings; the old method broke on php8.0
-
-= 2022.09.26 version 1.11.0 =
-* Improved settings-screen with a tabbed view and organization
-* Filters for shipping options to add pickup-point, brand, description etc for shipping options not supported by standard Woo
-* Adding option for dropping contact and address fields for Vipps Checkout
-
-= 2022.09.19 version 1.10.3 =
-* Fix _created_via so it will just say 'checkout' to be consistent with other payment gateways
-* Fix transaction text so it does not refer to confirming the transaction; this is better because it is also displayed on order history page
-
-= 2022.08.26 version 1.10.2 =
-* Fix typo in version numbers and type of VAT percentage for order management API
-
-= 2022.08.17 version 1.10.1 =
-* Small change in Order Management API following changes to shipping handling
-
-= 2022.07.04 version 1.10.0 =
-* Added support for the Order Management Api, which stores the receipt and other order information in the customers' app. See the 'woo_vipps_add_order_categories' filter for extending the information passedd.
-
-= 2022.06.28 version 1.9.3 =
-* Added compatibility for Dibs/Nets Easy Payment gateway, which made certain untenable assumptionts
-* Fix coupon handling in express checkout - thanks to @kimbertelsen for debugging
-
-= 2022.06.20 version 1.9.2 =
-* Make extra double sure we dont get session cookies in callbacks
-
-= 2022.06.13 version 1.9.1 =
-* Improve compatibility with shipping modules
-* Fix breakage in Vipps support for the All Products block
-* Change SVG buttons to current elements
-
-= 2022.05.30 version 1.9.0 =
-* Support for Vipps QR-api
-
-= 2022.05.25 version 1.8.22 =
-* Ensure the Snap Pixel for WooCommerce plugin does not break express checkout by outputting pixels when it shouldn't. Thanks to @optiflow at wp.org for detailed error reporting.
-* Testing for WP 6.0.0
-
-= 2022.04.07 version 1.8.21 =
-* Protect "process_payment" from being called repeatedly when this is not allowed
-* From Johnny Oskarsson:
-    - Improve compatibility with headless themes
-    - New filters for the data sent in `initiate_payment` and `initiate_checkout`, which allows for more control over the return URL which is especially important for headless themes.
-
-= 2022.04.06 version 1.8.20 =
-* Ensure alternative browsers work on mobile on Checkout so that "unknown order" does not happen on order return
-* Ensure Vipps transaction references are at least 8 chars long
-
-= 2022.03.24 version 1.8.19 =
-* Fix race condition in code that checks order status when callback hasn't happened
-
-= 2022.03.22 version 1.8.18 =
-* Fix name errors in express checkout
-
-= 2022.03.21 version 1.8.17 =
-* Handle error case when shipping address is received empty in callbacks
-
-= 2022.03.14 version 1.8.16 =
-* Ensure Express Checkout and Checkout session handling still works for logged-in users in newer versions of Woo
-
-= 2022.03.07 version 1.8.14 =
-* Change payment method title to Credit Card if this was used on the Vipps Checkout page
-
-= 2022.03.01 version 1.8.13 =
-* Typo that accidentally destroyed the Woocommerce endpoints page fixed (thanks to @stivenson2005 at wp.org)
-
-= 2022.02.28 version 1.8.12 =
-* Support for Vipps Checkout alternative checkout page
-
-= 2022.02.09 version 1.7.25 =
-* Fix in the loading of a file that caused crashes when woocomerce was not active
-
-= 2022.01.18 version 1.7.24 =
-* Minor bugfixes 
-
-= 2021.12.20 version 1.7.23 =
-* Minor bugfixes
-
-= 2021.12.13 version 1.7.22 =
-* Support variations where one of the dimensions is 'any'
-
-= 2021.11.29  version 1.7.21 =
-* Accept two-letter country names now being sent by Vipps
-* Ensure Express Checkout orders are handled correctly by WooCommerces' cancel-unpaid-orders thing
-* When checking Vipps orders stuck in 'pending', also cancel them if they don't exist etc
-* Update the "partial orders" used for Express Checkout so they will work more like normal orders.
-* Change how redirects to Vipps work to avoid having the back-button work badly on Safari
-
-= 2021.11.22  version 1.7.20 =
-* Adds a dismissible banner for Vipps Recurring Payments if it has never been installed and WooCommerce Subscriptions *is* installed.
-
-= 2021.11.17  version 1.7.19 =
-* Make sure failed orders get set to 'pending' when restarting payment with Vipps
-
-= 2021.11.15  version 1.7.18 =
- Add support for Woocommerce Subscriptions manual renewals using a filter and a developer setting.
- Fix issue where customer was assumed to exist even when doing cron jobs for rescuing dead orders
- Add support for testing the callback handler remotely
-
-= 2021.10.19  version 1.7.17 =
- Fix CSS issue caused by previous version
-
-= 2021.10.18  version 1.7.16 =
- Support a more explicit, multi-step address selection flow in Express checkout, toggleable in the settings
- Small CSS fixes for certain themes
-
-= 2021.10.05  version 1.7.15 =
- Fix various php8-related bugs
-
-= 2021.10.04  version 1.7.14 =
- Add extra supports for plugins like Yith WooCommerce Name Your Price and move compatibility hacks into a separate file
- Support non-standard pretty permalinks by stopping redirect_canonical after a special page has been requested.
-
-= 2021.09.13 version 1.7.13 =
- Ensure refunds of 0 NOK are not handled by Vipps
-
-= 2021.08.23 version 1.7.12 =
- The cron job that checks the status of abandoned orders have since 1.7.10 restored these orders' session to check the status as correctly as possible.
-It seems this may ruin the session of other active users however, and we can't have that, so now the status is checked without restoring the session.
-
-= 2021.08.09 version 1.7.11 =
- Updating for latest versions of WP and Woo
-
-= 2021.06.22 version 1.7.10 =
- Added a fail safe for situations where the Vipps callback fails and the customer does not return to the store
-
-= 2021.06.14 version 1.7.9 =
- Tiny change in "No shipping required" setup
-
-= 2021.05.18 version 1.7.8 =
- Fix error-handling when creating new customers in express checkout
-
-= 2021.05.18 version 1.7.7 =
- Fix integration with Klarna Checkout so Vipps can be disabled as external payment method when appropriate
-
-= 2021.04.19 version 1.7.6 =
- Version bump for new version of WooCommerce and Blocks
-
-= 2021.03.29 version 1.7.5 =
- Increase priority of handling special pages to avoid 404-handlers in themes and plugins to handle them first
-
-= 2021.03.24 version 1.7.4 =
- Fix the undismissable banner issue by ensuring browsers won't have cached the admin javascript
-
-= 2021.03.22 version 1.7.3 =
- Remainder that the Login with Vipps plugin exists
-
-= 2021.03.15 version 1.7.2 =
- Fixes javascript problem on express checkout screen that could be caused by plugin interactions
-
-= 2021.03.01 version 1.7.1 =
- Compatibility with Woo 5.0.0 and WP 5.7.0
-
-= 2021.01.25 version 1.7.0 =
- Stop using the deprecated payment status interface. This is a quite large rewrite that should be invisible to uses.
-
-= 2021.01.18 version 1.6.9 =
- Bugfixes for user creation in express checkout
-
-= 2021.01.05 version 1.6.8  =
- Bugfix for Gutenberg blocks
-
-= 2020.12.22 version 1.6.7  =
- Bugfix for user login in express checkout
-
-= 2020.12.18 version 1.6.6  =
- Bugfix for Woo gutenberg blocks (other than all products)
-
-= 2020.12.14 version 1.6.5  =
- Login and user creation synchronized better with Login with Vipps
- Tested on newest versions
-
-= 2020.11.25 version 1.6.4  =
- More sanitation added
-
-= 2020.11.24 version 1.6.3  =
- Updated WP/Woo versions
-
-= 2020.11.16 version 1.6.2  =
- Bugs fixed: undefined variable removed (thanks to kimmenbert @ github for reporting)
- Correct version of the plugin reported to the Vipps-api
- Ensure all products are in stock when using Express Checkout (thanks to lykkelig @ wp.org for reporting)
-
-= 2020.11.02 version 1.6.1  =
- Bugs fixed:  WPML support reenabled thanks to a bug report by @kodeks, user creation improved thanks to @henmor
-
-= 2020.10.19 version 1.6.0  =
- Integrate with Login with Vipps and provide again the "create users when using express checkout" checkbox. If you choose too, this will then create (and log in) users when using express checkout.
-Only users without privileges will be logged in like that. If you install Login with Vipps, this will be set as the default choice.
-
-= 2020.10.05 version 1.5.2  =
- Fixed deletion of cancelled orders; thanks to @alarsen2 for reporting
-
-= 2020.09.28 version 1.5.1  =
- Fixed issue with payment_complete not being called. Thanks to espen @ nhg for reporting and debugging
-
-= 2020.09.14 version 1.5.0  =
- Added support for WooCommerce Gutenberg Blocks: the Checkout block, the All Products blocks and other product blocks.
-
-= 2020.07.29 version 1.4.11  =
- Added the WOOCOMMERCE_CHECKOUT constant to create_partial_order, because some plugins act differently on checkout and on normal page views.
- Improved compatibility with KCO external payments
-
-= 2020.07.01 version 1.4.10  =
- Added yet another call to calculate_totals on the cart after the woocommerce_cart_loaded_from_session action
-
-= 2020.07.01 version 1.4.9  =
-Fixed a bug in the session-restore code for Express Checkout that could affect pricing of shipping
-Added a do-action call to 'woocommerce_cart_loaded_from_session' in callbacks to allow dynamic pricing plugins to run their code
-
-= 2020.06.29 version 1.4.8 =
- * Fixed a bug in express checkout shipping calculations where cart totals could be wrong 
- * Changed license from AGPLv3 (http://www.gnu.org/licenses/agpl-3.0.html) to MIT (https://choosealicense.com/licenses/mit/)
- * Added filter to remove Vipps as option in Klarna Checkout, and added a check for unsupported carts.
- * Added filter 'woo_vipps_payment_return_url' to allow plugins to add extra arguments to return URL
- * Changed display logic of WooCommerce status messages on Express Checkout screen to allow themes that rewrite these to not show error messages when they don't apply
-
-= 2020.05.25 version 1.4.7 =
- * Support themes that use their own templating-mechanism by allowing the use of a real page ID to handle the Vipps special pages
- * Improve the race-condition avoidance code, and make it possible to implement real locking for systems that support it (open the developer settings to enable)
- * If Klarna Checkout uses Vipps as external payment gateway, ensure that Klarna Checkout is still the default payment method afterwards
- * Change order prefix to contain the sitename of the store if possible to aid with support
-
-= 2020.04.27 version 1.4.6 =
- * More robustness and checks in callbacks
-
-= 2020.04.27 version 1.4.5 =
- * Changed all uses of "WC_Cart" to use the main WC-cart
- * Changed the shipping callback to use the real cart from the Session; with no "temporary" cart created from the order
- * Changed cart saving and restoring for single product express checkout to use PHP serialization
- * Experimentally support the 'bundle' product type of WooCommerce Product Bundles
-
-= 2020.04.06 version 1.4.4 =
- * Changed freight calculation to ensure plugins that override the WC_Cart's class will continue working.
- * Changed handling of signal file cleanup and deletion of cancelled express checkout orders to wp-cron to avoid problems on sites with heavy load
-
-= 2020.03.23 version 1.4.3 =
- * Added support for Klarna Checkout based on the code provided by Krokedil at https://github.com/krokedil/klarna-checkout-vipps-external-payment-method
- * Added support for static shipping: Much quicker express checkout if your shipping method don't depend on the customers address (or if your customers are logged in.) This precalculates the shipping options before sending the user to Vipps, but be aware: All the options must be static (like fixed price and so forth).
-
-= 2020.03.03 version 1.4.2 =
- * Tiny change to avoid logging non-errors if no shipping method has been chosen at all
-
-= 2020.02.25 version 1.4.1 =
- * Bugfix: The template chooser mechanism caused WP_DEBUG to print out error messages if the option wasn't set.
-
-= 2020.02.24 version 1.4.0 =
- * Properly round prices with wc_format_decimal (Thanks to Shattique @ netthandlesgruppen for reporting)
- * Ensure 'spinner' on page forwarding to Vipps is centered
- * New option in settings: Override the page template used for the Vipps special pages (choose 'full width' and so forth here.)
- * New shipping handling of shipping callbacks in Express Checkout makes shipping methods using meta data work - that is, all shipping methods that have added meta data for for instance integration with transport companies and so forth.t
- * DEPRECATION: The filter 'woo_vipps_shipping_methods' is _deprecated_ as of version 1.4.0. If you use it, it will continue to work as before, but it will disable the new Express Checkout Shipping mechanism, and thus will not support metadata in the shipping methods; which certain shipping methods need - in particular those with integration with other services. A notice will be printed on the admin screen, and an option will be shown in the settings that will allow you to silence this warning (and then everything will work as before) or to disable this filter if you prefer to use the new method.
- * New filter 'woo_vipps_express_checkout_shipping_rates' which replaces the filter above, taking the same arguments (a list of shipping methods, and order, and a cart). The format of the shipping methods is however different: They will consist of an array of 'rate' which is a WC_Shipping_Rate object, 'priority' which is an integer and the sort-order Vipps will use to display the alternatives, and 'default', which is a boolean: This will be the default choice
- * New filter 'woo_vipps_default_shipping_method' taking the default shipping method ID, a list of the shipping methods available (as a table from method id to WC_Shipping_Rate object) and the order. Return a shipping rate id, like 'local_pickup:5'.
- * New filter 'woo_vipps_vipps_formatted_shipping_methods'. This will take an array of the methods to be sent to Vipps, formatted as required by Vipps. This is mostly for debugging.
- * DEPRECATION: the filter 'woo_vipps_express_checkout_shipping_rate' will only be applied if you use the old method of doing shipping for express checkout; thus you will have to have overridden the  'woo_vipps_shipping_methods' filter too. This is replaced by the filter 'woo_vipps_express_checkout_final_shipping_rate', which takes an WC_Shipping_Rate object, the order and the shipping info from Vipps and must return a WC_Shipping_Rate object.
- * Replace use of file_get_contents with the WP http api methods, thus there is no longer any requirement for having allow_url_fopen true
-
-= 2020.02.07 version 1.3.7 =
- * Improved error-handling in validate-express-checkout; thanks to lykkelig @wp.org
-
-= 2020.02.03 version 1.3.6 =
- * Added protection for repeat orders from customers who don't get enough feedback that their order is complete
- * Added terms-and-conditions checkbox to the interstitial screen on Vipps Express Checkout
- * Added filters and hooks to facilitate validation of an express checkout order
- * Fixed fee calculations for carts in express checkout (thanks to Shattique @ netthandelsgruppen for reporting & fixing)
-
-= 2020.01.22 version 1.3.5 =
- * Tested up to version 3.9.0 of WooCommerce and 5.3.2 of WP
-
-= 2018.06 =
-Initial version - changelog truncated

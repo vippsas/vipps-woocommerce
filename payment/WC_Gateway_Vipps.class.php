@@ -187,6 +187,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $this->supports = array('products','refunds');
 
+        // we need to disallow certain types of refunds; mostly manual refunds done before capture. IOK 2026-02-24
+        add_action( 'woocommerce_create_refund', array($this, 'woocommerce_create_refund'), 10, 2);
+
         // We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
         // IOK 2020-04-21 Add support for WooCommerce Product Bundles
         $supported_types= array('simple','variable','variation','bundle', 'yith_bundle', 'gift-card');
@@ -215,17 +218,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // We will refund money on cancelled orders, but only if they are *relatively new*. This is to 
         // avoid accidents and issues where old orders are *somehow* cancelled even though they are complete. IOK 2024-08-12
-        add_action('woocommerce_order_status_cancelled', array($this, 'order_status_cancelled_wrapper'));
-        add_action('woocommerce_order_status_refunded', array($this, 'maybe_refund_and_cancel_payment'));
+        add_action('woocommerce_order_status_cancelled', array($this, 'maybe_cancel_order'));
+        // Add a full refund if neccessary *before* woocommerce does, on priority 10 IOK 2026-01-28
+        add_action('woocommerce_order_status_refunded', array($this, 'maybe_refund_order'), 9, 1);
 
+        // Possibly delete orders that never went anywhere
         add_action('woocommerce_order_status_pending_to_cancelled', array($this, 'maybe_delete_order'), 99999, 1);
-
+        // Handle orders when authorized
         add_action('woocommerce_payment_complete', array($this, 'order_payment_complete'), 10, 1);
 
         // when an order is complete, we need to check if there is reserved amount that is not captured
         // if so, we need to cancel this amount PMB 2024-11-21
         // nb: note very late priority - we must have captured before, please
+        // Also for orders that have been partially or completely refunded, or need to be set to cancelled IOK 2026-01-26
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
+        add_action('woocommerce_order_status_refunded', array($this, 'maybe_cancel_reserved_amount'), 99, 1);
+        add_action('woocommerce_order_status_cancelled', array($this, 'maybe_cancel_reserved_amount'), 99, 1);
 
         // Store the currencly active refund data in a filter so we can use it in process_refund(). LP 2025-10-22
         add_action('woocommerce_create_refund', function($refund) {
@@ -236,6 +244,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Hide our order item meta data from the admin interface. LP 2025-11-19
         add_filter('woocommerce_hidden_order_itemmeta', [$this, 'woocommerce_hidden_order_itemmeta']);
+
     }
 
     public function woocommerce_hidden_order_itemmeta($meta_keys) {
@@ -251,28 +260,39 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return array_merge($meta_keys, $vipps_meta_keys);
     }
 
-
-    // this function is called after an order is changed to complete it checks if there is reserved money that is not captured
+    // this function is called after an order is changed to complete/refunded/cancelled. It checks if there is reserved money that is not captured
     // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
+    // Ensure we've updated the vipps status before calling this. IOK 2026-01-28
     public function maybe_cancel_reserved_amount ($orderid) {
         $order = wc_get_order($orderid);
         if (!$order) return;
         if ('vipps' != $order->get_payment_method()) return false;
         // Cannot partially cancel legacy ecom orders
-        if ('epayment' != $order->get_meta('_vipps_api')) return false; 
+        if ('epayment' != $order->get_meta('_vipps_api')) return false;
+
         // Check that the normal maybe_capture_order hook has actually ran *and* done something,
         // it's only after this we know we have captured 'everything' so if there is anything left, 
         // it should be cancelled. IOK 2025-05-04                                                              
+        // Also set in maybe_cancel and maybe_refund now - in all "final status" hooks. IOK 2026-01-28
         if (! $order->get_meta('_vipps_capture_complete')) {
             return false;
         }
-        // We also only want to do this for orders that have had *something* captured. IOK 2025-02-04
-        $captured = intval($order->get_meta('_vipps_captured'));
-        if ($captured < 1) {
-            return false;
+
+        $order_status = $order->get_status();
+
+        if ('completed' == $order_status) {
+            // For safety, on  completed orders also only want to do this for orders that have had *something* captured. IOK 2025-02-04
+            $captured = intval($order->get_meta('_vipps_captured'));
+            if ($captured < 1) {
+                return false;
+            }
         }
-        // Allow merchants that do not reserve large amounts to opt out for safety IOK 2025-02-04
-        if (apply_filters('woo_vipps_never_cancel_uncaptured_money', false, $order)) return false;
+        if ('cancelled' != $order_status) {
+            // If not in the 'cancelled' state, allow merchants that do not reserve large amounts to opt out for safety IOK 2025-02-04
+            if (apply_filters('woo_vipps_never_cancel_uncaptured_money', false, $order)) {
+                return false;
+            }
+        }
 
         $ok = true;
 
@@ -280,41 +300,40 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         if ($remaining > 0) {
             $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
-            $currency = $order->get_currency();
-            try {
-                // This will only cancel any remaining amount. IOK 2024-11-25
-                $res = $this->api->epayment_cancel_payment($order,$requestid=1);
+        }
 
-                // Annotate the order items' noncapturable meta amount as cancelled upon success. LP 2025-11-18
-                if ($res) {
-                    $this->cancel_order_items_noncapturable_amount($order);
-                }
-
+        $currency = $order->get_currency();
+        try {
+            $ok = $this->cancel_payment($order);
+            if ($ok && $remaining && 'completed' == $order_status) {
                 $amount = number_format($remaining/100, 2) . " " . $currency;
                 $note = sprintf(__('Order %1$s: %2$s is cancelled to free up the reservation in the customers bank account.', 'woo-vipps'), $orderid, $amount);
                 $order->add_order_note($note);
-            } catch (Exception $e) {
-                $ok = false;
-                // if this happens, we just log it - we may not have an active admin
-                $msg = sprintf(__('Was not able to cancel remaining amount for the order %1$s: %2$s','woo-vipps'), $orderid, $e->getMessage());
-                $order->add_order_note($msg);
-                $this->log($msg,'error');
             }
-
-            // We need to update the order details after the fact. We can't fix errors here though. IOK 2024-11-22
             if ($ok) {
-                try {
-                    $this->update_vipps_payment_details($order);
-                } catch (Exception $e) {
-                    // noop
-                }
+                // Annotate the order items' noncapturable meta amount as cancelled upon success. LP 2025-11-18
+                $this->cancel_order_items_noncapturable_amount($order);
             }
-
+        } catch (Exception $e) {
+            $ok = false;
+            // if this happens, we just log it - we may not have an active admin
+            $msg = sprintf(__('Was not able to cancel remaining amount for the order %1$s: %2$s','woo-vipps'), $orderid, $e->getMessage());
+            $order->add_order_note($msg);
+            $this->log($msg,'error');
         }
+
+        // We need to update the order details after the fact. We can't fix errors here though. IOK 2024-11-22
+        try {
+            $this->update_vipps_payment_details($order);
+        } catch (Exception $e) {
+            // noop
+        }
+
         // we just return true from this function for now PMB 2024-11-21
         // return false if we couldn't cancel reserved. IOK 2024-11-22
         return $ok;
     }
+
 
 
     public function get_icon () {
@@ -680,8 +699,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $show = ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
         $show = $show && $this->cart_supports_express_checkout();
 
-        // By default don't show express checkout in cart if Vipps MobilePay Checkout is enabled
-        $show = $show && ($this->get_option('vipps_checkout_enabled') != 'yes');
+        // Earlier, we disabled this if Checkout was active; but we will now respect the setting in all
+        // cases. Also, there is a filter. IOK 2026-02-19
 
         return apply_filters('woo_vipps_show_express_checkout', $show);
     }
@@ -689,120 +708,80 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function show_login_with_vipps() {
         return false;
     }
+
+    // Called when orders reach the 'refunded' status. We'll add a complete refund and note that any rest is to be cancelled.
+    public function maybe_refund_order($order_id) {
+        $order = wc_get_order($order_id);
+        if ('vipps' != $order->get_payment_method()) return false;
+        try {
+            $order = $this->update_vipps_payment_details($order); 
+        } catch (Exception $e) {
+            //Do nothing with this for now
+            $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
+        $payment = $this->check_payment_status($order);
+        if ($payment == 'initiated' || $payment == 'cancelled') {
+            return true; // Can't refund these
+        }
+
+        $captured = intval($order->get_meta('_vipps_captured'));
+        $vippsstatus = $order->get_meta('_vipps_status');
+        if ($captured > 0 || $vippsstatus == 'SALE') {
+            // This will create + process a refund for the captured amount. IOK 2026-01-26
+            $this->wc_order_fully_refunded ($order_id);
+        }
+        // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
+        $order->update_meta_data('_vipps_capture_complete',true);
+        $order->save();
+    }
    
     // Called when orders reach the 'cancelled'-status. When this happens, orders will be *refunded*
     // when they have been captured, but for added safety, this is only done when the orders are relatively new. 
-    public function order_status_cancelled_wrapper($order_id) {
+    public function maybe_cancel_order($order_id) {
         $order = wc_get_order($order_id);
         if ('vipps' != $order->get_payment_method()) return false;
+
+        try {
+            $order = $this->update_vipps_payment_details($order); 
+        } catch (Exception $e) {
+            //Do nothing with this for now
+            $this->log(__("Error getting payment details before doing cancel: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
+
+        $payment = $this->check_payment_status($order);
+        if ($payment == 'initiated' || $payment == 'cancelled') {
+            return true; // Can't cancel these
+        }
 
         $days_threshold = apply_filters('woo_vipps_cancel_refund_days_threshold', 30);
         $order_date = $order->get_date_created();
         $days_since_order = (time() - $order_date->getTimestamp()) / (60 * 60 * 24);
 
         $captured = intval($order->get_meta('_vipps_captured'));
-
-        // If this is true then the order is *too old to refund* which would happen on maybe_cancel_payment.
-        // add a note instead.
-        if ($captured > 0 && $days_since_order > $days_threshold) {
-            $note = sprintf(__('Order with captured funds older than %d days cancelled - because the order is this old, it will not be automatically refunded at Vipps. Manual refund may be required.', 'woo-vipps'), $days_threshold);
-            $order->add_order_note($note);
-            // Add an admin notice in case this is interactive
-            $msg = sprintf(__("Could not cancel %1\$s payment", 'woo-vipps'), $this->get_payment_method_name());
-            $this->adminerr(__('Order', 'woo-vipps') . " " . $order->get_id() . ": " . $note);
-            $order->save();
-            Vipps::instance()->store_admin_notices();
-            return false;
-        }
-
-        // If not, then the older is pretty new so we will cancel or refund it, as before
-        // Or alternatively, it might still be old *but* had no capture, then it will just be cancelled and not refunded at all. LP 2025-11-19
-        return $this->maybe_refund_and_cancel_payment($order_id);
-    }
-
-    // Previously split in two methods 'function maybe_cancel_payment' and 'function maybe_refund_payment', changed on implementation of partial capture. LP 2025-10-14
-    public function maybe_refund_and_cancel_payment($orderid) {
-        $order = wc_get_order($orderid);
-        if ('vipps' != $order->get_payment_method()) return false;
-
-        // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
-        // the order is capturable by getting full payment details.
-        try {
-            $order = $this->update_vipps_payment_details($order); 
-        } catch (Exception $e) {
-                //Do nothing with this for now
-                $this->log(__("Error getting payment details before doing cancel: ", 'woo-vipps') . $e->getMessage(), 'warning');
-        }
-
-        // Now first check to see if we have captured anything, and if we have, refund it. IOK 2018-05-07
-        $total = intval($order->get_meta('_vipps_amount'));
-        $captured = intval($order->get_meta('_vipps_captured'));
         $vippsstatus = $order->get_meta('_vipps_status');
-        $captured = intval($order->get_meta('_vipps_captured'));
-        $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
-            error_log('LP to_refund: ' . print_r($to_refund, true));
 
-        // Don't refund if the order has any *manual* refunds (manual Woo refund outside of Vipps MobilePay). LP 2025-12-16
-        // TODO: this is a short sighted fix, in the future we wish to rewrite this logic to instead run our own logic in the woocommerce_order_status_refunded hook
-        // *before* woocommerce runs wc_order_fully_refunded() which create a refund automatically. Instead we will create our own refund.
-        // This so we can stop the order note saying they need to refund through their payment gateway, in addition to handle skipping
-        // Vipps MP refund if order has manual refunds. LP 2025-12-16
-        $refunds = $order->get_refunds();
-        foreach ($refunds as $refund) {
-            $is_manual_refund = !$refund->get_refunded_payment();
-
-            // Changing order status to refunded creates a refund with an empty item list, but we still want to refund these.
-            // So manual refunds we will skip are the ones with items only. LP 2025-12-16
-            $has_line_items = !empty($refund->get_items());
-            if ($is_manual_refund && $has_line_items) {
-                /* translators: orderid, company name */
-                $this->log(sprintf(__('Order %1$s has a manual refund so we will not send this refund to %2$s', 'woo-vipps'), $orderid, Vipps::CompanyName()), 'info');
-                $to_refund = 0;
+        // If we have captured some funds, we must first create a refund for the amount we've captured. 
+        // However, we will only do this if the order is relatively fresh, to avoid accidentally refunding
+        // old orders. 
+        if ($captured > 0 || $vippsstatus == 'SALE') {
+            // If this is true then the order is *too old to refund* which would happen on maybe_cancel_payment. 
+            // add a note instead.
+            if ($days_since_order > $days_threshold) {
+                $note = sprintf(__('Order with captured funds older than %d days cancelled - because the order is this old, it will not be automatically refunded at Vipps. Manual refund may be required.', 'woo-vipps'), $days_threshold);
+                $order->add_order_note($note);
+                // Add an admin notice in case this is interactive
+                $msg = sprintf(__("Could not cancel %1\$s payment", 'woo-vipps'), $this->get_payment_method_name());
+                $this->adminerr(__('Order', 'woo-vipps') . " " . $order->get_id() . ": " . $note);
+                $order->save();
+                Vipps::instance()->store_admin_notices();
+                return false;
             }
+            // This will create + process a refund for the captured amount. IOK 2026-01-26
+            $this->wc_order_fully_refunded ($order_id);
         }
-
-        if (($captured || $vippsstatus == 'SALE') && $to_refund > 0 && $this->can_refund_order($order)) {
-            // REFUND CAPTURED AMOUNT
-            $ok = $this->refund_payment($order, $to_refund, 'exact');
-            error_log('LP refund ok: ' . print_r($ok, true));
-            if ($ok) {
-                $this->mark_order_items_fully_refunded($order);
-            } else {
-                $msg = sprintf(__('Could not refund payment through %1$s - ensure the refund is handled manually!', 'woo-vipps'), $this->get_payment_method_name());
-                $this->adminerr($msg);
-                $order->add_order_note($msg);
-                // Unfortunately, we can't 'undo' the refund when the user manually sets the status to "Refunded" so we must 
-                // allow the state change here if that happens.
-                global $Vipps;
-                $Vipps->store_admin_notices();
-            }
-            // order could now be refunded, so update it. LP 2025-10-16
-            $order = wc_get_order($orderid);
-        }
-
-        $payment = $this->check_payment_status($order);
-        if ($payment == 'initiated' || $payment == 'cancelled' || $total == $captured) {
-           return true; // Can't cancel these
-        }
-
-        // CANCEL REMAINING AMOUNT
-        try {
-            $ok = $this->cancel_payment($order);
-        } catch (Exception $e) {
-            // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
-        }
-
-        if ($ok) {
-            $this->mark_order_items_fully_cancelled($order);
-        } else {
-            // It's just a captured payment, so we'll ignore the illegal status change. IOK 2017-05-07
-            $msg = sprintf(__("Could not cancel %1\$s payment", 'woo-vipps'), $this->get_payment_method_name());
-            $this->adminerr($msg);
-            $order->save();
-            global $Vipps;
-            $Vipps->store_admin_notices();
-        }
-
+        // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
+        $order->update_meta_data('_vipps_capture_complete',true);
+        $order->save();
     }
 
     // IOK 2024-09-01 In general, we can refund most Vipps Mobilepay orders through the api,
@@ -823,7 +802,107 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
     }
 
+    // This is ran in woocommerce_order_status_refunded *before* woos own  wc_order_fully_refunded (priority 9)
+    // so that we can create a through-the-gateway refund for this if neccessary. That way, *our* logic for refunds occur
+    // instead of the normal woo logic. IOK 2026-04-16
+    public function wc_order_fully_refunded ($orderid) {
+        $order = wc_get_order($orderid);
+        if ('vipps' != $order->get_payment_method()) return false;
 
+        // First check to see if we actually need to refund anything now IOK 2026-02-16
+        $max_refund = wc_format_decimal( $order->get_total() - $order->get_total_refunded() );
+        if ( ! $max_refund ) {
+            return;
+        }
+
+        // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
+        // the order is capturable by getting full payment details.
+        try {
+            $order = $this->update_vipps_payment_details($order); 
+        } catch (Exception $e) {
+            //Do nothing with this for now
+            $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
+
+        $data = [];
+        $data['amount'] = $max_refund;
+        $data['reason'] = __( 'Order fully refunded.', 'woocommerce' );
+        $data['order_id'] = $orderid;
+        $data['refund_payment'] = true; // This should call our "process_refund" instead of adding a manual refund
+      
+        // IOK 2026-04-17 Should be all remaining un-refunded line items
+        $line_items = apply_filters('woo_vipps_order_fully_refunded_line_items', $this->get_remaining_refundable_line_items($order), $order);
+        $data['line_items'] = $line_items;
+       
+        wc_switch_to_site_locale();            
+        $the_refund = wc_create_refund($data);
+        wc_restore_locale();
+        if (is_wp_error($the_refund)) {
+            $refund_thru_gateway = false;
+            $msg = $the_refund->get_error_message();
+            $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $msg);
+            $order->save();
+            $this->adminerr($msg);
+        }
+        return true;
+    }
+
+
+    // IOK 2026-04-16 Build wc_create_refund() line_items for all remaining refundable order items - used to provide line-item info for the refund to be processed when
+    // "fully refunded" is done.
+    //  [ $item_id => ['qty'          => 1, 'refund_total' => '100.00', 'refund_tax'   => [ 1 => '25.00' ], *   ], ... ]
+    //  Includes line items, fees and shipping. For fees/shipping, qty is set to 0.
+    private function get_remaining_refundable_line_items( WC_Order $order ) {
+        $items = $order->get_items( array( 'line_item', 'fee', 'shipping' ));
+
+        $new_refund_line_items = [];
+        foreach($items as $item_id => $item) {
+            $new_refund_line = [];
+
+            // Calculate remaining tax for this line item; by tax id. The shape is [ [total] => [tax_id => value_for_this_tax_id] ].
+            // We want the tax id and the value.
+            $tax_data = wc_tax_enabled() ? $item->get_taxes() : false;
+            $remaining_tax = [];
+            if ($tax_data) {
+                foreach($tax_data['total'] as $tax_id => $value) {
+                    $remaining_tax[$tax_id] = $value;
+                }
+            }
+            // We can then subtract the tax already refunded for each of these items.
+            foreach($remaining_tax as $tax_id => $current) {
+                $refunded = $order->get_tax_refunded_for_item($item_id, $tax_id,  $item->get_type());
+                $remaining = wc_format_decimal($current-$refunded);
+                if ($remaining > 0) {
+                    $remaining_tax[$tax_id] = wc_format_decimal($current-$refunded);
+                } else {
+                    unset($remaining_tax[$tax_id]);
+                }
+            }
+
+            // Then the quantity
+            $qty = (int) $item->get_quantity();
+            $refunded_quantity = abs((int) $order->get_qty_refunded_for_item($item_id)); // Documented to be positive since 3.0, seems to be actually negative. 
+            $remaining_quantity = $qty-$refunded_quantity;
+
+            $total = $item->get_total();
+            $refunded_total =  $order->get_total_refunded_for_item($item_id); // A positive value
+            $remaining_total = wc_format_decimal($total-$refunded_total);
+
+
+            if ($remaining_quantity>0 || !empty($remaining_tax) || $remaining_total > 0) {
+                $new_refund_line['qty'] = max(0,$remaining_quantity);
+                $new_refund_line['refund_tax'] = $remaining_tax;
+                $new_refund_line['refund_total']  = $remaining_total;
+                $new_refund_line_items[$item_id]  = $new_refund_line;
+            }
+
+        }
+
+        return $new_refund_line_items;
+
+    }
+
+    
     // This is for orders that are 'reserved' at Vipps but could actually be captured at once because
     // they don't require processing. So we try to capture. IOK 2020-09-22
     // do NOT call this unless the order is 'reserved' at Vipps!
@@ -850,6 +929,30 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return true;
     }
 
+    // This filter runs on *all* refunds, including manual refunds. Its main job here is to
+    // disallow creating manual refunds on orders that have not been captured yet, since this makes the capture/cancel logic
+    // very confusing
+    public function woocommerce_create_refund ($refund, $args) {
+        $order_id = intval($args['order_id'] ?? 0);
+        $order = $order_id ? wc_get_order( $order_id ) : null;
+        if ( ! $order ) return;
+        if ( $order->get_payment_method() !== 'vipps' ) return;
+        // This is for manual refunds only IOK 2026-02-24
+        if (!($args['refund_payment'] ?? false)) { 
+            try {
+                $order = $this->update_vipps_payment_details($order);
+            } catch (Exception $e) {
+                //Do nothing with this for now
+                $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
+            }
+            // This would be *per order line* in the fulfilment branch. IOK 2026-02-24 FIXME
+            $captured = intval($order->get_meta('_vipps_captured'));
+            if (!$captured) {
+                $msg = sprintf(__("Order %2\$d: It is not possible to create a manual refund for a %1\$s order before it has been captured - doing so makes it impossible to track how much to capture and how much to release. If you create the refund through %1\$s, a note will be made internally so that the amount to be refunded will *not* be captured - please do this instead if possible. Otherwise, capture the order then refund either manually or through %1\$s", 'woo-vipps'), $this->get_payment_method_name(), $order_id);
+                throw new Exception($msg);
+            }
+        }
+    }
 
     // This is the Woocommerce refund api called by the "Refund" actions. IOK 2018-05-11
     public function process_refund($orderid,$amount=null,$reason='') {
@@ -1193,11 +1296,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // New defaults based on old defaults
         $default_static_shipping_for_checkout = 'no';
         $default_ask_address_for_express = 'no';
+        $default_status_on_fail = 'failed';
         if ($current) {
             $default_static_shipping_for_checkout = (isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
             $default_ask_address_for_express = (isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
             // The old default used the same value as for Express Checkout. IOK 2023-07-27
             $vippscreateuserdefault = isset($current['expresscreateuser']) ? $current['expresscreateuser'] : $vippscreateuserdefault;
+
+            // For existing installs: set failed payments order status to cancelled to keep same default behaviour.
+            // New installs will be set to failed instead of cancelled. LP 2026-03-26
+            $default_status_on_fail = 'cancelled';
         }
 
         // Get the already-set country code. For existing sites, this will guess the country based on the currency; for new sites, use 
@@ -1518,6 +1626,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'default'     => 'processing',
             ),
 
+            'status_on_fail' => array(
+                'title'       => sprintf(__('Order status on failed payment (for restartable orders)', 'woo-vipps'), Vipps::CompanyName()),
+                'label'       => __('Choose default order status for failed payments', 'woo-vipps'),
+                'type'        => 'select',
+                'options' => array(
+                    /* translators: woocommerce status name */
+                    'failed' => __('Failed', 'woo-vipps'),
+                    /* translators: woocommerce status name */
+                    'cancelled' => __('Cancelled','woo-vipps'),
+                ), 
+                /* translators: company name. cancelled and failed are woocommerce status names! */
+                'description' => sprintf(__('By default, orders where payment is started but not completed at %1$s will be set to failed if they can be restarted. This setting changes this behaviour, but does <strong>not</strong> affect orders that cannot be restarted as these will always be set to cancelled.<br><br>Cancelled orders will keep the customer\'s shopping cart intact.<br>Failed orders can be restarted, possibly with another payment method.', 'woo-vipps'), Vipps::CompanyName()),
+                'default'     => $default_status_on_fail,
+            ),
+
 /*
             'title' => array(
                 'title' => __('Title', 'woocommerce'),
@@ -1531,7 +1654,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'title' => __('Description', 'woocommerce'),
                 'type' => 'textarea',
                 'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
-                'default' => sprintf(__("Almost done! Remember, there are no fees using %1\$s when shopping online.", 'woo-vipps'), Vipps::CompanyName())
+                'default' => __("Pay safely and easily. No fees, no matter the amount.", 'woo-vipps'),
             ),
 
             'vippsdefault' => array(
@@ -1540,6 +1663,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'type'        => 'checkbox',
                 'description' => sprintf(__('Enable this to use %1$s as the default payment method on the checkout page, regardless of order.', 'woo-vipps'), $payment_method_name),
                 'default'     => 'yes',
+            ),
+
+            'checkout_phone_transformation' => array(
+                'title'       => sprintf(__('Phone number transformation for %1$s and Express Checkout', 'woo-vipps'), 'Checkout'),
+                'label'       => sprintf(__('Choose a transformation to apply to phone numbers for %1$s and Express Checkout', 'woo-vipps'), 'Checkout'),
+                'type'        => 'select',
+                'options' => array(
+                    'none' => __('None', 'woo-vipps'),
+                    'ensure_plus' => __('Prepend \'+\'','woo-vipps'),
+                    'strip_country_code' => __('Strip country code','woo-vipps'),
+                ), 
+                'description' => __('Phone numbers from Express or Checkout are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'),
+                'default'     => 'none',
             ),
         );
 
@@ -1953,7 +2089,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $content = null;
 
         // Should be impossible, but there we go IOK 2022-04-21
-        if (! $order->has_status('pending', 'failed')) {
+        if (! $order->has_status(['pending', 'failed'])) {
              $this->log(sprintf(__("Trying to start order %1\$s with status %2\$s - only 'pending' and 'failed' are allowed, so this will fail", 'woo-vipps'), $order_id, $order->get_status()));
              wc_add_notice(sprintf(__('This order cannot be paid with %1$s - please try another payment method or try again later', 'woo-vipps'), $this->get_payment_method_name()), 'error');
              return [];
@@ -1963,24 +2099,46 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // in the *normal* case, this is a user who have lost their vipps session, so it suffices to 
         // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
         // order will eventually be cancelled. Changes in the cart will result in a new order anyway.
+        // Note: we now also support restarting the payment with a new retry session if there is no stored vipps session. LP 2026-03-12
         if ($order->get_meta('_vipps_init_timestamp')) {
-           $oldurl = $order->get_meta('_vipps_orderurl');
-           $oldstatus = $order->get_meta('_vipps_status');
+            $oldurl = $order->get_meta('_vipps_orderurl');
 
-           // This isn't actually an expired session but it is the same logic; so we'll keep the
-           // text in this 'can't happen' branch
-           if (!$oldurl) {
-              $this->log(sprintf(__("Order %2\$d was attempted restarted, but had no %1\$s session url stored. Cannot continue!", 'woo-vipps'), Vipps::CompanyName(), $order_id), 'error');
-              wc_add_notice(sprintf(__('Order session expired at %1$s, please try again!', 'woo-vipps'), Vipps::CompanyName()), 'error');
-              $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
-              return [];
-           }
+            // Poll status at VMP here to verify session is still open. LP 2026-02-27
+            $vipps_status = 'unknown';
+            $vipps_session_open = false;
+            try {
+                $vipps_status = $this->get_payment_details($order)['status'] ?? 'unknown';
+                if ('unknown' !== $vipps_status) {
+                    $vipps_status = $this->interpret_vipps_order_status($vipps_status);
+                    $vipps_session_open = 'initiated' === $vipps_status;
+                }
+            } catch (Exception $e) {
+                /* translators: company name, order id */
+                $this->log(sprintf(__('Retry-branch: error getting payment details from %1$s for order id %2$s:','woo-vipps'), $this->get_payment_method_name(), $order->get_id()) . "\n" . $e->getMessage(), 'error');
+            }
 
-           $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
-
-           return array('result'=>'success','redirect'=>$oldurl);
+            // Do we have an active session we can redirect to? LP 2026-02-27
+            if ($vipps_session_open && $oldurl) {
+                $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
+                return array('result'=>'success','redirect'=>$oldurl);
+            }
+            
+            // If not, then we need to create a new retry session with incrementing index. LP 2026-03-12
+            $retry_count = intval($order->get_meta('_vipps_retry_count')) + 1;
+            $enable_payment_retry = 'unknown' !== $vipps_status; // dont retry unknown statuses. LP 2026-03-18
+            if (apply_filters('woo_vipps_enable_payment_retry', $enable_payment_retry, $order, $vipps_status, $retry_count)) {
+                /* translators: number of attempts, order id. */
+                $this->log(sprintf(__('Order %2$d session could not be restored, creating a new retry session (retry #%1$d).', 'woo-vipps'), $retry_count, $order_id), 'info');
+                $order->update_meta_data('_vipps_retry_count', $retry_count);
+                $order->save_meta_data();
+            } else {
+                // If restarting is disabled, then we have to cancel the order. LP 2026-03-12
+                /* translators: order id. */
+                $this->log(sprintf(__('Order %1$d session could not be restored, and payment retry is disabled. Cancelling the order!', 'woo-vipps'), $order_id), 'info');
+                $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+                return [];
+            }
         }
-
 
         // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
         $this->save_session_in_order($order);
@@ -2008,8 +2166,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
-            $requestid = $order->get_order_key();
-            $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
+            // Update: replaced requestid with new idempotency key, moved this into epayment_initiate_payment. LP 2026-03-13
+            $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken);
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
@@ -2274,7 +2432,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return true;
     }
 
-
     /** Updates the captured meta of every item in the order to be fully captured, returns success bool. LP 2025-11-07 */
     public function mark_order_items_fully_captured($order) {
         error_log("lp mark_order_items_fully_captured starting");
@@ -2406,66 +2563,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return 100;
     }
 
-    public function refund_superfluous_capture($order) {
-        $status = $order->get_status();
-        if ($status != 'completed') {
-            $this->log(__('Cannot refund superfluous capture on non-completed order:','woo-vipps'). ' ' . $order->get_id(), 'error');
-            $this->adminerr(__('Order not completed, cannot refund superfluous capture','woo-vipps'));
-            return false;
-        }
-
-        $pm = $order->get_payment_method();
-        if ($pm != 'vipps') {
-            $this->log(sprintf(__('Trying to refund payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()). ' ' . $order->get_id(), 'error');
-            $this->adminerr(sprintf(__('Cannot refund payment on orders not made by %1$s','woo-vipps'), $this->get_payment_method_name()));
-            return false;
-        }
-
-        try {
-                $order = $this->update_vipps_payment_details($order); 
-        } catch (Exception $e) {
-                //Do nothing with this for now
-                $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
-        }
-
-        $total = round(wc_format_decimal($order->get_total(),'')*100);
-        $captured = intval($order->get_meta('_vipps_captured'));
-        $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
-        $refunded = intval($order->get_meta('_vipps_refunded'));
-        $superfluous = $captured-$total-$refunded;
-
-
-        if ($captured <= $total) {
-            return false;
-        }
-        $superfluous = $captured-$total-$refunded;
-        if ($superfluous<=0) {
-            return false;
-        }
-        $refundvalue = min($to_refund,$superfluous);
-
-        $reason = __("The value of the order is less than the amount captured.", "woo-vipps");
-
-        $ok = 0;
-        $currency = $order->get_currency();
-        try {
-            $ok = $this->refund_payment($order,$refundvalue,'cents');
-        } catch (TemporaryVippsApiException $e) {
-            $this->log(sprintf(__('Could not refund %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
-            return new WP_Error('Vipps',sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
-        } catch (Exception $e) {
-            $msg = sprintf(__('Could not refund %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage();
-            $order->add_order_note($msg);
-            $this->log($msg,'error');
-            return new WP_Error('Vipps',$msg);
-        }
-
-        if ($ok) {
-            $order->add_order_note($refundvalue/100 . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $reason);
-        } 
-        return $ok;
-    }
-
     // Cancel (only completely) a reserved but not yet captured order IOK 2018-05-07
     // Will cancel the outstanding amount on a partially captured order. LP 2025-10-14
     public function cancel_payment($order) {
@@ -2475,20 +2572,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->adminerr(sprintf(__('Cannot cancel payment on orders not made by %1$s','woo-vipps'), $this->get_payment_method_name()));
             return false;
         }
-        
         // We'll use the same transaction id for all cancel jobs, as we can only do it completely. IOK 2018-05-07
         // For epayment, partial cancellations will be possible. IOK 2022-11-12
         $api = $order->get_meta('_vipps_api');
         try {
             $requestid = "";
-            $api = $order->get_meta('_vipps_api');
             if ($api == 'banktransfer') {
                 // If we are here, and the order is somehow not captured, just do nothing. IOK 2024-01-09
                 $content = [];
             } elseif ($api == 'epayment') {
                 $requestid = 1;
+                // This will cancel any remaining, not-captured amount IOK 2026-01-28
                 $content =  $this->api->epayment_cancel_payment($order,$requestid);
             } else {
+                // If we have captured the order, we can't cancel it with the ecom API IOK 2018-05-07
+                $captured = intval($order->get_meta('_vipps_captured'));
+                if ($captured>0) {
+                    $msg = sprintf(__('Cannot cancel a captured %1$s transaction - use refund instead', 'woo-vipps'), "ECOM " .  $this->get_payment_method_name());
+                    $this->adminerr($msg);
+                    return false;
+                }
                 $content =  $this->api->cancel_payment($order,$requestid);
             }
         } catch (TemporaryVippsApiException $e) {
@@ -2526,7 +2629,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e)  {
         }
         return true;
-        }
+    }
 
     // Refund (possibly partially) the captured order. IOK 2018-05-07
     // The caller must handle the errors.
@@ -2672,7 +2775,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // we only do it for orders that match this. IOK 2023-02-03
     public function reset_erroneous_payment_method($order) {
         // This is only called by methods that are Vipps-specific, but still lets be careful not to touch other orders
-        if ($order->get_payment_method() === "kco" && $order->get_meta("_vipps_orderid")) {
+
+        // New 2026-01-05: we now check all other payment methods that aren't vipps, and reset it back to vipps.
+        // The issue was using Klarna Payments and pressing 'back' in the browser, then completing the payment in vipps checkout
+        // the order still had the payment method klarna_payments, since we previously only checked 'kco' = klarna/kustom checkout. LP 2026-01-05
+        if ($order->get_payment_method() != "vipps" && $order->get_meta("_vipps_orderid")) {
             $order->set_payment_method('vipps');
 
             $express = $order->get_meta('_vipps_express_checkout');
@@ -2682,7 +2789,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ($checkout) $order->set_payment_method_title('Vipps Checkout');
             $order->save();
 
-            $msg = sprintf(__("Payment method reset to %1\$s - it had been set to KCO while completing the order for %2\$d", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id());
+            $msg = sprintf(__("Payment method reset to %1\$s - it had been set to another payment method while completing the order for %2\$d", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id());
             $this->log($msg, 'debug');
             $order->add_order_note($msg);
         }
@@ -2690,7 +2797,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
-    public function callback_check_order_status($order) {
+    public function callback_check_order_status($order, $allow_retry = true) {
         global $Vipps;
         $orderid = $order->get_id();
 
@@ -2820,7 +2927,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->payment_complete();
                 break;
             case 'cancelled':
-                $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+                $order_is_retryable = $allow_retry && Vipps::order_is_vipps_retryable($order->get_id());
+                $status_on_fail = $this->get_option('status_on_fail');
+                $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+                if ($cancel_on_fail || !$order_is_retryable) {
+                    $status_on_fail = 'cancelled';
+                }
+                if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
+                    /* translators: order status name. Cancelled is woocommerce status name */
+                    $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
+                    $status_on_fail = 'cancelled';
+                }
+
+                /* translators: company name */
+                $order->update_status($status_on_fail, sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
                 break;
         }
 
@@ -2914,10 +3034,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $this->log(sprintf(__("Could not get order status from %1\$s using epayment api: ", 'woo-vipps'), Vipps::CompanyName()) . $e->getMessage(), "error");
                     throw $e;
                 }
-            } catch (Exception $e) {
-                $this->log(sprintf(__("Could not get order status from %1\$s using epayment api: ", 'woo-vipps'), Vipps::CompanyName()) . $e->getMessage(), "error");
-                $result = array('status'=>'CANCEL', 'state'=>'CANCEL'); 
-                return $result;
             }
         }
 
@@ -3163,7 +3279,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // To handle this, we provide this utility that ensures we have userDetails no matter the input. For this we use the anonymous filters and "billingDetails" if present
     // if not, we use shippingDetails. IOK 2023-01-10
     // Also, epayment uses mobileNumber and checkout uses phoneNumber, so normalize.
-    private function ensure_userDetails($vippsdata, $order) {
+    public function ensure_userDetails($vippsdata, $order) {
         $userDetails = [];
 
         // If we have userDetails, use it (ecom API with user data requested - Express Checkout
@@ -3232,7 +3348,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Update the order with Vipps payment details, either passed or called using the API.
     public function update_vipps_payment_details ($order, $details = null) {
-       if (!$details) $details = $this->get_payment_details($order);
+        if (!$details) {
+            try {
+                $details = $this->get_payment_details($order);
+            } catch (Exception $e) {
+                // We'll try but if we fail, that's too bad. IOK 2026-03-18. No recovery is really possible here.
+                $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
+                $this->log($e->getMessage());
+            }
+        }
 
        if ($details) {
            if (isset($details['transactionSummary'])) {
@@ -3333,10 +3457,30 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $lastname = $user['lastName'];
         $email = $user['email'];
 
+        // Get the passed phone number from checkout or express, which could be in any number of slots IOK 2025-
         $phone = isset($user['mobileNumber']) ? $user['mobileNumber'] : "";
         if (isset($user['phoneNumber'])) $phone = $user['phoneNumber'];
         if (!$phone && ($address['phoneNumber'] ?? "")) $phone = $address['phoneNumber'];
         if (!$phone && ($address['mobileNumber'] ?? "")) $phone = $address['mobileNumber'];
+
+        // Phone number transformations - the format Vipps Mobilepay uses is often not what merchants expect or need
+        // NOTE: as of writing this, the checkout+expresscheckout expected format is '{countrycode}{phonenr}', so we assume this. LP 2025-12-29
+        $phone_transformation = $this->get_option('checkout_phone_transformation');
+        switch($phone_transformation) {
+            case 'ensure_plus':
+                $phone = "+$phone";
+                break;
+            case 'strip_country_code':
+                // We only support norway,denmark,swedish,finnish country codes as of now. LP 2025-12-29
+                // We can't do these replaces in sequence, because e.g. +47 46 12 34 56 would become 0 12 34 56 instead of the correct 46 12 34 56. LP 2026-02-19
+                if (preg_match('!^(45|47)!', $phone)) { // NO, DK
+                    $phone = preg_replace('!^(45|47)!', '', $phone);
+                } else if (preg_match('!^(46|358)!', $phone)) { // SE, FI: leading zero for area codes is not used with country code, so add it back here. LP 2026-02-09
+                    $phone = preg_replace('!^(46|358)!', '0', $phone);
+                }
+                break;
+        }
+        $phone = apply_filters('woo_vipps_canonicalize_checkout_phone', $phone, $address, $user);
 
         if (!isset($address['firstName']) or !$address['firstName']) {
             $address['firstName'] = $firstname;
@@ -3393,6 +3537,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $address['postalCode'] = $postcode; // checkout
 
         // Allow users to modify the address to e.g. handle phone numbers differently IOK 2025-01-20
+        // note: added separate filter for phone number 'woo_vipps_canonicalize_checkout_phone' because of the different uses, keys etc. LP 2025-12-29
         return apply_filters('woo_vipps_canonicalize_checkout_address', $address, $user);
     }
 
@@ -3468,142 +3613,171 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             WC()->customer->set_shipping_location($address['country'],'',$address['postalCode'],$address['region']);
         }
 
+        // We may need the order total early on, so start with that
+        $ordertotal = $order->get_total() ?: 0;
+
+        $vipps_reserved = $alldata['paymentDetails']['amount']['value'] ?? null;
+        // i dont expect order total to ever be greater than vipps reserved total here, so i dont use abs(). LP 2026-01-28
+        $diff_reserved_ordertotal = is_numeric($vipps_reserved) ? ($vipps_reserved / 100 - $ordertotal) : 0;
+
         // Now do shipping, if it exists IOK 2021-09-02
         $method = isset($shipping['shippingMethodId']) ? $shipping['shippingMethodId'] : false;
 
-        $shipping_rate=null;
-        $option_table = [];
+        // We will add a shipping rate either if there has been passed a shipping method; or if this
+        // is an order that needs shipping and the amount reserved at vipps is greater than the order total
+        // (with a bit of tolerance for rounding errors). If we *don't* have a shipping method but we know
+        // we need a shipping rate; this is an error condition that the merchant needs  to resolve. We'll add a fake
+        // 'Unknown' rate to ensure we capture the right amount and add this fact to the order log. Code by LP, comment by IOK 2026-01-28
+        $needs_shipping = $method || $order->get_meta('_vipps_needs_shipping');
+        $tol = 0.01;
+        $has_shipping = $method || $diff_reserved_ordertotal > $tol;
 
-        if ($method) {
-            if (substr($method,0,1) != '$') {
-                $shipping_rate = $this->get_legacy_express_checkout_shipping_rate($shipping);
-            } else { 
-                // Strip suffixes if we have several Express rates mapping to the same Woo rate (eg. for Posten). IOK 2025-05-04
-                $matches = [];
-                preg_match("!^(?P<key>[^:]+):?(?P<option_index>.+)?$!", $method, $matches);
-                $key = $matches['key'] ?? "";
-                $option_index = intval(trim($matches['option_index'] ?? "")); // 0 is never an index
-                $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
-                $is_base64 = $shipping_table ? ( $shipping_table['_is_base64'] ?? false) : false;
+        if ($needs_shipping && $has_shipping) {
+            $shipping_rate=null;
+            $option_table = [];
 
-                if (is_array($shipping_table) && isset($shipping_table[$key])) {
-                    $decoded = $is_base64 ? @base64_decode($shipping_table[$key]) : $shipping_table[$key];
-                    $shipping_rate = $decoded ? @unserialize($decoded) : null;
-                    if (!$shipping_rate) {
-                        $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
-                        $this->log(sprintf(__("Serialized data was %1\$s", 'woo-vipps'), base64_decode($shipping_table[$key])),  'error');
-                    } else {
-                        if ($option_index) {
-                           $meta = $shipping_rate->get_meta_data();
-                           $option_table = $meta['_vipps_pickupPoints'] ?? [];
-                           // force string table IOK 2025-08-15
-                           $point =  $option_table["i".$option_index] ?? "";
-                           if ($point) {
-                               $shipping['pickupPoint'] = $point;
-                           }
-                           $shipping_rate->add_meta_data('_vipps_pickupPoints', null);
+            // Try to find the shipping rate. LP 2026-01-28
+            if ($method) {
+                if (substr($method,0,1) != '$') {
+                    // This is the old way of adding shipping. We should probably deprecate this sometime soon. IOK 2026-01-28
+                    $shipping_rate = $this->get_legacy_express_checkout_shipping_rate($shipping);
+                } else { 
+                    // Strip suffixes if we have several Express rates mapping to the same Woo rate (eg. for Posten). IOK 2025-05-04
+                    $matches = [];
+                    preg_match("!^(?P<key>[^:]+):?(?P<option_index>.+)?$!", $method, $matches);
+                    $key = $matches['key'] ?? "";
+                    $option_index = intval(trim($matches['option_index'] ?? "")); // 0 is never an index
+                    $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
+                    $is_base64 = $shipping_table ? ( $shipping_table['_is_base64'] ?? false) : false;
+
+                    if (is_array($shipping_table) && isset($shipping_table[$key])) {
+                        $decoded = $is_base64 ? @base64_decode($shipping_table[$key]) : $shipping_table[$key];
+                        $shipping_rate = $decoded ? @unserialize($decoded) : null;
+                        if (!$shipping_rate) {
+                            $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
+                            $this->log(sprintf(__("Serialized data was %1\$s", 'woo-vipps'), $decoded),  'error');
+                        } else {
+                            // Special-case the Woo pickup location methods. IOK 2026-01-28
+                            if ($option_index) {
+                               $meta = $shipping_rate->get_meta_data();
+                               $option_table = $meta['_vipps_pickupPoints'] ?? [];
+                               // force string table IOK 2025-08-15
+                               $point =  $option_table["i".$option_index] ?? "";
+                               if ($point) {
+                                   $shipping['pickupPoint'] = $point;
+                               }
+                               $shipping_rate->add_meta_data('_vipps_pickupPoints', null);
+                            }
+                            // Empty this when done, but not if there was an error - let the merchant be able to debug. IOK 2020-02-14
+                            $order->update_meta_data('_vipps_express_checkout_shipping_method_table', null);
                         }
-                        // Empty this when done, but not if there was an error - let the merchant be able to debug. IOK 2020-02-14
-                        $order->update_meta_data('_vipps_express_checkout_shipping_method_table', null);
                     }
-                } 
-            }
+                }
 
+                // Possible extra metadata from Vipps Checkout IOK 2023-01-17
+                // Store in the order, but also in the shipping rate so it will be visible in the order screen
+                // along with the shipping ragte
+                if (isset($shipping['pickupPoint'])) {
+                    $order->update_meta_data('vipps_checkout_pickupPoint', $shipping['pickupPoint']);
+                    if ($shipping_rate) {
+                        $pp = $shipping['pickupPoint'];
+                        $addr = [];
+                        foreach(['address', 'postalCode', 'city', 'country'] as $key) {
+                            $v = trim($pp[$key]);
+                            if (!empty($v)) $addr[] = trim($pp[$key]);
+                        }
 
-            // Possible extra metadata from Vipps Checkout IOK 2023-01-17
-            // Store in the order, but also in the shipping rate so it will be visible in the order screen
-            // along with the shipping ragte
-            if (isset($shipping['pickupPoint'])) {
-                $order->update_meta_data('vipps_checkout_pickupPoint', $shipping['pickupPoint']);
-                if ($shipping_rate) {
-                    $pp = $shipping['pickupPoint'];
-                    $addr = [];
-                    foreach(['address', 'postalCode', 'city', 'country'] as $key) {
-                        $v = trim($pp[$key]);
-                        if (!empty($v)) $addr[] = trim($pp[$key]);
+                        $shipping_rate->add_meta_data('pickup_location', $pp['name']);
+                        $shipping_rate->add_meta_data('pickup_address', join(", ", $addr));
+                        $shipping_rate->add_meta_data('pickup_details', ""); // Not supported by the API unfortunately. IOK 2025-06-07
                     }
-
-                    $shipping_rate->add_meta_data('pickup_location', $pp['name']);
-                    $shipping_rate->add_meta_data('pickup_address', join(", ", $addr));
-                    $shipping_rate->add_meta_data('pickup_details', ""); // Not supported by the API unfortunately. IOK 2025-06-07
+                }
+                if (isset($shipping['timeslot'])) {
+                    $order->update_meta_data('vipps_checkout_timeslot', $shipping['timeslot']);
+                    if ($shipping_rate) {
+                        $pp = $shipping['timeslot'];
+                        $slot = "";
+                        $slot .= sprintf(__("Date: %s", 'woo-vipps'), ($pp['date'] ?? ""));
+                        $slot .= " " . sprintf(__("Start: %s", 'woo-vipps'), ($pp['start'] ?? ""));
+                        $slot .= " " . sprintf(__("End: %s", 'woo-vipps'), ($pp['end'] ?? ""));
+                        $shipping_rate->add_meta_data('vipps_delivery_timeslot', $slot);
+                        $shipping_rate->add_meta_data('vipps_delivery_timeslot_id', $pp['id']);
+                    }
                 }
             }
-            if (isset($shipping['timeslot'])) {
-                $order->update_meta_data('vipps_checkout_timeslot', $shipping['timeslot']);
-                if ($shipping_rate) {
-                    $pp = $shipping['timeslot'];
-                    $slot = "";
-                    $slot .= sprintf(__("Date: %s", 'woo-vipps'), ($pp['date'] ?? ""));
-                    $slot .= " " . sprintf(__("Start: %s", 'woo-vipps'), ($pp['start'] ?? ""));
-                    $slot .= " " . sprintf(__("End: %s", 'woo-vipps'), ($pp['end'] ?? ""));
-                    $shipping_rate->add_meta_data('vipps_delivery_timeslot', $slot);
-                    $shipping_rate->add_meta_data('vipps_delivery_timeslot_id', $pp['id']);
-                }
+
+            // We know we need a shipping rate, and what its price has to be, so ensure we have one by making one up if missing. LP 2026-01-28
+            if (!$shipping_rate) {
+                $shipping_rate = new WC_Shipping_Rate(
+                        'UNKNOWN',
+                        sprintf(__('Unknown shipping: please check the shipping details at %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                        $diff_reserved_ordertotal,
+                        [],
+                        'UNKNOWN',
+                        0,
+                        );
+                $shipping_rate = apply_filters('woo_vipps_unknown_shipping_rate_dummy', $shipping_rate, $order);
+
+                // Add an error log for the merchants to quote to us. 
+                $msg = sprintf(__("%1\$s Could not retrieve any shipping rate for this order, with method %2\$s",'woo-vipps'), $this->get_payment_method_name(), $method) . " " .  $order->get_id();
+                $order->add_order_note($msg);
+                $this->log($msg,  'warning');
             }
 
             $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
-            $it = null;       
 
             $total_shipping = 0;
             $total_shipping_tax = 0;
+            $it = null;
 
-            if ($shipping_rate) {
-                // We may need the order total early on, so start with that
-                $ordertotal = $order->get_total() ?: 0;
+            // Recover the Shipping Method class
+            $methods_classes = WC()->shipping->get_shipping_method_class_names();
+            $methodclass = $methods_classes[$shipping_rate->get_method_id()] ?? null;
+            $shipping_method = $methodclass ? new $methodclass($shipping_rate->get_instance_id()) : null;
+            $is_vipps_checkout_shipping = $shipping_method && is_a($shipping_method, 'VippsCheckout_Shipping_Method');
 
-                // Recover the Shipping Method class
-                $methods_classes = WC()->shipping->get_shipping_method_class_names();
-                $methodclass = $methods_classes[$shipping_rate->get_method_id()] ?? null;
-                $shipping_method = $methodclass ? new $methodclass($shipping_rate->get_instance_id()) : null;
-                $is_vipps_checkout_shipping = $shipping_method && is_a($shipping_method, 'VippsCheckout_Shipping_Method');
+            // Some Vipps Checkout-specific shipping methods calculate the cost in the Vipps window.
+            if ($is_vipps_checkout_shipping && $shipping_method->dynamic_cost) {
+                $vippsamount = intval($order->get_meta('_vipps_amount'));
+                $shipping_tax_rate = floatval($order->get_meta('_vipps_shipping_tax_rates'));
+                $compareamount = $ordertotal * 100;
+                $amountdiff = $vippsamount-$compareamount; // this is the *actual* shipping cost at this point
+                $diffnotax = ($amountdiff / (100 + $shipping_tax_rate)); // Adjusted to correct values actually 
+                $difftax = WC_Tax::round($amountdiff/100 - $diffnotax);
+                $actual = $amountdiff/100 - $difftax;
 
-                // Some Vipps Checkout-specific shipping methods calculate the cost in the Vipps window.
-                if ($is_vipps_checkout_shipping && $shipping_method->dynamic_cost) {
-                    $vippsamount = intval($order->get_meta('_vipps_amount'));
-                    $shipping_tax_rate = floatval($order->get_meta('_vipps_shipping_tax_rates'));
-                    $compareamount = $ordertotal * 100;
-                    $amountdiff = $vippsamount-$compareamount; // this is the *actual* shipping cost at this point
-                    $diffnotax = ($amountdiff / (100 + $shipping_tax_rate)); // Adjusted to correct values actually 
-                    $difftax = WC_Tax::round($amountdiff/100 - $diffnotax);
-                    $actual = $amountdiff/100 - $difftax;
-
-                    $shipping_rate->set_cost($actual); 
-                    $shipping_rate->set_taxes( [ 1 => $difftax] );
-                } else {
-                    // Noop
-                }
-
-                $it = new WC_Order_Item_Shipping();
-                $it->set_shipping_rate($shipping_rate);
-                $it->set_order_id( $order->get_id() );
-                // This should actually have been done by the "set_shipping_rate" call above, but as of 3.9.2 at least, this does not work.
-                // Therefore, do it manually/forcefully IOK 2020-02-17
-                foreach($shipping_rate->get_meta_data() as $key => $value) {
-                    $it->add_meta_data($key,$value,true);
-                }
-                $it->save();
-
-                $order->add_item($it);
-
-                $total_shipping = $it->get_total() ?: 0;
-                $total_shipping_tax = $it->get_total_tax() ?: 0;
-
-                // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
-                // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the
-                // value reserved at Vipps and the order total is the same. IOK 2022-10-03
-                $order->set_shipping_total($total_shipping);
-                $order->set_shipping_tax($total_shipping_tax);
-
-                $order->set_total($ordertotal + $total_shipping + $total_shipping_tax);
-                $order->update_taxes(); // Necessary for the admin view only; does not recalculate order.
+                $shipping_rate->set_cost($actual); 
+                $shipping_rate->set_taxes( [ 1 => $difftax] );
             }
 
+            $it = new WC_Order_Item_Shipping();
+            $it->set_shipping_rate($shipping_rate);
+            $it->set_order_id( $order->get_id() );
+            // This should actually have been done by the "set_shipping_rate" call above, but as of 3.9.2 at least, this does not work.
+            // Therefore, do it manually/forcefully IOK 2020-02-17
+            foreach($shipping_rate->get_meta_data() as $key => $value) {
+                $it->add_meta_data($key,$value,true);
+            }
+            $it->save();
+
+            $order->add_item($it);
+
+            $total_shipping = $it->get_total() ?: 0;
+            $total_shipping_tax = $it->get_total_tax() ?: 0;
+
+            // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
+            // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the
+            // value reserved at Vipps and the order total is the same. IOK 2022-10-03
+            $order->set_shipping_total($total_shipping);
+            $order->set_shipping_tax($total_shipping_tax);
+
+            $order->set_total($ordertotal + $total_shipping + $total_shipping_tax);
+            $order->update_taxes(); // Necessary for the admin view only; does not recalculate order.
+
             // Add an early hook for Vipps Checkout orders with special shipping methods
-            if ($shipping_rate) { 
-                $metadata = $shipping_rate->get_meta_data();
-                if (isset($metadata['type'])) {
-                    do_action('woo_vipps_checkout_special_shipping_method', $order, $shipping_rate, $metadata['type']);
-                }
+            $metadata = $shipping_rate->get_meta_data();
+            if (isset($metadata['type'])) {
+                do_action('woo_vipps_checkout_special_shipping_method', $order, $shipping_rate, $metadata['type']);
             }
 
             $order->save(); 
@@ -3631,6 +3805,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
                 update_user_meta($customer->get_id(), '_vipps_phone', $billing['phoneNumber']);
                 if (isset($user['sub'])) {
+                    $userid = $customer->get_id();
                     update_user_meta($userid, '_vipps_id', $user['sub']);
                     update_user_meta($userid, '_vipps_just_connected', 1);
                 }
@@ -3639,6 +3814,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Ensure we get any changes made to the order, as it will be re-saved later
             $order = wc_get_order($order->get_id());
         }
+
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
         $order->save(); // I'm not sure why this is neccessary - but be sure.
 
@@ -3826,9 +4002,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
             // IOK 2025-09-29: This is probably *no longer true* - we now almost certainly *always* get a userDetails field if
             // we have added a scope of any kind. This is therefore probably dead code.
+            // This being dead code, we'll not try to handle errors gracefully here. IOK 2026-03-18
             if (!isset($result['userDetails'])) {
                 // This also calls ensure_userDetails and normalizeShippingDetails - but NB: it could fail, so call only when neccessary.
-                $result = $this->get_payment_details($order);
+                try {
+                   $details = $this->get_payment_details($order);
+                   $result = $details;
+                } catch (Exception $e) {
+                  $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
+                  $this->log($e->getMessage());
+                }
             } 
 
             // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
@@ -3851,8 +4034,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
         } else {
-            $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
+            // Not ok status; set to failed/cancelled
+            $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
+            $status_on_fail = $this->get_option('status_on_fail');
+            $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+            if ($cancel_on_fail || !$order_is_retryable) {
+                $status_on_fail = 'cancelled';
+            }
+            if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
+                /* translators: order status name. Cancelled is woocommerce status name */
+                $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
+                $status_on_fail = 'cancelled';
+            }
+
+            /* translators: company name */
+            $order->update_status($status_on_fail, sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
         }
+
         $order->save();
         clean_post_cache($order->get_id());
 
@@ -3933,7 +4131,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             do_action('woo_vipps_payment_complete_at_shutdown', $order, $this);
         } catch (Exception $e) {
             // This is/should be non-critical so just log it.
-            $this->log(sprintf(__("Could not do all payment-complete actions on %1\$s order %2\$d: %3\$s ", 'woo-vipps'), Vipps::CompanyName(), $orderid,  $e->getMessage()), "error");
+            $this->log(sprintf(__("Could not do all payment-complete actions on %1\$s order %2\$d: %3\$s ", 'woo-vipps'), Vipps::CompanyName(), $orderid,  $e->etMessage()), "error");
         }
     }
 

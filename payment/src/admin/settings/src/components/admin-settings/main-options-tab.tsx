@@ -101,6 +101,17 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
         ]}
       />
 
+      {/* Renders a select field for the order status on failed payment. LP 2026-03-26 */}
+      <SelectFormField
+        name="status_on_fail"
+        titleKey="status_on_fail.title"
+        descriptionKey="status_on_fail.description"
+        options={[
+          { label: gettext('status_on_fail.options.failed'), value: 'failed' },
+          { label: gettext('status_on_fail.options.cancelled'), value: 'cancelled' }
+        ]}
+      />
+
       {/* Renders a textarea field for the description */}
       <TextareaFormField name="description" titleKey="description.title" descriptionKey="description.description" rows={5} />
 
