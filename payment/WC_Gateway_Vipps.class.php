@@ -3676,7 +3676,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_status($status_on_fail, sprintf(__('Callback: Payment cancelled at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
         }
         // We're done, so delete the callback data. IOK 2026-04-22
-        $order->delete_meta_data('_vipps_callback_data', $result);
+        $order->delete_meta_data('_vipps_callback_data');
 
         $order->save();
         clean_post_cache($order_id);
