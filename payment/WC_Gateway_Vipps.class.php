@@ -224,7 +224,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Endpoint for setting shipping data for express checkout orders. LP 2026-03-30
         add_action('rest_api_init', function() {
-                   register_rest_route(Vipps::get_rest_namespace('v1'), '/order-set-shipping', [
+                   register_rest_route(Vipps::get_rest_namespace('v1'),  '/order-set-shipping', [
                         'methods' => 'POST',
                         'callback' => [$this, 'rest_order_set_shipping'],
                         'permission_callback' => function($request) {
@@ -232,10 +232,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             // https://github.com/WP-API/WP-API/issues/2400
                             $input_token = $request->get_header('X-WooVipps-Token');
                             error_log('LP input_token: ' . print_r($input_token, true));
-                            $valid_token = get_option('woo_vipps_rest_token');
-                            error_log('LP valid_token: ' . print_r($valid_token, true));
-                            delete_option('woo_vipps_rest_token');
-                            return $valid_token && $input_token && hash_equals($valid_token, $input_token);
+
+                            $order_id = $request->get_param('order_id');
+                            error_log('LP rest order_id: ' . print_r($order_id, true));
+
+                            $order = wc_get_order($order_id);
+                            if (!is_a($order, 'WC_Order')) {
+                                return new WP_Error('order_not_found', __('Order not found', 'woo-vipps'), ['status' => 404, 'order_id' => $order_id]);
+                            }
+
+                            // a small bit of security
+                            $auth_token = $order->get_meta('_vipps_authtoken');
+                            error_log('LP auth_token: ' . print_r($auth_token, true));
+                            if (!$input_token || !$auth_token || !hash_equals($input_token, $auth_token)) {
+                                /* translators: endpoint path, order id */
+                                $this->log(sprintf(__('Wrong authtoken for rest endpoint %1$s for order %2$s', 'woo-vipps'), '/order-set-shipping', $order_id), 'warning');
+                                return false;
+                            }
+                            return true;
+
                         },
                         'args' => [
                             'order_id' => [
@@ -3511,17 +3526,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         error_log('LP is_checkout: ' . print_r($is_checkout, true));
 
         $order = wc_get_order($order_id);
+        error_log('LP order?: ' . !!$order);
         if (!is_a($order, 'WC_Order')) {
             /* translators: order id */
             $this->log(sprintf(__('Callback process action failed, could not find order %1$s','woo-vipps'), $order_id), 'error');
             return false;
         }
         $data = $order->get_meta('_vipps_callback_data');
+        error_log('LP data?: ' . !!$data);
 
         /* translators: order id */
         $this->log(sprintf(__('Callback process action running for order %1$s.', 'woo-vipps'), $order_id));
 
         $vipps_ref = $data['orderId'];
+        error_log('LP vipps_ref: ' . print_r($vipps_ref, true));
         if ($vipps_ref != $order->get_meta('_vipps_orderid')) {
             $this->log(sprintf(__('Wrong %1$s Orderid - possibly an attempt to fake a callback ', 'woo-vipps'), Vipps::CompanyName()), 'warning');
             clean_post_cache($order_id);
@@ -3599,8 +3617,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $this->order_set_transaction_metadata($order, $transaction);
-        /* translators: company name, order id */
-        $this->log(sprintf(__('%1$s callback: processing order %1$s', 'woo-vipps'), Vipps::CompanyName(), $order_id), 'debug');
 
         // This order is ready to set order shipping details etc for IOK 2025-09-19
         $ready = false;
@@ -3621,10 +3637,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Handle session and shipping through http (LP TODO: explain why). LP 2026-03-30
             error_log('LP user id at create nonce:' . get_current_user_id());
 
-            // LP FIXME: i get error using normal wp nonce (param/header): 'rest_cookie_invalid_nonce', probably because we are using http through action scheduler, so handle auth by ourselves through db. LP 2026-03-31
-            $token = wp_generate_password(32, true, true);
+            $token = $order->get_meta('_vipps_authtoken');
             error_log('LP token: ' . print_r($token, true));
-            update_option('woo_vipps_rest_token', $token); // LP FIXME: maybe this should expire automatically. transient? LP 2026-04-01
             $args = [
                 'body' => [
                     'order_id' => $order_id,
