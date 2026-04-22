@@ -245,7 +245,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             ],
                             /* Data from Vipps callback. LP 2026-03-30 */
                             'callback_data' => [
-                                // 'required' => true,
+                                'required' => true,
                                 'validate_callback' => fn($param, $request, $key) => is_array($param),
                                 'sanitize_callback' => fn($param, $request, $key) => map_deep($param, 'sanitize_text_field'),
                             ],
