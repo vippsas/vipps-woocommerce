@@ -3510,7 +3510,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } else {
             /* translators: order id */
             $this->log(sprintf(__('Failed to schedule callback process action for order %1$s', 'woo-vipps'), $order->get_id()), 'error');
-            // LP TODO: handle action schedule failure? LP 2026-03-27
+            // LP TODO: check if we can get the error message from AS somewhere. LP 2026-03-27
         }
 
         // Signal that we in fact handled the order.
@@ -3634,7 +3634,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         error_log('LP ready: ' . print_r($ready, true));
         error_log('LP is_express: ' . print_r($is_express, true));
         if ($ready && ($is_express || $is_checkout)) {
-            // Handle session and shipping through http (LP TODO: explain why). LP 2026-03-30
+            // Handle session and shipping through http, because we dont want to mess with session here in wp cron (action scheduler). LP 2026-03-30
             error_log('LP user id at create nonce:' . get_current_user_id());
 
             $token = $order->get_meta('_vipps_authtoken');
@@ -3654,9 +3654,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $response_code = $response['response']['code'] ?? -1;
             error_log('LP response code: ' . print_r($response['response']['code'], true));
             error_log('LP response body: ' . print_r($response['body'], true));
-            if (is_wp_error($response) || 200 != $response_code) {
-                // LP FIXME: handle this somehow. LP 2026-03-30
-                error_log('LP error from rest in callback handler');
+            if (is_wp_error($response)) {
+                /* translators: order id, error message */
+                $error_msg = $response->get_error_message();
+                $this->log(sprintf(__('Process callback action failed to finalize shipping through http rest endpoint for order %1$s: %2$s', 'woo-vipps'), $order->get_id(), $error_msg), 'error');
+            } else if (200 != $response_code) {
+                /* translators: order id */
+                $this->log(sprintf(__('Process callback action failed to finalize shipping through http rest endpoint for order %1$s: unknown error', 'woo-vipps'), $order->get_id()), 'error');
             }
         }
 
