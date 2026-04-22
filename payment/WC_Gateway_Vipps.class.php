@@ -3667,6 +3667,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
           // Actually not supported anymore, but keep logic. IOK 2025-08-13
+          // Still supported for finnish direct bank transfer. IOK 2026-04-22
           $order->add_order_note(sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
