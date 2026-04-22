@@ -39,7 +39,7 @@ require_once(dirname(__FILE__) . "/VippsAPIException.class.php");
 class Vipps {
     /* Rest api consts. LP 2026-03-30 */
     private const REST_NAMESPACE_BASE = 'woo-vipps';
-    private const REST_CURRENT_VERSION = 'v1';
+    private const REST_CURRENT_VERSION = 'v1'; // don't use this directly, use methods get_rest_namespace() and get_rest_url(). LP 2026-04-22
 
     private static $instance = null;
 
