@@ -22,7 +22,7 @@ For support, use the [support forum on WordPress.org](https://wordpress.org/supp
 <!-- END_COMMENT -->
 
 This is the official
-[Vipps/MobilePay recurring payment](https://vippsmobilepay.com/no/online/billing-recurring#kom-i-gang)
+[Vipps/MobilePay recurring payment](https://vippsmobilepay.com/en-NO/online/billing-recurring)
 plugin for
 [WooCommerce](https://woocommerce.com).
 It is owned by [Vipps MobilePay](https://vippsmobilepay.com) and maintained by [Everyday AS](https://everyday.no).
