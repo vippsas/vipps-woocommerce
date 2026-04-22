@@ -3479,7 +3479,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         error_log('LP scheduling AS action in handle_callback');
         $action_args = [
             'order_id' => $order->get_id(),
-            'data' => $result,
             'is_checkout' => $ischeckout,
             'is_webhook' => $iswebhook,
         ];
@@ -3504,10 +3503,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     /** Runs in action scheduler: sync woo status from Vipps callback data. Handle shipping etc. for Express. LP 2026-03-31 */
-    public function action_process_callback($order_id, $action_data, $is_checkout, $is_webhook) {
+    public function action_process_callback($order_id, $is_checkout, $is_webhook) {
         global $Vipps;
         error_log('LP hello from action scheduler');
-        error_log('LP data: ' . print_r($data, true));
         error_log('LP order_id: ' . print_r($order_id, true));
         error_log('LP is_webhook: ' . print_r($is_webhook, true));
         error_log('LP is_checkout: ' . print_r($is_checkout, true));
