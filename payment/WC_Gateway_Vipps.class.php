@@ -3463,7 +3463,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 // Could not create a signal file, but that's ok.
         }
 
-        // New callback handling: schedule an Action Scheduler action to process it. The purpose of processing callback
+        // New callback handling: schedule an Action Scheduler job to process it. The purpose of processing callback
         // is to set finalize the order (set order status, set shipping for express) in the case when customer does
         // not return to the store, because then poll does not run. LP 2026-03-27
 
@@ -3495,7 +3495,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(sprintf(__('Callback action scheduled at %2$s for order %1$s', 'woo-vipps'), $order->get_id(), $scheduled_at), 'info');
         } else {
             /* translators: order id */
-            $this->log(sprintf(__('Failed to schedule callback handle action for order %1$s', 'woo-vipps'), $order->get_id()), 'error');
+            $this->log(sprintf(__('Failed to schedule callback process action for order %1$s', 'woo-vipps'), $order->get_id()), 'error');
             // LP TODO: handle action schedule failure? LP 2026-03-27
         }
 
