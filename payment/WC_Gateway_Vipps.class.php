@@ -3508,9 +3508,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             /* translators: order id, scheduled time */
             $this->log(sprintf(__('Callback action scheduled at %2$s for order %1$s', 'woo-vipps'), $order->get_id(), $scheduled_at), 'info');
         } else {
+            // The action scheduler error is not returned, only sent to error_log (https://github.com/woocommerce/action-scheduler/blob/25c982c3d0f8134389d5b5884082403c4806322f/classes/ActionScheduler_ActionFactory.php#L268). LP 2026-04-23
             /* translators: order id */
-            $this->log(sprintf(__('Failed to schedule callback process action for order %1$s', 'woo-vipps'), $order->get_id()), 'error');
-            // LP TODO: check if we can get the error message from AS somewhere. LP 2026-03-27
+            $this->log(sprintf(__('Failed to schedule callback process action for order %1$s, check the php error log', 'woo-vipps'), $order->get_id()), 'error');
         }
 
         // Signal that we in fact handled the order.
