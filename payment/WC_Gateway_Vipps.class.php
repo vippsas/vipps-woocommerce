@@ -3499,9 +3499,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             'is_checkout' => $ischeckout,
             'is_webhook' => $iswebhook,
         ];
-        // We'll check the status of this order in one minute. At that time, the customer should have been able to return to the store
+        // We'll check the status of this order in a few minutes. At that time, the customer should have been able to return to the store
         // and have the order finalized the 'normal' way, but if they don't, we'll handle it async. 2026-04-21
-        $scheduled_at = time() + 60;
+        $scheduled_at = time() + 120;
         $action_id = as_schedule_single_action($scheduled_at, 'woo_vipps_action_process_callback', $action_args, 'woo-vipps', false);
         error_log('LP action_id: ' . print_r($action_id, true));
         if ($action_id) {
