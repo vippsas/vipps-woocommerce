@@ -2800,6 +2800,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     //  --- there used to be a transactionSummary field
     //  --- at one point there was a 'transactionAggregate' instead of an 'aggregate'
     private function normalizePaymentDetails($result) {
+        error_log('LP in normalizePaymentDetails result: ' . print_r($result, true));
         // the 'reference' used to be an 'orderId', keep for compatibility.
         $result['orderId']  = $result['reference'];
         if (isset($result['sessionState']) && $result['sessionState'] == 'PaymentSuccessful' && $result['paymentMethod'] == 'BankTransfer') {
@@ -2859,6 +2860,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // The corresponding epayment log. Filled on-demand by debugging code.
         $result['epaymentLog'] = null;
 
+        error_log('LP out normalizePaymentDetails result: ' . print_r($result, true));
         return $result;
     }
 
