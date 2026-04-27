@@ -3240,7 +3240,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         $shipping_rate = $decoded ? @unserialize($decoded) : null;
                         if (!$shipping_rate) {
                             $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
-                            $this->log(sprintf(__("Serialized data was %1\$s", 'woo-vipps'), base64_decode($shipping_table[$key])),  'error');
+                            $this->log(sprintf(__("Serialized data was %1\$s", 'woo-vipps'), $decoded),  'error');
                         } else {
                             // Special-case the Woo pickup location methods. IOK 2026-01-28
                             if ($option_index) {
