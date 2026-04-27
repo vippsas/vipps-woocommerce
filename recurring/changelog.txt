@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.2.10 =
+* Fix: Ensure failed renewal order payments and gateway changes with charges are treated as direct captures.
+
 = 2.2.9 =
 * Fix: Only show the recurring Checkout when there's a recurring product in your shopping cart.
 
