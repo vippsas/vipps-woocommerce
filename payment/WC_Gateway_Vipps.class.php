@@ -224,17 +224,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Endpoint for setting shipping data for express checkout orders. LP 2026-03-30
         add_action('rest_api_init', function() {
-                   register_rest_route(Vipps::get_rest_namespace('v1'),  '/order-set-shipping', [
+                   register_rest_route(Vipps::get_rest_namespace('v1'), '/order-set-shipping', [
                         'methods' => 'POST',
                         'callback' => [$this, 'rest_order_set_shipping'],
                         'permission_callback' => function($request) {
                             // Note: permission callbacks run twice, on purpose. LP 2026-04-01
                             // https://github.com/WP-API/WP-API/issues/2400
                             $input_token = $request->get_header('X-WooVipps-Token');
-                            error_log('LP input_token: ' . print_r($input_token, true));
 
                             $order_id = $request->get_param('order_id');
-                            error_log('LP rest order_id: ' . print_r($order_id, true));
 
                             $order = wc_get_order($order_id);
                             if (!is_a($order, 'WC_Order')) {
@@ -243,7 +241,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                             // a small bit of security
                             $auth_token = $order->get_meta('_vipps_authtoken');
-                            error_log('LP auth_token: ' . print_r($auth_token, true));
                             if (!$input_token || !$auth_token || !hash_equals($input_token, $auth_token)) {
                                 /* translators: endpoint path, order id */
                                 $this->log(sprintf(__('Wrong authtoken for rest endpoint %1$s for order %2$s', 'woo-vipps'), '/order-set-shipping', $order_id), 'warning');
@@ -2800,7 +2797,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     //  --- there used to be a transactionSummary field
     //  --- at one point there was a 'transactionAggregate' instead of an 'aggregate'
     private function normalizePaymentDetails($result) {
-        error_log('LP in normalizePaymentDetails result: ' . print_r($result, true));
         // the 'reference' used to be an 'orderId', keep for compatibility.
         $result['orderId']  = $result['reference'];
         if (isset($result['sessionState']) && $result['sessionState'] == 'PaymentSuccessful' && $result['paymentMethod'] == 'BankTransfer') {
@@ -2860,7 +2856,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // The corresponding epayment log. Filled on-demand by debugging code.
         $result['epaymentLog'] = null;
 
-        error_log('LP out normalizePaymentDetails result: ' . print_r($result, true));
         return $result;
     }
 
@@ -3491,9 +3486,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_callback_data', $result);
 
         $order->save_meta_data();
-        error_log('LP result: ' . print_r($result, true));
 
-        error_log('LP scheduling AS action in handle_callback');
         $action_args = [
             'order_id' => $order->get_id(),
             'is_checkout' => $ischeckout,
@@ -3503,7 +3496,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // and have the order finalized the 'normal' way, but if they don't, we'll handle it async. 2026-04-21
         $scheduled_at = time() + 120;
         $action_id = as_schedule_single_action($scheduled_at, 'woo_vipps_action_process_callback', $action_args, 'woo-vipps', false);
-        error_log('LP action_id: ' . print_r($action_id, true));
         if ($action_id) {
             /* translators: payment method name */
             $order->add_order_note(sprintf(__('%1$s callback action scheduled','woo-vipps'), $this->get_payment_method_name()));
@@ -3522,26 +3514,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     /** Runs in action scheduler: sync woo status from Vipps callback data. Handle shipping etc. for Express. LP 2026-03-31 */
     public function action_process_callback($order_id, $is_checkout, $is_webhook) {
         global $Vipps;
-        error_log('LP hello from action scheduler');
-        error_log('LP order_id: ' . print_r($order_id, true));
-        error_log('LP is_webhook: ' . print_r($is_webhook, true));
-        error_log('LP is_checkout: ' . print_r($is_checkout, true));
 
         $order = wc_get_order($order_id);
-        error_log('LP order?: ' . !!$order);
         if (!is_a($order, 'WC_Order')) {
             /* translators: order id */
             $this->log(sprintf(__('Callback process action failed, could not find order %1$s','woo-vipps'), $order_id), 'error');
             return false;
         }
         $data = $order->get_meta('_vipps_callback_data');
-        error_log('LP data?: ' . !!$data);
 
         /* translators: order id */
         $this->log(sprintf(__('Callback process action running for order %1$s.', 'woo-vipps'), $order_id));
 
         $vipps_ref = $data['orderId'];
-        error_log('LP vipps_ref: ' . print_r($vipps_ref, true));
         if ($vipps_ref != $order->get_meta('_vipps_orderid')) {
             $this->log(sprintf(__('Wrong %1$s Orderid - possibly an attempt to fake a callback ', 'woo-vipps'), Vipps::CompanyName()), 'warning');
             clean_post_cache($order_id);
@@ -3622,7 +3607,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // This order is ready to set order shipping details etc for IOK 2025-09-19
         $ready = false;
-        error_log('LP ready: ' . print_r($ready, true));
         if (in_array($newstatus, ['authorized', 'complete'])) {
             $ready = true;
         }
@@ -3633,14 +3617,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $is_express = $order->get_meta('_vipps_express_checkout');
-        error_log('LP ready: ' . print_r($ready, true));
-        error_log('LP is_express: ' . print_r($is_express, true));
         if ($ready && ($is_express || $is_checkout)) {
             // Handle session and shipping through http, because we dont want to mess with session here in wp cron (action scheduler). LP 2026-03-30
-            error_log('LP user id at create nonce:' . get_current_user_id());
 
             $token = $order->get_meta('_vipps_authtoken');
-            error_log('LP token: ' . print_r($token, true));
             $args = [
                 'body' => [
                     'order_id' => $order_id,
@@ -3650,12 +3630,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'X-WooVipps-Token' => $token,
                 ],
             ];
-            error_log('LP sending to rest to finalize shipping');
             $url = Vipps::get_rest_url('v1', '/order-set-shipping');
             $response = wp_remote_post($url, $args);
             $response_code = $response['response']['code'] ?? -1;
-            error_log('LP response code: ' . print_r($response['response']['code'], true));
-            error_log('LP response body: ' . print_r($response['body'], true));
             if (is_wp_error($response)) {
                 /* translators: order id, error message */
                 $error_msg = $response->get_error_message();
@@ -3667,7 +3644,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
-        error_log('LP vippsstatus: ' . print_r($vippsstatus, true));
         if ($vippsstatus == 'AUTHORIZED') {
             $this->payment_complete($order);
         } else if ($vippsstatus == 'SALE') {
@@ -3704,7 +3680,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     /* finalize shipping for express/checkout order. LP 2026-03-30 */
     public function rest_order_set_shipping($request) {
         $order_id = $request->get_param('order_id');
-        error_log('LP rest order_id: ' . print_r($order_id, true));
         $data = $request->get_param('callback_data'); // data from vipps callback. LP 2026-03-30
 
         $order = wc_get_order($order_id);
@@ -3714,7 +3689,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $is_express_or_checkout = $order->get_meta('_vipps_express_checkout'); // should also bet set for Checkout orders. LP 2026-03-30
         $shipping_set = $order->get_meta('_vipps_shipping_set');
-        error_log('LP is_express_or_checkout: ' . print_r($is_express_or_checkout, true));
         if (!$is_express_or_checkout || $shipping_set) {
             /* translators: Express and Checkout are brand names. Don't translate at least Checkout */
             return new WP_Error('incorrect_order', __('Order already has shipping set/finalized', 'woo-vipps'), ['status' => 409, 'order_id' => $order_id]);

@@ -2786,8 +2786,6 @@ else:
             $iswebhook = true;
         }
 
-error_log('LP ischeckout: ' . print_r($ischeckout, true));
-error_log('LP iswebhook: ' . print_r($iswebhook, true));
         $vippsorderid = ($result && isset($result['orderId'])) ? $result['orderId'] : "";
         // For checkout, the orderId has been renamed to "reference" IOK 2022-02-11
         // We set the orderId here very early so old filters and hooks will continue working - mostly used for debugging.
@@ -2841,9 +2839,7 @@ error_log('LP iswebhook: ' . print_r($iswebhook, true));
             // If this is a payment event, we should have an order too so try to retrieve it. IOK 2023-12-21
             $order = null;
             $pending = false;
-error_log('LP vippsorderid: ' . print_r($vippsorderid, true));
             if ($vippsorderid && $msn && in_array($event, $payment_events)) {
-error_log('LP event in accepted payment_events');
                 // Then check if the reference/vippsorderid is a pending order
                 $order =  $this->get_pending_vipps_order($vippsorderid);
                 if ($order) {
@@ -2854,7 +2850,6 @@ error_log('LP event in accepted payment_events');
                         $polldata = $this->gateway()->api->epayment_get_payment($vippsorderid, $msn);
                         if ($polldata && isset($polldata['metadata'])) {
                             $orderid = $polldata['metadata']['orderid'];
-error_log('LP orderid: ' . print_r($orderid, true));
                             if ($orderid) {
                                 $order = wc_get_order($orderid);
                                 if (!$order || $vippsorderid != $order->get_meta('_vipps_orderid')) {
@@ -2886,7 +2881,6 @@ error_log('LP orderid: ' . print_r($orderid, true));
                 return;
             }
 
-error_log('LP pending: ' . print_r(!!$pending, true));
             if (!$pending) {
                 // If the order is no longer pending, then we can safely ignore it. IOK 2023-12-21
                 $this->log(sprintf(__('Received webhook callback for order %1$s but this is no longer pending.', 'woo-vipps'), $vippsorderid), 'debug');
@@ -2895,7 +2889,6 @@ error_log('LP pending: ' . print_r(!!$pending, true));
             do_action('woo_vipps_callback_webhook', $result);
 
             $ok = $this->gateway()->handle_callback($result, $order, false, $iswebhook);
-error_log('LP ok: ' . print_r(!!$ok, true));
             if ($ok) {
                 // This runs only if the callback actually handled the order, if not, then the order was handled by poll.
                 do_action('woo_vipps_callback_handled_order', $order);
@@ -4640,7 +4633,6 @@ error_log('LP ok: ' . print_r(!!$ok, true));
             wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','woo-vipps')));
         }
         $order_status = $this->check_order_status($order);
-error_log('LP order_status: ' . print_r($order_status, true));
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
         if ($order_status == 'pending') {
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woo-vipps')));
@@ -4656,7 +4648,6 @@ error_log('LP order_status: ' . print_r($order_status, true));
         $order = wc_get_order($orderid); // Reload
         $gw = $this->gateway();
         $payment = $gw->check_payment_status($order);
-error_log('LP payment: ' . print_r($payment, true));
         if ($payment == 'initiated') {
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woo-vipps')));
             return false;
@@ -5424,7 +5415,7 @@ error_log('LP payment: ' . print_r($payment, true));
         $status = $deleted_order ? 'cancelled' : $order->get_status();
 
         // This is for debugging only - set to false to ensure we wait for the callback. IOK 2023-08-04
-        $do_poll = false; // LP FIXME: reset this to true. LP 2026-04-01
+        $do_poll = true;
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($do_poll && $status == 'pending') {
