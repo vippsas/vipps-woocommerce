@@ -1404,7 +1404,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @return WC_Vipps_Agreement
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
 	 */
-	public function create_vipps_agreement_from_order( $order, $subscription = null, bool $is_gateway_change = false ): WC_Vipps_Agreement {
+	public function create_vipps_agreement_from_order( $order, $subscription = null, bool $is_gateway_change = false, bool $is_failed_renewal_order = false ): WC_Vipps_Agreement {
 		$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
 
 		if ( ! $subscription ) {
@@ -1488,7 +1488,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$has_trial           = WC_Subscriptions_Product::get_trial_length( $product ) !== 0;
 		$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
-		$capture_immediately = $is_virtual || $direct_capture;
+		$capture_immediately = $is_virtual || $direct_capture || $is_gateway_change || $is_failed_renewal_order;
 		$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
 
 		$sign_up_fee       = WC_Subscriptions_Order::get_sign_up_fee( $order );
@@ -1721,7 +1721,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 			}
 
-			$agreement = $this->create_vipps_agreement_from_order( $order, $subscription, $is_gateway_change );
+			$agreement = $this->create_vipps_agreement_from_order( $order, $subscription, $is_gateway_change, $is_failed_renewal_order );
 
 			$idempotency_key = $this->get_idempotency_key( $order );
 			if ( $is_gateway_change ) {

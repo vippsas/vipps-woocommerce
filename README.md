@@ -41,7 +41,7 @@ Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can a
 
 ### Account and pricing
 
-:::warning Checkout – important update
+:::warning[Checkout – important update]
 
 Vipps MobilePay has entered into an agreement to sell the Checkout solution to [Kustom](https://www.kustom.co/).
 
