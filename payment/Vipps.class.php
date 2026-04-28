@@ -3583,7 +3583,11 @@ else:
 
 
             // A rate can have a delivery time as a string in both Woo and Express
-            $delivery_time = $rate->get_delivery_time();
+            $delivery_time = "";
+            if (version_compare(WC_VERSION, '9.2.0', '>=')) {
+                $delivery_time = $rate->get_delivery_time();
+            }
+
             // And some rates have metadata, such as pickup locations (local_delivery).
             $meta = $rate->get_meta_data();
             // We can also support descriptions, in the "meta" field
