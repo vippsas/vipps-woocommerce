@@ -2524,23 +2524,50 @@ else:
             // Handle this separately, in the Checkout class. IOK 2025-10-08
             $checkout_session = $order->get_meta('_vipps_checkout_session');
             if ($checkout_session) {
+                $exception = null;
                 try {
                      $polldata = $this->gateway()->api->checkout_get_session_info($order);
                      $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
                      // We can cancel the order iff we haven't started payment yet.
                      if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') return false; 
                      return true;
+                } catch (VippsAPIException $e) {
+                    $resp = intval($e->responsecode);
+                    if ($resp == 402 || $resp == 404) {
+                        // We don't know about this transaction, so allow cancel IOK 2026-04-29
+                        return true;
+                    }
+                    $exception = $e; // Unknown exception, handle below
                 } catch (Exception $e) {
-                     // If Vipps is unreachable, be safe and don't delete
-                     return false;
+                    $exception = $e; // Unknown exception, handle below
+                }
+                if ($exception) {
+                    // If Vipps is unreachable, be safe and don't delete
+                    $this->log("Checkout: " . sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, not allowing deletion: %3\$s", 'woo-vipps'), $order->get_id(), Vipps::CompanyName(), $exception->getMessage()));
+                    return false;
                 }
                 return false; 
             }
-  
+
+           // Epayment/non-checkout IOK 2026-04-29
+            // Keep in mind, checkout will fall through to here if the checkout session initialization failed. LP 2026-04-29
             try {
+                $exception = null;
                 $result = $this->gateway()->api->epayment_get_payment($order);
+            } catch (VippsAPIException $e) {
+                $resp = intval($e->responsecode); 
+                if ($resp == 402 || $resp == 404) {
+                    // We don't know about this transaction, so allow cancel IOK 2026-04-29
+                    return true;
+                }
+                $exception = $e; // Unknown exception, handle below
             } catch (Exception $e) {
-                $this->log(sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, not allowing deletion: %3\$s", 'woo-vipps'), $order->get_id(), Vipps::CompanyName(), $e->getMessage()));
+                $exception = $e; // Unknown exception, handle below
+            }
+
+            if ($exception) {
+                // If Vipps is unreachable, be safe and don't delete
+                $this->log(sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, not allowing deletion: %3\$s", 'woo-vipps'), $order->get_id(), Vipps::CompanyName(), $exception->getMessage()));
                 return false;
             }
 
