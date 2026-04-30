@@ -180,12 +180,14 @@ class VippsAdminSettings
                 'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                 'description' => sprintf(__('%1$s is a service from %2$s, which allows you to replace the usual WooCommerce checkout page with a super simple checkout screen, where your customers can pay with Vipps, Visa, and MasterCard!', 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
             ),
+            /*
             'vipps_checkout_enabled_wizard' => array(
                 'title' => Vipps::CheckoutName(),
                 'label' => sprintf(__('Yes, I want to start using %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                 'description' => sprintf(__('If activated, this will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy checkout using %1$s or credit card, with no need to type in addresses.', 'woo-vipps'), Vipps::CheckoutName()),
                 'default' => 'no',
             ),
+             */
             'enablestaticshipping_checkout_wizard' => array(
                 'title' => __('Are you going to base shipping price on the customers address?', 'woo-vipps'),
                 'label' => __('Yes, I want dynamic shipping calculation', 'woo-vipps'),
