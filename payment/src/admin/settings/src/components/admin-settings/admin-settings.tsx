@@ -34,14 +34,19 @@ export function AdminSettings(): JSX.Element {
   const TAB_IDS = [
     gettext('main_options.title'),
     gettext('express_options.title'),
-    gettext('checkout_options.title'),
-    gettext('advanced_options.title')
   ];
+
+  // Only show checkout options if known to be active (option woo_vipps_checkout_activated is true, or the vipps_checkout_enabled option is yes IOK 2026-04-30
+  const checkoutActive = +(getMetadata('vipps_checkout_activated') ?? 0) || getOption('vipps_checkout_enabled') == 'yes';
+  if (checkoutActive) {
+    TAB_IDS.push(gettext('checkout_options.title'));
+  }
   // If the developer mode is enabled, the developer options tab is shown.
   const canShowDeveloperOptions = getOption('developermode') === 'yes';
   if (canShowDeveloperOptions) {
     TAB_IDS.push(gettext('developertitle.title'));
   }
+  TAB_IDS.push(gettext('advanced_options.title'));
 
   
   // For debugging: show wizard screen if option is set in wp-config. IOK 2025-10-20
@@ -147,7 +152,7 @@ export function AdminSettings(): JSX.Element {
         ) : (
           // If the important settings are set, show the normal settings screen.
           <>
-            <Tabs tabs={TAB_IDS} onTabChange={setActiveTab} activeTab={activeTab} />
+            <Tabs tabs={TAB_IDS} onTabChange={setActiveTab} activeTab={activeTab} /> 
             {/* Renders the main options form fields  */}
             {isVisible(TAB_IDS[0]) && <AdminSettingsMainOptionsTab />}
 
@@ -155,7 +160,7 @@ export function AdminSettings(): JSX.Element {
             {isVisible(TAB_IDS[1]) && <AdminSettingsExpressOptionsTab />}
 
             {/* Renders the checkout options form fields */}
-            {isVisible(TAB_IDS[2]) && <AdminSettingsCheckoutOptionsTab />}
+            {checkoutActive && isVisible(TAB_IDS[2]) && <AdminSettingsCheckoutOptionsTab />}
 
             {/* Renders the advanced options form fields */}
             {isVisible(TAB_IDS[3]) && <AdminSettingsAdvancedOptionsTab />}

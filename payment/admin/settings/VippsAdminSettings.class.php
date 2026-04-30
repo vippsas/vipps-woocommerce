@@ -155,7 +155,9 @@ class VippsAdminSettings
             'page' => 'admin_settings_page',
             'currency' => get_woocommerce_currency(),
             // for debugging/testing: show wizard screen always IOK 2025-01-20
-            '__dev_force_wizard_screen' => defined('WOO_VIPPS_FORCE_WIZARD') && WOO_VIPPS_FORCE_WIZARD
+            '__dev_force_wizard_screen' => defined('WOO_VIPPS_FORCE_WIZARD') && WOO_VIPPS_FORCE_WIZARD,
+            // Only show checkout options if checkout has actually been activated.
+            'vipps_checkout_activated' => intval(get_option('woo_vipps_checkout_activated'))
         );
 
         // Add some extra common translations only used by the React UI
