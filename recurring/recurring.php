@@ -48,7 +48,7 @@ define( 'WC_VIPPS_RECURRING_INTEGRATED', true);
  * Amount of days to retry a payment when creating a charge in the Vipps/MobilePay API
  */
 if ( ! defined( 'WC_VIPPS_RECURRING_RETRY_DAYS' ) ) {
-    define( 'WC_VIPPS_RECURRING_RETRY_DAYS', 4 );
+    define( 'WC_VIPPS_RECURRING_RETRY_DAYS', 2 );
 }
 
 /*
