@@ -3957,51 +3957,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     
         <?php // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
+        ?>
  
-        if (!$vipps_checkout_activated): ?>
-        <div id="activate_vipps_checkout"  style="width:95%; background-color: white; border:2px solid #fe5b24; min-height:3rem; padding: 1rem 1rem 1rem 1rem; margin-top:2rem; margin-bottom: 1rem;font-weight:800">
-                 <h2><?php printf(__('Use %1$s for all purchases', 'woo-vipps'), Vipps::CheckoutName()) ;?></h2>
-          <p><?php printf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()); ?></p>
-          <p><?php printf(__("To activate %1\$s, just press the button below. Otherwise, %2\$s will of course be available in the regular checkout screen; and you can also offer %3\$s from both the product pages and the shopping cart if you wish.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName(), Vipps::ExpressCheckoutName()); ?></p>
-
-          <div style="text-align:center">
-                 <a class="button vipps-button vipps-orange" style="background-color: #fe5b24;color:white;border-color:#fe5b24" href="javascript:void(0)" onclick="javascript:activate_vipps_checkout(1)"><?php printf(__('Yes, activate %1$s!','woo-vipps'), Vipps::CheckoutName()); ?></a>
-                 <span style="width:30%; height:1rem;display:inline-block"></span>
-                 <a class="button vipps-button secondary" href="javascript:void(0)" onclick="javascript:activate_vipps_checkout(0)"><?php _e("No, thank you not right now anyway", 'woo-vipps'); ?></a>
-          </div>
-<script>
-function activate_vipps_checkout(yesno) {
-  var nonce = <?php echo json_encode(wp_create_nonce('woo_vipps_activate_checkout')); ?>;
-  var referer = jQuery('input[name="_wp_http_referer"]').val();
-  var args = { '_wpnonce' : nonce, '_wp_http_referer' : referer, 'activate': yesno, 'action' : 'woo_vipps_activate_checkout_page' }
-
-  jQuery("#activate_vipps_checkout .button.vipps-button").css('cursor', 'wait');
-  jQuery("#activate_vipps_checkout .button.vipps-button").prop('inactive', true);
-  jQuery("#activate_vipps_checkout .button.vipps-button").prop('disabled', true);
-  jQuery("#activate_vipps_checkout .button.vipps-button").addClass('disabled');
-
-
-  jQuery.ajax(<?php echo json_encode(admin_url('admin-ajax.php')); ?>, { 
-            method: 'POST',
-            data: args,
-            headers: {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
-            error: function (jqXHR, stat, err) {
-            },
-            success: function  (data, stat, jqXHR) {
-            },
-            complete: function (xhr, stat)  {
-               document.body.style.cursor = 'default';
-               jQuery("#activate_vipps_checkout .button.vipps-button").css('cursor', 'default');
-               window.location.replace(window.location.pathname + window.location.search + window.location.hash);
-            }
-    }
-   );
-   return false;
-}
-</script>
-
-
-        </div>
+        <?php /* We will *not* allow vipps checkout to be activated at this point, since the product is no longer sold. IOK 2026-04-30 */ ?>
+        <?php if (!$vipps_checkout_activated): ?>
+          
         <?php endif; ?>
                 <table class="form-table">
                 <?php $this->generate_settings_html(); ?>

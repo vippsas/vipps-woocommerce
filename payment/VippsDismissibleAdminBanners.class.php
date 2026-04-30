@@ -54,8 +54,6 @@ class VippsDismissibleAdminBanners {
         if ($this->configured) {
            // Login with Vipps 
            $this->add_login_vipps_dismissible_admin_banner();
-           // Advertise Vipps Checkout for users who haven't seen/dismissed the banner
-           $this->add_vipps_checkout_dismissible_admin_banner();
         }
    }
 
@@ -78,50 +76,6 @@ class VippsDismissibleAdminBanners {
         update_option('_vipps_dismissed_notices', $dismissed, false);
         $this->dismissed = $dismissed;
         wp_cache_flush();
-    }
-
-    // Advertise Vipps Checkout if not installed
-    public function add_vipps_checkout_dismissible_admin_banner () {
-        $dismissed = $this->dismissed;
-        if (isset($dismissed['vippscheckout01'])) {
-           return;
-        }
-
-        $dont_advertise_checkout = $this->vipps_checkout_enabled; // if "yes" or "no", the user has interacted with Vipps Checkout
-
-        if ($dont_advertise_checkout) {
-           if (!is_array($dismissed)) $dismissed = array();
-           $dismissed['vippscheckout01'] = time();
-           update_option('_vipps_dismissed_notices', $dismissed, false);
-           $this->dismissed = $dismissed;
-           return;
-        }
-
-        add_action('admin_notices', function () {
-            $logo = plugins_url('img/vipps-rgb-orange-neg.svg',__FILE__);
-            $settingsurl = admin_url("/admin.php?page=vipps_settings_menu");
-            $screen = get_current_screen();
-            if ($screen && $screen->id == 'woocommerce_page_wc-settings' && ($_GET['tab'] ?? false) == 'checkout') return;
-            if ($screen && $screen->id == 'toplevel_page_vipps_admin_menu') return;
-            if ($screen && $screen->id == 'vipps-mobilepay_page_vipps_settings_menu') return;
-            ?>
-            <div class='notice notice-vipps notice-vipps-neg notice-info is-dismissible'  data-key='vippscheckout01'>
-            <a   href="<?php echo $settingsurl; ?>">
-            <img src="<?php echo $logo; ?>" style="float:right; height: 3rem; margin-top: 0.2rem" alt="Vipps-logo">
-             <div>
-                 <p style="font-size:1rem">
-                     <?php  printf(__('You can get %1$s now!', 'woo-vipps'), Vipps::CheckoutName()); ?>
-                    <ul style='margin-left: 1rem; list-style-type: "✓  ";'>
-                     <li><?php printf(__('Your customers can pay with %1$s , Visa or Mastercard', 'woo-vipps'), Vipps::CompanyName()); ?></li>
-                     <li><?php _e("Shipping information is autofilled with Vipps", 'woo-vipps'); ?></li>
-                     <li><?php _e("You get settlement in three days", 'woo-vipps'); ?>.</li>
-                    </ul>
-                 </p>
-             </div>
-             </a>
-            </div>
-            <?php
-            });
     }
 
     // Advertise The Login Plugin if not installed
