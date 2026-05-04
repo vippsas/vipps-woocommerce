@@ -71,6 +71,20 @@ Settings for the cart, category and product pages can be found in the WooCommerc
 
 Shareable links and QR codes can be generated from the Vipps/MobilePay tab on the product page.
 
+## Vipps MobilePay Checkout
+
+With Checkout enabled in the plugin, you will get a complete checkout in your web shop, designed and run by Vipps MobilePay.
+Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can also provide their shipping address and choose their preferred shipping method in a simple manner.
+
+:::warning[Checkout – important update]
+
+Vipps MobilePay has entered into an agreement to sell the Vipps MobilePay Checkout solution to [Kustom](https://www.kustom.co/).
+
+As part of this transition, *Vipps MobilePay Checkout* will become *Kustom Checkout*. This means the Checkout product you ordered will be delivered and developed by Kustom going forward.
+If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsmobilepay-kustom).
+
+:::
+
 === How to get started ===
 * Sign up in the [Vipps MobilePay portal](https://portal.vippsmobilepay.com) and choose your product.
 * After 1-2 days you will get an email with login details to Vipps MobilePay Business Portal, where you can get the API credentials
@@ -96,11 +110,10 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps MobilePay Subscription Key”
 
 == Screenshots ==
-1. Enable Vipps/MobilePay Checkout as your checkout.
-2. Enable Vipps/MobilePay as a payment method.
-3. Enter your Vipps MobilePay account keys and configure the plugin.
-4. Setup and activate the recurring payment gateway in WooCommerce.
-5. Configure the plugin settings for recurring payments.
+1. Enable Vipps/MobilePay as a payment method.
+2. Enter your Vipps MobilePay account keys and configure the plugin.
+3. Setup and activate the recurring payment gateway in WooCommerce.
+4. Configure the plugin settings for recurring payments.
 
 == Contributing on Github ==
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
