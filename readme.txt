@@ -26,14 +26,11 @@ Vipps and MobilePay are payment methods offered by Vipps MobilePay.
 
 When you enable this plugin, you will choose between offering either Vipps or MobilePay as a payment method for your customers - hence "Vipps/MobilePay" going forward.
 
-This is the official plugin for Vipps/MobilePay Checkout, Vipps/MobilePay ePayments (*Vipps Nettbetaling*), Vipps MobilePay Express (*Vipps MobilePay Hurtigkasse*) and Vipps/MobilePay recurring payments. Increase your conversion rate by letting your customers choose Vipps/MobilePay directly in the checkout or even do an Express Checkout (Vipps only) from the cart or a product page directly.
+This is the official plugin for Vipps/MobilePay ePayments (*Vipps Nettbetaling*), Vipps MobilePay Express (*Vipps MobilePay Hurtigkasse*) and Vipps/MobilePay recurring payments. Increase your conversion rate by letting your customers choose Vipps/MobilePay directly in the checkout or even do an Express Checkout (Vipps only) from the cart or a product page directly.
 
 You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
 
 Read [information from Vipps MobilePay](https://developer.vippsmobilepay.com/docs/plugins/woocommerce/) about the plugin.
-
-=== Vipps/MobilePay Checkout ===
-With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed by Vipps MobilePay. It contains regular Vipps/MobilePay payments, a card payment option for those that can't or won't use Vipps/MobilePay, as well as the ability to get the shipping address of the customer in an easy way. Read more about [Vipps MobilePay Checkout here](https://vippsmobilepay.com/en/online/checkout)
 
 === Vipps/MobilePay ePayment ===
 When you enable this plugin, your customers will be able to choose Vipps/MobilePay as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps/MobilePay, they fill in their name and address and is then asked to enter their phone number in the Vipps/MobilePay dialogue. They then confirms the payment in the Vipps/MobilePay app. Customer info like name and address is sent to the store from Vipps MobilePay.
@@ -292,8 +289,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2026-0x-xx Version 5.3.3 = 
-Fix express checkout for woo versions less than 9.2.0
+= 2026-05-04 Version 5.3.3 = 
+Fix express heckout for woo versions less than 9.2.0
+Vipps Checkout now in legacy mode and available only for existing installs
 
 = 2026-03-26 Version 5.3.2 =
 Improve express checkout banner on legacy checkokut screens

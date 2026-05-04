@@ -1,6 +1,7 @@
 == Changelog ==
-= 2026-0x-xx Version 5.3.3 = 
+= 2026-05-03 Version 5.3.3 = 
 Fix express checkout for woo versions less than 9.2.0
+Vipps Checkout now in legacy mode and only available for existing installs
 
 = 2026-03-26 Version 5.3.2 = 
 Improve express checkout banner on legacy checkokut screens

@@ -224,19 +224,6 @@ class Vipps {
         // Extra order actions on the order screen, now using ajax to be compatible with HPOS. IOK 2022-12-02
         add_action('wp_ajax_woo_vipps_order_action', array($this, 'order_handle_vipps_action'));
 
-        // Activate support for Vipps Checkout, including creating the special checkout page etc. Triggered from the payment page.
-        add_action('wp_ajax_woo_vipps_activate_checkout_page', function () {
-          check_ajax_referer('woo_vipps_activate_checkout','_wpnonce');
-          static::set_locale_if_in_header();
-          update_option('woo_vipps_checkout_activated', true, true); // This will load Vipps Checkout functionality from now on
-          $this->maybe_create_vipps_pages(); // Ensure the special page exists
-          if (isset($_REQUEST['activate']) && $_REQUEST['activate']) {
-             $this->gateway()->update_option('vipps_checkout_enabled', 'yes');
-          } else {
-             $this->gateway()->update_option('vipps_checkout_enabled', 'no');
-          }
-        });
-
         // Fetch wc products, but filter those only purchasable by VMP express checkout. LP 2026-01-22
         add_action('rest_api_init', function() {
                    register_rest_route('woo-vipps/v1', '/express-products', [
@@ -1191,7 +1178,7 @@ jQuery('a.webhook-adder').click(function (e) {
     <div class='wrap vipps-admin-page'>
             <div id="vipps_page_vipps_banners"><?php echo apply_filters('woo_vipps_vipps_page_banners', ""); ?></div>
             <h1><?php echo sprintf(__("%1\$s for WordPress and WooCommerce", 'woo-vipps'), Vipps::CompanyName()); ?></h1>
-            <p><?php echo sprintf(__("%1\$s officially supports WordPress and WooCommerce with a family of plugins implementing a payment gateway for WooCommerce, an optional complete checkout solution powered by %1\$s, a system for managing QR-codes that link to your products or landing pages, a plugin for recurring payments, and a system for passwordless logins.", 'woo-vipps'), Vipps::CompanyName());?></p>
+            <p><?php echo sprintf(__("%1\$s officially supports WordPress and WooCommerce with a family of plugins implementing a payment gateway for WooCommerce, a system for managing QR-codes that link to your products or landing pages, a plugin for recurring payments, and a system for passwordless logins.", 'woo-vipps'), Vipps::CompanyName());?></p>
             <p><?php echo sprintf(__("To order or configure your %1\$s account that powers these plugins, log onto <a target='_blank'  href='%2\$s'>the %1\$s portal</a> and use the keys and data from that to set up your plugins as needed.", 'woo-vipps'), Vipps::CompanyName(), $portalurl); ?></p>
 
             <h1><?php echo sprintf(__("The %1\$s plugins", 'woo-vipps'), Vipps::CompanyName()); ?></h1>
@@ -1259,7 +1246,6 @@ jQuery('a.webhook-adder').click(function (e) {
             <div class="pluginsection login-with-vipps">
                <h2><?php echo sprintf(__( '%1$s', 'woo-vipps' ), Vipps::LoginName());?></h2>
                <p><?php echo sprintf(__("<a href='%1\$s' target='_blank'>%3\$s</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2\$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/',Vipps::CompanyName(), Vipps::LoginName()); ?></p>
-               <p> <?php echo sprintf(__("If you use %1\$s in WooCommerce, this allows your %2\$s customers to safely log in without ever using a password.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()); ?>
                <p>
                        <?php echo sprintf(__("Remember, you need to set up %3\$s at the <a target='_blank' href='%2\$s'>%1\$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),Vipps::CompanyName(),$portalurl, Vipps::LoginName()); ?>
                </p>
@@ -5047,6 +5033,7 @@ else:
 
 
     // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
+    // IOK 2026-04-30 remove this when checkout is end-of-life'd
     public function woocommerce_create_pages ($data) {
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
         if (!$vipps_checkout_activated) return $data;
