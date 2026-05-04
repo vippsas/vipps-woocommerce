@@ -71,19 +71,17 @@ Settings for the cart, category and product pages can be found in the WooCommerc
 
 Shareable links and QR codes can be generated from the Vipps/MobilePay tab on the product page.
 
-## Vipps MobilePay Checkout
+=== Vipps MobilePay Checkout ===
 
 With Checkout enabled in the plugin, you will get a complete checkout in your web shop, designed and run by Vipps MobilePay.
 Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can also provide their shipping address and choose their preferred shipping method in a simple manner.
 
-:::warning[Checkout – important update]
+**Checkout – important update**
 
 Vipps MobilePay has entered into an agreement to sell the Vipps MobilePay Checkout solution to [Kustom](https://www.kustom.co/).
 
 As part of this transition, *Vipps MobilePay Checkout* will become *Kustom Checkout*. This means the Checkout product you ordered will be delivered and developed by Kustom going forward.
 If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsmobilepay-kustom).
-
-:::
 
 === How to get started ===
 * Sign up in the [Vipps MobilePay portal](https://portal.vippsmobilepay.com) and choose your product.

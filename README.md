@@ -41,14 +41,13 @@ Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can a
 
 ### Account and pricing
 
-:::warning[Checkout – important update]
-
-Vipps MobilePay has entered into an agreement to sell the Checkout solution to [Kustom](https://www.kustom.co/).
-
-As part of this transition, *Vipps MobilePay Checkout* will become *Kustom Checkout*. This means the Checkout product you ordered will be delivered and developed by Kustom going forward.
+> [!WARNING]
+> **Checkout – important update**
+>
+> Vipps MobilePay has entered into an agreement to sell the Checkout solution to [Kustom](https://www.kustom.co/).
+>
+> As part of this transition, *Vipps MobilePay Checkout* will become *Kustom Checkout*. This means the Checkout product you ordered will be delivered and developed by Kustom going forward.
 If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsmobilepay-kustom).
-
-:::
 
 ### NEW! Posten/Bring plugin and Checkout plugin
 
