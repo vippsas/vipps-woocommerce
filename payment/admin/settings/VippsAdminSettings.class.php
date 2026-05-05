@@ -155,7 +155,9 @@ class VippsAdminSettings
             'page' => 'admin_settings_page',
             'currency' => get_woocommerce_currency(),
             // for debugging/testing: show wizard screen always IOK 2025-01-20
-            '__dev_force_wizard_screen' => defined('WOO_VIPPS_FORCE_WIZARD') && WOO_VIPPS_FORCE_WIZARD
+            '__dev_force_wizard_screen' => defined('WOO_VIPPS_FORCE_WIZARD') && WOO_VIPPS_FORCE_WIZARD,
+            // Only show checkout options if checkout has actually been activated.
+            'vipps_checkout_activated' => intval(get_option('woo_vipps_checkout_activated'))
         );
 
         // Add some extra common translations only used by the React UI
@@ -180,12 +182,14 @@ class VippsAdminSettings
                 'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                 'description' => sprintf(__('%1$s is a service from %2$s, which allows you to replace the usual WooCommerce checkout page with a super simple checkout screen, where your customers can pay with Vipps, Visa, and MasterCard!', 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
             ),
+            /*
             'vipps_checkout_enabled_wizard' => array(
                 'title' => Vipps::CheckoutName(),
                 'label' => sprintf(__('Yes, I want to start using %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                 'description' => sprintf(__('If activated, this will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy checkout using %1$s or credit card, with no need to type in addresses.', 'woo-vipps'), Vipps::CheckoutName()),
                 'default' => 'no',
             ),
+             */
             'enablestaticshipping_checkout_wizard' => array(
                 'title' => __('Are you going to base shipping price on the customers address?', 'woo-vipps'),
                 'label' => __('Yes, I want dynamic shipping calculation', 'woo-vipps'),

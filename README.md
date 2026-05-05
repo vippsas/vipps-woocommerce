@@ -26,7 +26,7 @@ For support, contact the
 
 Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway and Sweden. One platform gathering more than 11 million users and more than 400,000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.
 
-This is the official Vipps/MobilePay plugin for payments, a complete Checkout and Express checkout buttons. Increase your conversion rate by letting your customers pay with a fast, secure and convenient payment method. Vipps MobilePay allows users to make quick and easy payments using their mobile phone, without the need for entering credit card details or other sensitive information.
+This is the official Vipps/MobilePay plugin for payments and Express checkout buttons. Increase your conversion rate by letting your customers pay with a fast, secure and convenient payment method. Vipps MobilePay allows users to make quick and easy payments using their mobile phone, without the need for entering credit card details or other sensitive information.
 
 You can do important back-office tasks, such as capture and refund directly from WooCommerce.
 
@@ -41,14 +41,13 @@ Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can a
 
 ### Account and pricing
 
-:::warning[Checkout – important update]
-
-Vipps MobilePay has entered into an agreement to sell the Checkout solution to [Kustom](https://www.kustom.co/).
-
-As part of this transition, *Vipps MobilePay Checkout* will become *Kustom Checkout*. This means the Checkout product you ordered will be delivered and developed by Kustom going forward.
+> [!WARNING]
+> **Checkout – important update**
+>
+> Vipps MobilePay has entered into an agreement to sell the Checkout solution to [Kustom](https://www.kustom.co/).
+>
+> As part of this transition, *Vipps MobilePay Checkout* will become *Kustom Checkout*. This means the Checkout product you ordered will be delivered and developed by Kustom going forward.
 If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsmobilepay-kustom).
-
-:::
 
 ### NEW! Posten/Bring plugin and Checkout plugin
 
@@ -101,7 +100,6 @@ They then confirm the payment in the Vipps or MobilePay app.
 2. Activate the plugin through the *Plugins* screen on WordPress.
 3. Go to the *WooCommerce Settings* page, choose *Payments*, and enable Vipps MobilePay.
 4. Go the *Settings* page for the Vipps MobilePay plugin and enter your Vipps MobilePay account keys. Your account keys are available in the [business portal](https://portal.vippsmobilepay.com/). For information, see [How to get account keys](#how-to-get-account-keys-from-the-business-portal).
-5. (Optional, but recommended) Activate *Checkout* by clicking on the *Checkout* tab and selecting the *Enable Alternative Vipps/MobilePay Checkout screen, replacing the standard checkout page* option.
 
 ## How to get account keys from the business portal
 
@@ -123,10 +121,6 @@ First, enable *Vipps MobilePay* as a payment method.
 Enter your [API keys](/docs/knowledge-base/api-keys/) and configure the plugin.
 
 ![Enter your API keys and configure the plugin](./payment/docs/images/add-secrets.png)
-
-Remember to enable Vipps MobilePay Checkout, if you want maximum dazzle with minimum hassle.
-
-![Enable Checkout](./payment/docs/images/turn-on-checkout.png)
 
 ## Frequently asked questions
 

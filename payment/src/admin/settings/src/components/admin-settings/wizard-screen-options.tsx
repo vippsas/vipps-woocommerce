@@ -103,19 +103,20 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 required
               />
 
+              {/* Renders a simplified checkbox to enable the Alternative checkout screen. LP 23.12.2024 */}
+              {/* Deactivated as of 2026-04-30 IOK 2026-04-30 
               <h3 className="vipps-mobilepay-react-tab-description">
                 {fixCheckoutName(gettext("vipps_checkout_enabled_wizard.title"), paymentMethod)}
               </h3>
               <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("vipps_checkout_enabled_wizard.description"), paymentMethod)} /></p>
 
-
-              {/* Renders a simplified checkbox to enable the Alternative checkout screen. LP 23.12.2024 */}
               <CheckboxFormField
                 name="vipps_checkout_enabled"
                 titleKey=""
                 labelKey="vipps_checkout_enabled_wizard.label"
                 descriptionKey=""
               />
+              */}
 
               {/* Renders a button to progress to the next form step. LP 23.12.2024 */}
               <WPFormField>
@@ -131,18 +132,26 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                       const form = e.currentTarget.closest(
                         "form"
                       ) as HTMLFormElement | null;
-                      if (!form) throw new Error("Form not found");
+                      if (!form) {
+                          throw new Error("Form not found");
+                      } 
 
                       // Trigger validation and proceed to the next step if valid
                       if (form.reportValidity()) {
                         setPrevStep(step);
                         // If user did not enable checkout - show checkout confirmation step. LP 30.12.2024
-                        if (truthToBool(getOption('vipps_checkout_enabled'))) setStep('CHECKOUT');
-                        else setStep('CHECKOUT_CONFIRM');
+                        if (truthToBool(getOption('vipps_checkout_enabled'))) {
+                            setStep('CHECKOUT');
+                        } else {
+                            form.requestSubmit();
+                        }
+                      } else {
+                           // no validity reported. 
                       }
                     }}
                   >
-                    {gettext("next_step")}
+                    {/* no next step at this point if no checkout */}
+                    {truthToBool(getOption('vipps_checkout_enabled')) ? gettext("next_step") :  fixCheckoutName(gettext('save_changes'), paymentMethod)}
                   </WPButton>
                 </div>
               </WPFormField>
