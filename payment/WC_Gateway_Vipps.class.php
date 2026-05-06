@@ -3474,14 +3474,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $keyset = $this->get_keyset(); 
         $me = array_keys($keyset);
 
+        // Validate the callback first
         if (!in_array($merchant, $me)) {
             $this->log(sprintf(__("%1\$s callback with wrong merchantSerialNumber - might be forged",'woo-vipps'), $this->get_payment_method_name()) . " " .  $order->get_id(), 'warning');
             return false;
         }
-
         if (!$order) {
             $this->log(sprintf(__("%1\$s callback for unknown order",'woo-vipps'), $this->get_payment_method_name()) . " " .  $order->get_id(), 'warning');
             return false;
+        }
+        if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
+            $this->log(sprintf(__('Wrong %1$s Orderid - possibly an attempt to fake a callback ', 'woo-vipps'), Vipps::CompanyName()), 'warning');
+            clean_post_cache($order_id);
+            exit();
+        }
+
+        // Note any errors in the callback early
+        $errorInfo = $data['errorInfo'] ?? '';
+        if ($errorInfo) {
+            /* translators: payment method name, order id */
+            $this->log(sprintf(__('Message in callback from %1$s for order %2$s: ','woo-vipps'), $this->get_payment_method_name(), $order_id), $errorInfo['errorMessage'], 'error');
+            /* translators: payment method name, message */
+            $order->add_order_note(sprintf(__('Message from %1$s: %2$s','woo-vipps'), $this->get_payment_method_name(), $errorInfo['errorMessage']));
         }
 
         // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
@@ -3500,8 +3514,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_callback_received_at', time());
         // Store the callback data in the order. We'll do a cleanup of this when the scheduled job runs. IOK 2026-04-21
         $order->update_meta_data('_vipps_callback_data', $result);
-
         $order->save_meta_data();
+
+        // Run callback actions for callback received as soon as it is actually received.
+        $transaction = []; // No longer provided. IOK 2026-05-06
+        do_action('woo_vipps_callback_received', $order, $data, $transaction);
 
         $action_args = [
             'order_id' => $order->get_id(),
@@ -3521,6 +3538,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // The action scheduler error is not returned, only sent to error_log (https://github.com/woocommerce/action-scheduler/blob/25c982c3d0f8134389d5b5884082403c4806322f/classes/ActionScheduler_ActionFactory.php#L268). LP 2026-04-23
             /* translators: order id */
             $this->log(sprintf(__('Failed to schedule callback process action for order %1$s, check the php error log', 'woo-vipps'), $order->get_id()), 'error');
+           /* We will not delete the callback data here, to facilitate debugging. But return false to indicate that callback handling will fail. */
+           /* NB: The order will still be processed with the periodic job, at a later stage. IOK 2026-05-06 */
+            return false;
         }
 
         // Signal that we in fact handled the order.
@@ -3537,25 +3557,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(sprintf(__('Callback process action failed, could not find order %1$s','woo-vipps'), $order_id), 'error');
             return false;
         }
+
+        $oldstatus = $order->get_status();
+        if ($oldstatus != 'pending') {
+            // Actually, we are ok with this order, abort the callback handler. IOK 2018-05-30
+            $order->delete_meta_data('_vipps_callback_data');
+            clean_post_cache($order->get_id());
+            return false;
+        }
         $data = $order->get_meta('_vipps_callback_data');
 
         /* translators: order id */
         $this->log(sprintf(__('Callback process action running for order %1$s.', 'woo-vipps'), $order_id));
-
-        $vipps_ref = $data['orderId'];
-        if ($vipps_ref != $order->get_meta('_vipps_orderid')) {
-            $this->log(sprintf(__('Wrong %1$s Orderid - possibly an attempt to fake a callback ', 'woo-vipps'), Vipps::CompanyName()), 'warning');
-            clean_post_cache($order_id);
-            exit();
-        }
-
-        $errorInfo = $data['errorInfo'] ?? '';
-        if ($errorInfo) {
-            /* translators: payment method name, order id */
-            $this->log(sprintf(__('Message in callback from %1$s for order %2$s: ','woo-vipps'), $this->get_payment_method_name(), $order_id), $errorInfo['errorMessage'], 'error');
-            /* translators: payment method name, message */
-            $order->add_order_note(sprintf(__('Message from %1$s: %2$s','woo-vipps'), $this->get_payment_method_name(), $errorInfo['errorMessage']));
-        }
 
         // The payment details field is passed in Checkout, not in Express, but none of them are complete, so we fill out the values 
         // depending on which one we are IOK 2025-08-13
@@ -3583,11 +3596,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $nothing  = [ 'currency' => $currency, 'value' => 0];
         $aggregate = ['authorizedAmount' => $nothing, 'cancelledAmount' => $nothing, 'capturedAmount' => $nothing, 'refundedAmount' => $nothing];
         if ($details['state'] == 'AUTHORIZED') {
-           $aggregate['authorizedAmount'] = $details['amount'];
+            $aggregate['authorizedAmount'] = $details['amount'];
         }
         $details['aggregate'] = $aggregate;
         $data['paymentDetails'] = $details;
 
+        // Do the actual work with a function shared with the periodic job.
+        $this->set_order_status_by_payment_details($order,$data);
+
+        // We're done, so delete the callback data. IOK 2026-04-22
+        $order->delete_meta_data('_vipps_callback_data');
+    }
+
+
+     // Called either by periodic job or by action_process_callback with the callback data *or* with payment details fetched with poll.
+     // sets order status if neccessary, and will finalize the order for Express via HTTP call if necessary. IOK 2026-05-06
+     public function set_order_status_by_payment_details($order, $data) {
         $data = $this->normalizePaymentDetails($data);
         $details = $data['paymentDetails'];
 
@@ -3602,24 +3626,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $transaction['currency'] = $details['amount']['currency'];
         $transaction['status'] = ($data['state'] ?? $details['state']);
         $transaction['paymentmethod'] = $details['paymentMethod'] ?? "";
-
-        if (!$transaction) {
-            $this->log(sprintf(__("Anomalous callback from %1\$s, handle errors and clean up",'woo-vipps'), $this->get_payment_method_name()),'warning');
-            clean_post_cache($order->get_id());
-            return false;
-        }
-
-        $order->add_order_note(sprintf(__('%1$s callback processed','woo-vipps'), $this->get_payment_method_name()));
-        do_action('woo_vipps_callback_received', $order, $data, $transaction);
-
-        $oldstatus = $order->get_status();
-        if ($oldstatus != 'pending') {
-            // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
-            $order->delete_meta_data('_vipps_callback_data');
-            clean_post_cache($order->get_id());
-            return false;
-        }
-
         $this->order_set_transaction_metadata($order, $transaction);
 
         // This order is ready to set order shipping details etc for IOK 2025-09-19
@@ -3634,8 +3640,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $is_express = $order->get_meta('_vipps_express_checkout');
+        $is_checkout = $order->get_meta('_vipps_checkout');
+
+        // Handle session and shipping through http, because we dont want to mess with session here in wp cron (action scheduler). LP 2026-03-30
+        // NB: This is and must be a *synchronous call*. When done, the order will have shipping, addresses etc. IOK 2026-05-06.
         if ($ready && ($is_express || $is_checkout)) {
-            // Handle session and shipping through http, because we dont want to mess with session here in wp cron (action scheduler). LP 2026-03-30
 
             $token = $order->get_meta('_vipps_authtoken');
             $args = [
@@ -3660,6 +3669,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
+        // This must happen *after* finalization for Express, as above. IOK 2026-05-06
         // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
         if ($vippsstatus == 'AUTHORIZED') {
             $this->payment_complete($order);
@@ -3687,8 +3697,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             /* translators: company name */
             $order->update_status($status_on_fail, sprintf(__('Callback: Payment cancelled at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
         }
-        // We're done, so delete the callback data. IOK 2026-04-22
-        $order->delete_meta_data('_vipps_callback_data');
 
         $order->save();
         clean_post_cache($order_id);
