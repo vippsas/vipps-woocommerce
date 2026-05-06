@@ -162,16 +162,22 @@ class VippsAdminSettings
 
         // Add some extra common translations only used by the React UI
         $commonTranslations = array(
-            'save_changes' => __('Save changes', 'woo-vipps'),
-            'initial_settings' => __('Initial settings', 'woo-vipps'),
-            'upload_image' => __('Upload image', 'woo-vipps'),
-            'remove_image' => __('Remove image', 'woo-vipps'),
-            'next_step' => __('Next step', 'woo-vipps'),
-            'previous_step' => __('Previous step', 'woo-vipps'),
-            'receipt_image_size_requirement' => __('The image must be at least 167 pixels in height', 'woo-vipps'),
-            'receipt_image_error' => __('The uploaded image is too small. It must be at least 167 pixels in height.', 'woo-vipps'),
-            'settings_saved' => __('Settings saved', 'woo-vipps')
-        );
+                'save_changes' => __('Save changes', 'woo-vipps'),
+                'initial_settings' => __('Initial settings', 'woo-vipps'),
+                'upload_image' => __('Upload image', 'woo-vipps'),
+                'remove_image' => __('Remove image', 'woo-vipps'),
+                'next_step' => __('Next step', 'woo-vipps'),
+                'previous_step' => __('Previous step', 'woo-vipps'),
+                'receipt_image_size_requirement' => __('The image must be at least 167 pixels in height', 'woo-vipps'),
+                'receipt_image_error' => __('The uploaded image is too small. It must be at least 167 pixels in height.', 'woo-vipps'),
+                'settings_saved' => __('Settings saved', 'woo-vipps'),
+
+                'kustom_sale_1' => __('Checkout - Important Update', 'woo-vipps'),
+                'kustom_sale_2' => __('Vipps MobilePay has entered into an agreement to sell the Checkout solution to <a href="https://Kustom.co" target="_blank">Kustom</a>', 'woo-vipps'),
+                'kustom_sale_3' => __('As part of this transition, <b>Vipps MobilePay Checkout</b> will become <b>Kustom Checkout</b>. This means the Checkout product you ordered will be delivered and developed by Kustom going forward.', 'woo-vipps'),
+                'kustom_sale_4' => __('If your account is newer than March 27. 2026, it will <b>not</b> support Vipps MobilePay Checkout in this plugin.', 'woo-vipps'),
+                'kustom_sale_5' => __('If you have questions, you can check our <a href="https://vippsmobilepay.com/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps')
+                );
 
         $wizardTranslations = [
             'wizard_header' => [
