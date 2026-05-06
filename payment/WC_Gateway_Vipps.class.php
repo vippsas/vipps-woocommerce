@@ -3464,7 +3464,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
     }
 
-    // Handle the callback from Vipps eCom.
+    // Handle the callback from Vipps ePayment
     public function handle_callback($result, $order, $ischeckout=false, $iswebhook=false) {
         global $Vipps;
 
@@ -3615,6 +3615,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $oldstatus = $order->get_status();
         if ($oldstatus != 'pending') {
             // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
+            $order->delete_meta_data('_vipps_callback_data');
             clean_post_cache($order->get_id());
             return false;
         }
