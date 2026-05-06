@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-05-06 Version 5.3.4 = 
+Notice added about the sale of Checkout to Kustom
+
 = 2026-05-03 Version 5.3.3 = 
 Fix express checkout for woo versions less than 9.2.0
 Vipps Checkout now in legacy mode and only available for existing installs
