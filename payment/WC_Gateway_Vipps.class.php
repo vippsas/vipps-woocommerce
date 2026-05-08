@@ -3483,6 +3483,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(sprintf(__("%1\$s callback for unknown order",'woo-vipps'), $this->get_payment_method_name()) . " " .  $order->get_id(), 'warning');
             return false;
         }
+        $order_id = $order->get_id();
         if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
             $this->log(sprintf(__('Wrong %1$s Orderid - possibly an attempt to fake a callback ', 'woo-vipps'), Vipps::CompanyName()), 'warning');
             clean_post_cache($order_id);
@@ -3518,7 +3519,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Run callback actions for callback received as soon as it is actually received.
         $transaction = []; // No longer provided. IOK 2026-05-06
-        do_action('woo_vipps_callback_received', $order, $data, $transaction);
+        do_action('woo_vipps_callback_received', $order, $result, $transaction);
 
         $action_args = [
             'order_id' => $order->get_id(),
@@ -3614,6 +3615,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
      public function set_order_status_by_payment_details($order, $data) {
         $data = $this->normalizePaymentDetails($data);
         $details = $data['paymentDetails'];
+        $order_id = $order->get_id();
 
         $vippsstatus = $data['status']; // Will exist now, because of the normalization IOK 2025-08-13
         $newstatus = $this->interpret_vipps_order_status($vippsstatus);
