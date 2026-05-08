@@ -3491,7 +3491,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         // Note any errors in the callback early
-        $errorInfo = $data['errorInfo'] ?? '';
+        $errorInfo = $result['errorInfo'] ?? '';
         if ($errorInfo) {
             /* translators: payment method name, order id */
             $this->log(sprintf(__('Message in callback from %1$s for order %2$s: ','woo-vipps'), $this->get_payment_method_name(), $order_id), $errorInfo['errorMessage'], 'error');
@@ -3531,8 +3531,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $scheduled_at = time() + 120;
         $action_id = as_schedule_single_action($scheduled_at, 'woo_vipps_action_process_callback', $action_args, 'woo-vipps', false);
         if ($action_id) {
-            /* translators: payment method name */
-            $order->add_order_note(sprintf(__('%1$s callback action scheduled','woo-vipps'), $this->get_payment_method_name()));
             /* translators: order id, scheduled time */
             $this->log(sprintf(__('Callback action scheduled at %2$s for order %1$s', 'woo-vipps'), $order->get_id(), $scheduled_at), 'info');
         } else {
@@ -3604,6 +3602,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Do the actual work with a function shared with the periodic job.
         $this->set_order_status_by_payment_details($order,$data);
+
+        /* translators: payment method name */
+        $order->add_order_note(sprintf(__('%1$s callback processed','woo-vipps'), $this->get_payment_method_name()));
 
         // We're done, so delete the callback data. IOK 2026-04-22
         $order->delete_meta_data('_vipps_callback_data');
