@@ -1,4 +1,8 @@
 == Changelog ==
+= 2026-05-11 Version 5.4.0 = 
+Improved handling of refunds. Manual refunds are now only possible when payment has been captured.
+Improved handling of failed but retryable orders
+
 = 2026-05-06 Version 5.3.4 = 
 Notice added about the sale of Checkout to Kustom
 
