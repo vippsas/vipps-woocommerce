@@ -476,14 +476,38 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
 	public function get_agreement_from_order( $order ) {
-		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
+		$order_agreement_id = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID );
 
-		if ( ! $agreement_id ) {
+		$subscriptions             = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
+		$subscription              = array_shift( $subscriptions );
+		$subscription_agreement_id = $subscription ? WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID ) : '';
+
+		$primary_id  = $order_agreement_id ?: $subscription_agreement_id;
+		$fallback_id = ( $order_agreement_id && $subscription_agreement_id && $subscription_agreement_id !== $order_agreement_id ) ? $subscription_agreement_id : '';
+
+		if ( ! $primary_id ) {
 			return false;
 		}
 
 		try {
-			return $this->api->get_agreement( $agreement_id );
+			return $this->api->get_agreement( $primary_id );
+		} catch ( WC_Vipps_Recurring_Exception $e ) {
+			if ( $e->response_code !== 404 || ! $fallback_id ) {
+				return false;
+			}
+
+			try {
+				$agreement = $this->api->get_agreement( $fallback_id );
+			} catch ( Exception $retry_e ) {
+				return false;
+			}
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Order agreement id %s returned 404, falling back to subscription agreement id %s and updating order meta', WC_Vipps_Recurring_Helper::get_id( $order ), $primary_id, $fallback_id ) );
+
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $fallback_id );
+			$order->save();
+
+			return $agreement;
 		} catch ( Exception $e ) {
 			return false;
 		}
