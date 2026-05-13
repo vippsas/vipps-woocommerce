@@ -1319,21 +1319,30 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Processing subscription gateway change with new agreement id: %s and old agreement id: %s', WC_Vipps_Recurring_Helper::get_id( $subscription ), $new_agreement_id, $old_agreement_id ) );
 
 				if ( ! empty( $old_agreement_id ) && $new_agreement_id !== $old_agreement_id ) {
-					$charges         = $this->api->get_charges_for( $old_agreement_id );
-					$pending_charges = array_filter( $charges, function ( WC_Vipps_Charge $charge ) {
-						return in_array( $charge->status, [
-							WC_Vipps_Charge::STATUS_PENDING,
-							WC_Vipps_Charge::STATUS_RESERVED,
-							WC_Vipps_Charge::STATUS_DUE
-						] );
-					} );
+					try {
+						$charges         = $this->api->get_charges_for( $old_agreement_id );
+						$pending_charges = array_filter( $charges, function ( WC_Vipps_Charge $charge ) {
+							return in_array( $charge->status, [
+								WC_Vipps_Charge::STATUS_PENDING,
+								WC_Vipps_Charge::STATUS_RESERVED,
+								WC_Vipps_Charge::STATUS_DUE
+							] );
+						} );
 
-					// We should not under any circumstances cancel agreements that still have pending charges when changing gateways.
-					if ( empty( $pending_charges ) ) {
-						WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelling old agreement id: %s in Vipps/MobilePay due to gateway change', WC_Vipps_Recurring_Helper::get_id( $subscription ), $old_agreement_id ) );
+						// We should not under any circumstances cancel agreements that still have pending charges when changing gateways.
+						if ( empty( $pending_charges ) ) {
+							WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelling old agreement id: %s in Vipps/MobilePay due to gateway change', WC_Vipps_Recurring_Helper::get_id( $subscription ), $old_agreement_id ) );
 
-						$idempotency_key = $this->get_idempotency_key( $subscription );
-						$this->api->cancel_agreement( $old_agreement_id, $idempotency_key );
+							$idempotency_key = $this->get_idempotency_key( $subscription );
+							$this->api->cancel_agreement( $old_agreement_id, $idempotency_key );
+						}
+					} catch ( WC_Vipps_Recurring_Exception $cleanup_e ) {
+						// If the old agreement is already gone there's nothing to clean up — proceed with the gateway change.
+						if ( $cleanup_e->response_code !== 404 ) {
+							throw $cleanup_e;
+						}
+
+						WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Old agreement %s no longer exists in Vipps/MobilePay (404), skipping cleanup', WC_Vipps_Recurring_Helper::get_id( $subscription ), $old_agreement_id ) );
 					}
 				}
 
