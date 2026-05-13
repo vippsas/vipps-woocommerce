@@ -1,5 +1,7 @@
 <?php
 
+use Automattic\WooCommerce\Enums\OrderStatus;
+
 defined( 'ABSPATH' ) || exit;
 
 require_once( __DIR__ . '/wc-vipps-models.php' );
@@ -652,17 +654,30 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$order->save();
 
 			if ( $this->maybe_capture_payment( $order_id ) ) {
-				$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 14 days.', 'woo-vipps' ) );
+				$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 7 days.', 'woo-vipps' ) );
 
 				return 'SUCCESS';
 			}
 		}
 
-		$is_direct_capture = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_DIRECT_CAPTURE );
-		if ( $is_direct_capture && ! $is_captured ) {
+		$is_direct_capture   = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_DIRECT_CAPTURE );
+		$has_completed_state = $order->get_status() === OrderStatus::COMPLETED;
+
+		// Attempt to capture the charge if direct capture is enabled, or if the order already has a completed status
+		if ( ( $is_direct_capture && ! $is_captured ) || ( ! $is_captured && $has_completed_state ) ) {
 			$order->save();
 
 			$this->maybe_capture_payment( $order_id );
+
+			return 'SUCCESS';
+		}
+
+		// Stop processing if the order has a cancelled status and there's a pending capture
+		if ( ! $is_captured && $order->get_status() === OrderStatus::CANCELLED ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] This order has not been captured, but has a cancelled status. Skipping capture attempt.', WC_Vipps_Recurring_Helper::get_id( $order ) ) );
+
+			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
+			$order->save();
 
 			return 'SUCCESS';
 		}
