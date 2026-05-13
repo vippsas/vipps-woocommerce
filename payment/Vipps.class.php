@@ -3978,10 +3978,13 @@ else:
         $order_status = null;
         try {
             $order->add_order_note(sprintf(__("Callback from %1\$s delayed or never happened; order status checked by periodic job", 'woo-vipps'), $this->get_payment_method_name()));
+            // Poll status, then potentially correct woo order. Sets shipping data through rest endpoint for express/checkout. LP 2026-05-13
             $order_data = $gw->get_payment_details($order);
             $gw->set_order_status_by_payment_details($order, $order_data);
-            $order = wc_get_order($order->get_id());
+
+            $order = wc_get_order($order->get_id()); // refresh order if changed. LP 2026-05-13
             $order_status = $order->get_status();
+
             error_log('LP order_status: ' . print_r($order_status, true));
             $this->log(sprintf(__("For order %2\$d order status at %1\$s is %3\$s", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id(), $order_status), 'debug');
         } catch (Exception $e) {

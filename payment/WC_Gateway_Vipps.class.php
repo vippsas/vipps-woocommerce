@@ -263,8 +263,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                                 'validate_callback' => fn($param, $request, $key) => is_numeric($param),
                                 'sanitize_callback' => fn($param, $request, $key) => intval($param),
                             ],
-                            /* Data from Vipps callback. LP 2026-03-30 */
-                            'callback_data' => [
+                            /* Data from Vipps callback or api poll. LP 2026-03-30 */
+                            'vipps_order_data' => [
                                 'required' => true,
                                 'validate_callback' => fn($param, $request, $key) => is_array($param),
                                 'sanitize_callback' => fn($param, $request, $key) => map_deep($param, 'sanitize_text_field'),
@@ -3651,13 +3651,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // NB: This is and must be a *synchronous call*. When done, the order will have shipping, addresses etc. IOK 2026-05-06.
         $shipping_set = $order->get_meta('_vipps_shipping_set');
         error_log('LP shipping_set: ' . print_r($shipping_set, true));
-        $shipping_set = $order->get_meta('_vipps_shipping_set');
         if ($ready && $is_express_or_checkout && !$shipping_set) {
             $token = $order->get_meta('_vipps_authtoken');
             $args = [
                 'body' => [
                     'order_id' => $order_id,
-                    'callback_data' => $data,
+                    'vipps_order_data' => $data,
                 ],
                 'headers' => [
                     'X-WooVipps-Token' => $token,
@@ -3714,7 +3713,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     /* finalize shipping for express/checkout order. LP 2026-03-30 */
     public function rest_order_set_shipping($request) {
         $order_id = $request->get_param('order_id');
-        $data = $request->get_param('callback_data'); // data from vipps callback. LP 2026-03-30
+        $data = $request->get_param('vipps_order_data');
 
         $order = wc_get_order($order_id);
         if (!is_a($order, 'WC_Order')) {
