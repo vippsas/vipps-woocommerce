@@ -421,7 +421,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			try {
 				$charge = $this->api->get_charge( $agreement_id, $charge_id );
 			} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
-				// do nothing, we're just being too quick
+				// Let the caller decide how to handle transient failures so we don't conflate them with "no charge exists"
+				throw $e;
 			} catch ( Exception $e ) {
 				$charge = $this->get_latest_charge_for_agreement( $order, $agreement_id, $charge_id );
 			}
@@ -609,8 +610,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'SUCCESS';
 		}
 
-		/** @var WC_Vipps_Charge $charge */
-		$charge = $this->get_latest_charge_from_order( $order );
+		try {
+			/** @var WC_Vipps_Charge $charge */
+			$charge = $this->get_latest_charge_from_order( $order );
+		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+			// Transient failure (rate limit, no response). Keep the order in the pending queue and retry on the next tick.
+			$this->unlock_order( $order );
+
+			return 'SUCCESS';
+		}
 
 		// We're unable to determine the latest charge
 		if ( ! $charge ) {
