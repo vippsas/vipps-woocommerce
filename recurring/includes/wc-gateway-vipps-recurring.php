@@ -604,9 +604,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		/** @var WC_Vipps_Charge $charge */
 		$charge = $this->get_latest_charge_from_order( $order );
 
+		// We're unable to determine the latest charge
 		if ( ! $charge ) {
-			// we're being rate limited
-			return 'SUCCESS';
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
+			$this->unlock_order( $order );
+
+			return 'CANCELLED';
 		}
 
 		// set _charge_id on order
