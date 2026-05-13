@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.2.11 =
+* Fix: Solved an edge case where a subscription could not be found when checking for a gateway change. Stopped checking in this scenario.
+
 = 2.2.10 =
 * Fix: Ensure failed renewal order payments and gateway changes with charges are treated as direct captures.
 

@@ -1275,7 +1275,21 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		if ( $subscription->meta_exists( '_new_agreement_id' ) ) {
 			$new_agreement_id = WC_Vipps_Recurring_Helper::get_meta( $subscription, '_new_agreement_id' );
-			$agreement        = $this->api->get_agreement( $new_agreement_id );
+
+			try {
+				$agreement = $this->api->get_agreement( $new_agreement_id );
+			} catch ( WC_Vipps_Recurring_Exception $e ) {
+				if ( $e->response_code === 404 ) {
+					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Agreement %s not found (404) during gateway change check, ending gateway change checking', WC_Vipps_Recurring_Helper::get_id( $subscription ), $new_agreement_id ) );
+
+					$this->end_gateway_change_checking( $subscription );
+					$subscription->save();
+
+					return;
+				}
+
+				throw $e;
+			}
 
 			if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
 				$old_agreement_id = WC_Vipps_Recurring_Helper::get_meta( $subscription, '_old_agreement_id' );
