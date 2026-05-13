@@ -565,6 +565,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_locked_for_update_time', time() );
 		$order->save();
 
+		if ( $order->get_status() === OrderStatus::FAILED ) {
+			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
+
+			return 'CANCELLED';
+		}
+
 		$agreement = $this->get_agreement_from_order( $order );
 
 		if ( ! $agreement ) {
@@ -627,8 +633,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
 		$did_fail       = WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order );
 
-		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED && ! $is_renewal ) {
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
+		if ( ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED && ! $is_renewal ) || $charge->status === WC_Vipps_Charge::STATUS_REFUNDED ) {
+			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
+
 			$this->unlock_order( $order );
 
 			return 'CANCELLED';

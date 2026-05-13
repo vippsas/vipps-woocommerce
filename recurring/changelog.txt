@@ -7,6 +7,8 @@
 * Fix: In some odd scenarios the agreement id on a subscription could differ from the agreement id on the order, we need to check both in get_agreement_from_order.
 * Fix: Attempt to capture charges when the order is already completed.
 * Fix: Stop checking orders with reserved charges when the status is cancelled.
+* Fix: Stop checking orders with refunded charges.
+* Fix: Stop checking orders with a failed status.
 
 = 2.2.10 =
 * Fix: Ensure failed renewal order payments and gateway changes with charges are treated as direct captures.
