@@ -546,12 +546,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'INVALID';
 		}
 
+		$is_renewal = wcs_order_contains_renewal( $order );
+
 		// we need to tell WooCommerce that this is in fact a scheduled payment that should be retried in the case of failure.
-		if ( wcs_order_contains_renewal( $order ) ) {
+		if ( $is_renewal ) {
 			add_filter( 'wcs_is_scheduled_payment_attempt', '__return_true' );
 		}
 
-		// check if order is temporarily locked
 		if ( ! $this->use_high_performance_order_storage() ) {
 			clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
 		}
@@ -562,11 +563,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'SUCCESS';
 		}
 
-		// lock the order
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_locked_for_update_time', time() );
 		$order->save();
 
-		if ( $order->get_status() === 'failed' ) {
+		$order_status = $order->get_status();
+
+		if ( $order_status === 'failed' ) {
 			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
 
 			return 'CANCELLED';
@@ -585,29 +587,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'INVALID';
 		}
 
-		$is_renewal = wcs_order_contains_renewal( $order );
-
-		// logic for zero amounts when a charge does not exist
-		if ( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT ) && ! $is_renewal ) {
-			// if there's a campaign with a price of 0 we can complete the order immediately
-			if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
-				$this->complete_order( $order, $agreement->id );
-
-				$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps' ) );
-				$order->save();
-			}
-
-			// if EXPIRED or STOPPED we can fail this order
-			if ( in_array( $agreement->status, [
-				WC_Vipps_Agreement::STATUS_EXPIRED,
-				WC_Vipps_Agreement::STATUS_STOPPED
-			], true ) ) {
-				$this->check_charge_agreement_cancelled( $order, $agreement );
-
-				return 'CANCELLED';
-			}
-
-			return 'SUCCESS';
+		$zero_amount_result = $this->handle_zero_amount_order( $order, $agreement, $is_renewal );
+		if ( $zero_amount_result !== null ) {
+			return $zero_amount_result;
 		}
 
 		try {
@@ -620,7 +602,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'SUCCESS';
 		}
 
-		// We're unable to determine the latest charge
 		if ( ! $charge ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Unable to determine latest charge, stopped checking order", $order_id ) );
 
@@ -630,20 +611,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'CANCELLED';
 		}
 
-		// set _charge_id on order
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge->id );
-
-		// set _vipps_recurring_latest_api_status
 		WC_Vipps_Recurring_Helper::set_latest_api_status_for_order( $order, $charge->status );
 
 		$initial        = empty( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL ) )
-		                  && ! wcs_order_contains_renewal( $order );
+		                  && ! $is_renewal;
 		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
 		$did_fail       = WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order );
 
 		if ( ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED && ! $is_renewal ) || $charge->status === WC_Vipps_Charge::STATUS_REFUNDED ) {
 			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
-
 			$this->unlock_order( $order );
 
 			return 'CANCELLED';
@@ -661,13 +638,73 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Charge::STATUS_RESERVED
 			], true ) && $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE;
 
-		// If the brand is MobilePay, we should capture the payment now if it is not already captured.
-		// This is because MobilePay auto-releases and refunds payments after 7 days. Vipps will keep a reservation for a lot longer.
-		if ( $this->brand === WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY
-		     && ! $is_captured
-		     && $this->auto_capture_mobilepay ) {
-			$order->save();
+		$capture_result = $this->attempt_charge_capture( $order, $order_id, $is_captured, $order_status );
+		if ( $capture_result !== null ) {
+			return $capture_result;
+		}
 
+		return $this->finalize_charge_check( $order, $charge, $agreement, $initial, $is_captured );
+	}
+
+	/**
+	 * Handle the special case where the order's subtotal is zero. There is no charge to look up; the
+	 * agreement status alone tells us whether to complete, fail, or wait for the order.
+	 *
+	 * @return string|null One of 'SUCCESS' / 'CANCELLED' when this branch applies, null otherwise.
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	private function handle_zero_amount_order( $order, WC_Vipps_Agreement $agreement, bool $is_renewal ): ?string {
+		if ( ! WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT ) || $is_renewal ) {
+			return null;
+		}
+
+		// if there's a campaign with a price of 0 we can complete the order immediately
+		if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
+			$this->complete_order( $order, $agreement->id );
+
+			$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps' ) );
+			$order->save();
+		}
+
+		// if EXPIRED or STOPPED we can fail this order
+		if ( in_array( $agreement->status, [
+			WC_Vipps_Agreement::STATUS_EXPIRED,
+			WC_Vipps_Agreement::STATUS_STOPPED
+		], true ) ) {
+			$this->check_charge_agreement_cancelled( $order, $agreement );
+
+			return 'CANCELLED';
+		}
+
+		return 'SUCCESS';
+	}
+
+	/**
+	 * Decide whether an uncaptured charge should be captured now, skipped (cancelled order), or
+	 * left for the normal finalize path. Returns the status string when this branch terminates the
+	 * check, or null to continue with finalize_charge_check().
+	 *
+	 * @return string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	private function attempt_charge_capture( $order, $order_id, bool $is_captured, string $order_status ): ?string {
+		$is_direct_capture   = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_DIRECT_CAPTURE );
+		$has_completed_state = $order_status === 'completed';
+
+		$is_mobilepay_auto_capture = $this->brand === WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY && $this->auto_capture_mobilepay;
+		$should_attempt_capture    = ! $is_captured && ( $is_mobilepay_auto_capture || $is_direct_capture || $has_completed_state );
+
+		// maybe_capture_payment re-fetches the order, so persist META_CHARGE_ID and META_LATEST_API_STATUS first.
+		if ( $should_attempt_capture ) {
+			$order->save();
+		}
+
+		// MobilePay auto-releases and refunds reservations after 7 days, so we capture eagerly when configured.
+		if ( $is_mobilepay_auto_capture && ! $is_captured ) {
 			if ( $this->maybe_capture_payment( $order_id ) ) {
 				$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 7 days.', 'woo-vipps' ) );
 
@@ -675,20 +712,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 		}
 
-		$is_direct_capture   = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_DIRECT_CAPTURE );
-		$has_completed_state = $order->get_status() === 'completed';
-
-		// Attempt to capture the charge if direct capture is enabled, or if the order already has a completed status
-		if ( ( $is_direct_capture && ! $is_captured ) || ( ! $is_captured && $has_completed_state ) ) {
-			$order->save();
-
+		// Capture if direct capture is enabled or the order has already been marked Completed.
+		if ( ! $is_captured && ( $is_direct_capture || $has_completed_state ) ) {
 			$this->maybe_capture_payment( $order_id );
 
 			return 'SUCCESS';
 		}
 
 		// Stop processing if the order has a cancelled status and there's a pending capture
-		if ( ! $is_captured && $order->get_status() === 'cancelled' ) {
+		if ( ! $is_captured && $order_status === 'cancelled' ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] This order has not been captured, but has a cancelled status. Skipping capture attempt.', WC_Vipps_Recurring_Helper::get_id( $order ) ) );
 
 			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
@@ -697,9 +729,17 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'SUCCESS';
 		}
 
+		return null;
+	}
+
+	/**
+	 * Write the final state for the charge, unlock the order, and hand off to process_order_charge.
+	 * Returns 'CANCELLED' if the agreement is expired/stopped, otherwise 'SUCCESS'.
+	 */
+	private function finalize_charge_check( $order, WC_Vipps_Charge $charge, WC_Vipps_Agreement $agreement, bool $initial, bool $is_captured ): string {
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED, $is_captured );
 
-		if ( (int) $initial ) {
+		if ( $initial ) {
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL, true );
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
 		}
@@ -714,7 +754,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$this->process_order_charge( $order, $charge );
 
-		// agreement is expired or stopped
 		if ( in_array( $agreement->status, [
 			WC_Vipps_Agreement::STATUS_STOPPED,
 			WC_Vipps_Agreement::STATUS_EXPIRED
