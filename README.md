@@ -26,7 +26,7 @@ For support, contact the
 
 Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway and Sweden. One platform gathering more than 11 million users and more than 400,000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.
 
-This is the official Vipps/MobilePay plugin for payments and Express checkout buttons. Increase your conversion rate by letting your customers pay with a fast, secure and convenient payment method. Vipps MobilePay allows users to make quick and easy payments using their mobile phone, without the need for entering credit card details or other sensitive information.
+This is the official Vipps/MobilePay plugin for payments and Express buttons. Increase your conversion rate by letting your customers pay with a fast, secure and convenient payment method. Vipps MobilePay allows users to make quick and easy payments using their mobile phone, without the need for entering credit card details or other sensitive information.
 
 You can do important back-office tasks, such as capture and refund directly from WooCommerce.
 
@@ -68,7 +68,7 @@ When you enable Vipps MobilePay Express, your customers can choose between the r
 
 Since Vipps MobilePay knows who the customers are, they don’t have to enter all their personal information. The customer just chooses the shipping method and accepts the payment. Vipps MobilePay will send all the necessary info back to the store. Easy, fast and secure.
 
-The express checkout can be done in the following ways:
+Express can be done in the following ways:
 
 * From the cart
 * From the category pages
