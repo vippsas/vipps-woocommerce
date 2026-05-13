@@ -3668,7 +3668,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->log(sprintf(__('Process callback action failed to finalize shipping through http rest endpoint for order %1$s: %2$s', 'woo-vipps'), $order->get_id(), $error_msg), 'error');
             } else if (200 != $response_code) {
                 /* translators: order id */
-                $this->log(sprintf(__('Process callback action failed to finalize shipping through http rest endpoint for order %1$s: unknown error', 'woo-vipps'), $order->get_id()), 'error');
+                $response_msg = ($response['response']['message'] ?? false) ?: 'Missing response message';
+                $this->log(sprintf(__('Process callback action failed to finalize shipping through http rest endpoint for order %1$s: %2$s', 'woo-vipps'), $order->get_id(), $response_msg), 'error');
             }
         }
 
