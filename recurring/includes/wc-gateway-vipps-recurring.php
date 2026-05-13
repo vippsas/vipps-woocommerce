@@ -1161,9 +1161,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return false;
 		}
 
-		$this->capture_payment( $order );
-
-		return true;
+		return $this->capture_payment( $order );
 	}
 
 	/**
@@ -1226,6 +1224,30 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		} catch ( WC_Vipps_Recurring_Config_Exception $e ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Configuration error in capture_payment: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $e->getMessage() ) );
 			$this->admin_error( $e->getMessage() );
+
+			return false;
+		} catch ( WC_Vipps_Recurring_Exception $e ) {
+			// Only treat HTTP 400 as terminal here (e.g. trying to capture a charge older than 180 days).
+			// Other 4xx/unknown errors are re-thrown so they aren't silently swallowed.
+			if ( $e->response_code !== 400 ) {
+				throw $e;
+			}
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Unrecoverable error in capture_payment (HTTP 400): %s', WC_Vipps_Recurring_Helper::get_id( $order ), $e->getMessage() ) );
+
+			// Stop the periodic charge-status check from retrying this capture forever.
+			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
+
+			/* translators: %s: error message from Vipps/MobilePay */
+			$note = sprintf( __( 'Could not capture Vipps/MobilePay charge (HTTP 400): %s', 'woo-vipps' ), $e->getMessage() );
+
+			if ( $order->get_status() !== 'completed' ) {
+				$order->update_status( 'failed', $note );
+			} else {
+				$order->add_order_note( $note );
+			}
+
+			$order->save();
 
 			return false;
 		}
