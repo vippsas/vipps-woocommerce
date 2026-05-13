@@ -606,6 +606,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// We're unable to determine the latest charge
 		if ( ! $charge ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Unable to determine latest charge, stopped checking order", $order_id ) );
+
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
 			$this->unlock_order( $order );
 
