@@ -115,7 +115,7 @@ The [WooCommerce Subscriptions Importer and Exporter plugin](https://github.com/
 
 After installing the plugin you need to first and foremost familiarize yourself with the [Importer Usage Guide](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#importer-usage-guide).
 
-While creating your CSV file, you need to make sure that you are mapping the fields as specified in the [column docs](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#column-mapping). For Vipps MobilePay specifically, you need to set the following fields for subscriptions to work properly:
+While creating your CSV file, make sure that you are mapping the fields as specified in the [column docs](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#column-mapping). For Vipps MobilePay specifically, you need to set the following fields for subscriptions to work properly:
 
 1. The `payment_method` field needs to be set to `vipps_recurring`.
 2. The `_agreement_id` field needs to be set to the agreement ID from Vipps MobilePay.
