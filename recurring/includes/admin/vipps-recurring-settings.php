@@ -40,6 +40,7 @@ return apply_filters(
 			// translators: {brand}: brand title (Vipps or MobilePay)
 			'default'     => __( 'Pay with {brand}.', 'woo-vipps' ),
 		],
+		// todo: remove the checkout settings in a future release.
 		'title_checkout'                   => [
 			'type'        => 'title',
 			'title'       => __( 'Checkout settings', 'woo-vipps' ),

@@ -1959,6 +1959,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$this->form_fields['order_prefix']['default'] = WC_Vipps_Recurring::get_instance()->generate_order_prefix();
 
+		// Hide checkout unless it is already enabled.
+		// todo: remove the checkout settings in a future release.
+		if ( ! $this->checkout_enabled ) {
+			foreach ( array_keys( $this->form_fields ) as $key ) {
+				if ( $key === 'title_checkout' || strpos( $key, 'checkout_' ) === 0 ) {
+					unset( $this->form_fields[ $key ] );
+				}
+			}
+		}
+
 		if ( $this->get_option( 'test_mode' ) === "yes" || WC_VIPPS_RECURRING_TEST_MODE ) {
 			$this->form_fields['title_test_api'] = [
 				'type'  => 'title',
