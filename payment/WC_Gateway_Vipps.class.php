@@ -3466,6 +3466,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Handle the callback from Vipps ePayment
     public function handle_callback($result, $order, $ischeckout=false, $iswebhook=false) {
+    return;
         global $Vipps;
 
         $vippsorderid = $result['orderId'];
@@ -3614,6 +3615,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
      // Called either by periodic job or by action_process_callback with the callback data *or* with payment details fetched with poll.
      // sets order status if neccessary, and will finalize the order for Express via HTTP call if necessary. IOK 2026-05-06
      public function set_order_status_by_payment_details($order, $data) {
+         error_log('LP set_order_status_by_payment_details');
         $data = $this->normalizePaymentDetails($data);
         $details = $data['paymentDetails'];
         $order_id = $order->get_id();
@@ -3642,13 +3644,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->reset_erroneous_payment_method($order);
         }
 
-        $is_express = $order->get_meta('_vipps_express_checkout');
-        $is_checkout = $order->get_meta('_vipps_checkout');
+        $is_express_or_checkout = $order->get_meta('_vipps_express_checkout');
+        error_log('LP is_express_or_checkout: ' . print_r($is_express_or_checkout, true));
 
         // Handle session and shipping through http, because we dont want to mess with session here in wp cron (action scheduler). LP 2026-03-30
         // NB: This is and must be a *synchronous call*. When done, the order will have shipping, addresses etc. IOK 2026-05-06.
-        if ($ready && ($is_express || $is_checkout)) {
-
+        $shipping_set = $order->get_meta('_vipps_shipping_set');
+        error_log('LP shipping_set: ' . print_r($shipping_set, true));
+        $shipping_set = $order->get_meta('_vipps_shipping_set');
+        if ($ready && $is_express_or_checkout && !$shipping_set) {
             $token = $order->get_meta('_vipps_authtoken');
             $args = [
                 'body' => [
@@ -3661,14 +3665,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             ];
             $url = Vipps::get_rest_url('v1', '/order-set-shipping');
             $response = wp_remote_post($url, $args);
-            $response_code = $response['response']['code'] ?? -1;
+            error_log('LP response: ' . print_r($response, true));
             if (is_wp_error($response)) {
                 /* translators: order id, error message */
                 $error_msg = $response->get_error_message();
                 $this->log(sprintf(__('Process callback action failed to finalize shipping through http rest endpoint for order %1$s: %2$s', 'woo-vipps'), $order->get_id(), $error_msg), 'error');
-            } else if (200 != $response_code) {
+            } else if (200 != ($response['response']['code'] ?? -1)) {
                 /* translators: order id */
-                $response_msg = ($response['response']['message'] ?? false) ?: 'Missing response message';
+                $response_msg = print_r($response['body'] ?? ['Missing response body'], true);
                 $this->log(sprintf(__('Process callback action failed to finalize shipping through http rest endpoint for order %1$s: %2$s', 'woo-vipps'), $order->get_id(), $response_msg), 'error');
             }
         }
@@ -3692,6 +3696,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ($cancel_on_fail || !$order_is_retryable) {
                 $status_on_fail = 'cancelled';
             }
+            // LP FIXME: iver mentioned we should not set failed here?. LP 2026-05-13
             if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
                 /* translators: %1 = order status parameter. 'cancelled' is woocommerce order status name */
                 $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
@@ -3713,14 +3718,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order = wc_get_order($order_id);
         if (!is_a($order, 'WC_Order')) {
-            return new WP_Error('order_not_found', __('Order not found', 'woo-vipps'), ['status' => 404, 'order_id' => $order_id]);
+            return new WP_Error('order_not_found', __('Order not found', 'woo-vipps'), ['status' => 404]);
         }
 
-        $is_express_or_checkout = $order->get_meta('_vipps_express_checkout'); // should also bet set for Checkout orders. LP 2026-03-30
+        $is_express_or_checkout = $order->get_meta('_vipps_express_checkout');
+        error_log('LP REST is_express_or_checkout: ' . print_r($is_express_or_checkout, true));
         $shipping_set = $order->get_meta('_vipps_shipping_set');
+        error_log('LP REST shipping_set: ' . print_r($shipping_set, true));
         if (!$is_express_or_checkout || $shipping_set) {
-            /* translators: Express and Checkout are brand names. Don't translate at least Checkout */
-            return new WP_Error('incorrect_order', __('Order already has shipping set/finalized', 'woo-vipps'), ['status' => 409, 'order_id' => $order_id]);
+            return new WP_Error('order_is_finalized', __('Order does not need to set shipping', 'woo-vipps'), ['status' => 409]);
         }
 
         // Ensure we use the same session as for the original order from here on. IOK 2019-10-21
