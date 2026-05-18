@@ -3614,8 +3614,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
      // Called either by periodic job or by action_process_callback with the callback data *or* with payment details fetched with poll.
      // sets order status if neccessary, and will finalize the order for Express via HTTP call if necessary. IOK 2026-05-06
-     public function set_order_status_by_payment_details($order, $data) {
-         error_log('LP set_order_status_by_payment_details');
+     public function set_order_status_by_payment_details($order, $data, $allow_retry = true) {
         $data = $this->normalizePaymentDetails($data);
         $details = $data['paymentDetails'];
         $order_id = $order->get_id();
@@ -3645,12 +3644,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $is_express_or_checkout = $order->get_meta('_vipps_express_checkout');
-        error_log('LP is_express_or_checkout: ' . print_r($is_express_or_checkout, true));
 
         // Handle session and shipping through http, because we dont want to mess with session here in wp cron (action scheduler). LP 2026-03-30
         // NB: This is and must be a *synchronous call*. When done, the order will have shipping, addresses etc. IOK 2026-05-06.
         $shipping_set = $order->get_meta('_vipps_shipping_set');
-        error_log('LP shipping_set: ' . print_r($shipping_set, true));
         if ($ready && $is_express_or_checkout && !$shipping_set) {
             $token = $order->get_meta('_vipps_authtoken');
             $args = [
@@ -3664,7 +3661,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             ];
             $url = Vipps::get_rest_url('v1', '/order-set-shipping');
             $response = wp_remote_post($url, $args);
-            error_log('LP response: ' . print_r($response, true));
             if (is_wp_error($response)) {
                 /* translators: order id, error message */
                 $error_msg = $response->get_error_message();
@@ -3689,7 +3685,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $this->update_vipps_payment_details($order);
         } else {
             // Not ok status; set to failed/cancelled
-            $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
+            $order_is_retryable = $allow_retry && Vipps::order_is_vipps_retryable($order->get_id());
             $status_on_fail = $this->get_option('status_on_fail');
             $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
             if ($cancel_on_fail || !$order_is_retryable) {
@@ -3721,9 +3717,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $is_express_or_checkout = $order->get_meta('_vipps_express_checkout');
-        error_log('LP REST is_express_or_checkout: ' . print_r($is_express_or_checkout, true));
         $shipping_set = $order->get_meta('_vipps_shipping_set');
-        error_log('LP REST shipping_set: ' . print_r($shipping_set, true));
         if (!$is_express_or_checkout || $shipping_set) {
             return new WP_Error('order_is_finalized', __('Order does not need to set shipping', 'woo-vipps'), ['status' => 409]);
         }
