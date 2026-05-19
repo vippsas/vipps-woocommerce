@@ -3614,7 +3614,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
      // Called either by periodic job or by action_process_callback with the callback data *or* with payment details fetched with poll.
      // sets order status if neccessary, and will finalize the order for Express via HTTP call if necessary. IOK 2026-05-06
-     public function set_order_status_by_payment_details($order, $data, $allow_retry = true) {
+     public function set_order_status_by_payment_details($order, $data, $allow_retry=true) {
         $data = $this->normalizePaymentDetails($data);
         $details = $data['paymentDetails'];
         $order_id = $order->get_id();

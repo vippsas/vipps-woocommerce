@@ -3983,7 +3983,7 @@ else:
                 return;
             }
 
-            $gw->set_order_status_by_payment_details($order, $order_data, false);
+            $gw->set_order_status_by_payment_details($order, $order_data, $allow_retry);
             $order = wc_get_order($order->get_id()); // refresh order if changed. LP 2026-05-13
             $order_status = $order->get_status();
 
