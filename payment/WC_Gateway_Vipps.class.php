@@ -3691,7 +3691,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ($cancel_on_fail || !$order_is_retryable) {
                 $status_on_fail = 'cancelled';
             }
-            // LP FIXME: iver mentioned we should not set failed here?. LP 2026-05-13
             if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
                 /* translators: %1 = order status parameter. 'cancelled' is woocommerce order status name */
                 $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');

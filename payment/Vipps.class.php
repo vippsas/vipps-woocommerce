@@ -3971,12 +3971,19 @@ else:
 
         $order_status = null;
         try {
-            // Poll status, then potentially correct woo order. Sets shipping data through rest endpoint for express/checkout. LP 2026-05-13
-            $order_data = $gw->get_payment_details($order);
-            $gw->set_order_status_by_payment_details($order, $order_data, false);
-
             $order->add_order_note(sprintf(__("Callback from %1\$s delayed or never happened; order status checked by periodic job", 'woo-vipps'), $this->get_payment_method_name()));
 
+            // Poll status and correct woo status. LP 2026-05-19
+            $order_data = $gw->get_payment_details($order);
+
+            // If we already know the order failed, we don't need to process the order further below. LP 2026-05-19
+            if ('CANCEL' === $order_data['STATE']) {
+                /* translators: company name */
+                $order->update_status('cancelled', sprintf(__('Payment cancelled at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
+                return;
+            }
+
+            $gw->set_order_status_by_payment_details($order, $order_data, false);
             $order = wc_get_order($order->get_id()); // refresh order if changed. LP 2026-05-13
             $order_status = $order->get_status();
 
