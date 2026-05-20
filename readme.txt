@@ -117,6 +117,8 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 5.4.1
+Fix new orders showing as captured when they were not
 Version 5.4.0
 Improved handling of refunds. Manual refunds are now only possible when payment has been captured.
 Improved handling of failed but retryable orders
