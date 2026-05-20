@@ -2724,7 +2724,7 @@ else:
 
         $captured = intval($order->get_meta('_vipps_captured'));
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
-        if ($captured && !$capremain || $capremain < 2) { 
+        if ($captured && (!$capremain || $capremain < 2)) { 
             print "<div><strong>" . sprintf(__("The entire amount has been captured at %1\$s", 'woo-vipps'), $this->get_payment_method_name()) . "</strong></div>";
             return;
         }
