@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-05-20 version 5.4.1 =
+Fix new orders showing as captured when they were not
+
 = 2026-05-11 Version 5.4.0 = 
 Improved handling of refunds. Manual refunds are now only possible when payment has been captured.
 Improved handling of failed but retryable orders
