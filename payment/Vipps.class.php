@@ -343,6 +343,7 @@ class Vipps {
             if (!is_admin() || !$screen || $screen->id !== 'woocommerce_page_wc-settings')  return;
             if ($_GET['tab'] != 'checkout' || $_GET['section'] != 'vipps') return;
             wp_safe_redirect(admin_url('admin.php?page=vipps_settings_menu'));
+            exit();
         });
 
 
