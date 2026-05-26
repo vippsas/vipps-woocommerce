@@ -338,6 +338,14 @@ class Vipps {
                         return admin_url("/admin.php?page=vipps_settings_menu");
                         }, 10, 2);
         });
+        // IOK 2026-05-26 redirect the old Woo-generated settings-screen to our own settings page.
+        add_action('current_screen', function ($screen) {
+            if (!is_admin() || !$screen || $screen->id !== 'woocommerce_page_wc-settings')  return;
+            if ($_GET['tab'] != 'checkout' || $_GET['section'] != 'vipps') return;
+            wp_safe_redirect(admin_url('admin.php?page=vipps_settings_menu'));
+        });
+
+
 
         // Custom product properties
         // IOK 2024-01-17 temporary: The special product properties are currenlty only active for Vipps
