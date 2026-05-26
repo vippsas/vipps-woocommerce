@@ -4273,6 +4273,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Use Billing Phone if it is required, otherwise ask for a phone IOK 2018-04-24
         // For v2 of the api, just let Vipps ask for then umber
         // IOK 2019-09-12 removed dead code only used for v1 of api
+        // This just prints a description of the payment method.
     print $this->get_option('description');
         return;
     }

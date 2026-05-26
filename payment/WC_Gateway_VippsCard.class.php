@@ -63,21 +63,58 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
 
         $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
 
-  //        $this->init_form_fields();
- //       $this->init_settings();
+        $this->init_form_fields();
+        $this->init_settings();
 
         $this->api = new VippsApi($this);
         $this->supports = array('products','refunds');
 
-//        add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options') );
+        add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options') );
 
+    }
+
+    public function is_available() {
+        return true; // IOK FIXME CHECK IF NORMAL VIPPS IS OK
+    }
+    public function payment_method_supports_currency($payment_method, $currency) {
+      error_log("Payment method: $payment_method currency $currency");
+      return true; // IOK FIXME VERIFY
     }
 
     public function get_option($key, $empty_value = null ) {
-         $parentvalue = parent::get_option($key, $empty_value);
-        error_log("My parent value for $key is $parentvalue ");
-         return $parentvalue;
+        if ($key == 'enabled') return parent::get_option($key, $empty_value);
+        if ($key == 'description') {
+            return sprintf(__("%s Credit Card Payment", 'woo-vipps'),  $this->get_payment_method_name() );
+        }
+        // Payment method name
+        $value = WC_Gateway_Vipps::instance()->get_option($key, $empty_value);
+        return $value;
     }
+
+    // Ensure chosen name gets used in the checkout page IOK 2018-09-12
+    public function get_title() {
+     $title = sprintf(__("%s Credit Card Payment", 'woo-vipps'),  $this->get_payment_method_name());
+     return apply_filters('woo_vipps_card_payment_method_title', $title);
+    }
+
+    public function init_form_fields() {
+        $this->form_fields = array( 
+                'enabled' => array(
+                    'title' => __( 'Enable/Disable', 'woocommerce' ),
+                    'label'       => sprintf(__('Enable %1$s Credit Card Payments', 'woo-vipps'), Vipps::CompanyName()),
+                    'type'        => 'checkbox',
+                    'description' => '',
+                    'default'     => 'no',
+                    )
+                );
+    }
+
+    public function process_admin_options () {
+        // Handle options updates in the default class (not in _Vipps)
+        $saved = WC_Payment_Gateway::process_admin_options();
+        return;
+    }
+
 
 
 }
