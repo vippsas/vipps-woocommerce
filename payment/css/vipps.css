@@ -190,15 +190,15 @@ a.button.vipps-express-checkout.disabled img {
 
 li.wc_payment_method.payment_method_vipps img {
     max-width: 145px;
-    vertical-align: middle;
-    margin: 0;
-    float: right;
 }
-li.wc_payment_method.payment_method_vipps_card img {
+
+.woocommerce-checkout #payment ul.payment_methods li.wc_payment_method.payment_method_vipps img {
+   margin-top:.5rem;
+   float: right;
+}  
+.woocommerce-checkout #payment ul.payment_methods li.wc_payment_method.payment_method_vipps_card img {
     height: 3.5rem;
     float:right;
-    vertical-align: middle;
-    margin: 0;
 }
 
 a.button.vipps-buy-now:focus {
