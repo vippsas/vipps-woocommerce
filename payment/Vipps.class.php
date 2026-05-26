@@ -3166,7 +3166,7 @@ else:
             $this->log(__('Could not find Woo order with id:', 'woo-vipps') . " " . $orderid, 'error');
             exit();
         }
-        if (!self::is_vipps_order($order) {
+        if (!self::is_vipps_order($order)) {
             status_header(400, "Invalid order");
             print "Invalid order";
             $this->log(__('Invalid order for shipping callback:', 'woo-vipps') . " " . $orderid, 'error');
