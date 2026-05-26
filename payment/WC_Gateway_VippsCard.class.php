@@ -1,0 +1,77 @@
+<?php
+/*
+   Delegate class for talking to Vipps MobilePay, encapsulating all the low-level behaviour and mapping error codes to exceptions
+
+This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
+Copyright (c) 2019 WP-Hosting AS
+
+MIT License
+
+Copyright (c) 2019 WP-Hosting AS
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+ */
+if ( ! defined('ABSPATH') ) {
+    exit; // Exit if accessed directly
+}
+require_once(dirname(__FILE__) . "/VippsApi.class.php");
+require_once(dirname(__FILE__) . "/WC_Payment_Gateway_Vipps.class.php");
+
+class WC_Gateway_VippsCard extends WC_Payment_Gateway_Vipps {
+    public $form_fields = null;
+    public $dev_form_fields = null;
+    public $id = 'vipps_card';
+    public $icon = ''; 
+    public $has_fields = true;
+    public $method_title = 'Vipps MobilePay Credit Card';
+    public $title = 'Vipps MobilePay Credit Card';
+    public $method_description = "";
+
+    // This returns the singleton instance of this class
+    public static function instance() {
+            if (null === self::$instance) {
+                self::$instance = new self();
+            }
+            return self::$instance;
+    } 
+
+    public function __construct() {
+        $this->testapiurl = 'https://apitest.vipps.no';
+        $this->apiurl = 'https://api.vipps.no';
+        
+        $this->method_description = __('Offer Credit Card Payments through Vipps MobilePay as a payment method', 'woo-vipps');
+        $this->method_title = __('Vipps MobilePay Credit Card','woo-vipps');
+        $this->title = __('Vipps MobilePay Credit Card','woo-vipps');
+
+        $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
+
+  //        $this->init_form_fields();
+ //       $this->init_settings();
+
+        $this->api = new VippsApi($this);
+        $this->supports = array('products','refunds');
+
+//        add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options') );
+
+    }
+
+
+}
+
