@@ -338,6 +338,14 @@ class Vipps {
                         return admin_url("/admin.php?page=vipps_settings_menu");
                         }, 10, 2);
         });
+        // IOK 2026-05-26 redirect the old Woo-generated settings-screen to our own settings page.
+        add_action('current_screen', function ($screen) {
+            if (!is_admin() || !$screen || $screen->id !== 'woocommerce_page_wc-settings')  return;
+            if ($_GET['tab'] != 'checkout' || $_GET['section'] != 'vipps') return;
+            wp_safe_redirect(admin_url('admin.php?page=vipps_settings_menu'));
+        });
+
+
 
         // Custom product properties
         // IOK 2024-01-17 temporary: The special product properties are currenlty only active for Vipps
@@ -2724,7 +2732,7 @@ else:
 
         $captured = intval($order->get_meta('_vipps_captured'));
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
-        if ($captured && !$capremain || $capremain < 2) { 
+        if ($captured && (!$capremain || $capremain < 2)) { 
             print "<div><strong>" . sprintf(__("The entire amount has been captured at %1\$s", 'woo-vipps'), $this->get_payment_method_name()) . "</strong></div>";
             return;
         }

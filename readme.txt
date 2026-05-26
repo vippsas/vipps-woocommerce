@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.5.0
-Stable tag: 5.5.0
+Version: 5.4.1
+Stable tag: 5.4.1
 Requires at least: 6.3
 Tested up to: 6.9.4
 Requires PHP: 8.0
@@ -117,6 +117,8 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 5.4.1
+Fix new orders showing as captured when they were not
 Version 5.4.0
 Improved handling of refunds. Manual refunds are now only possible when payment has been captured.
 Improved handling of failed but retryable orders
@@ -305,6 +307,8 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2026-05-20 version 5.4.1 =
+Fix new orders showing as captured when they were not
 
 = 2026-05-11 Version 5.4.0 = 
 Improved handling of refunds. Manual refunds are now only possible when payment has been captured.
