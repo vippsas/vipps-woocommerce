@@ -3888,6 +3888,7 @@ else:
 
     public function woocommerce_payment_gateways($methods) {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        require_once(dirname(__FILE__) . "/WC_Gateway_VippsCard.class.php");
         // Protect the singleton: Use the object instead of the class name IOK 2025-02-04
         $gateway = $this->gateway();
         if ($gateway) {
@@ -3895,6 +3896,9 @@ else:
         } else {
             $methods[] =  'WC_Gateway_Vipps';
         }
+
+        $methods[] = 'WC_Gateway_VippsCard';
+
         return $methods;
     }
 

@@ -32,9 +32,10 @@ if ( ! defined('ABSPATH') ) {
     exit; // Exit if accessed directly
 }
 require_once(dirname(__FILE__) . "/VippsApi.class.php");
-require_once(dirname(__FILE__) . "/WC_Payment_Gateway_Vipps.class.php");
+require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
 
-class WC_Gateway_VippsCard extends WC_Payment_Gateway_Vipps {
+
+class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
     public $form_fields = null;
     public $dev_form_fields = null;
     public $id = 'vipps_card';
