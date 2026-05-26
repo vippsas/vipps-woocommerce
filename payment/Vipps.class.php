@@ -75,6 +75,12 @@ class Vipps {
         return static::$instance;
     }
 
+    // recognize our own gateways or gateway ids IOK 2026-05-26
+    public static function is_vipps_order($order_or_string) {
+        $id = is_string($order_or_string) ? $order_or_string : $order_or_string->get_payment_method();
+        return in_array($id , ['vipps', 'vipps_card']);
+    }
+
     // To simplify development, we load translations from the plugins' own .mos on development branches. IOK 2023-11-28
     public static function load_plugin_textdomain( $domain, $deprecated = false, $plugin_rel_path = false ) {
         $development = apply_filters('woo_vipps_use_plugin_translations', false);
@@ -304,7 +310,7 @@ class Vipps {
         add_action('woocommerce_after_order_refund_item_name', function ($refund) {
             $orderid = $refund->get_parent_id();
             $order = wc_get_order($orderid);
-            if (is_a($order, 'WC_Order')  && $order->get_payment_method() == 'vipps') {
+            if (is_a($order, 'WC_Order')  && self::is_vipps_order($order)) {
                 $id = $refund->get_id();
                 $gw = $refund->get_refunded_payment();
                 if ($gw) {
@@ -1469,7 +1475,7 @@ jQuery('a.webhook-adder').click(function (e) {
                 $order = wc_get_order($orderid);
             }
         }
-        if (is_a($order, 'WC_Order')  && $order->get_payment_method() == 'vipps') {
+        if (is_a($order, 'WC_Order')  && self::is_vipps_order($order)) {
           $vippsorder = true;
         }
 
@@ -1900,7 +1906,7 @@ else:
         $order = ( $post_or_order_object instanceof WP_Post ) ? wc_get_order( $post_or_order_object->ID ) : $post_or_order_object;
         $order = wc_get_order($post_or_order_object);
         $pm = $order->get_payment_method();
-        if ($pm != 'vipps') return;
+        if (!self::is_vipps_order($pm)) return;
         $orderid=$order->get_id();
 
         $init =  intval($order->get_meta('_vipps_init_timestamp'));
@@ -1998,7 +2004,7 @@ else:
             exit();
         }
         $pm = $order->get_payment_method();
-        if ($pm != 'vipps') {
+        if (!self::is_vipps_order($pm)) {
             print "<p>" . sprintf(__("The order is not a %1\$s order", 'woo-vipps'), $this->get_payment_method_name()) . "</p>";
             exit();
         }
@@ -2272,7 +2278,7 @@ else:
                         'limit' => 1,
                         'status' => 'wc-pending',
                         'type' => 'shop_order',
-                        'payment_method' => 'vipps',
+                        'payment_method' => 'vipps',  // IOK FIXME ADD vipps_card
                         'date_created' => '>' . $sevendaysago,
                         'return' => 'objects',
                         'meta_query' =>  [[ 'key'   => '_vipps_orderid', 'value' => $vippsorderid ]]
@@ -2399,7 +2405,7 @@ else:
         // If local pickup has been added to express/checkout by filters, add this to emails/confirmation pages. IOK 2025-08-15
         add_filter('woocommerce_order_shipping_to_display', function($shipping, $order, $tax_display) {
                 if (!is_a($order, 'WC_Order')) return $shipping;
-                if ($order->get_payment_method() != 'vipps') return $shipping;
+                if (! self::is_vipps_order($order)) return $shipping;
                 $shipping_method = current( $order->get_shipping_methods() );
 
                 if (empty($shipping_method))  return $shipping;
@@ -2510,10 +2516,10 @@ else:
             if (!$cancel) return $cancel;
 
             // Only check Vipps orders
-            if ($order->get_payment_method() != 'vipps') return $cancel;
+            if (! self::is_vipps_order($order)) return $cancel;
 
-            // For Vipps, all unpaid orders must be pending. IOK FIXME ADD FAILED
-            if ($order->get_status() != 'pending') return $cancel;
+            // For Vipps, all unpaid orders must be pending. 
+            if ($order->get_status() != 'pending' && $order->get_status() != 'failed') return $cancel;
 
             // Handle this separately, in the Checkout class. IOK 2025-10-08
             $checkout_session = $order->get_meta('_vipps_checkout_session');
@@ -2651,7 +2657,7 @@ else:
            $order = wc_get_order(intval($_REQUEST['orderid']));
            if (!is_a($order, 'WC_Order')) return;
            $pm = $order->get_payment_method();
-           if ($pm != 'vipps') return;
+           if (!self::is_vipps_order($pm)) return;
  
            $action = isset($_REQUEST['do']) ? sanitize_title($_REQUEST['do']) : 'none';
 
@@ -2722,7 +2728,7 @@ else:
 
     public function order_item_add_capture_button ($order) {
         $pm = $order->get_payment_method();
-        if ($pm != 'vipps') return;
+        if (!self::is_vipps_order($pm)) return;
         $status = $order->get_status();
 
         $show_capture_button = ($status == 'on-hold' || $status == 'processing');
@@ -3160,7 +3166,7 @@ else:
             $this->log(__('Could not find Woo order with id:', 'woo-vipps') . " " . $orderid, 'error');
             exit();
         }
-        if ($order->get_payment_method() != 'vipps') {
+        if (!self::is_vipps_order($order) {
             status_header(400, "Invalid order");
             print "Invalid order";
             $this->log(__('Invalid order for shipping callback:', 'woo-vipps') . " " . $orderid, 'error');
@@ -3931,7 +3937,7 @@ else:
     // the order id is unique too.. IOK 2018-11-21
     public function  woocommerce_my_account_my_orders_actions($actions, $order ) {
         $pm = $order->get_payment_method();
-        if ($pm != 'vipps') return $actions;
+        if (!self::is_vipps_order($pm)) return $actions;
 
         if (!static::order_is_vipps_retryable($order->get_id())) {
             unset($actions['pay']);
@@ -3951,6 +3957,7 @@ else:
     public function cron_check_for_missing_callbacks() {
         $eightminutesago = time() - (60*8);
         $sevendaysago = time() - (60*60*24*7);
+        // IOK FIXME ADD vipps_card
         $pending = wc_get_orders(
           array('limit'=>-1, 'status'=>'pending', 'payment_method' => 'vipps', 'date_created' => '>' . $sevendaysago ));
         if (empty($pending)) return;
@@ -4180,7 +4187,7 @@ else:
     // It is done on the thank-you page of the order, and only for express checkout.
     function maybe_log_in_user ($order) {
         if (is_user_logged_in()) return;
-        if (!$order || $order->get_payment_method()!= 'vipps' ) return;
+        if (!$order || ! self::is_vipps_order($order)) return;
 
         // We *do* want to log in express checkout customers, but not those that 
         // use the Vipps Checkout solution - those can change their emails in the
@@ -4217,7 +4224,7 @@ else:
     // Get the customer that corresponds to the current order, maybe creating the customer if it does not exist yet and
     // the settings allow it.
     function express_checkout_get_vipps_customer($order) {
-        if (!$order || $order->get_payment_method() != 'vipps' ) return null;
+        if (!$order || ! self::is_vipps_order($order))  return null;
         // specific code for this by netthandelsgruppen if the below function exists
         if (function_exists('create_assign_user_on_vipps_callback')) return null;
 
