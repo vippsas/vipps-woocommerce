@@ -73,6 +73,12 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
 
     }
 
+    public function get_option($key, $empty_value = null ) {
+         $parentvalue = parent::get_option($key, $empty_value);
+        error_log("My parent value for $key is $parentvalue ");
+         return $parentvalue;
+    }
+
 
 }
 

@@ -326,6 +326,7 @@ class Vipps {
         add_action('admin_enqueue_scripts', array($this,'admin_enqueue_scripts'));
 
         // Redirect the default WooCommerce settings page to our own
+        // This does not work on newer versions of Woo since they don't use this filter on the payments screen any more. IOK 2026-05-26
         add_action( 'woocommerce_settings_start', function () {
                 add_filter('admin_url', function ($url, $path) {
                         if (strpos($path, "tab=checkout&section=vipps") === false) return $url;
@@ -337,6 +338,12 @@ class Vipps {
                         if (!$ok) return $url;
                         return admin_url("/admin.php?page=vipps_settings_menu");
                         }, 10, 2);
+        });
+        // IOK 2026-05-26 redirect the old Woo-generated settings-screen to our own settings page.
+        add_action('current_screen', function ($screen) {
+            if (!is_admin() || !$screen || $screen->id !== 'woocommerce_page_wc-settings')  return;
+            if ($_GET['tab'] != 'checkout' || $_GET['section'] != 'vipps') return;
+            wp_safe_redirect(admin_url('admin.php?page=vipps_settings_menu'));
         });
 
         // Custom product properties
