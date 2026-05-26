@@ -82,11 +82,10 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
     }
 
     public function get_option($key, $empty_value = null ) {
-        if ($key == 'enabled') return parent::get_option($key, $empty_value);
-        if ($key == 'description') {
-            return sprintf(__("%s Credit Card Payment", 'woo-vipps'),  $this->get_payment_method_name() );
-        }
-        // Payment method name
+        // Our own values
+        if (isset($this->form_fields[$key])) return parent::get_option($key, $empty_value);
+
+        // Or passthrough to our sister gateway
         $value = WC_Gateway_Vipps::instance()->get_option($key, $empty_value);
         return $value;
     }
@@ -104,8 +103,15 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
                     'label'       => sprintf(__('Enable %1$s Credit Card Payments', 'woo-vipps'), Vipps::CompanyName()),
                     'type'        => 'checkbox',
                     'description' => '',
-                    'default'     => 'no',
-                    )
+                    'default'     => 'no'
+                    ),
+            'description' => array(
+                'title' => __('Description', 'woocommerce'),
+                'type' => 'textarea',
+                'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
+                'default' => __("Pay with your credit card if you don't have access to the app!", 'woo-vipps'),
+            ),
+
                 );
     }
 
