@@ -81,6 +81,12 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
       return true; // IOK FIXME VERIFY
     }
 
+    public function get_icon () {
+        $src =  plugins_url('img/cclogos.svg',__FILE__);
+        return '<img src="' . esc_attr($src) . '" alt="' .  $this->get_title() . '">';
+    }
+
+
     public function get_option($key, $empty_value = null ) {
         // Our own values
         if (isset($this->form_fields[$key])) return parent::get_option($key, $empty_value);
