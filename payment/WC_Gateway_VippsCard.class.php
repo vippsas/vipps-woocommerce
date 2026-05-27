@@ -45,6 +45,7 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
     public $title = 'Vipps MobilePay Credit Card';
     public $method_description = "";
 
+    private static $instance = null;
     // This returns the singleton instance of this class
     public static function instance() {
             if (null === self::$instance) {

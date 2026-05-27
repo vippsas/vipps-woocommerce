@@ -1475,7 +1475,11 @@ jQuery('a.webhook-adder').click(function (e) {
     // Runs late in both wp_enqueue_scripts and admin_enqueue_scripts to make it more compatible with translation plugins IOK 2026-02-02
     public function script_add_vippslocale () {
         // This is actually for the payment block, where localize script has started to not-work in certain contexts. IOK 2022-12-13
-        $strings = array('Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()));
+        $strings = array(
+                'Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),
+                'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()),
+                'Pay with Credit Card' => __('Pay with Credit Card', 'woo-vipps')
+                );
         wp_localize_script('vipps-gw', 'VippsLocale', $strings);
     }
 
@@ -2572,8 +2576,15 @@ else:
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
         if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+            // Ensure gateways are loaded at this point  IOK 2026-05-27
+            require_once(dirname(__FILE__) . '/WC_Gateway_VippsCard.class.php'); 
+            require_once(dirname(__FILE__) . '/WC_Gateway_Vipps.class.php');
+
+            // Then the payment blocks
             require_once(dirname(__FILE__) . "/Blocks/Payment/Vipps.class.php");
+            require_once(dirname(__FILE__) . "/Blocks/Payment/VippsCard.class.php");
             Automattic\WooCommerce\Blocks\Payments\Integrations\Vipps::register();
+            Automattic\WooCommerce\Blocks\Payments\Integrations\VippsCard::register();
         }
 
         // Used for e.g. labels of product/shipping metadata. IOK 2025-05-07
