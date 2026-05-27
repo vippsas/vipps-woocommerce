@@ -2253,7 +2253,6 @@ else:
                         'limit' => 1,
                         'status' => 'wc-pending',
                         'type' => 'shop_order',
-                        'payment_method' => 'vipps',  // IOK FIXME ADD vipps_card
                         'date_created' => '>' . $sevendaysago,
                         'return' => 'objects',
                         'meta_query' =>  [[ 'key'   => '_vipps_orderid', 'value' => $vippsorderid ]]
@@ -3932,9 +3931,12 @@ else:
     public function cron_check_for_missing_callbacks() {
         $eightminutesago = time() - (60*8);
         $sevendaysago = time() - (60*60*24*7);
-        // IOK FIXME ADD vipps_card
-        $pending = wc_get_orders(
-          array('limit'=>-1, 'status'=>'pending', 'payment_method' => 'vipps', 'date_created' => '>' . $sevendaysago ));
+
+        // This is compatible with both HPOS and old style order management. IOK 2026-05-27
+        $pending_app = wc_get_orders( array('limit'=>-1, 'status'=>'pending', 'payment_method' => 'vipps', 'date_created' => '>' . $sevendaysago ));
+        $pending_cards = wc_get_orders( array('limit'=>-1, 'status'=>'pending', 'payment_method' => 'vipps_card', 'date_created' => '>' . $sevendaysago ));
+        $pending = array_merge($pending_app, $pending_cards);
+
         if (empty($pending)) return;
         foreach ($pending as $o) {
             $then = $o->get_meta('_vipps_init_timestamp');
