@@ -306,7 +306,7 @@ class Vipps {
         // IOK 2026-05-26 redirect the old Woo-generated settings-screen to our own settings page.
         add_action('current_screen', function ($screen) {
             if (!is_admin() || !$screen || $screen->id !== 'woocommerce_page_wc-settings')  return;
-            if ($_GET['tab'] != 'checkout' || $_GET['section'] != 'vipps') return;
+            if (($_GET['tab']  ?? "")!= 'checkout' || ($_GET['section'] ?? "") != 'vipps') return;
             wp_safe_redirect(admin_url('admin.php?page=vipps_settings_menu'));
             exit();
         });
