@@ -75,7 +75,7 @@ class VippsAdminSettings
         // Decode the settings from the values sents, then save them to "woocommerce_vipps_settings"
         $new_settings = $_POST['values'];
 
-        // IOK FIXME This will ensure sanitization etc works as it is supposed to using the 
+        // IOK TODO This will ensure sanitization etc works as it is supposed to using the 
         // admin settings api of WooCommerce. We will however want to run this code independently, so we'll handle this 
         // by ourselves at a later point, ending it like so:
         // update_option('woocommerce_vipps_settings', $new_settings); // After sanitation etc

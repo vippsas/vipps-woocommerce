@@ -2335,7 +2335,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // The issue was using Klarna Payments and pressing 'back' in the browser, then completing the payment in vipps checkout
         // the order still had the payment method klarna_payments, since we previously only checked 'kco' = klarna/kustom checkout. LP 2026-01-05
         if (! Vipps::is_vipps_order($order) && $order->get_meta("_vipps_orderid")) {
-            // IOK CHECK FOR CARD META HERE FIXME!
             $order->set_payment_method('vipps');
             $express = $order->get_meta('_vipps_express_checkout');
             $checkout = $order->get_meta('_vipps_checkout');
