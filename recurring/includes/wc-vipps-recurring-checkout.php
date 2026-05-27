@@ -869,9 +869,9 @@ class WC_Vipps_Recurring_Checkout {
 
 				return $response['sessionState'] ?? "PaymentInitiated";
 			} catch ( WC_Vipps_Recurring_Exception $e ) {
-				if ( $e->responsecode == 400 ) {
+				if ( $e->response_code == 400 ) {
 					return 'PaymentInitiated';
-				} else if ( $e->responsecode == 404 ) {
+				} else if ( $e->response_code == 404 ) {
 					return 'SessionExpired';
 				} else {
 					WC_Vipps_Recurring_Logger::log( sprintf( "Error polling status - error message %s", $e->getMessage() ) );
