@@ -13,18 +13,17 @@ final class VippsCard extends AbstractPaymentMethodType {
         private $localized=0;
 	protected $name = 'vipps_card';
         protected $payment_method_name = "Vipps Credit Card Payment";
+        protected $description = "";
 
 	public function initialize() {
-
-error_log("initializing");
-
+                $gw = \WC_Gateway_VippsCard::instance();
 		$this->settings = get_option( 'woocommerce_vipps_card_settings', [] );
-                $this->payment_method_name =  \WC_Gateway_VippsCard::instance()->get_payment_method_name();
+                $this->payment_method_name =  $gw->get_title();
+                $this->description =  $gw->get_option('description');
 	}
 
         // Register this payment method IOK 2020-08-10
         public static function register() {
-error_log("registering");
             add_action( 'woocommerce_blocks_payment_method_type_registration', 
                         function ($registry) {
                             $registry->register(new static());
@@ -55,12 +54,12 @@ error_log("registering");
 
 	public function get_payment_method_data() {
                 $logo =  $src =  plugins_url('../../img/cclogos.svg',__FILE__);
+
 		return [
 			'title'                    => $this->payment_method_name,
-			'description'              => $this->get_setting( 'description' ),
-                        'iconsrc'                  => apply_filters('woo_vipps_block_logo_url', $logo)
+			'description'              => $this->description,
+                        'iconsrc'                  => apply_filters('woo_vipps_card_block_logo_url', $logo)
 		];
 	}
 }
 
-error_log("Loading the vipps card thing");

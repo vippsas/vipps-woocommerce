@@ -125,7 +125,7 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
                 'title' => __('Description', 'woocommerce'),
                 'type' => 'textarea',
                 'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
-                'default' => __("Pay with your credit card if you don't have access to the app!", 'woo-vipps'),
+                'default' => __("Pay with credit card", 'woo-vipps'),
             ),
 
                 );
