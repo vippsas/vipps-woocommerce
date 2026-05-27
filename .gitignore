@@ -1,6 +1,7 @@
 .*~
 \#.*
 *~
+*.swp
 ignored.txt
 languages/*.json
 
