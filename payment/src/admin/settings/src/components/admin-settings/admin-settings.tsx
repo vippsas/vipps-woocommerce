@@ -1,6 +1,7 @@
 import { gettext, getMetadata } from '../../lib/wp-data';
 import { Tabs } from '../tabs';
 import { AdminSettingsMainOptionsTab } from './main-options-tab';
+import { AdminSettingsCCOptionsTab } from './cc-options-tab.tsx';
 import { AdminSettingsExpressOptionsTab } from './express-options-tab';
 import { AdminSettingsCheckoutOptionsTab } from './checkout-options-tab';
 import { AdminSettingsAdvancedOptionsTab } from './advanced-options-tab';
@@ -34,6 +35,7 @@ export function AdminSettings(): JSX.Element {
   const TAB_IDS = [
     gettext('main_options.title'),
     gettext('express_options.title'),
+    gettext('cc_options.title'),
   ];
 
   // Only show checkout options if known to be active (option woo_vipps_checkout_activated is true, or the vipps_checkout_enabled option is yes IOK 2026-04-30
@@ -159,14 +161,17 @@ export function AdminSettings(): JSX.Element {
             {/* Renders the express options form fields */}
             {isVisible(TAB_IDS[1]) && <AdminSettingsExpressOptionsTab />}
 
+            {/* Renders the credit card options form fields */}
+            {isVisible(TAB_IDS[2]) && <AdminSettingsCCOptionsTab />}
+
             {/* Renders the checkout options form fields */}
-            {checkoutActive && isVisible(TAB_IDS[2]) && <AdminSettingsCheckoutOptionsTab />}
+            {checkoutActive && isVisible(TAB_IDS[3]) && <AdminSettingsCheckoutOptionsTab />}
 
             {/* Renders the advanced options form fields */}
-            {isVisible(TAB_IDS[3]) && <AdminSettingsAdvancedOptionsTab />}
+            {isVisible(TAB_IDS[4]) && <AdminSettingsAdvancedOptionsTab />}
 
             {/* Renders the developer options form fields */}
-            {canShowDeveloperOptions && isVisible(TAB_IDS[4]) && <AdminSettingsDeveloperOptionsTab />}
+            {canShowDeveloperOptions && isVisible(TAB_IDS[5]) && <AdminSettingsDeveloperOptionsTab />}
             
             <div className="vipps-mobilepay-react-save-section">
               <WPButton variant="primary" isLoading={isLoading}>
