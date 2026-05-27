@@ -1,0 +1,3 @@
+1. Fix the is_available method: Cannot be used in test, msn, keys etc must be ok
+2. Gutenberg block method for vipps_card
+3. Fold the settings into the main settings page
