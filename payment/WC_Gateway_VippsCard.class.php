@@ -41,8 +41,8 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
     public $id = 'vipps_card';
     public $icon = ''; 
     public $has_fields = true;
-    public $method_title = 'Vipps MobilePay Card Payments';
-    public $title = 'Vipps MobilePay Card Payments';
+    public $method_title = '';
+    public $title = '';
     public $method_description = "";
 
     private static $instance = null;
@@ -58,9 +58,9 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
         $this->testapiurl = 'https://apitest.vipps.no';
         $this->apiurl = 'https://api.vipps.no';
         
-        $this->method_description = __('Offer card payments through Vipps MobilePay as a payment method', 'woo-vipps');
-        $this->method_title = __('Vipps MobilePay card payments','woo-vipps');
-        $this->title = __('Vipps MobilePay card payments','woo-vipps');
+        $this->method_description = sprintf(__('Offer card payments through %1$s as a payment method', 'woo-vipps'), Vipps::CompanyName());
+        $this->method_title = sprintf(__('%1$s card payments','woo-vipps'), Vipps::CompanyName());
+        $this->title = sprintf(__('%1$s card payments','woo-vipps'), Vipps::CompanyName());
 
         $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
 
