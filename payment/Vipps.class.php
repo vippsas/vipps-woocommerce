@@ -1488,7 +1488,7 @@ jQuery('a.webhook-adder').click(function (e) {
         $strings = array(
                 'Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),
                 'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()),
-                'pay_with_card' => __('Pay with credit or debit card', 'woo-vipps')
+                'pay_with_card' => sprintf(__('Pay with card through %1$s', 'woo-vipps'), $this->get_payment_method_name()),
                 );
         wp_localize_script('vipps-gw', 'VippsLocale', $strings);
     }
