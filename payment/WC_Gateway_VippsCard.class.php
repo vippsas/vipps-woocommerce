@@ -125,8 +125,8 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
                     'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
                     'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
-                    /* translators: payment method name */
-                    'default' => sprintf(__('Pay with credit or debit card through %1$s', 'woo-vipps'), $this->get_payment_method_name()),
+                    /* translators: company name */
+                    'default' => sprintf(__('Pay with credit or debit card through %1$s', 'woo-vipps'), Vipps::CompanyName()),
                     ),
 
                 );
