@@ -202,7 +202,9 @@ class VippsAdminSettings
                 'kustom_sale_2' => __('Vipps MobilePay has entered into an agreement to sell the Checkout solution to <a href="https://Kustom.co" target="_blank">Kustom</a>', 'woo-vipps'),
                 'kustom_sale_3' => __('As part of this transition, <b>Vipps MobilePay Checkout</b> will become <b>Kustom Checkout</b>. This means the Checkout product you ordered will be delivered and developed by Kustom going forward.', 'woo-vipps'),
                 'kustom_sale_4' => __('If your account is newer than March 27. 2026, it will <b>not</b> support Vipps MobilePay Checkout in this plugin.', 'woo-vipps'),
-                'kustom_sale_5' => __('If you have questions, you can check our <a href="https://vippsmobilepay.com/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps')
+                'kustom_sale_5' => __('If you have questions, you can check our <a href="https://vippsmobilepay.com/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps'),
+
+                'cc_test_warning' => sprintf(__('Warning: card payments may not yet be available in the test environment, please check the %1$s <a href="https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/">knowledge base</a> for updated status about the test environment.'), Vipps::CompanyName()),
                 );
 
         $wizardTranslations = [

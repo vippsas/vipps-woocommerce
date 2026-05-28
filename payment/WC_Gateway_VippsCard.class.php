@@ -116,7 +116,7 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
         $this->form_fields = array( 
                 'enabled' => array(
                     'title' => __( 'Enable/Disable', 'woocommerce' ),
-                    'label'       => sprintf(__('Enable %1$s Card Payments', 'woo-vipps'), Vipps::CompanyName()),
+                    'label'       => sprintf(__('Enable %1$s card payments', 'woo-vipps'), Vipps::CompanyName()),
                     'type'        => 'checkbox',
                     'description' => '',
                     'default'     => 'no'
