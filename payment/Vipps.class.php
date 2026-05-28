@@ -76,6 +76,7 @@ class Vipps {
     }
 
     // recognize our own gateways or gateway ids IOK 2026-05-26
+    // param is either order or order's payment method id string. LP 2026-05-28
     public static function is_vipps_order($order_or_string) {
         $id = is_string($order_or_string) ? $order_or_string : $order_or_string->get_payment_method();
         return in_array($id , ['vipps', 'vipps_card']);
@@ -1487,7 +1488,7 @@ jQuery('a.webhook-adder').click(function (e) {
         $strings = array(
                 'Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),
                 'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()),
-                'Pay with Credit Card' => __('Pay with Credit Card', 'woo-vipps')
+                'pay_with_card' => __('Pay with credit or debit card', 'woo-vipps')
                 );
         wp_localize_script('vipps-gw', 'VippsLocale', $strings);
     }

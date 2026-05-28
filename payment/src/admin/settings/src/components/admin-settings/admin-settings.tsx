@@ -161,7 +161,7 @@ export function AdminSettings(): JSX.Element {
             {/* Renders the express options form fields */}
             {isVisible(TAB_IDS[1]) && <AdminSettingsExpressOptionsTab />}
 
-            {/* Renders the credit card options form fields */}
+            {/* Renders the card payments options form fields */}
             {isVisible(TAB_IDS[2]) && <AdminSettingsCCOptionsTab />}
 
             {/* Renders the checkout options form fields */}

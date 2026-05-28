@@ -12,7 +12,7 @@ namespace Automattic\WooCommerce\Blocks\Payments\Integrations;
 final class VippsCard extends AbstractPaymentMethodType {
         private $localized=0;
 	protected $name = 'vipps_card';
-        protected $payment_method_name = "Vipps Credit Card Payment";
+        protected $payment_method_name = "";
         protected $description = "";
 
 	public function initialize() {

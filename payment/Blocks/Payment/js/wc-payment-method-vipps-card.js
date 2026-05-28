@@ -7,7 +7,6 @@ const { __ } = wp.i18n;
 const { decodeEntities }  = wp.htmlEntities;
 const { getSetting }  = wc.wcSettings;
 const { registerPaymentMethod }  = wc.wcBlocksRegistry;
-const { registerExpressPaymentMethod }  = wc.wcBlocksRegistry;
 const { applyFilters } = wp.hooks;
 
 //( 'hookName', content, arg1, arg2, ... )
@@ -15,7 +14,7 @@ const { applyFilters } = wp.hooks;
 
 // Data
 const settings = getSetting('vipps_card_data', {});
-const defaultLabel = VippsLocale['Vipps Credit Card'];
+const defaultLabel = VippsLocale['pay_with_card'];
 const label = decodeEntities(settings.title) || defaultLabel;
 const iconsrc = settings.iconsrc;
 
@@ -38,22 +37,22 @@ const Label = props => {
 };
 
 const canMakePayment = (args) => {
- var candoit = true;
- return applyFilters('woo_vipps_card_checkout_block_show_vipps', candoit, settings);
+        var candoit = true;
+        return applyFilters('woo_vipps_card_checkout_block_show_vipps', candoit, settings);
 };
 
 /**
  * Vipps  payment method config object.
  */
 const VippsCardPaymentMethod = {
-      name: 'vipps_card',
-      label: React.createElement(Label, null),
-      content: React.createElement(Content, null),
-      edit: React.createElement(Content, null),
-      placeOrderButtonLabel: VippsLocale['Pay with Credit Card'],
-      icons: null,
-      canMakePayment: canMakePayment,
-      ariaLabel: label
+        name: 'vipps_card',
+        label: React.createElement(Label, null),
+        content: React.createElement(Content, null),
+        edit: React.createElement(Content, null),
+        placeOrderButtonLabel: VippsLocale['pay_with_card'],
+        icons: null,
+        canMakePayment: canMakePayment,
+        ariaLabel: label
 };
 
 registerPaymentMethod(VippsCardPaymentMethod);
