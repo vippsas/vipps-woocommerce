@@ -108,7 +108,7 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
 
     // Ensure chosen name gets used in the checkout page IOK 2018-09-12
     public function get_title() {
-        $title = sprintf(__("%s Card Payment", 'woo-vipps'),  $this->get_payment_method_name());
+        $title = sprintf(__("%s card payment", 'woo-vipps'),  $this->get_payment_method_name());
         return apply_filters('woo_vipps_card_payment_method_title', $title);
     }
 
