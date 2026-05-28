@@ -329,8 +329,8 @@ class VippsAdminSettings
             $cc_translations["cc_$key"] = $data;
         }
         $cc_translations['cc_options'] = [
-           'title' => __('Credit Cards', 'woo-vipps'), 
-           'description' => __("Provide a credit card payment method for customers that haven't got the app (yet!)", 'woo-vipps')
+           'title' => __('Card payments', 'woo-vipps'), 
+           'description' => __("Provide a card payment method for customers that haven't got the app (yet!)", 'woo-vipps')
         ];
 
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', array_merge($gw->form_fields, $cc_translations,  $commonTranslations, $wizardTranslations));
