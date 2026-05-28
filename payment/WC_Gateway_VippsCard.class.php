@@ -59,8 +59,8 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
         $this->apiurl = 'https://api.vipps.no';
         
         $this->method_description = sprintf(__('Offer card payments through %1$s as a payment method', 'woo-vipps'), Vipps::CompanyName());
-        $this->method_title = sprintf(__('%1$s card payments','woo-vipps'), Vipps::CompanyName());
-        $this->title = sprintf(__('%1$s card payments','woo-vipps'), Vipps::CompanyName());
+        $this->method_title = sprintf(__('Card payments with %1$s','woo-vipps'), Vipps::CompanyName());
+        $this->title = sprintf(__('Card payments with %1$s','woo-vipps'), Vipps::CompanyName());
 
         $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
 
@@ -108,7 +108,7 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
 
     // Ensure chosen name gets used in the checkout page IOK 2018-09-12
     public function get_title() {
-        $title = sprintf(__("%s card payment", 'woo-vipps'),  $this->get_payment_method_name());
+        $title = sprintf(__('Card payment with %1$s', 'woo-vipps'),  $this->get_payment_method_name());
         return apply_filters('woo_vipps_card_payment_method_title', $title);
     }
 
@@ -116,7 +116,7 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
         $this->form_fields = array( 
                 'enabled' => array(
                     'title' => __( 'Enable/Disable', 'woocommerce' ),
-                    'label'       => sprintf(__('Enable %1$s card payments', 'woo-vipps'), Vipps::CompanyName()),
+                    'label'       => sprintf(__('Enable card payments with %1$s', 'woo-vipps'), Vipps::CompanyName()),
                     'type'        => 'checkbox',
                     'description' => '',
                     'default'     => 'no'
