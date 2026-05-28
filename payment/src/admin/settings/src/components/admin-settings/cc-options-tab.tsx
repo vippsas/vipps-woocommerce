@@ -18,7 +18,7 @@ export function AdminSettingsCCOptionsTab(): JSX.Element {
 
       {/* Warning about possible unavailability in test environment if test mode is enabled. LP 2026-05-28 */}
       {truthToBool(getOption('testmode')) && (
-        <div style={{border: "2px solid gray", padding:".5rem", "marginBottom": "2rem"}}>
+        <div style={{border: "2px solid red", padding:".5rem", "marginBottom": "2rem"}}>
           <p><UnsafeHtmlText htmlString={gettext("cc_test_warning")}></UnsafeHtmlText></p>
         </div>
       )}
