@@ -77,19 +77,17 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
     public function is_available() {
         if (!WC_Payment_Gateway::is_available()) return false;
         if (!$this->can_be_activated()) return false;
-        if (!parent::is_available()) return false;
         if ($this->is_test_mode()) return false; // Only available in 'real' mode. IOK 2026-05-27
 
         $configured =  get_option('woo-vipps-configured', false);
         $ok = $configured;
+
+        $ok = $ok && $this->payment_method_supports_currency($this->get_payment_method_name(), get_woocommerce_currency()) ;
+
         $ok = apply_filters('woo_vipps_card_payment_is_available', $ok, $this);
         return $ok;
     }
 
-    // Credit card payments support all currencies IOK 2026-05-27
-    public function payment_method_supports_currency($payment_method, $currency) {
-      return true; // IOK FIXME VERIFY
-    }
 
     public function get_icon () {
         $src =  plugins_url('img/cclogos.svg',__FILE__);
