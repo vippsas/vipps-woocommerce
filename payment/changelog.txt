@@ -1,4 +1,6 @@
 == Changelog ==
+= 2026-06-01 Version 6.0.0 =
+Support payment with credit or debit card as a separate payment method
 
 = 2026-05-28 version 5.4.3 =
 Fix issue with payment of admin-created orders
