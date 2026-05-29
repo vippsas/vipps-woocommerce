@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2026-05-28 version 5.4.3 =
+Fix issue with payment of admin-created orders
+
 = 2026-05-24 version 5.4.2 =
 Fix redirect from old to new settings screen
 
