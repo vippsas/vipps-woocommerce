@@ -3,14 +3,14 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 6.0.0
-Stable tag: 6.0.0
+Version: 6.0.1
+Stable tag: 6.0.1
 Requires at least: 6.3
 Tested up to: 7.0.0
 Requires PHP: 8.0
 Requires Plugins: woocommerce
 WC requires at least: 8.0.0
-WC tested up to: 10.8.0
+WC tested up to: 10.8.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -117,30 +117,10 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 6.0.1
+Fix small problems with tabs in the settings
 Version 6.0.0
 Support payment with credit or debit card as a separate payment method
-Version 5.4.3
-Fix issue with payment of admin-created orders
-Version 5.4.2
-Ensure redirect from old settings screen to new works
-Version 5.4.1
-Fix new orders showing as captured when they were not
-Version 5.4.0
-Improved handling of refunds. Manual refunds are now only possible when payment has been captured.
-Improved handling of failed but retryable orders
-Version 5.3.4
-Notice added about the sale of Checkout to Kustom
-Version 5.3.3
-Fix a crash for woo versions below 9.2.0
-Version 5.3.2
-Improve express checkout banner on legacy checkokut screens
-Add new setting for retryable orders so these can be set to "cancel" or "failed" as required
-Version 5.3.1
-Fix CSS issue with on-site messaging badges on small screens
-Ensure Express orders are always "cancelled", never "failed".
-Version 5.3.0
-Aborted Vipps MobilePay orders are now "failed" instead of "cancelled" and can be retried as a new Vipps MobilePay session
-Error that occasionally sent the user to the homepage instead of Checkout fixed
 
 == Frequently Asked Questions ==
 
@@ -313,6 +293,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2026-06-03 Version 6.0.1 =
+Fix small problems with tabs in the settings
+
 = 2026-06-01 Version 6.0.0 =
 Support payment with credit or debit card as a separate payment method
 
