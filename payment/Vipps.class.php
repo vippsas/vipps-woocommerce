@@ -1548,11 +1548,11 @@ jQuery('a.webhook-adder').click(function (e) {
     public function express_checkout_section_html() {
         $payment_method = $this->get_payment_method_name();
         $header_text = __('Express Checkout', 'woo-vipps');
-        $header = "<div class='express-header'>$header_text</div>";
+        $header = "<legend class='express-header'>$header_text</legend>";
         $div_classes = "legacy-checkout vipps-express-checkout $payment_method";
-        echo "<div class='$div_classes'>$header";
+        echo "<fieldset class='$div_classes'>$header";
         $this->cart_express_checkout_button_html();
-        echo '</div>';
+        echo '</fieldset>';
     }
 
     public function express_checkout_banner() {
