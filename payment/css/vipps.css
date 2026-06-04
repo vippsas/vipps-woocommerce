@@ -357,6 +357,10 @@ img.inline {
     line-height: 1;
     font-size: var(--wp--preset--font-size--small);
 }
+.legacy-checkout.vipps-express-checkout a, .legacy-checkout.vipps-express-checkout img {
+    padding: 0 !important;
+    border: 0 !important;
+}
 
 .vipps_checkout_button_wrapper {
     margin-top: 1rem;
