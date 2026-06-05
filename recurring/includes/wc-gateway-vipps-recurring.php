@@ -268,7 +268,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Delete idempotency key when renewal/resubscribe happens
 		add_action( 'wcs_resubscribe_order_created', [ $this, 'delete_resubscribe_meta' ] );
-		add_action( 'wcs_renewal_order_created', [ $this, 'delete_renewal_meta' ] );
+		add_action( 'wcs_renewal_order_created', [ $this, 'delete_renewal_meta' ], 5, 2 );
 
 		// Cancel DUE charge if order transitions to 'cancelled' or 'failed'
 		$cancel_due_charge_statuses = apply_filters( 'wc_vipps_recurring_cancel_due_charge_statuses', [
@@ -2348,7 +2348,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @param mixed $renewal_order The renewal order
 	 */
-	public function delete_renewal_meta( WC_Order $renewal_order ) {
+	public function delete_renewal_meta( $renewal_order, $subscription = null ) {
+		if ( $this->id !== $subscription->get_payment_method() ) {
+			return $renewal_order;
+		}
+
 		// Do not delete the idempotency key if the order has failed previously
 		$has_failed_previously = WC_Vipps_Recurring_Helper::get_meta( $renewal_order, '_failed_renewal_order' );
 		if ( $has_failed_previously !== "yes" ) {

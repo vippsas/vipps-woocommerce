@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 2.2.12 =
+* Refactor: Improved readability of charge checking logic.
+* Fix: Run our `wcs_renewal_order_created` before Kustom's hook to address a code smell from their side.
+
 = 2.2.11 =
 * Fix: Solved an edge case where a subscription could not be found when checking for a gateway change. Stopped checking in this scenario.
 * Fix: Solved an edge case where we attempt to charge a reserved charge older than 180 days.
