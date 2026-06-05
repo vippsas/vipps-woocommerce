@@ -929,7 +929,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // This filter runs on *all* refunds, including manual refunds. Its main job here is to
-    // disallow creating manual refunds on orders that have not been captured yet, since this makes the capture/cancel logic
+    // disallow creating manual refunds on orders that have not been *fully* captured yet, since this makes the capture/cancel logic
     // very confusing
     public function woocommerce_create_refund ($refund, $args) {
         $order_id = intval($args['order_id'] ?? 0);
@@ -944,9 +944,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 //Do nothing with this for now
                 $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
             }
-            // This would be *per order line* in the fulfilment branch. IOK 2026-02-24 FIXME
-            $captured = intval($order->get_meta('_vipps_captured'));
-            if (!$captured) {
+
+            // Since we support partial capture (fulfillments), we reject the refund if capture is incomplete. LP 2026-06-05
+            $is_fully_captured = (bool) $order->get_meta('_vipps_capture_complete', false);
+            if (!$is_fully_captured) {
                 $msg = sprintf(__("Order %2\$d: It is not possible to create a manual refund for a %1\$s order before it has been captured - doing so makes it impossible to track how much to capture and how much to release. If you create the refund through %1\$s, a note will be made internally so that the amount to be refunded will *not* be captured - please do this instead if possible. Otherwise, capture the order then refund either manually or through %1\$s", 'woo-vipps'), $this->get_payment_method_name(), $order_id);
                 throw new Exception($msg);
             }
@@ -2266,13 +2267,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
         } 
         if ($ok) {
-            // Signal other hooked actions that this one actually did something. IOK 2025-02-04
-            $order->update_meta_data('_vipps_capture_complete',true);
-            $order->save();
-
             $this->mark_order_items_fully_captured($order);
         } else  {
-            $order->update_meta_data('_vipps_capture_complete',false);
             $msg = sprintf(__("Could not capture %1\$s payment for this order!", 'woo-vipps'), $this->get_payment_method_name());
             $order->add_order_note($msg);
             $order->save();
@@ -2420,6 +2416,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->update_meta_data('_vipps_captured', $captured);
         $order->update_meta_data('_vipps_capture_remaining', $remaining);
+        $order->update_meta_data('_vipps_capture_complete', (bool) $remaining);
         $order->update_meta_data('_vipps_refund_remaining', $refundable);
         $order->update_meta_data('_vipps_capture_timestamp', time());
         $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$amount/100) . ' ' . $currency);
