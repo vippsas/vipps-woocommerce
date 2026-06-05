@@ -2244,12 +2244,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Capture will be done *before* payment_complete if appropriate IOK 2020-09-22
         if (did_action('woocommerce_pre_payment_complete')) {
             if (!$order->needs_processing()) return; // This is fine, we've captured.
-        if ($remaining>0) {
-                    // Not everything has been captured, but we have reached a capturable status. Complain, do not capture. IOK 2020-09-22
-            $this->log(sprintf(__("Filters are setting the payment_complete order status to '%1\$s' - will not capture", 'woo-vipps'), $order->get_status()),'debug');
-            $order->add_order_note(sprintf(__('Payment complete set status to "%1$s" - will not capture payments automatically','woo-vipps'), $order->get_status()));
-            return false;
-        }
+            if ($remaining>0) {
+                // Not everything has been captured, but we have reached a capturable status. Complain, do not capture. IOK 2020-09-22
+                $this->log(sprintf(__("Filters are setting the payment_complete order status to '%1\$s' - will not capture", 'woo-vipps'), $order->get_status()),'debug');
+                $order->add_order_note(sprintf(__('Payment complete set status to "%1$s" - will not capture payments automatically','woo-vipps'), $order->get_status()));
+                return false;
+            }
         }
 
         // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
