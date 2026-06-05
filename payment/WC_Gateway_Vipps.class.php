@@ -1057,16 +1057,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Update meta data for each order *item* in the refund. LP 2025-11-03
         foreach($item_meta_table as $item_id => $meta_table) {
+            $item = $order->get_item($item_id);
+            if (!$item) {
+                $this->log("Could not get item with id $item_id to update meta in process_refund", 'error');
+                continue;
+            }
             foreach($meta_table as $key => $value_increment) {
-                $item = $order->get_item($item_id);
-                if (!$item) {
-                    $this->log("Could not get item with id $item_id to update meta in process_refund", 'error');
-                    continue;
-                }
                 $value = $value_increment + intval($item->get_meta($key));
                 $item->update_meta_data($key, $value);
-                $item->save_meta_data();
             }
+            $item->save_meta_data();
         }
         return true;
     }
