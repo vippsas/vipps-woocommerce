@@ -1,4 +1,30 @@
 == Changelog ==
+= 2026-06-03 Version 6.0.1 =
+Fix small problems with tabs in the settings
+
+= 2026-06-01 Version 6.0.0 =
+Support payment with credit or debit card as a separate payment method
+
+= 2026-05-28 version 5.4.3 =
+Fix issue with payment of admin-created orders
+
+= 2026-05-24 version 5.4.2 =
+Fix redirect from old to new settings screen
+
+= 2026-05-20 version 5.4.1 =
+Fix new orders showing as captured when they were not
+
+= 2026-05-11 Version 5.4.0 = 
+Improved handling of refunds. Manual refunds are now only possible when payment has been captured.
+Improved handling of failed but retryable orders
+
+= 2026-05-06 Version 5.3.4 = 
+Notice added about the sale of Checkout to Kustom
+
+= 2026-05-03 Version 5.3.3 = 
+Fix express checkout for woo versions less than 9.2.0
+Vipps Checkout now in legacy mode and only available for existing installs
+
 = 2026-03-26 Version 5.3.2 = 
 Improve express checkout banner on legacy checkokut screens
 Add new setting for retryable orders

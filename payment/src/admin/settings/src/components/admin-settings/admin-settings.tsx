@@ -1,6 +1,7 @@
 import { gettext, getMetadata } from '../../lib/wp-data';
 import { Tabs } from '../tabs';
 import { AdminSettingsMainOptionsTab } from './main-options-tab';
+import { AdminSettingsCCOptionsTab } from './cc-options-tab.tsx';
 import { AdminSettingsExpressOptionsTab } from './express-options-tab';
 import { AdminSettingsCheckoutOptionsTab } from './checkout-options-tab';
 import { AdminSettingsAdvancedOptionsTab } from './advanced-options-tab';
@@ -31,16 +32,31 @@ export function AdminSettings(): JSX.Element {
   const paymentMethod = getOption('payment_method_name');
   const showCurrencyWarning = !isPaymentMethodCurrencySupported(paymentMethod, currency);
   // The tabs to render on the admin settings page.
+
+  const MAIN_TAB_ID = gettext('main_options.title');
+  const EXPRESS_TAB_ID = gettext('express_options.title');
+  const CC_TAB_ID =  gettext('cc_options.title');
+  const CHECKOUT_TAB_ID = gettext('checkout_options.title');
+  const DEVELOPER_TAB_ID = gettext('developertitle.title');
+  const ADVANCED_TAB_ID = gettext('advanced_options.title');
+
+
   const TAB_IDS = [
-    gettext('main_options.title'),
-    gettext('express_options.title'),
-    gettext('checkout_options.title'),
-    gettext('advanced_options.title')
+    MAIN_TAB_ID, EXPRESS_TAB_ID, CC_TAB_ID
   ];
+
+  
+
+  // Only show checkout options if known to be active (option woo_vipps_checkout_activated is true, or the vipps_checkout_enabled option is yes IOK 2026-04-30
+  const checkoutActive = +(getMetadata('vipps_checkout_activated') ?? 0) || getOption('vipps_checkout_enabled') == 'yes';
+  if (checkoutActive) {
+    TAB_IDS.push(CHECKOUT_TAB_ID);
+  }
+  TAB_IDS.push(ADVANCED_TAB_ID);
   // If the developer mode is enabled, the developer options tab is shown.
   const canShowDeveloperOptions = getOption('developermode') === 'yes';
   if (canShowDeveloperOptions) {
-    TAB_IDS.push(gettext('developertitle.title'));
+    TAB_IDS.push(DEVELOPER_TAB_ID);
   }
 
   
@@ -49,7 +65,7 @@ export function AdminSettings(): JSX.Element {
   const force_wizard_screen =  __DEV_FORCE_WIZARD_SCREEN || ["1", "yes", "true", "TRUE"].includes(force_override);
 
   // Get the active tab from the URL hash.
-  const [activeTab, setActiveTab] = useHash(TAB_IDS[0]);
+  const [activeTab, setActiveTab] = useHash(MAIN_TAB_ID);
 
   // Function to determine if a tab is visible.
   function isVisible(tab: string): boolean {
@@ -147,21 +163,24 @@ export function AdminSettings(): JSX.Element {
         ) : (
           // If the important settings are set, show the normal settings screen.
           <>
-            <Tabs tabs={TAB_IDS} onTabChange={setActiveTab} activeTab={activeTab} />
+            <Tabs tabs={TAB_IDS} onTabChange={setActiveTab} activeTab={activeTab} /> 
             {/* Renders the main options form fields  */}
-            {isVisible(TAB_IDS[0]) && <AdminSettingsMainOptionsTab />}
+            {isVisible(MAIN_TAB_ID) && <AdminSettingsMainOptionsTab />}
 
             {/* Renders the express options form fields */}
-            {isVisible(TAB_IDS[1]) && <AdminSettingsExpressOptionsTab />}
+            {isVisible(EXPRESS_TAB_ID) && <AdminSettingsExpressOptionsTab />}
+
+            {/* Renders the card payments options form fields */}
+            {isVisible(CC_TAB_ID) && <AdminSettingsCCOptionsTab />}
 
             {/* Renders the checkout options form fields */}
-            {isVisible(TAB_IDS[2]) && <AdminSettingsCheckoutOptionsTab />}
+            {checkoutActive && isVisible(CHECKOUT_TAB_ID) && <AdminSettingsCheckoutOptionsTab />}
 
             {/* Renders the advanced options form fields */}
-            {isVisible(TAB_IDS[3]) && <AdminSettingsAdvancedOptionsTab />}
+            {isVisible(ADVANCED_TAB_ID) && <AdminSettingsAdvancedOptionsTab />}
 
             {/* Renders the developer options form fields */}
-            {canShowDeveloperOptions && isVisible(TAB_IDS[4]) && <AdminSettingsDeveloperOptionsTab />}
+            {canShowDeveloperOptions && isVisible(DEVELOPER_TAB_ID) && <AdminSettingsDeveloperOptionsTab />}
             
             <div className="vipps-mobilepay-react-save-section">
               <WPButton variant="primary" isLoading={isLoading}>

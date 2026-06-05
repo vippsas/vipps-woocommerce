@@ -20,11 +20,22 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
   const paymentMethod = getOption('payment_method_name');
   return (
     <div>
+
+
+
       <p className="vipps-mobilepay-react-tab-description">
         <UnsafeHtmlText
           htmlString={fixCheckoutName(gettext("checkout_options.description"), paymentMethod)}
         />
       </p>
+
+    <div style={{border: "2px solid red", padding:"1.5rem", "marginBottom": "2rem"}}>
+     <h3>{fixCheckoutName(gettext("kustom_sale_1"), paymentMethod)}</h3>
+     <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_2"), paymentMethod)}></UnsafeHtmlText></p>
+     <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_3"), paymentMethod)}></UnsafeHtmlText></p>
+     <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_4"), paymentMethod)}></UnsafeHtmlText></p>
+     <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_5"), paymentMethod)}></UnsafeHtmlText></p>
+    </div>
 
       {/* Renders a checkbox to enable the Alternative screen  */}
       <CheckboxFormField

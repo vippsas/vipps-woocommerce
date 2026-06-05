@@ -75,6 +75,13 @@ class Vipps {
         return static::$instance;
     }
 
+    // recognize our own gateways or gateway ids IOK 2026-05-26
+    // param is either order or order's payment method id string. LP 2026-05-28
+    public static function is_vipps_order($order_or_string) {
+        $id = is_string($order_or_string) ? $order_or_string : $order_or_string->get_payment_method();
+        return in_array($id , ['vipps', 'vipps_card']);
+    }
+
     // To simplify development, we load translations from the plugins' own .mos on development branches. IOK 2023-11-28
     public static function load_plugin_textdomain( $domain, $deprecated = false, $plugin_rel_path = false ) {
         $development = apply_filters('woo_vipps_use_plugin_translations', false);
@@ -136,7 +143,9 @@ class Vipps {
         if (is_checkout_pay_page()) {
             $orderid = absint(get_query_var( 'order-pay')); 
             $order = $orderid ? wc_get_order($orderid) : null;
-            if (is_a($order, 'WC_Order')) {
+            if (is_a($order, 'WC_Order') 
+                && $order->get_meta('_vipps_init_timestamp') // allow vipps payment for new orders, like when creating an order from backend. LP 2026-05-28
+            ) {
                 // Existing override that allows repayment. IOK 2024-06-04
                 // i.e a third party plugin that implemented payment retrying for our plugin, we used to enable repayment only if this plugin was found.
                 // $allow_repayment = class_exists('\Site\Plugins\WooVipps\WooVippsPayForOrder');
@@ -224,19 +233,6 @@ class Vipps {
         // Extra order actions on the order screen, now using ajax to be compatible with HPOS. IOK 2022-12-02
         add_action('wp_ajax_woo_vipps_order_action', array($this, 'order_handle_vipps_action'));
 
-        // Activate support for Vipps Checkout, including creating the special checkout page etc. Triggered from the payment page.
-        add_action('wp_ajax_woo_vipps_activate_checkout_page', function () {
-          check_ajax_referer('woo_vipps_activate_checkout','_wpnonce');
-          static::set_locale_if_in_header();
-          update_option('woo_vipps_checkout_activated', true, true); // This will load Vipps Checkout functionality from now on
-          $this->maybe_create_vipps_pages(); // Ensure the special page exists
-          if (isset($_REQUEST['activate']) && $_REQUEST['activate']) {
-             $this->gateway()->update_option('vipps_checkout_enabled', 'yes');
-          } else {
-             $this->gateway()->update_option('vipps_checkout_enabled', 'no');
-          }
-        });
-
         // Fetch wc products, but filter those only purchasable by VMP express checkout. LP 2026-01-22
         add_action('rest_api_init', function() {
                    register_rest_route('woo-vipps/v1', '/express-products', [
@@ -278,35 +274,7 @@ class Vipps {
 
     }
 
-
-   // IOK 2022-12-02 This is currently used in two places: In the code that finds orders marked "to be deleted", and 
-   // in the getOrderIdByVippsOrderId function. This is for the old-style Woo order tables, and do nothing for HPOS right now.
-   // This should however be replaced by its own table so it can be done more efficiently.
-    public static function add_wc_order_meta_key_support() {
-        if (did_action('woo_vipps_add_order_meta_key_support')) return;
-        do_action('woo_vipps_add_order_meta_key_support');
-        add_filter('woocommerce_order_data_store_cpt_get_orders_query', function ($query, $query_vars) {
-            if (isset($query_vars['meta_vipps_orderid']) && $query_vars['meta_vipps_orderid'] ) {
-                if (!isset($query['meta_query'])) $query['meta_query'] = array();
-                $query['meta_query'][] = array(
-                    'key' => '_vipps_orderid',
-                    'value' => $query_vars['meta_vipps_orderid']
-                );
-            }
-            if (isset($query_vars['meta_vipps_delendum']) && $query_vars['meta_vipps_delendum'] ) {
-                if (!isset($query['meta_query'])) $query['meta_query'] = array();
-                $query['meta_query'][] = array(
-                    'key' => '_vipps_delendum',
-                    'value' => 1
-                );
-            }
-            return $query;
-        }, 10, 2);
-
-    }
-
     public function admin_init () {
-
         $gw = $this->gateway();
         require_once(dirname(__FILE__) . "/admin/settings/VippsAdminSettings.class.php");
         $adminSettings = VippsAdminSettings::instance();
@@ -317,7 +285,7 @@ class Vipps {
         add_action('woocommerce_after_order_refund_item_name', function ($refund) {
             $orderid = $refund->get_parent_id();
             $order = wc_get_order($orderid);
-            if (is_a($order, 'WC_Order')  && $order->get_payment_method() == 'vipps') {
+            if (is_a($order, 'WC_Order')  && self::is_vipps_order($order)) {
                 $id = $refund->get_id();
                 $gw = $refund->get_refunded_payment();
                 if ($gw) {
@@ -338,18 +306,19 @@ class Vipps {
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
         add_action('admin_enqueue_scripts', array($this,'admin_enqueue_scripts'));
 
-        // Redirect the default WooCommerce settings page to our own
-        add_action( 'woocommerce_settings_start', function () {
-                add_filter('admin_url', function ($url, $path) {
-                        if (strpos($path, "tab=checkout&section=vipps") === false) return $url;
-                        $qs = parse_url($path, PHP_URL_QUERY);
-                        if (!$qs) return $url;
-                        $args = [];
-                        parse_str($qs, $args);
-                        $ok = (($args['page']??false) == 'wc-settings') && (($args['tab']??false) == 'checkout') && (($args['section']??false) == 'vipps');
-                        if (!$ok) return $url;
-                        return admin_url("/admin.php?page=vipps_settings_menu");
-                        }, 10, 2);
+        // IOK 2026-05-26 redirect the old Woo-generated settings-screen to our own settings page.
+        add_action('current_screen', function ($screen) {
+            if (!is_admin() || !$screen || $screen->id !== 'woocommerce_page_wc-settings')  return;
+            $section = ($_GET['section'] ?? "");
+            if (($_GET['tab']  ?? "")!= 'checkout' 
+                || !in_array($section, ['vipps', 'vipps_card'])
+            ) return;
+
+            $settings_tab = '';
+            if ('vipps_card' === $section) $settings_tab = '#Card payments';
+
+            wp_safe_redirect(admin_url("admin.php?page=vipps_settings_menu$settings_tab"));
+            exit();
         });
 
         // Custom product properties
@@ -1191,7 +1160,7 @@ jQuery('a.webhook-adder').click(function (e) {
     <div class='wrap vipps-admin-page'>
             <div id="vipps_page_vipps_banners"><?php echo apply_filters('woo_vipps_vipps_page_banners', ""); ?></div>
             <h1><?php echo sprintf(__("%1\$s for WordPress and WooCommerce", 'woo-vipps'), Vipps::CompanyName()); ?></h1>
-            <p><?php echo sprintf(__("%1\$s officially supports WordPress and WooCommerce with a family of plugins implementing a payment gateway for WooCommerce, an optional complete checkout solution powered by %1\$s, a system for managing QR-codes that link to your products or landing pages, a plugin for recurring payments, and a system for passwordless logins.", 'woo-vipps'), Vipps::CompanyName());?></p>
+            <p><?php echo sprintf(__("%1\$s officially supports WordPress and WooCommerce with a family of plugins implementing a payment gateway for WooCommerce, a system for managing QR-codes that link to your products or landing pages, a plugin for recurring payments, and a system for passwordless logins.", 'woo-vipps'), Vipps::CompanyName());?></p>
             <p><?php echo sprintf(__("To order or configure your %1\$s account that powers these plugins, log onto <a target='_blank'  href='%2\$s'>the %1\$s portal</a> and use the keys and data from that to set up your plugins as needed.", 'woo-vipps'), Vipps::CompanyName(), $portalurl); ?></p>
 
             <h1><?php echo sprintf(__("The %1\$s plugins", 'woo-vipps'), Vipps::CompanyName()); ?></h1>
@@ -1259,7 +1228,6 @@ jQuery('a.webhook-adder').click(function (e) {
             <div class="pluginsection login-with-vipps">
                <h2><?php echo sprintf(__( '%1$s', 'woo-vipps' ), Vipps::LoginName());?></h2>
                <p><?php echo sprintf(__("<a href='%1\$s' target='_blank'>%3\$s</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2\$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/',Vipps::CompanyName(), Vipps::LoginName()); ?></p>
-               <p> <?php echo sprintf(__("If you use %1\$s in WooCommerce, this allows your %2\$s customers to safely log in without ever using a password.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()); ?>
                <p>
                        <?php echo sprintf(__("Remember, you need to set up %3\$s at the <a target='_blank' href='%2\$s'>%1\$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),Vipps::CompanyName(),$portalurl, Vipps::LoginName()); ?>
                </p>
@@ -1344,19 +1312,32 @@ jQuery('a.webhook-adder').click(function (e) {
         $limit = 30;
         $cutoff = time() - 600; // Ten minutes old orders: Delete them
         $oldorders = time() - (60*60*24*7); // Very old orders: Ignore them to make this work on sites with enormous order databases
-        // Ensure the old order table understands the meta query IOK 2022-12-02
-        static::add_wc_order_meta_key_support();
-        $args = array(
+        $delenda = [];
+
+        if  ($this->useHPOS()) {
+            $args = array(
                 'status' => 'cancelled',
                 'limit' => $limit,
                 'date_modified' => "$oldorders...$cutoff",
-                'meta_vipps_delendum' => 1);
-        if  ($this->useHPOS()) {
-            /* The above, with the filter, is for the old orders table, the below is for the new IOK 2022-12-02 */
-            $args['meta_query'] =  [[ 'key'  => '_vipps_delendum', 'value' => 1 ]];
+                'meta_query' =>  [[ 'key'  => '_vipps_delendum', 'value' => 1 ]]
+            );
+            $delenda = wc_get_orders($args);
+        } else {
+            // Old-style orders, we'll just use SQL
+            global $wpdb;
+            $sql = $wpdb->prepare("SELECT p.ID FROM {$wpdb->posts} p JOIN {$wpdb->postmeta} pm on (pm.post_id = p.ID AND pm.meta_key = '_vipps_delendum') WHERE p.post_type = 'shop_order' AND p.post_status = 'wc-cancelled' AND p.post_modified_gmt >= %s AND p.post_modified_gmt <= %s AND pm.meta_value = 1 LIMIT %d",
+                gmdate( 'Y-m-d H:i:s', $oldorders ),
+                gmdate( 'Y-m-d H:i:s', $cutoff ),
+                $limit
+            );
+            $order_ids = $wpdb->get_col($sql);
+            foreach($order_ids as $did) {
+                $d = wc_get_order($did);
+                if ($d && !is_wp_error($d)) {
+                    $delenda[] = $d;
+                }
+            }
         }
-
-        $delenda = wc_get_orders($args);
 
         foreach ($delenda as $del) {
             // Delete only if there is no customer info for the order IOK 2022-10-12
@@ -1475,7 +1456,7 @@ jQuery('a.webhook-adder').click(function (e) {
                 $order = wc_get_order($orderid);
             }
         }
-        if (is_a($order, 'WC_Order')  && $order->get_payment_method() == 'vipps') {
+        if (is_a($order, 'WC_Order')  && self::is_vipps_order($order)) {
           $vippsorder = true;
         }
 
@@ -1504,7 +1485,11 @@ jQuery('a.webhook-adder').click(function (e) {
     // Runs late in both wp_enqueue_scripts and admin_enqueue_scripts to make it more compatible with translation plugins IOK 2026-02-02
     public function script_add_vippslocale () {
         // This is actually for the payment block, where localize script has started to not-work in certain contexts. IOK 2022-12-13
-        $strings = array('Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()));
+        $strings = array(
+                'Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),
+                'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()),
+                'pay_with_card' => sprintf(__('Pay with card through %1$s', 'woo-vipps'), $this->get_payment_method_name()),
+                );
         wp_localize_script('vipps-gw', 'VippsLocale', $strings);
     }
 
@@ -1563,11 +1548,11 @@ jQuery('a.webhook-adder').click(function (e) {
     public function express_checkout_section_html() {
         $payment_method = $this->get_payment_method_name();
         $header_text = __('Express Checkout', 'woo-vipps');
-        $header = "<div class='express-header'>$header_text</div>";
+        $header = "<legend class='express-header'>$header_text</legend>";
         $div_classes = "legacy-checkout vipps-express-checkout $payment_method";
-        echo "<div class='$div_classes'>$header";
+        echo "<fieldset class='$div_classes'>$header";
         $this->cart_express_checkout_button_html();
-        echo '</div>';
+        echo '</fieldset>';
     }
 
     public function express_checkout_banner() {
@@ -1906,7 +1891,7 @@ else:
         $order = ( $post_or_order_object instanceof WP_Post ) ? wc_get_order( $post_or_order_object->ID ) : $post_or_order_object;
         $order = wc_get_order($post_or_order_object);
         $pm = $order->get_payment_method();
-        if ($pm != 'vipps') return;
+        if (!self::is_vipps_order($pm)) return;
         $orderid=$order->get_id();
 
         $init =  intval($order->get_meta('_vipps_init_timestamp'));
@@ -2004,7 +1989,7 @@ else:
             exit();
         }
         $pm = $order->get_payment_method();
-        if ($pm != 'vipps') {
+        if (!self::is_vipps_order($pm)) {
             print "<p>" . sprintf(__("The order is not a %1\$s order", 'woo-vipps'), $this->get_payment_method_name()) . "</p>";
             exit();
         }
@@ -2250,22 +2235,26 @@ else:
 
     // Because the prefix used to create the Vipps order id is editable
     // by the user, we will store that as a meta and use this for callbacks etc.
-    // IOK: This needs to be replaced by a separate table, but in the meantime, we will use
-    // wc_get_orders and not $wpdb directly, so it should work with HPOS too.
     // IOK 2023-01-23 this function is no longer used, and kept only for backwards compatibility with
     // debug filters and similar.
+    // IOK 2026-05-27 rewritten to avoid wc_get_orders for pre-HPOS. Still not used.
     public function getOrderIdByVippsOrderId($vippsorderid) {
-        // Ensure the old order table understands the meta query IOK 2022-12-02
-        static::add_wc_order_meta_key_support();
-        $result = wc_get_orders( array(
-            'limit' => 1,
-            'return' => 'ids',
-            'meta_vipps_orderid' => $vippsorderid,
-            /* The above, with the filter, is for the old orders table, the below is for the new IOK 2022-12-02 */
-            'meta_query' =>  [[ 'key'   => '_vipps_orderid', 'value' => $vippsorderid ]]
-        ));
-        if ($result && is_array($result)) return $result[0];
-
+        $result = false;
+        if ($this->useHPOS()) {
+            $result = wc_get_orders( array(
+                'limit' => 1,
+                'return' => 'ids',
+                'meta_query' =>  [[ 'key'   => '_vipps_orderid', 'value' => $vippsorderid ]]
+            ));
+            if ($result && is_array($result)) return $result[0];
+        } else {
+            // Pre-HPOS did not support meta_query, so we're doing it with direct access to the database. IOK 2026-05-27
+            global $wpdb;
+            $q = $wpdb->prepare("SELECT p.ID from `{$wpdb->posts}` p JOIN `{$wpdb->postmeta}` m ON (m.post_id = p.ID and m.meta_key = '_vipps_orderid') WHERE p.post_type = 'shop_order' AND m.meta_value = %s LIMIT 1", $vippsorderid);
+            $res = $wpdb->get_results($q, ARRAY_A);
+            if (empty($res)) return 0;
+            return $res[0]['ID'];
+        }
         return 0;
     }
 
@@ -2278,7 +2267,6 @@ else:
                         'limit' => 1,
                         'status' => 'wc-pending',
                         'type' => 'shop_order',
-                        'payment_method' => 'vipps',
                         'date_created' => '>' . $sevendaysago,
                         'return' => 'objects',
                         'meta_query' =>  [[ 'key'   => '_vipps_orderid', 'value' => $vippsorderid ]]
@@ -2405,7 +2393,7 @@ else:
         // If local pickup has been added to express/checkout by filters, add this to emails/confirmation pages. IOK 2025-08-15
         add_filter('woocommerce_order_shipping_to_display', function($shipping, $order, $tax_display) {
                 if (!is_a($order, 'WC_Order')) return $shipping;
-                if ($order->get_payment_method() != 'vipps') return $shipping;
+                if (! self::is_vipps_order($order)) return $shipping;
                 $shipping_method = current( $order->get_shipping_methods() );
 
                 if (empty($shipping_method))  return $shipping;
@@ -2516,31 +2504,58 @@ else:
             if (!$cancel) return $cancel;
 
             // Only check Vipps orders
-            if ($order->get_payment_method() != 'vipps') return $cancel;
+            if (! self::is_vipps_order($order)) return $cancel;
 
-            // For Vipps, all unpaid orders must be pending. IOK FIXME ADD FAILED
-            if ($order->get_status() != 'pending') return $cancel;
+            // For Vipps, all unpaid orders must be pending. 
+            if ($order->get_status() != 'pending' && $order->get_status() != 'failed') return $cancel;
 
             // Handle this separately, in the Checkout class. IOK 2025-10-08
             $checkout_session = $order->get_meta('_vipps_checkout_session');
             if ($checkout_session) {
+                $exception = null;
                 try {
                      $polldata = $this->gateway()->api->checkout_get_session_info($order);
                      $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
                      // We can cancel the order iff we haven't started payment yet.
                      if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') return false; 
                      return true;
+                } catch (VippsAPIException $e) {
+                    $resp = intval($e->responsecode);
+                    if ($resp == 402 || $resp == 404) {
+                        // We don't know about this transaction, so allow cancel IOK 2026-04-29
+                        return true;
+                    }
+                    $exception = $e; // Unknown exception, handle below
                 } catch (Exception $e) {
-                     // If Vipps is unreachable, be safe and don't delete
-                     return false;
+                    $exception = $e; // Unknown exception, handle below
+                }
+                if ($exception) {
+                    // If Vipps is unreachable, be safe and don't delete
+                    $this->log("Checkout: " . sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, not allowing deletion: %3\$s", 'woo-vipps'), $order->get_id(), Vipps::CompanyName(), $exception->getMessage()));
+                    return false;
                 }
                 return false; 
             }
-  
+
+           // Epayment/non-checkout IOK 2026-04-29
+            // Keep in mind, checkout will fall through to here if the checkout session initialization failed. LP 2026-04-29
             try {
+                $exception = null;
                 $result = $this->gateway()->api->epayment_get_payment($order);
+            } catch (VippsAPIException $e) {
+                $resp = intval($e->responsecode); 
+                if ($resp == 402 || $resp == 404) {
+                    // We don't know about this transaction, so allow cancel IOK 2026-04-29
+                    return true;
+                }
+                $exception = $e; // Unknown exception, handle below
             } catch (Exception $e) {
-                $this->log(sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, not allowing deletion: %3\$s", 'woo-vipps'), $order->get_id(), Vipps::CompanyName(), $e->getMessage()));
+                $exception = $e; // Unknown exception, handle below
+            }
+
+            if ($exception) {
+                // If Vipps is unreachable, be safe and don't delete
+                $this->log(sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, not allowing deletion: %3\$s", 'woo-vipps'), $order->get_id(), Vipps::CompanyName(), $exception->getMessage()));
                 return false;
             }
 
@@ -2571,8 +2586,15 @@ else:
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
         if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+            // Ensure gateways are loaded at this point  IOK 2026-05-27
+            require_once(dirname(__FILE__) . '/WC_Gateway_VippsCard.class.php'); 
+            require_once(dirname(__FILE__) . '/WC_Gateway_Vipps.class.php');
+
+            // Then the payment blocks
             require_once(dirname(__FILE__) . "/Blocks/Payment/Vipps.class.php");
+            require_once(dirname(__FILE__) . "/Blocks/Payment/VippsCard.class.php");
             Automattic\WooCommerce\Blocks\Payments\Integrations\Vipps::register();
+            Automattic\WooCommerce\Blocks\Payments\Integrations\VippsCard::register();
         }
 
         // Used for e.g. labels of product/shipping metadata. IOK 2025-05-07
@@ -2630,7 +2652,7 @@ else:
            $order = wc_get_order(intval($_REQUEST['orderid']));
            if (!is_a($order, 'WC_Order')) return;
            $pm = $order->get_payment_method();
-           if ($pm != 'vipps') return;
+           if (!self::is_vipps_order($pm)) return;
  
            $action = isset($_REQUEST['do']) ? sanitize_title($_REQUEST['do']) : 'none';
 
@@ -2701,7 +2723,7 @@ else:
 
     public function order_item_add_capture_button ($order) {
         $pm = $order->get_payment_method();
-        if ($pm != 'vipps') return;
+        if (!self::is_vipps_order($pm)) return;
         $status = $order->get_status();
 
         $show_capture_button = ($status == 'on-hold' || $status == 'processing');
@@ -2711,7 +2733,7 @@ else:
 
         $captured = intval($order->get_meta('_vipps_captured'));
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
-        if ($captured && !$capremain) { 
+        if ($captured && (!$capremain || $capremain < 2)) { 
             print "<div><strong>" . sprintf(__("The entire amount has been captured at %1\$s", 'woo-vipps'), $this->get_payment_method_name()) . "</strong></div>";
             return;
         }
@@ -3139,7 +3161,7 @@ else:
             $this->log(__('Could not find Woo order with id:', 'woo-vipps') . " " . $orderid, 'error');
             exit();
         }
-        if ($order->get_payment_method() != 'vipps') {
+        if (!self::is_vipps_order($order)) {
             status_header(400, "Invalid order");
             print "Invalid order";
             $this->log(__('Invalid order for shipping callback:', 'woo-vipps') . " " . $orderid, 'error');
@@ -3583,7 +3605,11 @@ else:
 
 
             // A rate can have a delivery time as a string in both Woo and Express
-            $delivery_time = $rate->get_delivery_time();
+            $delivery_time = "";
+            if (version_compare(WC_VERSION, '9.2.0', '>=')) {
+                $delivery_time = $rate->get_delivery_time();
+            }
+
             // And some rates have metadata, such as pickup locations (local_delivery).
             $meta = $rate->get_meta_data();
             // We can also support descriptions, in the "meta" field
@@ -3871,6 +3897,7 @@ else:
 
     public function woocommerce_payment_gateways($methods) {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        require_once(dirname(__FILE__) . "/WC_Gateway_VippsCard.class.php");
         // Protect the singleton: Use the object instead of the class name IOK 2025-02-04
         $gateway = $this->gateway();
         if ($gateway) {
@@ -3878,6 +3905,9 @@ else:
         } else {
             $methods[] =  'WC_Gateway_Vipps';
         }
+
+        $methods[] = 'WC_Gateway_VippsCard';
+
         return $methods;
     }
 
@@ -3902,7 +3932,7 @@ else:
     // the order id is unique too.. IOK 2018-11-21
     public function  woocommerce_my_account_my_orders_actions($actions, $order ) {
         $pm = $order->get_payment_method();
-        if ($pm != 'vipps') return $actions;
+        if (!self::is_vipps_order($pm)) return $actions;
 
         if (!static::order_is_vipps_retryable($order->get_id())) {
             unset($actions['pay']);
@@ -3922,8 +3952,12 @@ else:
     public function cron_check_for_missing_callbacks() {
         $eightminutesago = time() - (60*8);
         $sevendaysago = time() - (60*60*24*7);
-        $pending = wc_get_orders(
-          array('limit'=>-1, 'status'=>'pending', 'payment_method' => 'vipps', 'date_created' => '>' . $sevendaysago ));
+
+        // This is compatible with both HPOS and old style order management. IOK 2026-05-27
+        $pending_app = wc_get_orders( array('limit'=>-1, 'status'=>'pending', 'payment_method' => 'vipps', 'date_created' => '>' . $sevendaysago ));
+        $pending_cards = wc_get_orders( array('limit'=>-1, 'status'=>'pending', 'payment_method' => 'vipps_card', 'date_created' => '>' . $sevendaysago ));
+        $pending = array_merge($pending_app, $pending_cards);
+
         if (empty($pending)) return;
         foreach ($pending as $o) {
             $then = $o->get_meta('_vipps_init_timestamp');
@@ -4004,11 +4038,10 @@ else:
 
         // Delete all settings if checked in settings menu. LP 2025-10-06
         $should_delete = $gw->get_option( 'delete_settings_on_deactivation' ) === 'yes';
-        if ( $should_delete ) {
+        if ($should_delete) {
             // Delete options.
-            $options = ['woocommerce_vipps_settings', 'woo-vipps-configured', 'vipps_badge_options', 'vipps_button_options', '_vipps_dismissed_notices', 'woo_vipps_checkout_activated'];
+            $options = ['woocommerce_vipps_settings', 'woocommerce_vipps_card_settings', 'woo-vipps-configured', 'vipps_badge_options', 'vipps_button_options', '_vipps_dismissed_notices', 'woo_vipps_checkout_activated'];
             foreach($options as $option) {
-                error_log("Deleting woo-vipps option: $option");
                 delete_option($option);
             }
         }
@@ -4151,7 +4184,7 @@ else:
     // It is done on the thank-you page of the order, and only for express checkout.
     function maybe_log_in_user ($order) {
         if (is_user_logged_in()) return;
-        if (!$order || $order->get_payment_method()!= 'vipps' ) return;
+        if (!$order || ! self::is_vipps_order($order)) return;
 
         // We *do* want to log in express checkout customers, but not those that 
         // use the Vipps Checkout solution - those can change their emails in the
@@ -4188,7 +4221,7 @@ else:
     // Get the customer that corresponds to the current order, maybe creating the customer if it does not exist yet and
     // the settings allow it.
     function express_checkout_get_vipps_customer($order) {
-        if (!$order || $order->get_payment_method() != 'vipps' ) return null;
+        if (!$order || ! self::is_vipps_order($order))  return null;
         // specific code for this by netthandelsgruppen if the below function exists
         if (function_exists('create_assign_user_on_vipps_callback')) return null;
 
@@ -5016,6 +5049,7 @@ else:
 
 
     // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
+    // IOK 2026-04-30 remove this when checkout is end-of-life'd
     public function woocommerce_create_pages ($data) {
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
         if (!$vipps_checkout_activated) return $data;

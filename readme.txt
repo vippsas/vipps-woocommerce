@@ -3,14 +3,14 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.3.2
-Stable tag: 5.3.2
+Version: 6.0.1
+Stable tag: 6.0.1
 Requires at least: 6.3
-Tested up to: 6.9.4
+Tested up to: 7.0.0
 Requires PHP: 8.0
 Requires Plugins: woocommerce
 WC requires at least: 8.0.0
-WC tested up to: 10.6.0
+WC tested up to: 10.8.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -26,14 +26,11 @@ Vipps and MobilePay are payment methods offered by Vipps MobilePay.
 
 When you enable this plugin, you will choose between offering either Vipps or MobilePay as a payment method for your customers - hence "Vipps/MobilePay" going forward.
 
-This is the official plugin for Vipps/MobilePay Checkout, Vipps/MobilePay ePayments (*Vipps Nettbetaling*), Vipps MobilePay Express (*Vipps MobilePay Hurtigkasse*) and Vipps/MobilePay recurring payments. Increase your conversion rate by letting your customers choose Vipps/MobilePay directly in the checkout or even do an Express Checkout (Vipps only) from the cart or a product page directly.
+This is the official plugin for Vipps/MobilePay ePayments (*Vipps Nettbetaling*), Vipps MobilePay Express (*Vipps MobilePay Hurtigkasse*) and Vipps/MobilePay recurring payments. Increase your conversion rate by letting your customers choose Vipps/MobilePay directly in the checkout or even do an Express Checkout (Vipps only) from the cart or a product page directly.
 
 You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
 
 Read [information from Vipps MobilePay](https://developer.vippsmobilepay.com/docs/plugins/woocommerce/) about the plugin.
-
-=== Vipps/MobilePay Checkout ===
-With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed by Vipps MobilePay. It contains regular Vipps/MobilePay payments, a card payment option for those that can't or won't use Vipps/MobilePay, as well as the ability to get the shipping address of the customer in an easy way. Read more about [Vipps MobilePay Checkout here](https://vippsmobilepay.com/en/online/checkout)
 
 === Vipps/MobilePay ePayment ===
 When you enable this plugin, your customers will be able to choose Vipps/MobilePay as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps/MobilePay, they fill in their name and address and is then asked to enter their phone number in the Vipps/MobilePay dialogue. They then confirms the payment in the Vipps/MobilePay app. Customer info like name and address is sent to the store from Vipps MobilePay.
@@ -74,6 +71,18 @@ Settings for the cart, category and product pages can be found in the WooCommerc
 
 Shareable links and QR codes can be generated from the Vipps/MobilePay tab on the product page.
 
+=== Vipps MobilePay Checkout ===
+
+With Checkout enabled in the plugin, you will get a complete checkout in your web shop, designed and run by Vipps MobilePay.
+Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can also provide their shipping address and choose their preferred shipping method in a simple manner.
+
+**Checkout – important update**
+
+Vipps MobilePay has entered into an agreement to sell the Vipps MobilePay Checkout solution to [Kustom](https://www.kustom.co/).
+
+As part of this transition, *Vipps MobilePay Checkout* will become *Kustom Checkout*. This means the Checkout product you ordered will be delivered and developed by Kustom going forward.
+If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsmobilepay-kustom).
+
 === How to get started ===
 * Sign up in the [Vipps MobilePay portal](https://portal.vippsmobilepay.com) and choose your product.
 * After 1-2 days you will get an email with login details to Vipps MobilePay Business Portal, where you can get the API credentials
@@ -99,25 +108,19 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps MobilePay Subscription Key”
 
 == Screenshots ==
-1. Enable Vipps/MobilePay Checkout as your checkout.
-2. Enable Vipps/MobilePay as a payment method.
-3. Enter your Vipps MobilePay account keys and configure the plugin.
-4. Setup and activate the recurring payment gateway in WooCommerce.
-5. Configure the plugin settings for recurring payments.
+1. Enable Vipps/MobilePay as a payment method.
+2. Enter your Vipps MobilePay account keys and configure the plugin.
+3. Setup and activate the recurring payment gateway in WooCommerce.
+4. Configure the plugin settings for recurring payments.
 
 == Contributing on Github ==
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Version 5.3.2
-Improve express checkout banner on legacy checkokut screens
-Add new setting for retryable orders so these can be set to "cancel" or "failed" as required
-Version 5.3.1
-Fix CSS issue with on-site messaging badges on small screens
-Ensure Express orders are always "cancelled", never "failed".
-Version 5.3.0
-Aborted Vipps MobilePay orders are now "failed" instead of "cancelled" and can be retried as a new Vipps MobilePay session
-Error that occasionally sent the user to the homepage instead of Checkout fixed
+Version 6.0.1
+Fix small problems with tabs in the settings
+Version 6.0.0
+Support payment with credit or debit card as a separate payment method
 
 == Frequently Asked Questions ==
 
@@ -290,6 +293,32 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2026-06-03 Version 6.0.1 =
+Fix small problems with tabs in the settings
+
+= 2026-06-01 Version 6.0.0 =
+Support payment with credit or debit card as a separate payment method
+
+= 2026-05-28 version 5.4.3 =
+Fix issue with payment of admin-created orders
+
+= 2026-05-27 version 5.4.2 =
+Fix redirect to custom settings screen
+
+= 2026-05-20 version 5.4.1 =
+Fix new orders showing as captured when they were not
+
+= 2026-05-11 Version 5.4.0 = 
+Improved handling of refunds. Manual refunds are now only possible when payment has been captured.
+Improved handling of failed but retryable orders
+
+= 2026-05-06 Version 5.3.4 = 
+Notice added about the sale of Checkout to Kustom
+
+= 2026-05-04 Version 5.3.3 = 
+Fix express heckout for woo versions less than 9.2.0
+Vipps Checkout now in legacy mode and available only for existing installs
+
 = 2026-03-26 Version 5.3.2 =
 Improve express checkout banner on legacy checkokut screens
 Add new setting for retryable orders
