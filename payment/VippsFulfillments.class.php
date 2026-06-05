@@ -98,9 +98,9 @@ class VippsFulfillments {
 
         $original_fulfillment = $this->get_fulfillment($fulfillment->get_id());
         if (!is_a($fulfillment, 'Automattic\WooCommerce\Internal\Fulfillments\Fulfillment')) {
-                $this->fulfillment_fail(__('Something went wrong, did not find the original fulfillment to edit', 'woo-vipps'));
-                /* translators: %1 = id, %2 = method/hook name */
-                $this->gateway->log(sprintf(__('Did not find original fulfillment with id %1$s in %2$s, could not guarantee this is safe to fulfill, it was not accepted.', 'woo-vipps'), $fulfillment->get_id(), 'woocommerce_fulfillment_before_update'), 'error');
+            $this->fulfillment_fail(__('Something went wrong, did not find the original fulfillment to edit', 'woo-vipps'));
+            /* translators: %1 = id, %2 = method/hook name */
+            $this->gateway->log(sprintf(__('Did not find original fulfillment with id %1$s in %2$s, could not guarantee this is safe to fulfill, it was not accepted.', 'woo-vipps'), $fulfillment->get_id(), 'woocommerce_fulfillment_before_update'), 'error');
         }
 
         $item_ids = array_map(fn ($item) => $item['item_id'], $fulfillment->get_items());
@@ -109,7 +109,7 @@ class VippsFulfillments {
         error_log('LP before_update original_item_ids: ' . print_r($original_item_ids, true));
 
         // Ensure all item ids from before update exists in this updated fulfillment. LP 2025-11-25
-        foreach($original_item_ids as $id) {
+        foreach ($original_item_ids as $id) {
             if (!in_array($id, $item_ids)) {
                 try {
                     $item_name = $fulfillment->get_order()->get_item($id)->get_name();
@@ -149,7 +149,7 @@ class VippsFulfillments {
      * Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08
      *
      *  If support for this is turned on in the settings; When completing a fulfilment, we will sum up the total values of the items fulfilled and do
-     *  a partial capture through the Vipps Api for this order. Since fulfillments can be edited, deleted etc, we will at the same time annotate on 
+     *  a partial capture through the Vipps Api for this order. Since fulfillments can be edited, deleted etc, we will at the same time annotate on
      *  each order line how much has been captured for the given orderline. The process-refund method of the gateway will likewise annotate the refunded
      *  amounts, and the amount to be cancelled (if the order has not been captured yet.). If we cannot (safely) do a partial capture, we will throw an error instead.
      *  The user may then have to turn off this support to be able to manage the fulfillments as required.
@@ -181,7 +181,7 @@ class VippsFulfillments {
 
         // Stop early if the order has anything cancelled, we don't support partial capture as of now. LP 2025-11-21
         // If part of the order is cancelled, then the rest has been captured (if anything). We will then refuse more fulfillments.
-        // Here we *could* allow the merchant to fulfill just those order items that have been captured, but we assume for now that 
+        // Here we *could* allow the merchant to fulfill just those order items that have been captured, but we assume for now that
         // for this usecase, the merchant would not have partial capture turned on. IOK 2025-12-01
         if (intval($order->get_meta('_vipps_cancelled')) > 0) {
             /* translators: %1=company name */
@@ -197,7 +197,7 @@ class VippsFulfillments {
             $this->fulfillment_fail(sprintf(__('Cannot do partial capture through %1$s - order status is unclear. Please consider temporarily disabling fulfillment support in the %2$s settings.', 'woo-vipps'), $this->gateway->get_payment_method_name(), Vipps::CompanyName()));
         }
 
-        // Don't process anything further there is nothing to capture. Note: the meta '_vipps_capture_remaining' 
+        // Don't process anything further there is nothing to capture. Note: the meta '_vipps_capture_remaining'
         // might be unset if there is no capture on this order yet, so we instead need to calculate it here. LP 2025-11-07
         // We also should *not* subtract refunded, because it is a subset of captured! LP 2025-11-19
         $capture_remaining = intval($order->get_meta('_vipps_amount'))
@@ -251,7 +251,7 @@ class VippsFulfillments {
         // this meta is created in the filter woocommerce_fulfillment_before_update. LP 2025-11-19
         $is_an_edit = intval($fulfillment->get_meta('_vipps_fulfillment_is_edit'));
 
-        $item_capture_table = []; 
+        $item_capture_table = [];
 
         foreach ($fulfillment->get_items() as $item) {
             $item_id = $item['item_id'];
@@ -265,8 +265,9 @@ class VippsFulfillments {
             $item_name = $order_item->get_name();
             error_log('LP before_fulfill item_name: ' . print_r($item_name, true));
             $fulfill_sum = round(
-                100 * $order->get_item_total($order_item, true, false) * $fulfill_quantity
-            , 0);
+                100 * $order->get_item_total($order_item, true, false) * $fulfill_quantity,
+                0
+            );
             error_log('LP before_fulfill fulfill_sum: ' . print_r($fulfill_sum, true));
             $captured = intval($order_item->get_meta('_vipps_item_captured'));
             error_log('LP before_fulfill captured: ' . print_r($captured, true));
@@ -294,8 +295,9 @@ class VippsFulfillments {
 
             // Stop if this fulfillment would capture more than the items actual outstanding amount. LP 2025-11-07
             $order_item_sum = round(
-                100 * $order->get_item_total($order_item, true, false) * $order_item->get_quantity()
-            , 0);
+                100 * $order->get_item_total($order_item, true, false) * $order_item->get_quantity(),
+                0
+            );
             $noncapturable = intval($order_item->get_meta('_vipps_item_noncapturable'));
             $item_outstanding = $order_item_sum - $noncapturable - $captured;
             if ($to_capture > $item_outstanding) {
