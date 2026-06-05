@@ -2349,8 +2349,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param mixed $renewal_order The renewal order
 	 */
 	public function delete_renewal_meta( $renewal_order ) {
-		if ( ! $renewal_order instanceof WC_Order
-			 || $renewal_order->get_payment_method() !== $this->id ) {
+		if ( ! $renewal_order instanceof WC_Order ) {
 			return $renewal_order;
 		}
 
