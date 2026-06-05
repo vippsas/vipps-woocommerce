@@ -2349,6 +2349,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param mixed $renewal_order The renewal order
 	 */
 	public function delete_renewal_meta( $renewal_order ) {
+		if ( ! $renewal_order instanceof WC_Order
+			 || $renewal_order->get_payment_method() !== $this->id ) {
+			return $renewal_order;
+		}
+
 		// Do not delete the idempotency key if the order has failed previously
 		$has_failed_previously = WC_Vipps_Recurring_Helper::get_meta( $renewal_order, '_failed_renewal_order' );
 		if ( $has_failed_previously !== "yes" ) {
