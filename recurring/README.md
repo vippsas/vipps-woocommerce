@@ -115,7 +115,7 @@ The [WooCommerce Subscriptions Importer and Exporter plugin](https://github.com/
 
 After installing the plugin you need to first and foremost familiarize yourself with the [Importer Usage Guide](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#importer-usage-guide).
 
-While creating your CSV file, you need to make sure that you are mapping the fields as specific in the [column docs](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#column-mapping). For Vipps MobilePay specifically, you need to set the following fields for subscriptions to work properly:
+While creating your CSV file, make sure that you are mapping the fields as specified in the [column docs](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#column-mapping). For Vipps MobilePay specifically, you need to set the following fields for subscriptions to work properly:
 
 1. The `payment_method` field needs to be set to `vipps_recurring`.
 2. The `_agreement_id` field needs to be set to the agreement ID from Vipps MobilePay.
@@ -134,7 +134,7 @@ The plugin is currently in a pre-release phase and will have more filters, actio
 
 Constants can be re-defined by using `define('CONSTANT_NAME', 'value');` in `wp-config.php`.
 
-`WC_VIPPS_RECURRING_RETRY_DAYS`: (integer) default: 4
+`WC_VIPPS_RECURRING_RETRY_DAYS`: (integer) default: 2
 
 The amount of days Vipps/MobilePay will retry a charge for before it fails.
 See [Charge retries](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/recurring-api-guide/#charge-retries) for more information.

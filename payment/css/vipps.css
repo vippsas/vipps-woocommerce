@@ -32,6 +32,7 @@ vipps-mobilepay-badge {
     width: 90vw;
 }
 
+
 /* Vipps Checkout Widgets */
 .vipps_checkout_widget_wrapper {
     width: 100%;
@@ -188,7 +189,16 @@ a.button.vipps-express-checkout.disabled img {
 }
 
 li.wc_payment_method.payment_method_vipps img {
-	max-width: 145px;
+    max-width: 145px;
+}
+
+.woocommerce-checkout #payment ul.payment_methods li.wc_payment_method.payment_method_vipps img {
+   margin-top:.5rem;
+   float: right;
+}  
+.woocommerce-checkout #payment ul.payment_methods li.wc_payment_method.payment_method_vipps_card img {
+    height: 3.5rem;
+    float:right;
 }
 
 a.button.vipps-buy-now:focus {
@@ -332,22 +342,24 @@ img.inline {
 /* New express section for woo legacy (shortcode) checkout. LP 2026-03-23 */
 .legacy-checkout.vipps-express-checkout {
     max-width: 20rem;
-    position: relative;
+    box-sizing: border-box;
     border: 1px solid lightgrey;
     border-radius: 4px;
-    padding: 1.4rem 1.8rem 1rem;
+    min-inline-size: 0;
+    padding: 1.1rem 1.7rem;
     margin: 1rem auto;
     text-align: center;
 }
 .legacy-checkout.vipps-express-checkout .express-header {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    display: table;
+    margin: 0 auto;
     padding: 0 0.75rem;
-    background: #fff;
     line-height: 1;
     font-size: var(--wp--preset--font-size--small);
+}
+.legacy-checkout.vipps-express-checkout a, .legacy-checkout.vipps-express-checkout img {
+    padding: 0 !important;
+    border: 0 !important;
 }
 
 .vipps_checkout_button_wrapper {

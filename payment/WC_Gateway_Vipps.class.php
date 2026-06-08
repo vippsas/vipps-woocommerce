@@ -234,7 +234,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function maybe_cancel_reserved_amount ($orderid) {
         $order = wc_get_order($orderid);
         if (!$order) return;
-        if ('vipps' != $order->get_payment_method()) return false;
+        if (! Vipps::is_vipps_order($order)) return false;
         // Cannot partially cancel legacy ecom orders
         if ('epayment' != $order->get_meta('_vipps_api')) return false; 
 
@@ -470,7 +470,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function maybe_delete_order ($orderid) {
         $order = wc_get_order($orderid);
         if (!$order) return;
-        if ('vipps' != $order->get_payment_method()) return false;
+        if (! Vipps::is_vipps_order($order)) return false;
         $express = $order->get_meta('_vipps_express_checkout');
         if (!$express) return false;
         $email = $order->get_billing_email();
@@ -675,7 +675,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Called when orders reach the 'refunded' status. We'll add a complete refund and note that any rest is to be cancelled.
     public function maybe_refund_order($order_id) {
         $order = wc_get_order($order_id);
-        if ('vipps' != $order->get_payment_method()) return false;
+        if (! Vipps::is_vipps_order($order)) return false;
         try {
             $order = $this->update_vipps_payment_details($order); 
         } catch (Exception $e) {
@@ -702,7 +702,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // when they have been captured, but for added safety, this is only done when the orders are relatively new. 
     public function maybe_cancel_order($order_id) {
         $order = wc_get_order($order_id);
-        if ('vipps' != $order->get_payment_method()) return false;
+        if (! Vipps::is_vipps_order($order)) return false;
 
         try {
             $order = $this->update_vipps_payment_details($order); 
@@ -770,7 +770,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // instead of the normal woo logic. IOK 2026-04-16
     public function wc_order_fully_refunded ($orderid) {
         $order = wc_get_order($orderid);
-        if ('vipps' != $order->get_payment_method()) return false;
+        if (! Vipps::is_vipps_order($order)) return false;
 
         // First check to see if we actually need to refund anything now IOK 2026-02-16
         $max_refund = wc_format_decimal( $order->get_total() - $order->get_total_refunded() );
@@ -870,7 +870,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // they don't require payment. So we try to capture. IOK 2020-09-22
     // do NOT call this unless the order is 'reserved' at Vipps!
     protected function maybe_complete_payment($order) {
-        if ('vipps' != $order->get_payment_method()) return false;
+        if (! Vipps::is_vipps_order($order)) return false;
         if ($order->needs_processing()) return false; // No auto-capture for orders needing processing
         // IOK 2018-10-03 when implementing partial capture, this must be modified.
         $captured = intval($order->get_meta('_vipps_captured')); 
@@ -897,7 +897,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order_id = intval($args['order_id'] ?? 0);
         $order = $order_id ? wc_get_order( $order_id ) : null;
         if ( ! $order ) return;
-        if ( $order->get_payment_method() !== 'vipps' ) return;
+        if (! Vipps::is_vipps_order($order)) return;
         // This is for manual refunds only IOK 2026-02-24
         if (!($args['refund_payment'] ?? false)) { 
             try {
@@ -1954,7 +1954,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // This tries to capture a Vipps payment, and resets the status to 'on-hold' if it fails.  IOK 2018-05-07
     public function maybe_capture_payment($orderid) {
         $order = wc_get_order($orderid);
-        if ('vipps' != $order->get_payment_method()) return false;
+        if (! Vipps::is_vipps_order($order)) return false;
         $ok = 0;
 
         # Shortcut orders that have been directly captured
@@ -2017,7 +2017,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Except that we *do* note that money "refunded" through vipps before capture should be "uncapturable". IOK 2024-11-25
     public function capture_payment($order) {
         $pm = $order->get_payment_method();
-        if ($pm != 'vipps') {
+        if (! Vipps::is_vipps_order($pm)) { 
             $this->log(sprintf(__('Trying to capture payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()). ' ' . $order->get_id(), 'error');
             $this->adminerr(sprintf(__('Cannot capture payment on orders not made by %1$s','woo-vipps'), $this->get_payment_method_name()));
             return false;
@@ -2123,7 +2123,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Cancel (only completely) a reserved but not yet captured order IOK 2018-05-07
     public function cancel_payment($order) {
         $pm = $order->get_payment_method();
-        if ($pm != 'vipps') {
+        if (! Vipps::is_vipps_order($pm)) {
             $this->log(sprintf(__('Trying to cancel payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()). ' ' .$order->get_id(), 'error');
             $this->adminerr(sprintf(__('Cannot cancel payment on orders not made by %1$s','woo-vipps'), $this->get_payment_method_name()));
             return false;
@@ -2190,7 +2190,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // The caller must handle the errors.
     public function refund_payment($order,$amount=0,$cents=false) {
         $pm = $order->get_payment_method();
-        if ($pm != 'vipps') {
+        if (! Vipps::is_vipps_order($pm)) {
             $msg = sprintf(__('Trying to refund payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id();
             $this->log($msg,'error');
             throw new VippsAPIException($msg);
@@ -2334,9 +2334,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // New 2026-01-05: we now check all other payment methods that aren't vipps, and reset it back to vipps.
         // The issue was using Klarna Payments and pressing 'back' in the browser, then completing the payment in vipps checkout
         // the order still had the payment method klarna_payments, since we previously only checked 'kco' = klarna/kustom checkout. LP 2026-01-05
-        if ($order->get_payment_method() != "vipps" && $order->get_meta("_vipps_orderid")) {
+        if (! Vipps::is_vipps_order($order) && $order->get_meta("_vipps_orderid")) {
             $order->set_payment_method('vipps');
-
             $express = $order->get_meta('_vipps_express_checkout');
             $checkout = $order->get_meta('_vipps_checkout');
             $order->set_payment_method_title('Vipps');
@@ -3642,7 +3641,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function order_payment_complete ($orderid) {
         $order = wc_get_order($orderid);
         if (!is_a($order, 'WC_Order')) return false;
-        if ($order->get_payment_method() != 'vipps') return false;
+        if (! Vipps::is_vipps_order($order)) return false;
 
         $do_order_management = apply_filters('woo_vipps_order_management_on_payment_complete', true, $orderid);
         if (!$do_order_management) return;
@@ -3672,7 +3671,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!is_a($order, 'WC_Order')) {
             return false;
         }
-        if ($order->get_payment_method() != 'vipps') return false;
+        if (! Vipps::is_vipps_order($order)) return false;
         if ($order->get_order_key() != wc_clean($orderkey)) {
             return false;
         }
@@ -4188,7 +4187,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $local_hooks[$msn] = array($gotit['id'] => $gotit);
             } else {
                 // If not, we don't have a hook for this msn and site, so we need to (try to) create one
-                // but only if the MSN is registered for the payment gateway 'vipps' ! IOK 2024-12-03
+                // but only if the MSN is registered for the payment gateway "vipps" ! IOK 2024-12-03
                 $keys = $keysets[$msn] ?? [];
                 $gateway = $keys['gw'] ?? 'vipps';
 
@@ -4273,6 +4272,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Use Billing Phone if it is required, otherwise ask for a phone IOK 2018-04-24
         // For v2 of the api, just let Vipps ask for then umber
         // IOK 2019-09-12 removed dead code only used for v1 of api
+        // This just prints a description of the payment method.
     print $this->get_option('description');
         return;
     }

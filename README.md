@@ -26,7 +26,7 @@ For support, contact the
 
 Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway and Sweden. One platform gathering more than 11 million users and more than 400,000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.
 
-This is the official Vipps/MobilePay plugin for payments and Express checkout buttons. Increase your conversion rate by letting your customers pay with a fast, secure and convenient payment method. Vipps MobilePay allows users to make quick and easy payments using their mobile phone, without the need for entering credit card details or other sensitive information.
+This is the official Vipps/MobilePay plugin for payments and Express buttons. Increase your conversion rate by letting your customers pay with a fast, secure and convenient payment method. Vipps MobilePay allows users to make quick and easy payments using their mobile phone, without the need for entering credit card details or other sensitive information.
 
 You can do important back-office tasks, such as capture and refund directly from WooCommerce.
 
@@ -56,7 +56,7 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 
 If you use [Posten Bring Checkout plugin for WooCommerce](https://wordpress.org/plugins/posten-bring-checkout/) together with Vipps MobilePay Checkout, you will get a streamlined shipping process tightly integrated with the market leading Vipps MobilePay Checkout. Both plugins are free to use, and easy to install.
 
-You can offer your customers a variety of delivery methods, track shipments, print shipping labels, and calculate shipping costs automatically at checkout. Both plugins are designed for simple installation and management through the WooCommerce dashboard and supports both smaller and larger shops looking to streamline their payments with Vipps MobilePay and logistics with Bring.
+You can offer your customers a variety of delivery methods, track shipments, print shipping labels, and calculate shipping costs automatically at checkout. Both plugins are designed for simple installation and management through the WooCommerce dashboard and support both smaller and larger shops looking to streamline their payments with Vipps MobilePay and logistics with Bring.
 
 👉 [Read more on Bring’s website](https://www.bring.no/radgivning/integrasjon/plugin-woocommerce)
 
@@ -68,7 +68,7 @@ When you enable Vipps MobilePay Express, your customers can choose between the r
 
 Since Vipps MobilePay knows who the customers are, they don’t have to enter all their personal information. The customer just chooses the shipping method and accepts the payment. Vipps MobilePay will send all the necessary info back to the store. Easy, fast and secure.
 
-The express checkout can be done in the following ways:
+Express can be done in the following ways:
 
 * From the cart
 * From the category pages
@@ -100,7 +100,7 @@ They then confirm the payment in the Vipps or MobilePay app.
    The plugin can also be installed manually by uploading the plugin files to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the *Plugins* screen on WordPress.
 3. Go to the *WooCommerce Settings* page, choose *Payments*, and enable Vipps MobilePay.
-4. Go the *Settings* page for the Vipps MobilePay plugin and enter your Vipps MobilePay account keys. Your account keys are available in the [business portal](https://portal.vippsmobilepay.com/). For information, see [How to get account keys](#how-to-get-account-keys-from-the-business-portal).
+4. Go to the *Settings* page for the Vipps MobilePay plugin and enter your Vipps MobilePay account keys. Your account keys are available in the [business portal](https://portal.vippsmobilepay.com/). For information, see [How to get account keys](#how-to-get-account-keys-from-the-business-portal).
 
 ## How to get account keys from the business portal
 

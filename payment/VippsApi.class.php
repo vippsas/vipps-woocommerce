@@ -507,6 +507,9 @@ class VippsApi {
         }
 
         if (!$idempotency_key) $idempotency_key = $order->get_order_key();
+        
+        // We now support two gateways: 'vipps' and 'vipps_card' for credit card payments.
+        $gateway = $order->get_payment_method();
 
         // Make sure to clean up old metas, since we now support restarting order payment with Vipps retry sesssions,
         // so these may be set and cause conflicts. LP 2026-03-11
@@ -528,6 +531,10 @@ class VippsApi {
         if ($express) {
            $headers['Vipps-System-Plugin-Name'] = 'woo-vipps-express';
         }
+        // And credit card payments the same IOK 2026-05-27
+        if ($gateway == 'vipps_card') {
+            $headers['Vipps-System-Plugin-Name'] = 'woo-vipps-card';  
+        } 
 
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
         // This is really for the new epayment api only, but we do this to ensure we use the same logic. For short prefixes and order numbers.
@@ -566,7 +573,19 @@ class VippsApi {
 
         $data = [];
         $data['reference'] = $vippsorderid;
+
+        // WEB_REDIRECT is the normal flow; requires a returnUrl. PUSH_MESSAGE requires a valid customer (phone number)
+        // NATIVE_REDIRECT is for automatic app switch between a native app and the Vipps MobilePay app.
+        // QR returns a QR code that can be scanned to complete the payment. IOK 2023-12-13
+        $data['userFlow'] = apply_filters('woo_vipps_payment_user_flow', 'WEB_REDIRECT', $orderid);
+
         $data['paymentMethod'] = ['type' => 'WALLET']; // This is the Vipps MobilePay app. CARD is credit card, must then use userFlow WEB_REDIRECT
+
+        if ($gateway == 'vipps_card') {
+           $data['paymentMethod'] = ['type' => 'CARD'];
+           $data['userFlow'] = 'WEB_REDIRECT';
+        }
+
         $data['amount'] = ['currency' => $order->get_currency(), 'value' => round(wc_format_decimal($order->get_total(),'') * 100)]; 
         $data['returnUrl'] = $fallback;
 
@@ -629,10 +648,6 @@ class VippsApi {
         }
         $data['minimumUserAge'] = $minage; 
 
-        // WEB_REDIRECT is the normal flow; requires a returnUrl. PUSH_MESSAGE requires a valid customer (phone number)
-        // NATIVE_REDIRECT is for automatic app switch between a native app and the Vipps MobilePay app.
-        // QR returns a QR code that can be scanned to complete the payment. IOK 2023-12-13
-        $data['userFlow'] = apply_filters('woo_vipps_payment_user_flow', 'WEB_REDIRECT', $orderid);
 
         // Some control over the QR
         if ($data['userFlow'] == 'QR') {
