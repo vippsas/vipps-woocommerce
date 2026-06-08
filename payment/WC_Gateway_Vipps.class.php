@@ -837,7 +837,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $the_refund = wc_create_refund($data);
         wc_restore_locale();
         if (is_wp_error($the_refund)) {
-            $refund_thru_gateway = false;
             $msg = $the_refund->get_error_message();
             $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $msg);
             $order->save();
