@@ -863,6 +863,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $remaining_tax = [];
             if ($tax_data) {
                 foreach($tax_data['total'] as $tax_id => $value) {
+                    if ('' === $value) continue; // don't add empty string as tax value, fatal crash. LP 2026-06-08
                     $remaining_tax[$tax_id] = $value;
                 }
             }
