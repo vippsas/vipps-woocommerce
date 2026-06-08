@@ -72,22 +72,34 @@ class VippsAdminSettings
             exit();
         }
 
-        // Decode the settings from the values sents, then save them to "woocommerce_vipps_settings"
+        // Decode the settings from the values sents, then save them to "woocommerce_vipps_settings" and "woocommerce_vipps_card_settings"
         $new_settings = $_POST['values'];
 
-        // IOK FIXME This will ensure sanitization etc works as it is supposed to using the 
+
+        // IOK TODO This will ensure sanitization etc works as it is supposed to using the 
         // admin settings api of WooCommerce. We will however want to run this code independently, so we'll handle this 
         // by ourselves at a later point, ending it like so:
         // update_option('woocommerce_vipps_settings', $new_settings); // After sanitation etc
+        // update_option('woocommerce_vipps_card_settings', $card_settings); // Separated out
+
         $admin_options = [];
+        $card_admin_options= [];
         foreach ($new_settings as $key => $value) {
             // Checkbox settings (yes/no) can't be passed directly to set_post_data, because *any* value will be interpreted as "yes"
             // because of this, checkbox settings with the value "no" will be completely ignored
             if($value !== 'no') {
-                // Because settings are processed manually, their keys need to prefixed with "woocommerce_vipps_"
-                $admin_options['woocommerce_vipps_' . $key] = $value;
+                // Because settings are processed manually, their keys need to prefixed with "woocommerce_<gatewayid>_" 
+                // options with prefix cc_ are for the credit card gateway.
+                if (preg_match("!^cc_!", $key)) {
+                    $key = preg_replace("!^cc_!", "", $key);
+                    $card_admin_options['woocommerce_vipps_card_' . $key] = $value;
+                } else {
+                    $admin_options['woocommerce_vipps_' . $key] = $value;
+                }
             }
         }
+
+        // Save options for the main gateway first
         // We need to initialize these again so "conditional" options are available
         // IOK 2024-06-05
         $this->gateway()->init_form_fields(); 
@@ -95,6 +107,15 @@ class VippsAdminSettings
         $this->gateway()->process_admin_options();
 //        $this->gateway()->add_error("Jaboloko!");  // Also add_warning, add_notice plz
         $form_errors = $this->gateway()->get_errors();
+
+        // Then the card gateway
+        $cards= WC_Gateway_VippsCard::instance();
+        $cards->init_form_fields();
+        $cards->set_post_data($card_admin_options);
+        $cards->process_admin_options();
+        $form_errors = array_merge($form_errors, $cards->get_errors());
+
+
         $form_ok = empty($form_errors);
         // end use of process_admin_options IOK 2024-01-03
 
@@ -109,6 +130,11 @@ class VippsAdminSettings
 
         // Get the current options
         $options = get_option('woocommerce_vipps_settings');
+        // Augment with card gateway, with prefix
+        $card_options = get_option('woocommerce_vipps_card_settings');
+        foreach($card_options as $key => $data) {
+          $options["cc_$key"] = $data;
+        }
 
         // Add receipt image URL if receipt image exists
         if (!empty($new_settings['receiptimage'])) {
@@ -129,8 +155,7 @@ class VippsAdminSettings
     }
 
     // Initializes the admin settings UI for VippsMobilePay
-    function init_admin_settings_page_react_ui()
-    {
+    function init_admin_settings_page_react_ui() {
         global $Vipps;
         echo "<div class='wrap vipps-admin-settings-page'>";
         // Add nonce first.
@@ -144,6 +169,7 @@ class VippsAdminSettings
         // Initializing the wordpress media plugin, so we can upload images
         wp_enqueue_media();
         $gw = $this->gateway();
+        $card_gw = WC_Gateway_VippsCard::instance();
 
         // Loads the React UI
         $reactpath = "dist";
@@ -176,7 +202,7 @@ class VippsAdminSettings
                 'kustom_sale_2' => __('Vipps MobilePay has entered into an agreement to sell the Checkout solution to <a href="https://Kustom.co" target="_blank">Kustom</a>', 'woo-vipps'),
                 'kustom_sale_3' => __('As part of this transition, <b>Vipps MobilePay Checkout</b> will become <b>Kustom Checkout</b>. This means the Checkout product you ordered will be delivered and developed by Kustom going forward.', 'woo-vipps'),
                 'kustom_sale_4' => __('If your account is newer than March 27. 2026, it will <b>not</b> support Vipps MobilePay Checkout in this plugin.', 'woo-vipps'),
-                'kustom_sale_5' => __('If you have questions, you can check our <a href="https://vippsmobilepay.com/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps')
+                'kustom_sale_5' => __('If you have questions, you can check our <a href="https://vippsmobilepay.com/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps'),
                 );
 
         $wizardTranslations = [
@@ -293,7 +319,22 @@ class VippsAdminSettings
             // nop right now
         }
 
-        wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', array_merge($gw->form_fields, $commonTranslations, $wizardTranslations));
+        /* Add the options from the credit card gateway too, with a cc_prefix which we strip on process_payments. IOK 2026-05-27*/
+        $card_gw->init_form_fields();
+        $cc_translations = [];
+        foreach($card_gw->settings as $key => $data) {
+            $settings["cc_$key"] = $data;
+        }
+        foreach($card_gw->form_fields as $key => $data) {
+            $cc_translations["cc_$key"] = $data;
+        }
+        $cc_translations['cc_options'] = [
+           'title' => __('Card payments', 'woo-vipps'), 
+           'description' => __("Provide a card payment method for customers that haven't got the app (yet!)", 'woo-vipps'),
+            'test_mode_warning' => sprintf(__('Warning: card payments may not yet be available in the test environment, please check the %1$s <a href="https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/">knowledge base</a> for updated status about the test environment.'), Vipps::CompanyName()),
+        ];
+
+        wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', array_merge($gw->form_fields, $cc_translations,  $commonTranslations, $wizardTranslations));
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactOptions', $settings);
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactMetadata', $metadata);
 

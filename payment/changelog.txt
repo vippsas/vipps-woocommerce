@@ -1,4 +1,26 @@
 == Changelog ==
+= 2026-06-08 version 6.0.2 =
+Make stricter CSS for Express in shortcode checkout
+
+= 2026-06-03 Version 6.0.1 =
+Fix small problems with tabs in the settings
+
+= 2026-06-01 Version 6.0.0 =
+Support payment with credit or debit card as a separate payment method
+
+= 2026-05-28 version 5.4.3 =
+Fix issue with payment of admin-created orders
+
+= 2026-05-24 version 5.4.2 =
+Fix redirect from old to new settings screen
+
+= 2026-05-20 version 5.4.1 =
+Fix new orders showing as captured when they were not
+
+= 2026-05-11 Version 5.4.0 = 
+Improved handling of refunds. Manual refunds are now only possible when payment has been captured.
+Improved handling of failed but retryable orders
+
 = 2026-05-06 Version 5.3.4 = 
 Notice added about the sale of Checkout to Kustom
 
