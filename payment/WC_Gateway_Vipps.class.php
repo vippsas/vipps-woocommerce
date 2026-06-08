@@ -2416,7 +2416,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->update_meta_data('_vipps_captured', $captured);
         $order->update_meta_data('_vipps_capture_remaining', $remaining);
-        $order->update_meta_data('_vipps_capture_complete', (bool) $remaining);
+        $order->update_meta_data('_vipps_capture_complete',  !$remaining);
         $order->update_meta_data('_vipps_refund_remaining', $refundable);
         $order->update_meta_data('_vipps_capture_timestamp', time());
         $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$amount/100) . ' ' . $currency);
