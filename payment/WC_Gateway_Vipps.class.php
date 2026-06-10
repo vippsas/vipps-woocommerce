@@ -687,12 +687,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return true; // Can't refund these
         }
 
-        $captured = intval($order->get_meta('_vipps_captured'));
-        $vippsstatus = $order->get_meta('_vipps_status');
-        if ($captured > 0 || $vippsstatus == 'SALE') {
-            // This will create + process a refund for the captured amount. IOK 2026-01-26
-            $this->wc_order_fully_refunded ($order_id);
-        }
+        // This will create + process a refund for the captured amount (if any). IOK 2026-01-26
+        // We always run this since woo will create a manual refund on this status change: we want the refund to be through our gw instead. LP 2026-06-10
+        $this->wc_order_fully_refunded ($order_id);
+
         // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
         $order->update_meta_data('_vipps_capture_complete',true);
         $order->save();
