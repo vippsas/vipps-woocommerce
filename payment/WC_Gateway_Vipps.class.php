@@ -848,10 +848,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         error_log('LP the_refund: ' . print_r($the_refund, true));
         wc_restore_locale();
         if (is_wp_error($the_refund)) {
-            $msg = $the_refund->get_error_message();
-            $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $msg);
+            $err_msg = $the_refund->get_error_message();
+            $msg = sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $err_msg;
+            $order->add_order_note($msg);
             $order->save();
-            $this->adminerr($msg);
+            $this->log($msg, 'error');
+            $this->adminerr($err_msg);
         }
         return true;
     }
@@ -1184,7 +1186,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ($to_maybe_refund > $order_item_sum - $refunded - $noncapturable) {
                 error_log("LP calculate_refund_item_values case to_maybe_refund=$to_maybe_refund was greater than what is available to refund or noncapture");
                 /* translators: %1 = payment method name, %2 = item product name */
-                return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large for item '%2\$s'.", 'woo-vipps'), $this->get_payment_method_name(), $refund_item->get_name()));
+                return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount for item '%2\$s' is larger than available to refund.", 'woo-vipps'), $this->get_payment_method_name(), $refund_item->get_name()));
             }
 
             // THE DISTINCT REFUND CASES:
