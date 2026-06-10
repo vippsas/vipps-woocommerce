@@ -263,6 +263,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
     // Ensure we've updated the vipps status before calling this. IOK 2026-01-28
     public function maybe_cancel_reserved_amount ($orderid) {
+        error_log('LP maybe_cancel_reserved_amount');
         $order = wc_get_order($orderid);
         if (!$order) return;
         if (! Vipps::is_vipps_order($order)) return false;
@@ -278,10 +279,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $order_status = $order->get_status();
+        error_log('LP order_status: ' . print_r($order_status, true));
 
         if ('completed' == $order_status) {
             // For safety, on  completed orders also only want to do this for orders that have had *something* captured. IOK 2025-02-04
             $captured = intval($order->get_meta('_vipps_captured'));
+            error_log('LP captured: ' . print_r($captured, true));
             if ($captured < 1) {
                 return false;
             }
@@ -289,6 +292,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ('cancelled' != $order_status) {
             // If not in the 'cancelled' state, allow merchants that do not reserve large amounts to opt out for safety IOK 2025-02-04
             if (apply_filters('woo_vipps_never_cancel_uncaptured_money', false, $order)) {
+                error_log('LP filter never_cancel_unpaid_money true, exiting');
                 return false;
             }
         }
@@ -296,6 +300,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $ok = true;
 
         $remaining = intval($order->get_meta('_vipps_capture_remaining'));
+        error_log('LP remaining: ' . print_r($remaining, true));
 
         if ($remaining > 0) {
             $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
@@ -304,6 +309,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $currency = $order->get_currency();
         try {
             $ok = $this->cancel_payment($order);
+            error_log('LP cancel_payment returned ok: ' . print_r($ok, true));
             if ($ok && $remaining && 'completed' == $order_status) {
                 $amount = number_format($remaining/100, 2) . " " . $currency;
                 $note = sprintf(__('Order %1$s: %2$s is cancelled to free up the reservation in the customers bank account.', 'woo-vipps'), $orderid, $amount);
@@ -710,6 +716,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Called when orders reach the 'refunded' status. We'll add a complete refund and note that any rest is to be cancelled.
     public function maybe_refund_order($order_id) {
+        error_log("LP maybe_refund_order for order $order_id");
         $order = wc_get_order($order_id);
         if (! Vipps::is_vipps_order($order)) return false;
         try {
@@ -728,6 +735,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->wc_order_fully_refunded ($order_id);
 
         // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
+        error_log('LP setting capture complete');
         $order->update_meta_data('_vipps_capture_complete',true);
         $order->save();
     }
@@ -803,12 +811,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // so that we can create a through-the-gateway refund for this if neccessary. That way, *our* logic for refunds occur
     // instead of the normal woo logic. IOK 2026-04-16
     public function wc_order_fully_refunded ($orderid) {
+        error_log("LP wc_order_fully_refunded for $orderid");
         $order = wc_get_order($orderid);
         if (! Vipps::is_vipps_order($order)) return false;
 
         // First check to see if we actually need to refund anything now IOK 2026-02-16
         $max_refund = wc_format_decimal( $order->get_total() - $order->get_total_refunded() );
+        error_log('LP max_refund: ' . print_r($max_refund, true));
         if ( ! $max_refund ) {
+            error_log('LP nothig to refund, exiting');
             return;
         }
 
@@ -830,9 +841,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // IOK 2026-04-17 Should be all remaining un-refunded line items
         $line_items = apply_filters('woo_vipps_order_fully_refunded_line_items', $this->get_remaining_refundable_line_items($order), $order);
         $data['line_items'] = $line_items;
+        error_log('LP data: ' . print_r($data, true));
        
         wc_switch_to_site_locale();            
         $the_refund = wc_create_refund($data);
+        error_log('LP the_refund: ' . print_r($the_refund, true));
         wc_restore_locale();
         if (is_wp_error($the_refund)) {
             $msg = $the_refund->get_error_message();
@@ -2560,6 +2573,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Cancel (only completely) a reserved but not yet captured order IOK 2018-05-07
     // Will cancel the outstanding amount on a partially captured order. LP 2025-10-14
     public function cancel_payment($order) {
+        error_log('LP cancel_payment');
         $pm = $order->get_payment_method();
         if (! Vipps::is_vipps_order($pm)) {
             $this->log(sprintf(__('Trying to cancel payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()). ' ' .$order->get_id(), 'error');
@@ -2569,6 +2583,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We'll use the same transaction id for all cancel jobs, as we can only do it completely. IOK 2018-05-07
         // For epayment, partial cancellations will be possible. IOK 2022-11-12
         $api = $order->get_meta('_vipps_api');
+        error_log('LP api: ' . print_r($api, true));
         try {
             $requestid = "";
             if ($api == 'banktransfer') {
@@ -2578,6 +2593,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $requestid = 1;
                 // This will cancel any remaining, not-captured amount IOK 2026-01-28
                 $content =  $this->api->epayment_cancel_payment($order,$requestid);
+                error_log('LP content: ' . print_r($content, true));
             } else {
                 // If we have captured the order, we can't cancel it with the ecom API IOK 2018-05-07
                 $captured = intval($order->get_meta('_vipps_captured'));
@@ -2612,6 +2628,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_cancelled', $total_cancelled);
         $order->update_meta_data('_vipps_noncapturable', $total_cancelled); # sync noncapturable with cancelled. LP 2025-11-24
         $order->update_meta_data('_vipps_cancel_remaining', $remaining);
+
+        // Annotate order items as cancelled since we support partial capture. LP 2026-06-09
+        $this->mark_order_items_fully_cancelled($order);
 
         // Set status from Vipps, ignore errors, use statusdata if we have it.
         try {
