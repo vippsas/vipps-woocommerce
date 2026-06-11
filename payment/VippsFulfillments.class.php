@@ -319,7 +319,7 @@ class VippsFulfillments {
             throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg);
         }
         /* translators: %1 = class name, %2 = exception message */
-        $this->gateway->log(sprintf(__('%1$ did not exist to throw on fulfillment fail, the fail message was: %2$s', "woo-vipps"), 'error'), 'FulfillmentException', $msg);
+        $this->gateway->log(sprintf(__('%1$ did not exist to throw on fulfillment fail, the fail message was: %2$s', "woo-vipps"), 'FulfillmentException', $msg), 'error');
         throw new Exception($msg);
     }
 

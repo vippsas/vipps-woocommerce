@@ -971,6 +971,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Since we support partial capture (fulfillments), we reject the refund if capture is incomplete. LP 2026-06-05
             $is_fully_captured = (bool) $order->get_meta('_vipps_capture_complete', false);
+            error_log('LP hook woocommerce_create_refund is_fully_captured: ' . ($is_fully_captured ? 'true' : 'false'));
             if (!$is_fully_captured) {
                 $msg = sprintf(__("Order %2\$d: It is not possible to create a manual refund for a %1\$s order before it has been captured - doing so makes it impossible to track how much to capture and how much to release. If you create the refund through %1\$s, a note will be made internally so that the amount to be refunded will *not* be captured - please do this instead if possible. Otherwise, capture the order then refund either manually or through %1\$s", 'woo-vipps'), $this->get_payment_method_name(), $order_id);
                 throw new Exception($msg);
