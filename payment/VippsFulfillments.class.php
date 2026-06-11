@@ -62,7 +62,8 @@ class VippsFulfillments {
     /** Whether this store can support woo fulfillments. LP 2025-10-27 */
     public function is_supported() {
         if (version_compare(WC_VERSION, '10.2', '>=')
-                && get_option('woocommerce_feature_fulfillments_enabled') == 'yes') {
+                && class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')
+                && \Automattic\WooCommerce\Utilities\FeaturesUtil::feature_is_enabled('fulfillments')) {
             // We need this main class. LP 2026-06-11
             if (class_exists("{$this->woo_namespace}\Fulfillment")) {
                 return true;
