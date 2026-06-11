@@ -10,7 +10,7 @@ import { CheckboxFormField, InputFormField, SelectFormField, TextareaFormField }
  */
 export function AdminSettingsMainOptionsTab(): JSX.Element {
   const { setOption, getOption } = useWP();
-  const fulfillmentsSupported = !!getOption('fulfillments_enabled');
+  const fulfillmentsSupported = gettext('fulfillments_enabled') !== 'fulfillments_enabled' ;
   return (
     <div>
       <p className="vipps-mobilepay-react-tab-description"></p>
