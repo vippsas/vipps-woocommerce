@@ -899,14 +899,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Then the quantity
             $qty = (int) $item->get_quantity();
             error_log('LP qty: ' . print_r($qty, true));
-            $refunded_quantity = abs((int) $order->get_qty_refunded_for_item($item_id)); // Documented to be positive since 3.0, seems to be actually negative. 
+            $refunded_quantity = abs((int) $order->get_qty_refunded_for_item($item_id, $item->get_type())); // Documented to be positive since 3.0, seems to be actually negative. 
             error_log('LP refunded_quantity: ' . print_r($refunded_quantity, true));
             $remaining_quantity = $qty-$refunded_quantity;
             error_log('LP remaining_quantity: ' . print_r($remaining_quantity, true));
 
             $total = $item->get_total();
             error_log('LP total: ' . print_r($total, true));
-            $refunded_total =  $order->get_total_refunded_for_item($item_id); // A positive value
+            $refunded_total =  $order->get_total_refunded_for_item($item_id, $item->get_type()); // A positive value
             error_log('LP refunded_total: ' . print_r($refunded_total, true));
             $remaining_total = wc_format_decimal($total-$refunded_total);
             error_log('LP remaining_total: ' . print_r($remaining_total, true));
