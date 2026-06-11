@@ -843,11 +843,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Then the quantity
             $qty = (int) $item->get_quantity();
-            $refunded_quantity = abs((int) $order->get_qty_refunded_for_item($item_id)); // Documented to be positive since 3.0, seems to be actually negative. 
+            $refunded_quantity = abs((int) $order->get_qty_refunded_for_item($item_id, $item->get_type())); // Documented to be positive since 3.0, seems to be actually negative. 
             $remaining_quantity = $qty-$refunded_quantity;
 
             $total = $item->get_total();
-            $refunded_total =  $order->get_total_refunded_for_item($item_id); // A positive value
+            $refunded_total =  $order->get_total_refunded_for_item($item_id, $item->get_type()); // A positive value
             $remaining_total = wc_format_decimal($total-$refunded_total);
 
 
