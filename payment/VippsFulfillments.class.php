@@ -46,11 +46,11 @@ class VippsFulfillments {
 
 
     public function register_hooks() {
-        if ($this->is_enabled()) {
-            add_filter('woocommerce_fulfillment_before_fulfill', [$this, 'woocommerce_fulfillment_before_fulfill']);
-            add_filter('woocommerce_fulfillment_before_delete', [$this, 'woocommerce_fulfillment_before_delete']);
-            add_filter('woocommerce_fulfillment_before_update', [$this, 'woocommerce_fulfillment_before_update']);
+        if (!$this->is_enabled()) {
         }
+        add_filter('woocommerce_fulfillment_before_fulfill', [$this, 'woocommerce_fulfillment_before_fulfill']);
+        add_filter('woocommerce_fulfillment_before_delete', [$this, 'woocommerce_fulfillment_before_delete']);
+        add_filter('woocommerce_fulfillment_before_update', [$this, 'woocommerce_fulfillment_before_update']);
     }
 
 
