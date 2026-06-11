@@ -841,7 +841,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // IOK 2026-04-17 Should be all remaining un-refunded line items
         $line_items = apply_filters('woo_vipps_order_fully_refunded_line_items', $this->get_remaining_refundable_line_items($order), $order);
         $data['line_items'] = $line_items;
-        error_log('LP data: ' . print_r($data, true));
+        error_log('LP line_items: ' . print_r($line_items, true));
        
         wc_switch_to_site_locale();            
         $the_refund = wc_create_refund($data);
@@ -864,10 +864,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     //  [ $item_id => ['qty'          => 1, 'refund_total' => '100.00', 'refund_tax'   => [ 1 => '25.00' ], *   ], ... ]
     //  Includes line items, fees and shipping. For fees/shipping, qty is set to 0.
     private function get_remaining_refundable_line_items( WC_Order $order ) {
+        error_log('LP get_remaining_refundable_line_items');
         $items = $order->get_items( array( 'line_item', 'fee', 'shipping' ));
 
         $new_refund_line_items = [];
         foreach($items as $item_id => $item) {
+            error_log('LP item id: ' . $item->get_id() . ' , name: ' . $item->get_name());
             $new_refund_line = [];
 
             // Calculate remaining tax for this line item; by tax id. The shape is [ [total] => [tax_id => value_for_this_tax_id] ].
@@ -880,9 +882,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $remaining_tax[$tax_id] = $value;
                 }
             }
+            error_log('LP remaining_tax before processing: ' . print_r($remaining_tax, true));
             // We can then subtract the tax already refunded for each of these items.
             foreach($remaining_tax as $tax_id => $current) {
                 $refunded = $order->get_tax_refunded_for_item($item_id, $tax_id,  $item->get_type());
+                error_log('LP after woo processed refunded for item: ' . print_r($refunded, true));
                 $remaining = wc_format_decimal($current-$refunded);
                 if ($remaining > 0) {
                     $remaining_tax[$tax_id] = wc_format_decimal($current-$refunded);
@@ -890,18 +894,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     unset($remaining_tax[$tax_id]);
                 }
             }
+            error_log('LP remaining_tax after processing' . print_r($remaining_tax, true));
 
             // Then the quantity
             $qty = (int) $item->get_quantity();
+            error_log('LP qty: ' . print_r($qty, true));
             $refunded_quantity = abs((int) $order->get_qty_refunded_for_item($item_id)); // Documented to be positive since 3.0, seems to be actually negative. 
+            error_log('LP refunded_quantity: ' . print_r($refunded_quantity, true));
             $remaining_quantity = $qty-$refunded_quantity;
+            error_log('LP remaining_quantity: ' . print_r($remaining_quantity, true));
 
             $total = $item->get_total();
+            error_log('LP total: ' . print_r($total, true));
             $refunded_total =  $order->get_total_refunded_for_item($item_id); // A positive value
+            error_log('LP refunded_total: ' . print_r($refunded_total, true));
             $remaining_total = wc_format_decimal($total-$refunded_total);
+            error_log('LP remaining_total: ' . print_r($remaining_total, true));
 
 
             if ($remaining_quantity>0 || !empty($remaining_tax) || $remaining_total > 0) {
+                error_log('LP success case for refund item, adding to line items');
                 $new_refund_line['qty'] = max(0,$remaining_quantity);
                 $new_refund_line['refund_tax'] = $remaining_tax;
                 $new_refund_line['refund_total']  = $remaining_total;
@@ -909,7 +921,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
         }
-
         return $new_refund_line_items;
 
     }
