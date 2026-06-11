@@ -33,6 +33,7 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+use Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException;
 use Automattic\WooCommerce\Internal\Fulfillments\Fulfillment;
 use Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore;
 
@@ -313,14 +314,15 @@ class VippsFulfillments {
 
     /** Returns a failure message to the fulfillment admin interface by throwing FulfillmentException. LP 2025-10-15 */
     public function fulfillment_fail($msg) {
-        if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
-            /* translators:  %1 = exception message */
-            $this->gateway->log(sprintf(__('Error handling fulfillment: %1$s', "woo-vipps"), $msg), 'error');
-            throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg);
+        if (!class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
+            // fallback to default exception, the user will not see the error message in the fulfillment ui and will surely be confused. LP 2026-06-11
+            /* translators: %1 = class name, %2 = exception message */
+            $this->gateway->log(sprintf(__('%1$s did not exist to throw on fulfillment fail, the fail message was: %2$s', "woo-vipps"), 'FulfillmentException', $msg), 'error');
+            throw new Exception($msg);
         }
-        /* translators: %1 = class name, %2 = exception message */
-        $this->gateway->log(sprintf(__('%1$ did not exist to throw on fulfillment fail, the fail message was: %2$s', "woo-vipps"), 'FulfillmentException', $msg), 'error');
-        throw new Exception($msg);
+        /* translators:  %1 = exception message */
+        $this->gateway->log(sprintf(__('Error handling fulfillment: %1$s', "woo-vipps"), $msg), 'error');
+        throw new FulfillmentException($msg);
     }
 
 
