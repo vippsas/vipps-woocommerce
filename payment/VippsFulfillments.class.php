@@ -148,7 +148,8 @@ class VippsFulfillments {
         }
 
         error_log("LP woocommerce_fulfillment_before_delete on vipps order. Stopping...");
-        $this->fulfillment_fail(sprintf(__('Cannot delete this fulfillment: its value has been captured at %1$. Refunding the items is possible. If you do need to delete the fulfillment, you will need to temporarily turn of support for partial capture in fulfillments in the %2$s settings.', 'woo-vipps'), Vipps::CompanyName()));
+        /* translators: placeholders = company name */
+        $this->fulfillment_fail(sprintf(__('Cannot delete this fulfillment: its value has been captured at %1$s. Refunding the items is possible. If you do need to delete the fulfillment, you will need to temporarily turn of support for partial capture in fulfillments in the %1$s settings.', 'woo-vipps'), Vipps::CompanyName()));
     }
 
 
