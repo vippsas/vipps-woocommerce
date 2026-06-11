@@ -33,15 +33,20 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-use Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException;
-use Automattic\WooCommerce\Internal\Fulfillments\Fulfillment;
-use Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore;
 
 class VippsFulfillments {
     private $gateway;
+    private $woo_namespace;
 
     public function __construct($gateway) {
         $this->gateway = $gateway;
+
+        // Fulfillment namespaced changed in 10.7. LP 2026-06-11
+        if (version_compare(WC_VERSION, '10.7', '>=')) {
+            $this->woo_namespace = 'Automattic\WooCommerce\Admin\Features\Fulfillments';
+        } else {
+            $this->woo_namespace = 'Automattic\WooCommerce\Internal\Fulfillments';
+        }
     }
 
 
@@ -54,13 +59,21 @@ class VippsFulfillments {
     }
 
 
-    /** Whether fulfillments is supported in the WC version and is an enabled feature. LP 2025-10-27 */
+    /** Whether this store can support woo fulfillments. LP 2025-10-27 */
     public function is_supported() {
-        return version_compare(WC_VERSION, '10.2', '>=') && get_option('woocommerce_feature_fulfillments_enabled') == 'yes';
+        if (version_compare(WC_VERSION, '10.2', '>=')
+                && get_option('woocommerce_feature_fulfillments_enabled') == 'yes') {
+            // We need this main class. LP 2026-06-11
+            if (class_exists("{$this->woo_namespace}\Fulfillment")) {
+                return true;
+            }
+            $this->gateway->log(sprintf(__('Could not find the main class \'%1$s\', cannot support fulfillments'), 'Fulfillment'), 'error');
+        }
+        return false;
     }
 
 
-    /** Whether the plugin's support WC fulfillment is enabled. LP 2025-10-22 */
+    /** Whether the plugin's support for WC fulfillments is enabled. LP 2025-10-22 */
     public function is_enabled() {
         return $this->is_supported() && $this->gateway->get_option('fulfillments_enabled') == 'yes';
     }
@@ -68,16 +81,9 @@ class VippsFulfillments {
 
     /** Returns a Fulfillment object if one is found with the given id, else false. LP 2025-11-25 */
     public function get_fulfillment($id) {
-        if (!class_exists('Automattic\WooCommerce\Internal\Fulfillments\Fulfillment')
-        || !class_exists('Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore')) {
-            /* translators:  %1 and %2 are class names */
-            $this->gateway->log(sprintf(__('Class %1$s or %2$s was not found', "woo-vipps"), 'Fulfillment', 'FulfillmentsDataStore'), 'error');
-            return false;
-        }
         try {
-            $fulfillment = new Fulfillment($id);
-            $data_store = wc_get_container()->get(FulfillmentsDataStore::class);
-            $data_store->read($fulfillment);
+            $class = "{$this->woo_namespace}\Fulfillment";
+            $fulfillment = new $class($id);
             return $fulfillment;
         } catch (Exception $e) {
             /* translators:  %1 = id, %2 = exception message */
@@ -98,10 +104,10 @@ class VippsFulfillments {
         $fulfillment->update_meta_data('_vipps_fulfillment_is_edit', 1);
 
         $original_fulfillment = $this->get_fulfillment($fulfillment->get_id());
-        if (!is_a($fulfillment, 'Automattic\WooCommerce\Internal\Fulfillments\Fulfillment')) {
-            $this->fulfillment_fail(__('Something went wrong, did not find the original fulfillment to edit', 'woo-vipps'));
-            /* translators: %1 = id, %2 = method/hook name */
-            $this->gateway->log(sprintf(__('Did not find original fulfillment with id %1$s in %2$s, could not guarantee this is safe to fulfill, it was not accepted.', 'woo-vipps'), $fulfillment->get_id(), 'woocommerce_fulfillment_before_update'), 'error');
+        if (!$original_fulfillment) {
+            /* translators: %1 = id, %2 = hook name */
+            $this->gateway->log(sprintf(__('Did not find original fulfillment with id %1$s in %2$s when editing: rejecting this fulfillment edit.', 'woo-vipps'), $fulfillment->get_id(), 'woocommerce_fulfillment_before_update'), 'error');
+            $this->fulfillment_fail(sprintf(__('Did not find the original fulfillment to edit it. Please check the %s logs', 'woo-vipps'), 'woo-vipps'));
         }
 
         $item_ids = array_map(fn ($item) => $item['item_id'], $fulfillment->get_items());
@@ -142,7 +148,7 @@ class VippsFulfillments {
         }
 
         error_log("LP woocommerce_fulfillment_before_delete on vipps order. Stopping...");
-        $this->fulfillment_fail(sprintf(__('Cannot delete this fulfillment - its value has been captured at %1$. Refunding the items is possible. If you do need to delete the fulfillment, you will need to temporarily turn of support for partial capture in fulfillments in the %2$s settings.', 'woo-vipps'), Vipps::CompanyName()));
+        $this->fulfillment_fail(sprintf(__('Cannot delete this fulfillment: its value has been captured at %1$. Refunding the items is possible. If you do need to delete the fulfillment, you will need to temporarily turn of support for partial capture in fulfillments in the %2$s settings.', 'woo-vipps'), Vipps::CompanyName()));
     }
 
 
@@ -223,8 +229,8 @@ class VippsFulfillments {
         $ok = $this->gateway->capture_payment($order, $to_capture_sum);
         if (!$ok) {
             error_log("LP before_fulfill capture was not ok!");
-            /* translators: %1 = number, %2 = currency string, %3 = this payment method name */
-            $this->fulfillment_fail(sprintf(__('Could not capture the fulfillment of %1$s %2$s at %3$s. Please check the logs for more information.', 'woo-vipps'), $to_capture_sum, $currency, $this->gateway->get_payment_method_name()));
+            /* translators: placeholders: number, currency string, this payment method name, log name */
+            $this->fulfillment_fail(sprintf(__('Could not capture the fulfillment of %s %s at %s. Please check the %s logs', 'woo-vipps'), $to_capture_sum, $currency, $this->gateway->get_payment_method_name(), 'woo-vipps'));
         }
 
         // Capture was successfull, now we need to update the captured meta for each item. LP 2025-10-31
@@ -314,7 +320,8 @@ class VippsFulfillments {
 
     /** Returns a failure message to the fulfillment admin interface by throwing FulfillmentException. LP 2025-10-15 */
     public function fulfillment_fail($msg) {
-        if (!class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
+        $class = "{$this->woo_namespace}\FulfillmentException";
+        if (!class_exists($class)) {
             // fallback to default exception, the user will not see the error message in the fulfillment ui and will surely be confused. LP 2026-06-11
             /* translators: %1 = class name, %2 = exception message */
             $this->gateway->log(sprintf(__('%1$s did not exist to throw on fulfillment fail, the fail message was: %2$s', "woo-vipps"), 'FulfillmentException', $msg), 'error');
@@ -322,19 +329,15 @@ class VippsFulfillments {
         }
         /* translators:  %1 = exception message */
         $this->gateway->log(sprintf(__('Error handling fulfillment: %1$s', "woo-vipps"), $msg), 'error');
-        throw new FulfillmentException($msg);
+        throw new $class($msg);
     }
 
 
     /** Returns all fulfillments on the given order. LP 2025-11-19 */
     public function get_order_fulfillments($order) {
-        if (!class_exists('Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore')) {
-            /* translators: %1 = class name, %2 = order id */
-            $this->gateway->log(sprintf(__('%1$s was not found, can\'t retrieve order fulfillments for order %1$s'), 'FulfillmentsDataStore', $order->get_id()), 'error');
-            return false;
-        }
-        $data_store = wc_get_container()->get(FulfillmentsDataStore::class);
-        return $data_store->read_fulfillments('WC_Order', $order->get_id());
+        $data_store = \WC_Data_Store::load('order-fulfillment');
+        $fulfillments = $data_store->read_fulfillments(WC_Order::class, $order->get_id());
+        return $fulfillments;
     }
 
 
