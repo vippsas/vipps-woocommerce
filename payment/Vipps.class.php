@@ -2732,7 +2732,8 @@ else:
         }
 
         $captured = intval($order->get_meta('_vipps_captured'));
-        $capremain = intval($order->get_meta('_vipps_capture_remaining'));
+        // noncapturable should never be greater than capture remaining, so this *should* not be negative. LP 2026-06-12
+        $capremain = intval($order->get_meta('_vipps_capture_remaining')) - intval($order->get_meta('_vipps_noncapturable'));
         if ($captured && (!$capremain || $capremain < 2)) { 
             print "<div><strong>" . sprintf(__("The entire amount has been captured at %1\$s", 'woo-vipps'), $this->get_payment_method_name()) . "</strong></div>";
             return;
