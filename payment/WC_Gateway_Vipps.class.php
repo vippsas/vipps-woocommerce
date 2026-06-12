@@ -263,7 +263,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
     // Ensure we've updated the vipps status before calling this. IOK 2026-01-28
     public function maybe_cancel_reserved_amount ($orderid) {
-        error_log('LP maybe_cancel_reserved_amount');
+        error_log("LP maybe_cancel_reserved_amount for order $orderid");
         $order = wc_get_order($orderid);
         if (!$order) return;
         if (! Vipps::is_vipps_order($order)) return false;
@@ -274,7 +274,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // it's only after this we know we have captured 'everything' so if there is anything left, 
         // it should be cancelled. IOK 2025-05-04                                                              
         // Also set in maybe_cancel and maybe_refund now - in all "final status" hooks. IOK 2026-01-28
+        error_log('LP capture complete meta: ' . $order->get_meta('_vipps_capture_complete'));
         if (! $order->get_meta('_vipps_capture_complete')) {
+            error_log('LP capture not complete, returning early');
             return false;
         }
 
@@ -2252,23 +2254,27 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // This tries to capture a Vipps payment, and resets the status to 'on-hold' if it fails.  IOK 2018-05-07
     public function maybe_capture_payment($orderid) {
+        error_log("LP maybe_capture_payment for order $orderid");
         $order = wc_get_order($orderid);
         if (! Vipps::is_vipps_order($order)) return false;
         $ok = 0;
 
         # Shortcut orders that have been directly captured
         $vippsstatus = $order->get_meta('_vipps_status');
+        error_log('LP vippsstatus: ' . print_r($vippsstatus, true));
         if ($vippsstatus == 'SALE') {
             return true;
         }
 
         $remaining = intval($order->get_meta('_vipps_capture_remaining'));
+        error_log('LP remaining: ' . print_r($remaining, true));
 
         // Somehow the order status in payment_complete has been set to the 'after order status' or 'complete' by a filter. If so, do not capture.
         // Capture will be done *before* payment_complete if appropriate IOK 2020-09-22
         if (did_action('woocommerce_pre_payment_complete')) {
             if (!$order->needs_processing()) return; // This is fine, we've captured.
             if ($remaining>0) {
+                error_log('LP early returning without capturing');
                 // Not everything has been captured, but we have reached a capturable status. Complain, do not capture. IOK 2020-09-22
                 $this->log(sprintf(__("Filters are setting the payment_complete order status to '%1\$s' - will not capture", 'woo-vipps'), $order->get_status()),'debug');
                 $order->add_order_note(sprintf(__('Payment complete set status to "%1$s" - will not capture payments automatically','woo-vipps'), $order->get_status()));
@@ -2287,6 +2293,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         try {
             $ok = $this->capture_payment($order);
+            error_log('LP ok after capture: ' . print_r($ok, true));
         } catch (Exception $e) {
             // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
         } 
@@ -2352,6 +2359,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         error_log('LP capture_payment amount after checking partial: ' . print_r($amount, true));
 
         if ($amount<=0) {
+            error_log('LP amount zero, not capturing');
             $order->add_order_note(__('Payment already captured','woo-vipps'));
             return true;
         }
@@ -2360,6 +2368,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($captured) {
             $remaining = intval($order->get_meta('_vipps_capture_remaining'));
             if (!$remaining) {
+                error_log('LP nothing remaining, not capturing');
                 $order->add_order_note(__('Payment already captured','woo-vipps'));
                 return true;
             }
@@ -2405,6 +2414,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             } elseif ($api == 'epayment') {
                 $content =  $this->api->epayment_capture_payment($order,$amount,$requestid);
             } else {
+                error_log('LP actually sending capture to api');
                 $content =  $this->api->capture_payment($order,$amount,$requestid);
             }
         } catch (TemporaryVippsApiException $e) {
@@ -2437,10 +2447,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $refundable = $captured - intval($order->get_meta('_vipps_refunded'));
         $noncapturable = intval($order->get_meta('_vipps_noncapturable'));
         error_log('LP capture_payment noncapturable: ' . print_r($noncapturable, true));
+        $complete = abs($remaining - $noncapturable) < 2;
+        error_log('LP capture_payment complete: ' . print_r($complete, true));
 
         $order->update_meta_data('_vipps_captured', $captured);
         $order->update_meta_data('_vipps_capture_remaining', $remaining);
-        $order->update_meta_data('_vipps_capture_complete',  !$remaining);
+        $order->update_meta_data('_vipps_capture_complete',  $complete);
         $order->update_meta_data('_vipps_refund_remaining', $refundable);
         $order->update_meta_data('_vipps_capture_timestamp', time());
         $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$amount/100) . ' ' . $currency);
