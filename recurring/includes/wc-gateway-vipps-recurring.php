@@ -1298,7 +1298,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				if ( ! in_array( $charge->status, [
 					WC_Vipps_Charge::STATUS_RESERVED,
 					WC_Vipps_Charge::STATUS_PARTIALLY_CAPTURED
-				] ) ) {
+				], true ) ) {
+					if ( $this->complete_duplicate_capture_if_charged( $order, $charge ) ) {
+						return true;
+					}
+
 					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge does not have the status RESERVED or PARTIALLY_CAPTURED for agreement: %s in capture_payment. Found status: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $agreement_id, $charge->status ) );
 					WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
 
@@ -1341,6 +1345,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				throw $e;
 			}
 
+			if ( $this->is_duplicate_capture_amount_error( $e )
+			     && $this->complete_duplicate_capture_after_status_check( $order, $agreement_id, $charge_id ) ) {
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Treating capture_payment HTTP 400 as duplicate capture after charge status re-check: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $e->getMessage() ) );
+
+				return true;
+			}
+
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Unrecoverable error in capture_payment (HTTP 400): %s', WC_Vipps_Recurring_Helper::get_id( $order ), $e->getMessage() ) );
 
 			// Stop the periodic charge-status check from retrying this capture forever.
@@ -1359,6 +1370,40 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			return false;
 		}
+	}
+
+	private function is_duplicate_capture_amount_error( WC_Vipps_Recurring_Exception $e ): bool {
+		return stripos( $e->getMessage(), 'higher than the remaining capturable amount' ) !== false;
+	}
+
+	private function complete_duplicate_capture_after_status_check( $order, string $agreement_id, string $charge_id ): bool {
+		try {
+			return $this->complete_duplicate_capture_if_charged( $order, $this->api->get_charge( $agreement_id, $charge_id ) );
+		} catch ( Exception $retry_e ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Could not re-check charge status after duplicate capture error: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $retry_e->getMessage() ) );
+
+			return false;
+		}
+	}
+
+	private function complete_duplicate_capture_if_charged( $order, WC_Vipps_Charge $charge ): bool {
+		if ( $charge->status !== WC_Vipps_Charge::STATUS_CHARGED ) {
+			return false;
+		}
+
+		WC_Vipps_Recurring_Helper::set_latest_api_status_for_order( $order, $charge->status );
+		WC_Vipps_Recurring_Helper::set_order_as_pending( $order, $charge->id );
+		$order->save();
+
+		$this->process_order_charge( $order, $charge );
+
+		if ( ! $this->use_high_performance_order_storage() ) {
+			clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
+		}
+
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Finished capture_payment from already charged charge: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id ) );
+
+		return true;
 	}
 
 	/**
