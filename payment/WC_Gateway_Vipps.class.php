@@ -687,12 +687,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return true; // Can't refund these
         }
 
-        $captured = intval($order->get_meta('_vipps_captured'));
-        $vippsstatus = $order->get_meta('_vipps_status');
-        if ($captured > 0 || $vippsstatus == 'SALE') {
-            // This will create + process a refund for the captured amount. IOK 2026-01-26
-            $this->wc_order_fully_refunded ($order_id);
-        }
+        // This will create + process a refund for the captured amount (if any). IOK 2026-01-26
+        // We always run this since woo will create a manual refund on this status change: we want the refund to be through our gw instead. LP 2026-06-10
+        $this->wc_order_fully_refunded ($order_id);
+
         // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
         $order->update_meta_data('_vipps_capture_complete',true);
         $order->save();
@@ -845,11 +843,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Then the quantity
             $qty = (int) $item->get_quantity();
-            $refunded_quantity = abs((int) $order->get_qty_refunded_for_item($item_id)); // Documented to be positive since 3.0, seems to be actually negative. 
+            $refunded_quantity = abs((int) $order->get_qty_refunded_for_item($item_id, $item->get_type())); // Documented to be positive since 3.0, seems to be actually negative. 
             $remaining_quantity = $qty-$refunded_quantity;
 
             $total = $item->get_total();
-            $refunded_total =  $order->get_total_refunded_for_item($item_id); // A positive value
+            $refunded_total =  $order->get_total_refunded_for_item($item_id, $item->get_type()); // A positive value
             $remaining_total = wc_format_decimal($total-$refunded_total);
 
 
