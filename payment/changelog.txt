@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-06-15 version 6.0.3 =
+Minor fixes in handling refunds
+
 = 2026-06-08 version 6.0.2 =
 Make stricter CSS for Express in shortcode checkout
 
