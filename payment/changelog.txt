@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-06-17 version 6.0.4 =
+Web component are now hosted locally
+
 = 2026-06-15 version 6.0.3 =
 Minor fixes in handling refunds
 
