@@ -1474,12 +1474,15 @@ jQuery('a.webhook-adder').click(function (e) {
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
 
         // Badges - web components provided by Vipps MobilePay to display payment options in-store.
-        wp_register_script('vipps-onsite-messageing','https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js',array(),WOO_VIPPS_VERSION,
-           array(
-                'in_footer' => true,
-                'strategy'  => 'async',
-            ));
-
+        wp_register_script('vipps-onsite-messageing',
+                plugins_url('js/vipps-on-site-messaging.js', WC_VIPPS_PAYMENT_MAIN_FILE),
+                array(),
+                filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/vipps-on-site-messaging.js'),
+                [
+                    'in_footer' => true,
+                    'strategy'  => 'async',
+                ],
+                );
     }
 
     // Runs late in both wp_enqueue_scripts and admin_enqueue_scripts to make it more compatible with translation plugins IOK 2026-02-02
