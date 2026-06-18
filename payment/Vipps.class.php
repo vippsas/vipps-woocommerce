@@ -37,6 +37,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once(dirname(__FILE__) . "/VippsAPIException.class.php");
 
 class Vipps {
+    /* Rest api consts. LP 2026-03-30 */
+    private const REST_NAMESPACE_BASE = 'woo-vipps';
+    private const REST_CURRENT_VERSION = 'v1'; // don't use this directly, use methods get_rest_namespace() and get_rest_url(). LP 2026-04-22
+
     private static $instance = null;
 
     /* Used to interact with other payment gateways if neccessary (for 'external payment gateways') IOK 2024-05-27 */
@@ -235,7 +239,7 @@ class Vipps {
 
         // Fetch wc products, but filter those only purchasable by VMP express checkout. LP 2026-01-22
         add_action('rest_api_init', function() {
-                   register_rest_route('woo-vipps/v1', '/express-products', [
+                   register_rest_route(self::get_rest_namespace('v1'), '/express-products', [
                         'methods' => 'GET',
                         'callback' => [$this, 'rest_express_checkout_products'],
                         'permission_callback' => '__return_true',
@@ -3975,34 +3979,39 @@ else:
                 $this->log(sprintf(__("Order %2\$d is 'pending' but its %1\$s order status is '%3\$s'  - this means that the order has been erroneously set to 'pending' after completion or cancellation. Will not process further, please check status of order at %1\$s and set to correct status in WooCommerce", 'woo-vipps'), $this->get_payment_method_name(), $o->get_id(), $currentstatus), 'debug');
                 return;
             }
-            $this->check_status_of_pending_order($o, false, false);
+            $this->check_status_of_pending_order($o, false);
         }
     }
 
     // Check and possibly update the status of a pending order at Vipps. We only restore session if we know this is called from a context with no session -
     // e.g. wp-cron. IOK 2021-06-21
     // Stop restoring session in wp-cron too. IOK 2021-08-23
-    public function check_status_of_pending_order($order, $maybe_restore_session=0, $allow_retry=true) {
-        $express = $order->get_meta('_vipps_express_checkout'); 
-        $vippstatus = $order->get_meta('_vipps_status');
-        if ($express && $maybe_restore_session) {
-           $this->log(sprintf(__("Restoring session of order %1\$d", 'woo-vipps'), $order->get_id()), 'debug'); 
-           $this->callback_restore_session($order->get_id());
-        }
+    // Stop restoring session in wp-cron again(?) since we now use a rest endpoint to handle shipping. LP 2026-05-13
+    public function check_status_of_pending_order($order, $allow_retry=true) {
         $gw = $this->gateway();
 
         $order_status = null;
         try {
             $order->add_order_note(sprintf(__("Callback from %1\$s delayed or never happened; order status checked by periodic job", 'woo-vipps'), $this->get_payment_method_name()));
-            $order_status = $gw->callback_check_order_status($order, $allow_retry);
+
+            // Poll status and correct woo status. LP 2026-05-19
+            $order_data = $gw->get_payment_details($order);
+
+            // If we already know the order failed, we don't need to process the order further below. LP 2026-05-19
+            if ('CANCEL' === $order_data['STATE']) {
+                /* translators: company name */
+                $order->update_status('cancelled', sprintf(__('Payment cancelled at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
+                return;
+            }
+
+            $gw->set_order_status_by_payment_details($order, $order_data, $allow_retry);
+            $order = wc_get_order($order->get_id()); // refresh order if changed. LP 2026-05-13
+            $order_status = $order->get_status();
+
             $this->log(sprintf(__("For order %2\$d order status at %1\$s is %3\$s", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id(), $order_status), 'debug');
         } catch (Exception $e) {
             $this->log(sprintf(__("Error getting order status at %1\$s for order %2\$d", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id()), 'error'); 
             $this->log($e->getMessage() . "\n" . $order->get_id(), 'error');
-        }
-        // Ensure we don't keep using an old session for more than one order here.
-        if ($express && $maybe_restore_session) {
-            $this->callback_destroy_session();
         }
         return $order_status;
     }
@@ -5663,5 +5672,19 @@ else:
 
         // Express or unfinalized Checkout orders do not have shipping available, so we cant retry these in particular. LP 2026-03-18
         return $nonexpress_epayment || $shipping_set;
+    }
+
+    /** Returns the plugin's rest api namespace including the version.
+     * Use latest version ($version = 'latest') with caution, we want backwards compatible endpoints. LP 2026-03-31 */
+    public static function get_rest_namespace($version = 'latest') {
+        $version = $version === 'latest' ? self::REST_CURRENT_VERSION : $version;
+        return self::REST_NAMESPACE_BASE . "/$version";
+    }
+
+    /** Returns the plugin's rest api url.
+     * $version accepts 'latest', but you probably don't want to do that.
+     * Remember root forward-slash for $route. e.g $route = '/my-route' LP 2026-03-31 */
+    public static function get_rest_url($version, $route) {
+        return get_rest_url(null, static::get_rest_namespace($version) . $route, 'rest');
     }
 }

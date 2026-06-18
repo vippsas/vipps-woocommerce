@@ -335,7 +335,7 @@ Fix express heckout for woo versions less than 9.2.0
 Vipps Checkout now in legacy mode and available only for existing installs
 
 = 2026-03-26 Version 5.3.2 =
-Improve express checkout banner on legacy checkokut screens
+Improve express checkout banner on legacy checkout screens
 Add new setting for retryable orders
 
 = 2026-03-23 Version 5.3.1 =
