@@ -2343,6 +2343,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->set_payment_method_title('Vipps');
             if ($express) $order->set_payment_method_title('Vipps Express Checkout');
             if ($checkout) $order->set_payment_method_title('Vipps Checkout');
+            // paypal gw resets payment gateway on order save because it has this meta, so delete it before save. LP 2026-06-23
+            $order->delete_meta_data('_ppcp_paypal_order_id');
             $order->save();
 
             $msg = sprintf(__("Payment method reset to %1\$s - it had been set to another payment method while completing the order for %2\$d", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id());
