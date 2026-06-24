@@ -1206,7 +1206,8 @@ EOF;
           </fieldset>
           <fieldset>
               <legend>Language</legend>
-              <label><input type="radio" name="express[tmpConfig][language]" checked="" value="en">English</label>
+              <label><input type="radio" name="express[tmpConfig][language]" checked value="store">Store language</label>
+              <label><input type="radio" name="express[tmpConfig][language]" value="en">English</label>
               <label><input type="radio" name="express[tmpConfig][language]" value="no">Norwegian</label>
               <label><input type="radio" name="express[tmpConfig][language]" value="dk">Danish</label>
               <label><input type="radio" disabled="" name="express[tmpConfig][language]" value="fi">Finnish</label>
@@ -1217,7 +1218,6 @@ EOF;
               <legend>Verb</legend>
               <label><input type="radio" name="express[tmpConfig][verb]" checked="" value="buy">Buy</label>
               <label><input type="radio" name="express[tmpConfig][verb]" value="pay">Pay</label>
-              <label><input type="radio" name="express[tmpConfig][verb]" value="login">Login</label>
               <label><input type="radio" name="express[tmpConfig][verb]" value="register">Register</label>
               <label><input type="radio" name="express[tmpConfig][verb]" value="continue">Continue</label>
               <label><input type="radio" name="express[tmpConfig][verb]" value="confirm">Confirm</label>
@@ -1260,7 +1260,12 @@ EOF;
                     if (this.type === 'checkbox') {
                         args[attr] = this.checked;
                     } else if (this.checked) {
-                        args[attr] = this.value;
+                        // Override for store language. LP 2026-06-24
+                        if ("store" === this.value) {
+                            args[attr] = '<?php echo $this->get_customer_language(); ?>';
+                        } else {
+                            args[attr] = this.value;
+                        }
                     }
                 });
                 return args;
