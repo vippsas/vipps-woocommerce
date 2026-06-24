@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 2.2.14 =
+* Added: It's now possible to disable retry days completely by setting WC_VIPPS_RECURRING_RETRY_DAYS to 0.
+* Tweak: Default `WC_VIPPS_RECURRING_RETRY_DAYS` to 0 when WooCommerce Subscriptions' retry system is active.
+
 = 2.2.13 =
 * Fix: Treat duplicate recurring capture attempts as successful when Vipps/MobilePay reports that the amount is higher than the remaining capturable amount, provided the charge is confirmed as already captured.
 

@@ -3,7 +3,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '2.2.13' );
+define( 'WC_VIPPS_RECURRING_VERSION', '2.2.14' );
 
 /**
  * Polyfills
@@ -48,7 +48,16 @@ define( 'WC_VIPPS_RECURRING_INTEGRATED', true);
  * Amount of days to retry a payment when creating a charge in the Vipps/MobilePay API
  */
 if ( ! defined( 'WC_VIPPS_RECURRING_RETRY_DAYS' ) ) {
-    define( 'WC_VIPPS_RECURRING_RETRY_DAYS', 2 );
+	$wc_vipps_recurring_retry_days = 2;
+	$wc_vipps_recurring_wcs_retries_enabled = 'yes' === get_option( 'woocommerce_subscriptions_enable_retry', 'no' );
+
+	if ( apply_filters( 'wcs_is_retry_enabled', $wc_vipps_recurring_wcs_retries_enabled ) ) {
+		$wc_vipps_recurring_retry_days = 0;
+	}
+
+	define( 'WC_VIPPS_RECURRING_RETRY_DAYS', $wc_vipps_recurring_retry_days );
+	unset( $wc_vipps_recurring_retry_days );
+	unset( $wc_vipps_recurring_wcs_retries_enabled );
 }
 
 /*
