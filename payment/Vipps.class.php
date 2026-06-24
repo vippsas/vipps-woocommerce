@@ -840,20 +840,17 @@ jQuery('a.webhook-adder').click(function (e) {
             wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
         }
 
-        $old = get_option('vipps_button_options');
+        $old = get_option('vipps_button_options', []);
         $new = $old;
         error_log('LP _POST: ' . print_r($_POST, true));
-        if (isset($_POST['express']['variant'])) {
-            $new['express']['variant'] = sanitize_title($_POST['express']['variant']);
+        if (isset($_POST['express']['configs'])) {
+            foreach ($_POST['express']['configs'] as $ctx => $config) {
+                $sanitized_config = map_deep($config, 'sanitize_title');
+                $sanitized_ctx = sanitize_title($ctx);
+                $new['express']['configs'][$sanitized_ctx] = $sanitized_config;
+            }
         }
-        if (isset($_POST['express']['mini-variant'])) {
-            $new['express']['mini-variant'] = sanitize_title($_POST['express']['mini-variant']);
-        }
-        if (isset($_POST['express']['force-mini']) && is_array($_POST['express']['force-mini'])) {
-            foreach($_POST['express']['force-mini'] as $key => $val)
-              $new['express']['force-mini'][$key] = sanitize_title($val);
-        }
-
+        error_log('LP new: ' . print_r($new, true));
         update_option('vipps_button_options', $new);
         wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu"));
         exit();
@@ -1280,11 +1277,13 @@ EOF;
 
             // On submit: delete the tmpConfig for the current selected values, and add the stored configsToUpdate to the post data. LP 2026-06-24
             jQuery('#vipps-button-settings-form').on('formdata', e => {
-                updatePreviewContext(); // run this to store current context in global configsToUpdate. LP 2026-06-24
                 const formData = e?.originalEvent?.formData;
                 if (!formData) return;
-                console.log(formData);
-                // now delete all tmpconfig from form. LP 2026-06-24
+
+                // run this to store current context config before posting. LP 2026-06-24
+                updatePreviewContext();
+
+                // now we can delete the current context config from post data. LP 2026-06-24
                 const keysToDelete = [];
                 for (const [key] of formData.entries()) {
                     if (key.startsWith("express[tmpConfig][")) {
@@ -1293,7 +1292,7 @@ EOF;
                 }
                 keysToDelete.forEach(key => formData.delete(key));
 
-                // Now add all configs created to the form data. LP 2026-06-24
+                // Now add configs for each context updated in this settings menu to the form data. LP 2026-06-24
                 Object.entries(configsToUpdate).forEach(([ctx, config]) => {
                     Object.entries(config).forEach(([key, val]) => {
                         formData.append(`express[configs][${ctx}][${key}]`, val);
