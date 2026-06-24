@@ -279,15 +279,7 @@ class Vipps {
                     'express' => [
                         'version' => '2.0',
                         'configs' => [
-                            'global' => [
-                                'branded' => true,
-                                'verb' => 'buy',
-                                'language' => $this->get_customer_language(),
-                                'variant' => 'primary',
-                                'rounded' => false,
-                                'compact' => false,
-                                'stretched' => false,
-                            ],
+                            'global' => $this->get_vipps_button_default_args(),
                         ],
                         'product_configs' => [],
                     ],
@@ -936,23 +928,22 @@ jQuery('a.webhook-adder').click(function (e) {
         ];
     }
 
-    public function ajax_get_vipps_button($a) {
-        error_log('LP a: ' . print_r($a, true));
+    public function get_vipps_button_default_args() {
+        return [
+            'language' => $this->get_customer_language(),
+            'variant' => 'primary',
+            'rounded' => 'false',
+            'verb' => 'continue',
+            'stretched' => 'false',
+            'compact' => 'false',
+        ];
     }
 
     // Vipps button component, as of now web component from vipps but hosted locally. LP 2026-06-24
     // $args is now the web component arguments shown on https://developer.vippsmobilepay.com/docs/knowledge-base/buttons/
     public function get_vipps_button($args = []) {
         $payment_method = $this->get_payment_method_name();
-        $default_args = [
-            'language' => $this->get_customer_language(),
-            'variant' => 'primary',
-            'rounded' => 'false',
-            'verb' => 'continue',
-            'stretched' => 'false',
-            'branded' => 'true',
-            'compact' => 'false',
-        ];
+        $default_args = $this->get_vipps_button_default_args();
         $args = wp_parse_args($args, $default_args);
         $args['brand'] = strtolower($payment_method);
         $args['type'] = 'button'; // static
@@ -980,7 +971,6 @@ jQuery('a.webhook-adder').click(function (e) {
     verb="{$escaped_args['verb']}"
     stretched="{$escaped_args['stretched']}"
     compact="{$escaped_args['compact']}"
-    branded="{$escaped_args['branded']}"
 ></vipps-mobilepay-button>
 EOF;
         return apply_filters('woo_vipps_web_component_button_html', $html, $args);
@@ -997,14 +987,14 @@ EOF;
          *      'express' => [
          *          'version' => 'x.x',         used to migrate from previous iterations
          *          'configs' => [              different button parameters for certain contexts, falls back to global if context has no override
-         *              'global' => ['branded' => ..., 'verb' => ..., ...],
+         *              'global' => ['compact' => ..., 'verb' => ..., ...],
          *              'cart' => [...],
          *              'product' => [...],
          *              'checkout' => [...],
          *              ...
          *              ],
          *          'product_configs' => [      overrides for specific products
-         *              1532 => ['branded' => ..., 'verb' => ..., ...],
+         *              1532 => ['compact' => ..., 'verb' => ..., ...],
          *              ...
          *          ],
          *      ],
