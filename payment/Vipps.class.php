@@ -840,19 +840,21 @@ jQuery('a.webhook-adder').click(function (e) {
             wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
         }
 
-        $options = get_option('vipps_button_options');
+        $old = get_option('vipps_button_options');
+        $new = $old;
+        error_log('LP _POST: ' . print_r($_POST, true));
         if (isset($_POST['express']['variant'])) {
-            $options['express']['variant'] = sanitize_title($_POST['express']['variant']);
+            $new['express']['variant'] = sanitize_title($_POST['express']['variant']);
         }
         if (isset($_POST['express']['mini-variant'])) {
-            $options['express']['mini-variant'] = sanitize_title($_POST['express']['mini-variant']);
+            $new['express']['mini-variant'] = sanitize_title($_POST['express']['mini-variant']);
         }
         if (isset($_POST['express']['force-mini']) && is_array($_POST['express']['force-mini'])) {
             foreach($_POST['express']['force-mini'] as $key => $val)
-              $options['express']['force-mini'][$key] = sanitize_title($val);
+              $new['express']['force-mini'][$key] = sanitize_title($val);
         }
 
-        update_option('vipps_button_options', $options);
+        update_option('vipps_button_options', $new);
         wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu"));
         exit();
     }
@@ -1013,10 +1015,17 @@ EOF;
          */
         ?>
         <div class='wrap vipps-button-settings'>
-          <h1><?php echo sprintf(__('%1$s button configuration', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
-          <span><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></span>
-          <form id="vipps-submit-button-settings" class="vipps-button-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
-        <?php $this->button_menu_express_section(); ?>
+            <h1><?php echo sprintf(__('%1$s button configuration', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
+            <span><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></span>
+            <form id="vipps-button-settings-form" class="vipps-button-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
+                <!-- Express section -->
+                <?php $this->button_menu_express_section(); ?>
+
+                <!-- Save button -->
+                <div id="vipps-button-settings-save">
+                    <input class="btn button primary" type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
+                </div>
+            </form>
         </div>
 
         <?php
@@ -1134,13 +1143,6 @@ EOF;
             <!-- END EXPRESS SECTION -->
             </div>
 
-            <!-- Save button -->
-            <div id="vipps-button-settings-save">
-              <input class="btn button primary" type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
-            </div>
-
-          </form>
-        </div>
 
         <script>
           function changeExpressVariant() {
@@ -1162,8 +1164,6 @@ EOF;
     }
 
     private function button_menu_express_section() {
-        $payment_method = $this->get_payment_method_name();
-        $language = $this->get_customer_language();
         $options = get_option('vipps_button_options', []);
         $express = $options['express'] ?? [];
         $contexts = [
@@ -1173,7 +1173,8 @@ EOF;
             'cart' => __('Cart', 'woo-vipps'),
             'minicart' => __('Mini cart', 'woo-vipps'),
         ];
-        $init_args = $express['global'] ?? [];
+        $init_context = 'global';
+        $init_args = $express[$init_context] ?? [];
         $init_args['id'] = 'vipps-button-express-preview';
         ?>
         <div id="vipps-button-settings-express-container">
@@ -1186,7 +1187,7 @@ EOF;
             <label>
               <?php _e('Context', 'woo-vipps'); ?>
             </label>
-            <select onChange='updateExpressDemo()'>
+            <select onChange='updatePreviewContext(this)'>
               <?php foreach($contexts as $key => $label): ?>
                 <option value="<?php echo $key; ?>" <?php if ('global' === $key) echo " selected "; ?> >
                    <?php echo $label ; ?>
@@ -1196,39 +1197,41 @@ EOF;
           </div>
         </div>
 
-        <!-- Button argument inputs. LP 2026-06-24 -->
+        <!-- Button argument inputs. These input values are put into express.config
+        and when the settings are posted or the context (see above) is switched,
+        the current config will be saved into express.<context_key>. LP 2026-06-24 -->
         <div id="vipps-button-settings-express-args">
           <fieldset>
               <legend>Button appearance</legend>
-              <label><input type="checkbox" name="rounded" checked="">Rounded</label>
-              <label><input type="checkbox" name="compact">Compact</label>
-              <label><input type="checkbox" name="stretched">Stretched</label>
+              <label><input type="checkbox" name="express[tmpConfig][rounded]" checked="">Rounded</label>
+              <label><input type="checkbox" name="express[tmpConfig][compact]">Compact</label>
+              <label><input type="checkbox" name="express[tmpConfig][stretched]">Stretched</label>
           </fieldset>
           <fieldset>
               <legend>Language</legend>
-              <label><input type="radio" name="language" checked="" value="en">English</label>
-              <label><input type="radio" name="language" value="no">Norwegian</label>
-              <label><input type="radio" name="language" value="dk">Danish</label>
-              <label><input type="radio" disabled="" name="language" value="fi">Finnish</label>
-              <label><input type="radio" name="language" value="sv">Swedish</label>
-              <div>Finnish is currently only available with the MobilePay brand in the button generator.</div>
+              <label><input type="radio" name="express[tmpConfig][language]" checked="" value="en">English</label>
+              <label><input type="radio" name="express[tmpConfig][language]" value="no">Norwegian</label>
+              <label><input type="radio" name="express[tmpConfig][language]" value="dk">Danish</label>
+              <label><input type="radio" disabled="" name="express[tmpConfig][language]" value="fi">Finnish</label>
+              <label><input type="radio" name="express[tmpConfig][language]" value="sv">Swedish</label>
+              <div>Finnish is currently only available with the MobilePay payment method.</div>
           </fieldset>
           <fieldset>
               <legend>Verb</legend>
-              <label><input type="radio" name="verb" checked="" value="buy">Buy</label>
-              <label><input type="radio" name="verb" value="pay">Pay</label>
-              <label><input type="radio" name="verb" value="login">Login</label>
-              <label><input type="radio" name="verb" value="register">Register</label>
-              <label><input type="radio" name="verb" value="continue">Continue</label>
-              <label><input type="radio" name="verb" value="confirm">Confirm</label>
-              <label><input type="radio" name="verb" value="donate">Donate</label>
-              <label><input type="radio" name="verb" value="express">Express</label>
+              <label><input type="radio" name="express[tmpConfig][verb]" checked="" value="buy">Buy</label>
+              <label><input type="radio" name="express[tmpConfig][verb]" value="pay">Pay</label>
+              <label><input type="radio" name="express[tmpConfig][verb]" value="login">Login</label>
+              <label><input type="radio" name="express[tmpConfig][verb]" value="register">Register</label>
+              <label><input type="radio" name="express[tmpConfig][verb]" value="continue">Continue</label>
+              <label><input type="radio" name="express[tmpConfig][verb]" value="confirm">Confirm</label>
+              <label><input type="radio" name="express[tmpConfig][verb]" value="donate">Donate</label>
+              <label><input type="radio" name="express[tmpConfig][verb]" value="express">Express</label>
           </fieldset>
           <fieldset>
               <legend>Variant</legend>
-              <label><input type="radio" name="variant" checked="" value="primary">Primary</label>
-              <label><input type="radio" name="variant" value="dark">Dark (WCAG AAA)</label>
-              <label><input type="radio" name="variant" value="light">Light (WCAG AAA)</label>
+              <label><input type="radio" name="express[tmpConfig][variant]" checked="" value="primary">Primary</label>
+              <label><input type="radio" name="express[tmpConfig][variant]" value="dark">Dark (WCAG AAA)</label>
+              <label><input type="radio" name="express[tmpConfig][variant]" value="light">Light (WCAG AAA)</label>
           </fieldset>
         </div>
 
@@ -1240,7 +1243,7 @@ EOF;
             // When inputs change, update the preview args. LP 2026-06-24
             jQuery('#vipps-button-settings-express-args input').on('click', updatePreview);
 
-            function updatePreview(e) {
+            function updatePreview(event) {
                 // Update the preview web component attributes. LP 2026-06-24
                 const args = getPreviewArgs();
                 const button = jQuery('#vipps-button-express-preview');
@@ -1250,14 +1253,53 @@ EOF;
             function getPreviewArgs() {
                 const args = {};
                 jQuery('#vipps-button-settings-express-args input').each(function () {
-                        if (this.type === 'checkbox') {
-                        args[this.name] = this.checked;
-                        } else if (this.checked) {
-                        args[this.name] = this.value;
-                        }
-                        });
+                    // inputs are put in form arrays like 'express[attribute]', so extract the actual attribute name. LP 2026-06-24
+                    const matches = [...this.name.matchAll(/\[([^\]]+)\]/g)];
+                    const attr = matches.length ? matches[matches.length - 1][1] : null;
+                    if (!attr) {
+                        console.error("Could not extract attribute name for <?php echo self::CompanyName(); ?> button preview:", this);
+                        return;
+                    }
+                    if (this.type === 'checkbox') {
+                        args[attr] = this.checked;
+                    } else if (this.checked) {
+                        args[attr] = this.value;
+                    }
+                });
                 return args;
             }
+
+            var currentContext = '<?php echo $init_context; ?>';
+            var configsToUpdate = {}; // maps context key to config. LP 2026-06-24
+            function updatePreviewContext(element) {
+                const newContext = jQuery(element).val();
+                // Store args for previous context in global before switching. LP 2026-06-24
+                configsToUpdate[currentContext] = getPreviewArgs();
+                currentContext = newContext;
+            }
+
+            // On submit: delete the tmpConfig for the current selected values, and add the stored configsToUpdate to the post data. LP 2026-06-24
+            jQuery('#vipps-button-settings-form').on('formdata', e => {
+                updatePreviewContext(); // run this to store current context in global configsToUpdate. LP 2026-06-24
+                const formData = e?.originalEvent?.formData;
+                if (!formData) return;
+                console.log(formData);
+                // now delete all tmpconfig from form. LP 2026-06-24
+                const keysToDelete = [];
+                for (const [key] of formData.entries()) {
+                    if (key.startsWith("express[tmpConfig][")) {
+                        keysToDelete.push(key);
+                    }
+                }
+                keysToDelete.forEach(key => formData.delete(key));
+
+                // Now add all configs created to the form data. LP 2026-06-24
+                Object.entries(configsToUpdate).forEach(([ctx, config]) => {
+                    Object.entries(config).forEach(([key, val]) => {
+                        formData.append(`express[configs][${ctx}][${key}]`, val);
+                    });
+                });
+            });
         </script>
         <?php
     }
