@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-06-24 version 6.0.5 =
+Fix compatibility when inheriting PayPal gateway order
+
 = 2026-06-17 version 6.0.4 =
 Web component are now hosted locally
 
