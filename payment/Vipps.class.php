@@ -837,9 +837,15 @@ jQuery('a.webhook-adder').click(function (e) {
         error_log('LP _POST: ' . print_r($_POST, true));
         if (isset($_POST['express']['configs'])) {
             foreach ($_POST['express']['configs'] as $ctx => $config) {
-                $sanitized_config = map_deep($config, 'sanitize_title');
                 $sanitized_ctx = sanitize_title($ctx);
-                $new['express']['configs'][$sanitized_ctx] = $sanitized_config;
+                $sanitized_config = map_deep($config, 'sanitize_title');
+
+                // If nonglobal context that uses global config, just wipe the rest of the stored config. LP 2026-06-25
+                if ("global" !== $sanitized_ctx && ($sanitized_config['use-global-config'] ?? false)) {
+                    $new['express']['configs'][$sanitized_ctx] = ['use-global-config' => true];
+                } else {
+                    $new['express']['configs'][$sanitized_ctx] = $sanitized_config;
+                }
             }
         }
         error_log('LP new: ' . print_r($new, true));
@@ -1161,65 +1167,69 @@ EOF;
             'minicart' => __('Mini cart', 'woo-vipps'),
         ];
         $init_context = 'global';
-        $init_args = $express[$init_context] ?? [];
-        $init_args['id'] = 'vipps-button-express-preview';
+        $init_config = $express[$init_context] ?? [];
+
+        $init_args = $init_config;
+        $init_args['id'] = 'vipps-button-express-preview'; // id for button
         ?>
         <div id="vipps-button-settings-express-container">
-          <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
-          <input type="hidden" name="action" value="update_vipps_button_settings" />
-          <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
-
-          <!-- Context dropdown -->
-          <div class="vipps-button-settings-section">
-            <label>
-              <?php _e('Context', 'woo-vipps'); ?>
-            </label>
-            <select onChange='updatePreviewContext(this)'>
-              <?php foreach($contexts as $key => $label): ?>
-                <option value="<?php echo $key; ?>" <?php if ('global' === $key) echo " selected "; ?> >
-                   <?php echo $label ; ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-        </div>
+            <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
+            <input type="hidden" name="action" value="update_vipps_button_settings" />
+            <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
+  
+            <!-- Context dropdown -->
+            <div class="vipps-button-settings-section">
+                <label>
+                    <?php _e('Config context', 'woo-vipps'); ?>
+                </label>
+                <select id="context" onChange='updateContext()'>
+                  <?php foreach($contexts as $key => $label): ?>
+                    <option value="<?php echo $key; ?>" <?php if ('global' === $key) echo " selected "; ?> >
+                       <?php echo $label ; ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+            <label style="display: none;" id="use-global-config-container"><input onchange="updateContext()" type="checkbox" name="express[tmpConfig][use-global-config]" checked="">Use global config</label>
+            </div>
+  
 
         <!-- Button argument inputs. These input values are put into express.config
         and when the settings are posted or the context (see above) is switched,
         the current config will be saved into express.<context_key>. LP 2026-06-24 -->
-        <div id="vipps-button-settings-express-args">
-          <fieldset>
-              <legend>Button appearance</legend>
-              <label><input type="checkbox" name="express[tmpConfig][rounded]" checked="">Rounded</label>
-              <label><input type="checkbox" name="express[tmpConfig][compact]">Compact</label>
-              <label><input type="checkbox" name="express[tmpConfig][stretched]">Stretched</label>
-          </fieldset>
-          <fieldset>
-              <legend>Language</legend>
-              <label><input type="radio" name="express[tmpConfig][language]" checked value="store">Store language</label>
-              <label><input type="radio" name="express[tmpConfig][language]" value="en">English</label>
-              <label><input type="radio" name="express[tmpConfig][language]" value="no">Norwegian</label>
-              <label><input type="radio" name="express[tmpConfig][language]" value="dk">Danish</label>
-              <label><input type="radio" disabled="" name="express[tmpConfig][language]" value="fi">Finnish</label>
-              <label><input type="radio" name="express[tmpConfig][language]" value="sv">Swedish</label>
-              <div>Finnish is currently only available with the MobilePay payment method.</div>
-          </fieldset>
-          <fieldset>
-              <legend>Verb</legend>
-              <label><input type="radio" name="express[tmpConfig][verb]" checked="" value="buy">Buy</label>
-              <label><input type="radio" name="express[tmpConfig][verb]" value="pay">Pay</label>
-              <label><input type="radio" name="express[tmpConfig][verb]" value="register">Register</label>
-              <label><input type="radio" name="express[tmpConfig][verb]" value="continue">Continue</label>
-              <label><input type="radio" name="express[tmpConfig][verb]" value="confirm">Confirm</label>
-              <label><input type="radio" name="express[tmpConfig][verb]" value="donate">Donate</label>
-              <label><input type="radio" name="express[tmpConfig][verb]" value="express">Express</label>
-          </fieldset>
-          <fieldset>
-              <legend>Variant</legend>
-              <label><input type="radio" name="express[tmpConfig][variant]" checked="" value="primary">Primary</label>
-              <label><input type="radio" name="express[tmpConfig][variant]" value="dark">Dark (WCAG AAA)</label>
-              <label><input type="radio" name="express[tmpConfig][variant]" value="light">Light (WCAG AAA)</label>
-          </fieldset>
+            <div id="vipps-button-settings-express-args">
+              <fieldset>
+                  <legend>Button appearance</legend>
+                  <label><input type="checkbox" name="express[tmpConfig][rounded]" checked="">Rounded</label>
+                  <label><input type="checkbox" name="express[tmpConfig][compact]">Compact</label>
+                  <label><input type="checkbox" name="express[tmpConfig][stretched]">Stretched</label>
+              </fieldset>
+              <fieldset>
+                  <legend>Language</legend>
+                  <label><input type="radio" name="express[tmpConfig][language]" checked value="store">Store language</label>
+                  <label><input type="radio" name="express[tmpConfig][language]" value="en">English</label>
+                  <label><input type="radio" name="express[tmpConfig][language]" value="no">Norwegian</label>
+                  <label><input type="radio" name="express[tmpConfig][language]" value="dk">Danish</label>
+                  <label><input type="radio" disabled="" name="express[tmpConfig][language]" value="fi">Finnish</label>
+                  <label><input type="radio" name="express[tmpConfig][language]" value="sv">Swedish</label>
+                  <div>Finnish is currently only available with the MobilePay payment method.</div>
+              </fieldset>
+              <fieldset>
+                  <legend>Verb</legend>
+                  <label><input type="radio" name="express[tmpConfig][verb]" checked="" value="buy">Buy</label>
+                  <label><input type="radio" name="express[tmpConfig][verb]" value="pay">Pay</label>
+                  <label><input type="radio" name="express[tmpConfig][verb]" value="register">Register</label>
+                  <label><input type="radio" name="express[tmpConfig][verb]" value="continue">Continue</label>
+                  <label><input type="radio" name="express[tmpConfig][verb]" value="confirm">Confirm</label>
+                  <label><input type="radio" name="express[tmpConfig][verb]" value="donate">Donate</label>
+                  <label><input type="radio" name="express[tmpConfig][verb]" value="express">Express</label>
+              </fieldset>
+              <fieldset>
+                  <legend>Variant</legend>
+                  <label><input type="radio" name="express[tmpConfig][variant]" checked="" value="primary">Primary</label>
+                  <label><input type="radio" name="express[tmpConfig][variant]" value="dark">Dark (WCAG AAA)</label>
+                  <label><input type="radio" name="express[tmpConfig][variant]" value="light">Light (WCAG AAA)</label>
+              </fieldset>
+            </div>
         </div>
 
         <!-- Button preview that changes depending on the chosen parameters. LP 2026-06-24 -->
@@ -1240,7 +1250,7 @@ EOF;
             function getPreviewArgs() {
                 const args = {};
                 jQuery('#vipps-button-settings-express-args input').each(function () {
-                    // inputs are put in form arrays like 'express[attribute]', so extract the actual attribute name. LP 2026-06-24
+                    // inputs are put in form arrays like 'express[tmpConfig][attribute]', so extract the actual attribute name. LP 2026-06-24
                     const matches = [...this.name.matchAll(/\[([^\]]+)\]/g)];
                     const attr = matches.length ? matches[matches.length - 1][1] : null;
                     if (!attr) {
@@ -1258,16 +1268,30 @@ EOF;
                         }
                     }
                 });
+
                 return args;
             }
 
             var currentContext = '<?php echo $init_context; ?>';
             var configsToUpdate = {}; // maps context key to config. LP 2026-06-24
-            function updatePreviewContext(element) {
-                const newContext = jQuery(element).val();
-                // Store args for previous context in global before switching. LP 2026-06-24
-                configsToUpdate[currentContext] = getPreviewArgs();
+            // Stores selected config for context and switches to another (if changed).
+            // Also toggles display for the "use global config" checkbox. LP 2026-06-25
+            function updateContext() {
+                const wasGlobal = "global" === currentContext;
+                const useGlobalConfig = jQuery('#use-global-config-container input').prop("checked");
+
+                // Store config to global, unless its a non-global context that uses global config. LP 2026-06-25
+                if (wasGlobal || !useGlobalConfig) {
+                    configsToUpdate[currentContext] = getPreviewArgs();
+                } else {
+                    configsToUpdate[currentContext] = {'use-global-config': true};
+                }
+                const newContext = jQuery("#context").val();
                 currentContext = newContext;
+                const newIsGlobal = "global" === newContext;
+
+                jQuery('#use-global-config-container').toggle(!newIsGlobal);
+                jQuery('#vipps-button-settings-express-args input').prop("disabled", !newIsGlobal && useGlobalConfig);
             }
 
             // On submit: delete the tmpConfig for the current selected values, and add the stored configsToUpdate to the post data. LP 2026-06-24
@@ -1276,7 +1300,7 @@ EOF;
                 if (!formData) return;
 
                 // run this to store current context config before posting. LP 2026-06-24
-                updatePreviewContext();
+                updateContext();
 
                 // now we can delete the current context config from post data. LP 2026-06-24
                 const keysToDelete = [];
@@ -1294,6 +1318,12 @@ EOF;
                     });
                 });
             });
+
+            // LP FIXME: remove this after debugging
+            // jQuery('#vipps-button-settings-form').on('submit', e => {
+            //     e.preventDefault();
+            //     console.log("Posted form data:", new FormData(e.target));
+            // });
         </script>
         <?php
     }
