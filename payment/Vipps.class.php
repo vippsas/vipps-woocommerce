@@ -1159,6 +1159,7 @@ EOF;
     private function button_menu_express_section() {
         $options = get_option('vipps_button_options', []);
         $express = $options['express'] ?? [];
+        $configs = $express['configs'] ?? [];
         $contexts = [
             'global' => __('Global', 'woo-vipps'),
             'product' => __('Product', 'woo-vipps'),
@@ -1167,10 +1168,11 @@ EOF;
             'minicart' => __('Mini cart', 'woo-vipps'),
         ];
         $init_context = 'global';
-        $init_config = $express[$init_context] ?? [];
+        $init_config = $configs[$init_context] ?? [];
 
+        // button args
         $init_args = $init_config;
-        $init_args['id'] = 'vipps-button-express-preview'; // id for button
+        $init_args['id'] = 'vipps-button-express-preview';
         ?>
         <div id="vipps-button-settings-express-container">
             <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
@@ -1189,7 +1191,7 @@ EOF;
                     </option>
                   <?php endforeach; ?>
                 </select>
-            <label style="display: none;" id="use-global-config-container"><input onchange="updateContext()" type="checkbox" name="express[tmpConfig][use-global-config]" checked="">Use global config</label>
+            <label style="display: none;" id="use-global-config-container"><input onchange="updateContext()" type="checkbox" name="express[tmpConfig][use-global-config]" checked>Use global config</label>
             </div>
   
 
@@ -1240,6 +1242,31 @@ EOF;
             // When inputs change, update the preview args. LP 2026-06-24
             jQuery('#vipps-button-settings-express-args input').on('click', updatePreview);
 
+            var currentContext = '<?php echo $init_context; ?>';
+            var contextConfigs = <?php echo json_encode($configs) ?: "{}"; ?> // maps context key to config. LP 2026-06-24
+
+            function setInputsFromConfig(config) {
+                if (!config) return;
+                console.log("setting config", config);
+                Object.entries(config).forEach(([key, val]) => {
+                        if ("use-global-config" === key) return; // LP FIXME:
+                        const inputs = jQuery(`input[name="express[tmpConfig][${key}]"]`); // just one input if checkbox, multiple for radio
+                        switch (inputs.prop('type')) { 
+                            case "checkbox":
+                                inputs.prop('checked', "true" === val);
+                                break;
+                            case "radio":
+                                inputs.filter(`[value="${val}"]`).prop('checked', true);
+                                break;
+                            default:
+                                console.error("Unexpected input type for <?php echo self::CompanyName(); ?> button config");
+                        }
+                });
+            }
+            // init the starting config from option. LP 2026-06-25
+            setInputsFromConfig(contextConfigs[currentContext]);
+
+
             function updatePreview(event) {
                 // Update the preview web component attributes. LP 2026-06-24
                 const args = getPreviewArgs();
@@ -1272,29 +1299,33 @@ EOF;
                 return args;
             }
 
-            var currentContext = '<?php echo $init_context; ?>';
-            var configsToUpdate = {}; // maps context key to config. LP 2026-06-24
             // Stores selected config for context and switches to another (if changed).
-            // Also toggles display for the "use global config" checkbox. LP 2026-06-25
+            // AcontextConfigslso toggles display for the "use global config" checkbox. LP 2026-06-25
             function updateContext() {
                 const wasGlobal = "global" === currentContext;
                 const useGlobalConfig = jQuery('#use-global-config-container input').prop("checked");
 
                 // Store config to global, unless its a non-global context that uses global config. LP 2026-06-25
                 if (wasGlobal || !useGlobalConfig) {
-                    configsToUpdate[currentContext] = getPreviewArgs();
+                    contextConfigs[currentContext] = getPreviewArgs();
                 } else {
-                    configsToUpdate[currentContext] = {'use-global-config': true};
+                    contextConfigs[currentContext] = {'use-global-config': true};
                 }
+
+                // Swap to new context: set all input fields to the stored values if exists. LP 2026-06-25
                 const newContext = jQuery("#context").val();
+                const newConfig = contextConfigs[newContext];
+                console.log("new config:", contextConfigs[newContext]);
+                if (!newConfig['use-global-config']) {
+                    setInputsFromConfig(newConfig);
+                }
+
                 currentContext = newContext;
                 const newIsGlobal = "global" === newContext;
-
                 jQuery('#use-global-config-container').toggle(!newIsGlobal);
                 jQuery('#vipps-button-settings-express-args input').prop("disabled", !newIsGlobal && useGlobalConfig);
             }
-
-            // On submit: delete the tmpConfig for the current selected values, and add the stored configsToUpdate to the post data. LP 2026-06-24
+            // On submit: delete the tmpConfig for the current selected values, and add the stored contextConfigs to the post data. LP 2026-06-24
             jQuery('#vipps-button-settings-form').on('formdata', e => {
                 const formData = e?.originalEvent?.formData;
                 if (!formData) return;
@@ -1312,9 +1343,9 @@ EOF;
                 keysToDelete.forEach(key => formData.delete(key));
 
                 // Now add configs for each context updated in this settings menu to the form data. LP 2026-06-24
-                Object.entries(configsToUpdate).forEach(([ctx, config]) => {
+                Object.entries(contextConfigs).forEach(([context, config]) => {
                     Object.entries(config).forEach(([key, val]) => {
-                        formData.append(`express[configs][${ctx}][${key}]`, val);
+                        formData.append(`express[configs][${context}][${key}]`, val);
                     });
                 });
             });
