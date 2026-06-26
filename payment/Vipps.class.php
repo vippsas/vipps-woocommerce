@@ -1243,31 +1243,58 @@ EOF;
             var currentContext = '<?php echo $init_context; ?>';
             var contextConfigs = <?php echo json_encode($configs) ?: "{}"; ?> // maps context key to config. LP 2026-06-24
 
-            function setInputsFromConfig(config) {
+            function setInputsFromConfig(context, config) {
+                console.log("setInputsFromConfig", context, config);
                 if (!config) return;
-                console.log("setting config", config);
+                const useGlobalConfig = Boolean(config["use-global-config"]);
+                const isGlobal = "global" === context;
+                console.log(`isGlobal=${isGlobal}, useGlobalConfig=${useGlobalConfig}`);
+
+                // Only show the 'use-global-config' checkbox for nonglobal context. LP 2026-06-26
+                jQuery('#use-global-config-container').toggle(!isGlobal);
+
+                // Nonglobal contexts should fallback to the global config if useGlobalConfig is checked. LP 2026-06-26
+                if (!isGlobal && useGlobalConfig) {
+                    console.log("using global config");
+                    config = contextConfigs["global"];
+
+                    jQuery('input[name="express[tmpConfig][use-global-config]"]').prop("checked", true);
+
+                    // When using global config, the inputs should be disabled until its unchecked. LP 2026-06-26
+                    jQuery('#vipps-button-settings-express-args input').prop("disabled", true);
+                } else {
+                    console.log("NOT using global config");
+                    jQuery('input[name="express[tmpConfig][use-global-config]"]').prop("checked", false);
+                    jQuery('#vipps-button-settings-express-args input').prop("disabled", false);
+                }
+                console.log("setting inputs from config:", config);
+
                 Object.entries(config).forEach(([key, val]) => {
-                        if ("use-global-config" === key) return; // LP FIXME:
-                        const inputs = jQuery(`input[name="express[tmpConfig][${key}]"]`); // just one input if checkbox, multiple for radio
+                        // console.log(`Setting ${key}=${val} (type ${typeof val}, equal to true?: ${val === "true"})`); // LP FIXME: remove
+                        if ("use-global-config" === key) return;
+                        const inputs = jQuery(`input[name="express[tmpConfig][${key}]"]`);
                         const type = inputs.prop('type');
                         switch (type) { 
                             case "checkbox":
-                                inputs.prop('checked', "true" === val);
+                                inputs.prop('checked', typeof val === "boolean" ? val : "true" === val);
                                 break;
                             case "radio":
                                 inputs.filter(`[value="${val}"]`).prop('checked', true);
                                 break;
                             default:
-                                console.error(`Unexpected input type '${type}' for <?php echo self::CompanyName(); ?> button config`);
+                                console.error(`Unexpected input type '${type}' for <?php echo self::CompanyName(); ?> button config with key=${key}, val=${val}`);
                         }
                 });
+
+                updatePreview();
             }
-            // init the starting config from option. LP 2026-06-25
-            setInputsFromConfig(contextConfigs[currentContext]);
+             // init the starting config from option. LP 2026-06-25
+            console.log("setting init config to", contextConfigs[currentContext]);
+            setInputsFromConfig(currentContext, contextConfigs[currentContext]);
 
 
+            // Update the preview web component's attributes. LP 2026-06-24
             function updatePreview(event) {
-                // Update the preview web component attributes. LP 2026-06-24
                 const args = getPreviewArgs();
                 const button = jQuery('#vipps-button-express-preview');
                 button.attr(args);
@@ -1315,14 +1342,8 @@ EOF;
                 const newContext = jQuery("#context").val();
                 const newConfig = contextConfigs[newContext];
                 console.log("new config:", contextConfigs[newContext]);
-                if (!newConfig['use-global-config']) {
-                    setInputsFromConfig(newConfig);
-                }
-
+                setInputsFromConfig(newContext, newConfig);
                 currentContext = newContext;
-                const newIsGlobal = "global" === newContext;
-                jQuery('#use-global-config-container').toggle(!newIsGlobal);
-                jQuery('#vipps-button-settings-express-args input').prop("disabled", !newIsGlobal && useGlobalConfig);
             }
             // On submit: delete the tmpConfig for the current selected values, and add the stored contextConfigs to the post data. LP 2026-06-24
             jQuery('#vipps-button-settings-form').on('formdata', e => {
