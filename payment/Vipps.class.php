@@ -272,20 +272,7 @@ class Vipps {
             add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
         }
 
-        // Init button settings. LP 2026-06-24
-        // LP FIXME: check version and migrate from old options if set and older than now. LP 2026-06-24
-        if (!get_option('vipps_button_options')) {
-            update_option('vipps_button_options', [
-                    'express' => [
-                        'version' => '2.0',
-                        'configs' => [
-                            'global' => $this->get_vipps_button_default_args(),
-                        ],
-                        'product_configs' => [],
-                    ],
-            ]);
-        }
-
+        $this->init_button_options();
     }
 
     public function admin_init () {
@@ -988,24 +975,6 @@ EOF;
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
         }
         wp_enqueue_script('vipps-button');
-        /* Option structure as of now. LP 2026-06-24
-         * [
-         *      'express' => [
-         *          'version' => 'x.x',         used to migrate from previous iterations
-         *          'configs' => [              different button parameters for certain contexts, falls back to global if context has no override
-         *              'global' => ['compact' => ..., 'verb' => ..., ...],
-         *              'cart' => [...],
-         *              'product' => [...],
-         *              'checkout' => [...],
-         *              ...
-         *              ],
-         *          'product_configs' => [      overrides for specific products
-         *              1532 => ['compact' => ..., 'verb' => ..., ...],
-         *              ...
-         *          ],
-         *      ],
-         * ]
-         */
         ?>
         <div class='wrap vipps-button-settings'>
             <h1><?php echo sprintf(__('%1$s button configuration', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
@@ -1245,16 +1214,15 @@ EOF;
 
             function setInputsFromConfig(context, config) {
                 console.log("setInputsFromConfig", context, config);
-                if (!config) return;
-                const useGlobalConfig = Boolean(config["use-global-config"]);
+                const useGlobalConfig = Boolean(config?.["use-global-config"]);
                 const isGlobal = "global" === context;
                 console.log(`isGlobal=${isGlobal}, useGlobalConfig=${useGlobalConfig}`);
 
                 // Only show the 'use-global-config' checkbox for nonglobal context. LP 2026-06-26
                 jQuery('#use-global-config-container').toggle(!isGlobal);
 
-                // Nonglobal contexts should fallback to the global config if useGlobalConfig is checked. LP 2026-06-26
-                if (!isGlobal && useGlobalConfig) {
+                // Nonglobal contexts with useGlobalConfig, and empty configs, should fallback to the global config. LP 2026-06-26
+                if (!config || (!isGlobal && useGlobalConfig)) {
                     console.log("using global config");
                     config = contextConfigs["global"];
 
@@ -5981,6 +5949,89 @@ else:
                 'readonly'    => true,
             ),
         );
+    }
+
+    // Inits option 'vipps_button_options' and handles migration from older versions. LP 2026-06-26
+    public function init_button_options() {
+        $versions = ['express' => '2.0'];
+        /* New structure as of now
+         * [
+         *      'express' => [
+         *          'version' => 'x.x',         used to migrate from previous iterations
+         *          'configs' => [              different button parameters for certain contexts, falls back to global if context has no override
+         *              'global' => ['compact' => ..., 'verb' => ..., ...],
+         *              'cart' => [...],
+         *              'product' => [...],
+         *              'checkout' => [...],
+         *              ...
+         *              ],
+         *          'product_configs' => [      overrides for specific products
+         *              1532 => ['compact' => ..., 'verb' => ..., ...],
+         *              ...
+         *          ],
+         *      ],
+         * ]
+         */
+        $options = get_option('vipps_button_options');
+        $default = [
+            'express' => [
+                'version' => $versions['express'],
+                'configs' => [
+                    'global' => $this->get_vipps_button_default_args(),
+                ],
+                'product_configs' => [],
+            ],
+        ];
+
+        $new_options = null;
+
+        // Missing option structure. LP 2026-06-26
+        if (!$options
+            || !is_array($options)
+            || !is_array($options['express'] ?? null)
+        ) {
+            $new_options = $default;
+        }
+        // Migrate from old button option structure. LP 2026-06-26
+        else if (!isset($options['express']['version'])
+                || version_compare($options['express']['version'], $versions['express'], '<')
+        ) {
+
+            $new_options = $default;
+
+            // helper: old variant string => new config. LP 2026-06-26
+            $convert_variant_to_config = function($variant) use ($default) {
+                $config = $default['express']['configs']['global'];
+                $config['rounded'] = str_contains($variant, 'pill') ? 'true' : 'false';
+                $config['compact'] = str_contains($variant, 'mini') ? 'true' : 'false';
+                if (str_contains($variant, 'buy-now')) {
+                    $config['verb'] = 'buy';
+                } else if (str_contains($variant, 'express')) {
+                    $config['verb'] = 'express';
+                }
+                return $config;
+            };
+
+            // Migrate chosen variant to new global config. LP 2026-06-26
+            $new_options['express']['configs']['global'] = $convert_variant_to_config($options['express']['variant'] ?? '');
+
+            // Migrate context/page mini override to new context config. LP 2026-06-26
+            if (is_array($options['express']['force-mini'] ?? null)) {
+                foreach($options['express']['force-mini'] as $context => $use_mini) {
+                    if ("yes" === $use_mini)  {
+                        $config = $convert_variant_to_config($options['express']['mini-variant'] ?? '');
+                        $config['compact'] = 'true';
+                        $new_options['express']['configs'][$context] = $config;
+                    }
+                }
+            }
+        }
+
+        if ($new_options) {
+            /* translators: placeholders are arrays */
+            $this->log(sprintf(__('Migrating from old button options. Old: %s, new: %s', 'woo-vipps'), print_r($options, true), print_r($new_options, true)), 'debug');
+            update_option('vipps_button_options', $new_options);
+        }
     }
 
     // Whether the order is possible to restart with a retry session at VMP. LP 2026-03-18
