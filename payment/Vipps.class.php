@@ -5952,7 +5952,7 @@ else:
     }
 
     // Inits option 'vipps_button_options' and handles migration from older versions. LP 2026-06-26
-    public function init_button_options() {
+    private function init_button_options() {
         $versions = ['express' => '2.0'];
         /* New structure as of now
          * [
@@ -5973,11 +5973,14 @@ else:
          * ]
          */
         $options = get_option('vipps_button_options');
-        $default = [
+        $default_config = $this->get_vipps_button_default_args();
+
+        $default_options = [
             'express' => [
                 'version' => $versions['express'],
                 'configs' => [
-                    'global' => $this->get_vipps_button_default_args(),
+                    'global' => $default_config,
+                    'catalog' => array_replace($default_config, ['compact' => true]), // default to compact version for product catalog. LP 2026-06-26
                 ],
                 'product_configs' => [],
             ],
@@ -5990,18 +5993,18 @@ else:
             || !is_array($options)
             || !is_array($options['express'] ?? null)
         ) {
-            $new_options = $default;
+            $new_options = $default_options;
         }
         // Migrate from old button option structure. LP 2026-06-26
         else if (!isset($options['express']['version'])
                 || version_compare($options['express']['version'], $versions['express'], '<')
         ) {
 
-            $new_options = $default;
+            $new_options = $default_options;
 
             // helper: old variant string => new config. LP 2026-06-26
-            $convert_variant_to_config = function($variant) use ($default) {
-                $config = $default['express']['configs']['global'];
+            $convert_variant_to_config = function($variant) use ($default_config) {
+                $config = $default_config;
                 $config['rounded'] = str_contains($variant, 'pill') ? 'true' : 'false';
                 $config['compact'] = str_contains($variant, 'mini') ? 'true' : 'false';
                 if (str_contains($variant, 'buy-now')) {
