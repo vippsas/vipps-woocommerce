@@ -1195,42 +1195,40 @@ EOF;
             </div>
   
 
-        <!-- Button argument inputs. These input values are put into express.config
-        and when the settings are posted or the context (see above) is switched,
-        the current config will be saved into express.<context_key>. LP 2026-06-24 -->
+            <!-- Button argument inputs. These input values are put into post data express.tmpConfig temporarily, on change stored in a global 'contextConfigs', and processed before submit. LP 2026-06-24 -->
             <div id="vipps-button-settings-express-args">
-              <fieldset>
-                  <legend>Button appearance</legend>
-                  <label><input type="checkbox" name="express[tmpConfig][rounded]" checked="">Rounded</label>
-                  <label><input type="checkbox" name="express[tmpConfig][compact]">Compact</label>
-                  <label><input type="checkbox" name="express[tmpConfig][stretched]">Stretched</label>
-              </fieldset>
-              <fieldset>
-                  <legend>Language</legend>
-                  <label><input type="radio" name="express[tmpConfig][language]" checked value="store">Store language</label>
-                  <label><input type="radio" name="express[tmpConfig][language]" value="en">English</label>
-                  <label><input type="radio" name="express[tmpConfig][language]" value="no">Norwegian</label>
-                  <label><input type="radio" name="express[tmpConfig][language]" value="dk">Danish</label>
-                  <label><input type="radio" disabled="" name="express[tmpConfig][language]" value="fi">Finnish</label>
-                  <label><input type="radio" name="express[tmpConfig][language]" value="sv">Swedish</label>
-                  <div>Finnish is currently only available with the MobilePay payment method.</div>
-              </fieldset>
-              <fieldset>
-                  <legend>Verb</legend>
-                  <label><input type="radio" name="express[tmpConfig][verb]" checked="" value="buy">Buy</label>
-                  <label><input type="radio" name="express[tmpConfig][verb]" value="pay">Pay</label>
-                  <label><input type="radio" name="express[tmpConfig][verb]" value="register">Register</label>
-                  <label><input type="radio" name="express[tmpConfig][verb]" value="continue">Continue</label>
-                  <label><input type="radio" name="express[tmpConfig][verb]" value="confirm">Confirm</label>
-                  <label><input type="radio" name="express[tmpConfig][verb]" value="donate">Donate</label>
-                  <label><input type="radio" name="express[tmpConfig][verb]" value="express">Express</label>
-              </fieldset>
-              <fieldset>
-                  <legend>Variant</legend>
-                  <label><input type="radio" name="express[tmpConfig][variant]" checked="" value="primary">Primary</label>
-                  <label><input type="radio" name="express[tmpConfig][variant]" value="dark">Dark (WCAG AAA)</label>
-                  <label><input type="radio" name="express[tmpConfig][variant]" value="light">Light (WCAG AAA)</label>
-              </fieldset>
+                <fieldset>
+                    <legend>Button appearance</legend>
+                    <label><input type="checkbox" name="express[tmpConfig][rounded]" checked="">Rounded</label>
+                    <label><input type="checkbox" name="express[tmpConfig][compact]">Compact</label>
+                    <label><input type="checkbox" name="express[tmpConfig][stretched]">Stretched</label>
+                </fieldset>
+                <fieldset>
+                    <legend>Language</legend>
+                    <label><input type="radio" name="express[tmpConfig][language]" checked value="store">Store language</label>
+                    <label><input type="radio" name="express[tmpConfig][language]" value="en">English</label>
+                    <label><input type="radio" name="express[tmpConfig][language]" value="no">Norwegian</label>
+                    <label><input type="radio" name="express[tmpConfig][language]" value="dk">Danish</label>
+                    <label><input type="radio" disabled="" name="express[tmpConfig][language]" value="fi">Finnish</label>
+                    <label><input type="radio" name="express[tmpConfig][language]" value="sv">Swedish</label>
+                    <div>Finnish is currently only available with the MobilePay payment method.</div>
+                </fieldset>
+                <fieldset>
+                    <legend>Verb</legend>
+                    <label><input type="radio" name="express[tmpConfig][verb]" checked="" value="buy">Buy</label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="pay">Pay</label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="register">Register</label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="continue">Continue</label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="confirm">Confirm</label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="donate">Donate</label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="express">Express</label>
+                </fieldset>
+                <fieldset>
+                    <legend>Variant</legend>
+                    <label><input type="radio" name="express[tmpConfig][variant]" checked="" value="primary">Primary</label>
+                    <label><input type="radio" name="express[tmpConfig][variant]" value="dark">Dark (WCAG AAA)</label>
+                    <label><input type="radio" name="express[tmpConfig][variant]" value="light">Light (WCAG AAA)</label>
+                </fieldset>
             </div>
         </div>
 
@@ -1251,7 +1249,8 @@ EOF;
                 Object.entries(config).forEach(([key, val]) => {
                         if ("use-global-config" === key) return; // LP FIXME:
                         const inputs = jQuery(`input[name="express[tmpConfig][${key}]"]`); // just one input if checkbox, multiple for radio
-                        switch (inputs.prop('type')) { 
+                        const type = inputs.prop('type');
+                        switch (type) { 
                             case "checkbox":
                                 inputs.prop('checked', "true" === val);
                                 break;
@@ -1259,7 +1258,7 @@ EOF;
                                 inputs.filter(`[value="${val}"]`).prop('checked', true);
                                 break;
                             default:
-                                console.error("Unexpected input type for <?php echo self::CompanyName(); ?> button config");
+                                console.error(`Unexpected input type '${type}' for <?php echo self::CompanyName(); ?> button config`);
                         }
                 });
             }
