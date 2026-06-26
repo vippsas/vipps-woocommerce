@@ -939,7 +939,7 @@ jQuery('a.webhook-adder').click(function (e) {
             'language' => $this->get_customer_language(),
             'variant' => 'primary',
             'rounded' => 'false',
-            'verb' => 'continue',
+            'verb' => 'buy',
             'stretched' => 'false',
             'compact' => 'false',
         ];
@@ -959,7 +959,7 @@ jQuery('a.webhook-adder').click(function (e) {
         if ('login' === $args['verb']) $args['verb'] = 'buy';
 
         $escaped_args = [];
-        foreach($args as $k=>$v) {
+        foreach($args as $k => $v) {
            $escaped_args[$k] = esc_attr($v);
         }
 
