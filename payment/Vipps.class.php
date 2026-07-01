@@ -56,6 +56,9 @@ class Vipps {
 
     public $vippsJSConfig = array();
 
+    public $button_options_version = 2.0;
+    public $button_options_express_version = 2.0;
+
     // IOK 2023-11-29 Vipps merging with MobilePay causes some challenges which we solve by abstraction
     public static function CompanyName() { 
         return __("Vipps MobilePay", 'woo-vipps');
@@ -942,8 +945,8 @@ jQuery('a.webhook-adder').click(function (e) {
 
         // Support using store language
         if ('store' === $attrs['language']) $attrs['language'] = $this->get_customer_language();
-        // Don't support verb 'login'. LP 2026-06-04
-        if ('login' === $attrs['verb']) $attrs['verb'] = 'buy';
+        // Don't support these login verbs. LP 2026-06-04
+        if (in_array($attrs['verb'], ['login', 'register'])) $attrs['verb'] = 'buy';
 
         $escaped_attrs = [];
         foreach($attrs as $k => $v) {
@@ -5057,16 +5060,18 @@ else:
     }
 
 
-    // Legacy function as of new web component buttons. LP 2026-06-26
+    // Legacy function as of using new web component buttons. LP 2026-06-26
+    // NB: previously this returned the url to a svg logo. We don't do this anymore, so it returns html. LP 2026-06-30
     public function get_express_logo($_payment_method = null, $_lang = null, $_variant = null, $context = 'global') {
         return $this->get_html_button($context);
     }
 
+    // Legacy function as of using new web component buttons. LP 2026-06-26
     // Get payment logo based on payment method, then language NT 2023-11-30
     // and based on custom variant setting. $context is where it is to be used, e.g 'cart', 'product'. LP 2025-12-15
+    // NB: previously this returned the url to a svg logo. We don't do this anymore, so it returns html. LP 2026-06-30
     public function get_payment_logo($context = 'global') {
-        $logo_url = $this->get_express_logo($context);
-        return $logo_url;
+        return $this->get_express_logo($context);
     }
 
     // Get express banner logo based on payment method. LP 2025-09-03
@@ -5815,7 +5820,6 @@ else:
 
     // Inits option 'vipps_button_options' and handles migration from older versions. LP 2026-06-26
     private function init_button_options() {
-        $versions = ['express' => '2.0'];
         /* New structure as of now
          * [
          *      'express' => [
@@ -5838,8 +5842,9 @@ else:
         $default_config = $this->get_html_button_default_attrs();
 
         $default_options = [
+            'version' => $this->button_options_version,
             'express' => [
-                'version' => $versions['express'],
+                'version' => $this->button_options_express_version,
                 'configs' => [
                     'global' => $default_config,
                     'catalog' => array_replace($default_config, ['compact' => true]), // default to compact version for product catalog. LP 2026-06-26
@@ -5859,32 +5864,20 @@ else:
         }
         // Migrate from old button option structure. LP 2026-06-26
         else if (!isset($options['express']['version'])
-                || version_compare($options['express']['version'], $versions['express'], '<')
+                || version_compare($options['express']['version'], '2.0', '<')
         ) {
 
             $new_options = $default_options;
 
-            // helper: old variant string => new config. LP 2026-06-26
-            $convert_variant_to_config = function($variant) use ($default_config) {
-                $config = $default_config;
-                $config['rounded'] = str_contains($variant, 'pill') ? 'true' : 'false';
-                $config['compact'] = str_contains($variant, 'mini') ? 'true' : 'false';
-                if (str_contains($variant, 'buy-now')) {
-                    $config['verb'] = 'buy';
-                } else if (str_contains($variant, 'express')) {
-                    $config['verb'] = 'express';
-                }
-                return $config;
-            };
 
             // Migrate chosen variant to new global config. LP 2026-06-26
-            $new_options['express']['configs']['global'] = $convert_variant_to_config($options['express']['variant'] ?? '');
+            $new_options['express']['configs']['global'] = $this->migrate_button_variant_to_config($options['express']['variant'] ?? '');
 
             // Migrate context/page mini override to new context config. LP 2026-06-26
             if (is_array($options['express']['force-mini'] ?? null)) {
                 foreach($options['express']['force-mini'] as $context => $use_mini) {
                     if ("yes" === $use_mini)  {
-                        $config = $convert_variant_to_config($options['express']['mini-variant'] ?? '');
+                        $config = $this->migrate_button_variant_to_config($options['express']['mini-variant'] ?? '');
                         $config['compact'] = 'true';
                         $new_options['express']['configs'][$context] = $config;
                     }
@@ -5898,6 +5891,32 @@ else:
             update_option('vipps_button_options', $new_options);
         }
     }
+
+    // Old variant string => new config array. LP 2026-06-26
+    public function migrate_button_variant_to_config($variant) {
+        $config = $this->get_html_button_default_attrs();
+        $config['rounded'] = str_contains($variant, 'pill') ? 'true' : 'false';
+        $config['compact'] = str_contains($variant, 'mini') ? 'true' : 'false';
+        if (str_contains($variant, 'buy-now')) {
+            $config['verb'] = 'buy';
+        } else if (str_contains($variant, 'express')) {
+            $config['verb'] = 'express';
+        }
+        return $config;
+    }
+
+    // Old legacy button logo variants. Replaced by web component. See get_html_button(). LP 2026-07-01
+    public function get_express_logo_variants() {
+        return [
+            'buy-now-rectangular' => __('Buy now rectangular', 'woo-vipps'),
+            'buy-now-pill' => __('Buy now pill', 'woo-vipps'),
+            'express-rectangular' => __('Express rectangular', 'woo-vipps'),
+            'express-pill' => __('Express pill', 'woo-vipps'),
+            'express-rectangular-mini' => __('Express rectangular mini', 'woo-vipps'),
+            'express-pill-mini' => __('Express pill mini', 'woo-vipps'),
+        ];
+    }
+
 
     // Whether the order is possible to restart with a retry session at VMP. LP 2026-03-18
     public static function order_is_vipps_retryable($order_id) {

@@ -92,7 +92,7 @@ add_action('enqueue_block_editor_assets', function () {
                     ['label' => __('Store language', 'woo-vipps'), 'value' => "store"],
                     ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                     ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
-                    ['label' => __('Swedish', 'woo-vipps'), 'value' => 'se'],
+                    ['label' => __('Swedish', 'woo-vipps'), 'value' => 'sv'],
                 ];
                 break;
             case 'MobilePay':
@@ -105,34 +105,43 @@ add_action('enqueue_block_editor_assets', function () {
                 break;
         }
 
-        // Array of associative arrays with keys 'label' and 'value'. LP 2026-01-16
         $buy_now_variants = [
-            ['label' => __('Default', 'woo-vipps'), 'value' => 'default-mini'],
+            ['label' => __('Primary', 'woo-vipps'), 'value' => 'primary'],
+            ['label' => __('Dark', 'woo-vipps'), 'value' => 'dark'],
+            ['label' => __('Light', 'woo-vipps'), 'value' => 'light'],
         ];
-        foreach (Vipps::instance()->get_express_logo_variants() as $value => $label) {
-            $buy_now_variants[] = ['label' => $label, 'value' => $value];
-        }
 
-        // Create array of language => variant => logo_url. LP 2026-01-16
-        $logos = [];
-        foreach ($buy_now_languages as $lang_arr) {
-            $lang_key = $lang_arr['value'];
-            $lang = $lang_key === 'store' ? $store_language : $lang_key;
-            foreach ($buy_now_variants as $variant_arr) {
-                $variant = $variant_arr['value'];
-                $logos[$lang_key][$variant] = Vipps::instance()->get_express_logo($payment_method, $lang, $variant);
-            }
+        $buy_now_verbs = [
+            ['label' => __('Buy', 'woo-vipps'), 'value' => 'buy'],
+            ['label' => __('Pay', 'woo-vipps'), 'value' => 'pay'],
+            ['label' => __('Continue', 'woo-vipps'), 'value' => 'continue'],
+            ['label' => __('Confirm', 'woo-vipps'), 'value' => 'confirm'],
+            ['label' => __('Donate', 'woo-vipps'), 'value' => 'donate'],
+            ['label' => __('Express', 'woo-vipps'), 'value' => 'express'],
+        ];
+
+        // Migrate from old variants to new config array by sending a map. LP 2026-07-01
+        $variant_migration_map = [];
+        foreach(array_keys(Vipps::instance()->get_express_logo_variants()) as $old_variant) {
+            $new_config = Vipps::instance()->migrate_button_variant_to_config($old_variant);
+            unset($new_config['brand']);
+            unset($new_config['language']);
+            unset($new_config['stretched']);
+            $variant_migration_map[$old_variant] = $new_config;
         }
 
         $buy_now_config = [
             'BuyNowWithVipps' => Vipps::instance()->vippsJSConfig['vippssmileurl'],
-            'logos' => $logos,
             'vippssmileurl' => Vipps::instance()->vippsJSConfig['vippssmileurl'],
             'vippsbuynowbutton' => Vipps::instance()->vippsJSConfig['vippsbuynowbutton'],
             'vippsbuynowdescription' => Vipps::instance()->vippsJSConfig['vippsbuynowdescription'],
             'languages' => $buy_now_languages,
             'variants' => $buy_now_variants,
+            'verbs' => $buy_now_verbs,
             'vippsresturl' => '/woo-vipps/v1',
+            'paymentMethod' => Vipps::instance()->get_payment_method_name(),
+            'storeLanguage' => VIpps::instance()->get_customer_language(),
+            'variantMigrationMap' => $variant_migration_map,
         ];
         wp_add_inline_script('woo-vipps-buy-now-editor-script', 'const vippsBuyNowBlockConfig = ' . json_encode($buy_now_config), 'before');
 
