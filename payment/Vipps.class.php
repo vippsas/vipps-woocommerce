@@ -991,7 +991,7 @@ EOF;
         if (!current_user_can('manage_woocommerce')) {
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
         }
-        wp_enqueue_script('vipps-button');
+        wp_enqueue_script('vipps-button-webcomponent');
         ?>
         <div class='wrap vipps-button-settings'>
             <h1><?php echo sprintf(__('%1$s button configuration', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
@@ -1781,7 +1781,7 @@ EOF;
         );
 
         // Button web component downloaded from https://cdn.vippsmobilepay.com/js/button/button.js. LP 2026-06-24
-        wp_register_script('vipps-button',
+        wp_register_script('vipps-button-webcomponent',
                 plugins_url('js/vipps-button.js', WC_VIPPS_PAYMENT_MAIN_FILE),
                 array(),
                 filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/vipps-button.js'),
@@ -1810,7 +1810,7 @@ EOF;
 
         wp_enqueue_script('vipps-gw');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
-        wp_enqueue_script('vipps-button');
+        wp_enqueue_script('vipps-button-webcomponent');
     }
 
 

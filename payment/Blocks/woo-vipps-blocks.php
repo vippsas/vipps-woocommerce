@@ -25,13 +25,13 @@ add_action('enqueue_block_assets', function () {
     if (is_admin()) {
         // Add the on-site-messaging web component if we are in the admin area. 
         wp_enqueue_script('vipps-onsite-messageing');
-        wp_enqueue_script('vipps-button');
+        wp_enqueue_script('vipps-button-webcomponent');
     }
 });
 
 // Inject block config variables to block editor assets
 add_action('enqueue_block_editor_assets', function () {
-    wp_enqueue_script('vipps-button');
+    wp_enqueue_script('vipps-button-webcomponent');
 
     // vipps-badge config
     $vipps = Vipps::instance();
