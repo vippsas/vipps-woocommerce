@@ -4899,7 +4899,7 @@ else:
                 $use_mini = sanitize_title($options['express']['force-mini'][$page]) === 'yes';
             }
             $key = $use_mini ? 'mini-variant' : 'variant';
-            $variant = sanitize_title($options['express'][$key]) ?? '';
+            $variant = sanitize_title($options['express'][$key] ?? '');
         }
 
         if (!$variant) {
