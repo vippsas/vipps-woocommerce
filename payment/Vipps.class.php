@@ -5087,13 +5087,17 @@ else:
     }
 
     // Legacy function as of new web component express buttons. see get_buy_now_button and get_html_button. LP 2026-06-26
-    public function get_buy_now_button_manual($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='', $_logo_variant=null, $_logo_lang=null) {
-        return $this->get_buy_now_button($product_id, $variation_id, $sku, $disabled, $classes);
+    public function get_buy_now_button_manual($product_id, $variation_id=null, $sku=null, $disabled=false, $classes='',
+        $_logo_variant=null, $_logo_lang=null, // deprecated params
+        $context='global', $button_args_override = [],
+    ) {
+        return $this->get_buy_now_button($product_id, $variation_id, $sku, $disabled, $classes, $context, $button_args_override);
     }
 
     // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
-    // $context is slug describing where its to be used, like 'catalog', 'cart', 'product' etc. See init_button_options() LP 2026-06-26
-    public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='', $context='global') {
+    // $context is slug describing where its to be used, like 'catalog', 'cart', 'product' etc. and will
+    // be used unless $button_args_override is nonempty. See init_button_options() and get_html_button() LP 2026-06-26
+    public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='', $context='global', $button_args_override = []) {
         $disabled = $disabled ? 'disabled' : '';
         $data = array();
 
@@ -5120,9 +5124,13 @@ else:
         $payment_method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $payment_method);
 
-        $button_args = $this->get_html_button_attrs_for_context($context);
+        if (is_array($button_args_override) && $button_args_override) {
+            $button_args = $button_args_override;
+        } else {
+            $button_args = $this->get_html_button_attrs_for_context($context);
+        }
         $short = ($button_args['compact'] ?? 'false') === 'true';
-        $button = $this->get_html_button_for_context($context);
+        $button = $this->get_html_button($button_args);
 
         # Extra classes, if passed IOK 2019-02-26
         if (is_array($classes)) {

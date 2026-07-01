@@ -22,5 +22,14 @@ else {
 
 // Only create button if the product has woo-vipps express checkout enabled. LP 29.11.2024
 if ($supported) {
-    echo "<div class='wp-block-button wc-block-components-product-button wc-block-button-vipps'>" . $vipps->get_buy_now_button_manual($product->get_id(), null, null, false, '', $block->attributes['variant'], $block->attributes['language']) . "</div>";
+    // In retrospect, the web component button args should probably be in one attribute object instead, to avoid stuff like this. LP 2026-07-01
+    $button_args = [];
+    foreach(['compact', 'rounded'] as $bool_attr) {
+        $button_args[$bool_attr] = ($block->attributes[$bool_attr] ?? false) ? 'true' : 'false';
+    }
+    foreach(['verb', 'variant', 'language'] as $str_attr) {
+        $button_args[$str_attr] = $block->attributes[$str_attr] ?? '';
+    }
+
+    echo "<div class='wp-block-button wc-block-components-product-button wc-block-button-vipps'>" . $vipps->get_buy_now_button_manual($product->get_id(), null, null, false, '', null, null, 'gutenberg', $button_args) . "</div>";
 }

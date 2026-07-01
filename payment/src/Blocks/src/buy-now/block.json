@@ -38,10 +38,6 @@
 		"compact": {
 			"type": "boolean",
 			"default": false
-		},
-		"stretched": {
-			"type": "boolean",
-			"default": false
 		}
 	},
 	"keywords": [
