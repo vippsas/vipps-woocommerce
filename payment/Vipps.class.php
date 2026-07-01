@@ -913,7 +913,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     public function get_html_button_default_attrs() {
         return [
-            'language' => $this->get_customer_language(),
+            'language' => 'store',
             'variant' => 'primary',
             'rounded' => 'false',
             'verb' => 'buy',
@@ -1025,11 +1025,6 @@ EOF;
         $init_context = 'global';
         $init_config = $configs[$init_context] ?? [];
 
-        // Finnish is only available in the MobilePay component right now, reset it. LP 2026-07-01
-        // if ('fi' === ($init_config['language'] ?? '') && $this->get_payment_method_name() !== 'MobilePay') {
-        //     $init_config['language'] = $this->get_customer_language();
-        // }
-
         // button args
         $init_args = $init_config;
         $init_args['id'] = 'vipps-button-express-preview';
@@ -1069,12 +1064,12 @@ EOF;
                     <label><input type="radio" name="express[tmpConfig][language]" value="en"><?php _e('English', 'woo-vipps'); ?></label>
                     <label><input type="radio" name="express[tmpConfig][language]" value="no"><?php _e('Norwegian', 'woo-vipps'); ?></label>
                     <label><input type="radio" name="express[tmpConfig][language]" value="dk"><?php _e('Danish', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][language]" value="sv"><?php _e('Swedish', 'woo-vipps'); ?></label>
                     <?php if ($this->get_payment_method_name() === 'MobilePay'): ?>
                     <label><input type="radio" disabled="" name="express[tmpConfig][language]" value="fi"><?php _e('Finnish', 'woo-vipps'); ?></label>
                     <?php else: ?>
                     <div><?php printf(__('Finnish is currently only available with the %s payment method.', 'woo-vipps'), 'MobilePay'); ?></div>
                     <?php endif; ?>
-                    <label><input type="radio" name="express[tmpConfig][language]" value="sv"><?php _e('Swedish', 'woo-vipps'); ?></label>
                 </fieldset>
                 <fieldset>
                     <legend>Verb</legend>
@@ -5742,18 +5737,17 @@ else:
 
         $new_options = null;
 
-        // Missing option structure. LP 2026-06-26
+        // Missing option structure: set default. LP 2026-06-26
         if (!$options
             || !is_array($options)
             || !is_array($options['express'] ?? null)
         ) {
             $new_options = $default_options;
         }
-        // Migrate from old button option structure. LP 2026-06-26
+        // Old (or missing) version: Migrate from old button option structure. LP 2026-06-26
         else if (!isset($options['express']['version'])
                 || version_compare($options['express']['version'], '2.0', '<')
         ) {
-
             $new_options = $default_options;
 
             // Migrate chosen variant to new global config. LP 2026-06-26
@@ -5771,7 +5765,20 @@ else:
                     }
                 }
             }
+
         }
+        else if ($this->get_payment_method_name() !== 'MobilePay') {
+            // Finnish is only available in the MobilePay component right now, so reset language in any configs. LP 2026-07-01
+            foreach(($options['express']['configs'] ?? []) as $context => $config) {
+                if ('fi' === ($config['language'] ?? '')) {
+                        if (!$new_options) $new_options = $options;
+                        $config['language'] = 'store';
+                        $new_options['express']['configs'][$context] = $config;
+                }
+            }
+        }
+
+
 
         if ($new_options) {
             /* translators: placeholders are arrays */
