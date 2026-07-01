@@ -2757,7 +2757,6 @@ else:
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
         $this->vippsJSConfig['vippslocale'] = get_locale();
         $this->vippsJSConfig['vippsexpressbuttonurl'] = $this->get_payment_method_name();
-        $this->vippsJSConfig['logoSvgUrl'] = $this->get_payment_logo('buy-now-block');
        
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
