@@ -1102,17 +1102,14 @@ EOF;
             var contextConfigs = <?php echo json_encode($configs) ?: "{}"; ?> // maps context key to config. LP 2026-06-24
 
             function setInputsFromConfig(context, config) {
-                console.log("setInputsFromConfig", context, config);
                 const useGlobalConfig = Boolean(config?.["use-global-config"]);
                 const isGlobal = "global" === context;
-                console.log(`isGlobal=${isGlobal}, useGlobalConfig=${useGlobalConfig}`);
 
                 // Only show the 'use-global-config' checkbox for nonglobal context. LP 2026-06-26
                 jQuery('#use-global-config-container').toggle(!isGlobal);
 
                 // Nonglobal contexts with useGlobalConfig, and empty configs, should fallback to the global config. LP 2026-06-26
                 if (!config || (!isGlobal && useGlobalConfig)) {
-                    console.log("using global config");
                     config = contextConfigs["global"];
 
                     jQuery('input[name="express[tmpConfig][use-global-config]"]').prop("checked", true);
@@ -1120,11 +1117,9 @@ EOF;
                     // When using global config, the inputs should be disabled until its unchecked. LP 2026-06-26
                     jQuery('#vipps-button-settings-express-args input').prop("disabled", true);
                 } else {
-                    console.log("NOT using global config");
                     jQuery('input[name="express[tmpConfig][use-global-config]"]').prop("checked", false);
                     jQuery('#vipps-button-settings-express-args input').prop("disabled", false);
                 }
-                console.log("setting inputs from config:", config);
 
                 Object.entries(config).forEach(([key, val]) => {
                         if ("use-global-config" === key) return;
@@ -1145,7 +1140,6 @@ EOF;
                 updatePreview();
             }
              // init the starting config from option. LP 2026-06-25
-            console.log("setting init config to", contextConfigs[currentContext]);
             setInputsFromConfig(currentContext, contextConfigs[currentContext]);
 
 
@@ -1197,7 +1191,6 @@ EOF;
                 // Swap to new context: set all input fields to the stored values if exists. LP 2026-06-25
                 const newContext = jQuery("#context").val();
                 const newConfig = contextConfigs[newContext];
-                console.log("new config:", contextConfigs[newContext]);
                 setInputsFromConfig(newContext, newConfig);
                 currentContext = newContext;
             }
