@@ -56,8 +56,8 @@ class Vipps {
 
     public $vippsJSConfig = array();
 
-    public $button_options_version = 2.0;
-    public $button_options_express_version = 2.0;
+    public $button_options_version = '2.0';
+    public $button_options_express_version = '2.0';
 
     // IOK 2023-11-29 Vipps merging with MobilePay causes some challenges which we solve by abstraction
     public static function CompanyName() { 
@@ -926,9 +926,11 @@ jQuery('a.webhook-adder').click(function (e) {
     public function get_html_button_attrs_for_context($context = 'global') {
         $options = get_option('vipps_button_options', []);
         if (!is_string($context)) $context = 'global';
-        return $options['express']['configs'][$context]
-            ?? $options['express']['configs']['global']
-            ?? $this->get_html_button_default_attrs();
+        $config = $options['express']['configs'][$context] ?? [];
+        if (!$config || ($config['use-global-config'] ?? false)) {
+            $config = $options['express']['configs']['global'] ?? $this->get_html_button_default_attrs();
+        }
+        return $config;
     }
 
     public function get_html_button_for_context($context = 'global') {
@@ -1023,6 +1025,11 @@ EOF;
         $init_context = 'global';
         $init_config = $configs[$init_context] ?? [];
 
+        // Finnish is only available in the MobilePay component right now, reset it. LP 2026-07-01
+        // if ('fi' === ($init_config['language'] ?? '') && $this->get_payment_method_name() !== 'MobilePay') {
+        //     $init_config['language'] = $this->get_customer_language();
+        // }
+
         // button args
         $init_args = $init_config;
         $init_args['id'] = 'vipps-button-express-preview';
@@ -1044,27 +1051,30 @@ EOF;
                     </option>
                   <?php endforeach; ?>
                 </select>
-            <label style="display: none;" id="use-global-config-container"><input onchange="updateContext()" type="checkbox" name="express[tmpConfig][use-global-config]" checked>Use global config</label>
+            <label style="display: none;" id="use-global-config-container"><input onchange="updateContext()" type="checkbox" name="express[tmpConfig][use-global-config]" checked><?php _e('Use global config', 'woo-vipps'); ?></label>
             </div>
   
 
             <!-- Button argument inputs. These input values are put into post data express.tmpConfig temporarily, on change stored in a global 'contextConfigs', and processed before submit. LP 2026-06-24 -->
             <div id="vipps-button-settings-express-args">
                 <fieldset>
-                    <legend>Button appearance</legend>
-                    <label><input type="checkbox" name="express[tmpConfig][rounded]" checked="">Rounded</label>
-                    <label><input type="checkbox" name="express[tmpConfig][compact]">Compact</label>
-                    <label><input type="checkbox" name="express[tmpConfig][stretched]">Stretched</label>
+                    <legend><?php _e('Button appearance', 'woo-vipps'); ?></legend>
+                    <label><input type="checkbox" name="express[tmpConfig][rounded]" checked=""><?php _e('Rounded', 'woo-vipps'); ?></label>
+                    <label><input type="checkbox" name="express[tmpConfig][compact]"><?php _e('Compact', 'woo-vipps'); ?></label>
+                    <label><input type="checkbox" name="express[tmpConfig][stretched]"><?php _e('Stretched', 'woo-vipps'); ?></label>
                 </fieldset>
                 <fieldset>
-                    <legend>Language</legend>
-                    <label><input type="radio" name="express[tmpConfig][language]" checked value="store">Store language</label>
-                    <label><input type="radio" name="express[tmpConfig][language]" value="en">English</label>
-                    <label><input type="radio" name="express[tmpConfig][language]" value="no">Norwegian</label>
-                    <label><input type="radio" name="express[tmpConfig][language]" value="dk">Danish</label>
-                    <label><input type="radio" disabled="" name="express[tmpConfig][language]" value="fi">Finnish</label>
-                    <label><input type="radio" name="express[tmpConfig][language]" value="sv">Swedish</label>
-                    <div>Finnish is currently only available with the MobilePay payment method.</div>
+                    <legend><?php _e('Language', 'woo-vipps'); ?></legend>
+                    <label><input type="radio" name="express[tmpConfig][language]" checked value="store"><?php _e('Store language', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][language]" value="en"><?php _e('English', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][language]" value="no"><?php _e('Norwegian', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][language]" value="dk"><?php _e('Danish', 'woo-vipps'); ?></label>
+                    <?php if ($this->get_payment_method_name() === 'MobilePay'): ?>
+                    <label><input type="radio" disabled="" name="express[tmpConfig][language]" value="fi"><?php _e('Finnish', 'woo-vipps'); ?></label>
+                    <?php else: ?>
+                    <div><?php printf(__('Finnish is currently only available with the %s payment method.', 'woo-vipps'), 'MobilePay'); ?></div>
+                    <?php endif; ?>
+                    <label><input type="radio" name="express[tmpConfig][language]" value="sv"><?php _e('Swedish', 'woo-vipps'); ?></label>
                 </fieldset>
                 <fieldset>
                     <legend>Verb</legend>
@@ -5697,8 +5707,9 @@ else:
     private function init_button_options() {
         /* New structure as of now
          * [
+         *      'version' => x.x,
          *      'express' => [
-         *          'version' => 'x.x',         used to migrate from previous iterations
+         *          'version' => x.x,         used to migrate from previous iterations
          *          'configs' => [              different button parameters for certain contexts, falls back to global if context has no override
          *              'global' => ['compact' => ..., 'verb' => ..., ...],
          *              'cart' => [...],
