@@ -4887,7 +4887,7 @@ else:
 
     /** Returns the correct variant to use for the given page, found from the wp option. LP 2025-12-23 */
     private function get_express_logo_page_variant($page = null) {
-        $options = get_option('vipps_button_options');
+        $options = get_option('vipps_button_options', []);
 
         // Init defaults, use mini version by default in below pages. LP 2025-12-17
         $use_mini = in_array($page, ['catalog']);
@@ -4895,7 +4895,7 @@ else:
 
         // Find correct variant from button settings. LP 2025-12-17
         if (is_array($options) && array_key_exists('express', $options)) {
-            if (array_key_exists($page, $options['express']['force-mini'])) {
+            if (isset($options['express']['force-mini'][$page])) {
                 $use_mini = sanitize_title($options['express']['force-mini'][$page]) === 'yes';
             }
             $key = $use_mini ? 'mini-variant' : 'variant';
