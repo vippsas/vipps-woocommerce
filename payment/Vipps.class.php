@@ -1035,6 +1035,7 @@ EOF;
             <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
   
             <!-- Context dropdown -->
+            <p><?php _e('Button appearance config', 'woo-vipps'); ?></p>
             <div class="vipps-button-settings-section">
                 <label>
                     <?php _e('Config context', 'woo-vipps'); ?>
@@ -1053,7 +1054,6 @@ EOF;
             <!-- Button argument inputs. These input values are put into post data express.tmpConfig temporarily, on change stored in a global 'contextConfigs', and processed before submit. LP 2026-06-24 -->
             <div id="vipps-button-settings-express-args">
                 <fieldset>
-                    <legend><?php _e('Button appearance', 'woo-vipps'); ?></legend>
                     <label><input type="checkbox" name="express[tmpConfig][rounded]" checked=""><?php _e('Rounded', 'woo-vipps'); ?></label>
                     <label><input type="checkbox" name="express[tmpConfig][compact]"><?php _e('Compact', 'woo-vipps'); ?></label>
                     <label><input type="checkbox" name="express[tmpConfig][stretched]"><?php _e('Stretched', 'woo-vipps'); ?></label>
@@ -1072,20 +1072,20 @@ EOF;
                     <?php endif; ?>
                 </fieldset>
                 <fieldset>
-                    <legend>Verb</legend>
-                    <label><input type="radio" name="express[tmpConfig][verb]" checked="" value="buy">Buy</label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="pay">Pay</label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="register">Register</label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="continue">Continue</label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="confirm">Confirm</label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="donate">Donate</label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="express">Express</label>
+                    <legend><?php _e('Verb', 'woo-vipps'); ?></legend>
+                    <label><input type="radio" name="express[tmpConfig][verb]" checked value="buy"><?php _e('Buy', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="pay"><?php _e('Pay', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="register"><?php _e('Register', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="continue"><?php _e('Continue', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="confirm"><?php _e('Confirm', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="donate"><?php _e('Donate', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][verb]" value="express"><?php _e('Express', 'woo-vipps'); ?></label>
                 </fieldset>
                 <fieldset>
-                    <legend>Variant</legend>
-                    <label><input type="radio" name="express[tmpConfig][variant]" checked="" value="primary">Primary</label>
-                    <label><input type="radio" name="express[tmpConfig][variant]" value="dark">Dark (WCAG AAA)</label>
-                    <label><input type="radio" name="express[tmpConfig][variant]" value="light">Light (WCAG AAA)</label>
+                    <legend><?php _e('Variant', 'woo-vipps'); ?></legend>
+                    <label><input type="radio" name="express[tmpConfig][variant]" checked value="primary"><?php _e('Primary', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][variant]" value="dark"><?php _e('Dark (WCAG AAA)', 'woo-vipps'); ?></label>
+                    <label><input type="radio" name="express[tmpConfig][variant]" value="light"><?php _e('Light (WCAG AAA)', 'woo-vipps'); ?></label>
                 </fieldset>
             </div>
         </div>
@@ -1138,7 +1138,7 @@ EOF;
                                 inputs.filter(`[value="${val}"]`).prop('checked', true);
                                 break;
                             default:
-                                console.error(`woo-vipps: Unexpected input type '${type}' for <?php echo self::CompanyName(); ?> button config with key=${key}, val=${val}`);
+                                console.error(`woo-vipps: Unexpected input type '${type}' for button config. key=${key}, val=${val}`);
                         }
                 });
 
@@ -1163,7 +1163,7 @@ EOF;
                     const matches = [...this.name.matchAll(/\[([^\]]+)\]/g)];
                     const attr = matches.length ? matches[matches.length - 1][1] : null;
                     if (!attr) {
-                        console.error("woo-vipps: Could not extract attribute name for <?php echo self::CompanyName(); ?> button preview:", this);
+                        console.error("woo-vipps: Could not extract attribute name for button preview:", this);
                         return;
                     }
                     if (this.type === 'checkbox') {
