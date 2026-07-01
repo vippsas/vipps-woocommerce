@@ -1776,13 +1776,13 @@ EOF;
     public function cart_express_checkout_button_html($minicart = false) {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
-        $page = $minicart ? 'minicart' : 'cart';
-        $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo($page));
+        $context = $minicart ? 'minicart' : 'cart';
+        $button= apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context($context));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
-        $button = "<a href='$url' class='button vipps-express-checkout short $method' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
-        $button = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
-        echo $button;
+        $html = "<a href='$url' class='button vipps-express-checkout short $method' title='$title'>$button</a>";
+        $html = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
+        echo $html;
     }
 
     // A shortcode for a single buy now button. Express checkout must be active; but I don't check for this here, as this button may be
@@ -4925,13 +4925,13 @@ else:
     }
 
 
-    // Legacy function as of using new web component buttons. LP 2026-06-26
+    // DEPRECATED: Legacy function as of using new web component buttons. LP 2026-06-26
     // NB: previously this returned the url to a svg logo. We don't do this anymore, so it returns html. LP 2026-06-30
     public function get_express_logo($_payment_method = null, $_lang = null, $_variant = null, $context = 'global') {
         return $this->get_html_button_for_context($context);
     }
 
-    // Legacy function as of using new web component buttons. LP 2026-06-26
+    // DEPRECATED: Legacy function as of using new web component buttons. LP 2026-06-26
     // Get payment logo based on payment method, then language NT 2023-11-30
     // and based on custom variant setting. $context is where it is to be used, e.g 'cart', 'product'. LP 2025-12-15
     // NB: previously this returned the url to a svg logo. We don't do this anymore, so it returns html. LP 2026-06-30
@@ -4951,7 +4951,7 @@ else:
         return null;
     }
 
-    // Legacy function as of new web component express buttons. see get_buy_now_button and get_html_button. LP 2026-06-26
+    // DEPRECATED: Legacy function as of new web component express buttons. see get_buy_now_button and get_html_button. LP 2026-06-26
     public function get_buy_now_button_manual($product_id, $variation_id=null, $sku=null, $disabled=false, $classes='',
         $_logo_variant=null, $_logo_lang=null, // deprecated params
         $context='global', $button_args_override = [],
