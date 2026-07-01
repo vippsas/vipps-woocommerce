@@ -938,7 +938,7 @@ jQuery('a.webhook-adder').click(function (e) {
     }
 
     // Generic Vipps/MobilePay button html, as of now a web component hosted locally. LP 2026-06-24
-    // See the web component attributes shown on https://developer.vippsmobilepay.com/docs/knowledge-base/buttons/
+    // See info and attributes at https://developer.vippsmobilepay.com/docs/knowledge-base/buttons/
     public function get_html_button($attrs = []) {
         $payment_method = $this->get_payment_method_name();
         $attrs = wp_parse_args($attrs, $this->get_html_button_default_attrs());
@@ -987,8 +987,6 @@ EOF;
         return apply_filters('woo_vipps_html_button', $html, $attrs);
     }
 
-
-
     public function button_menu_page() {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
@@ -1025,15 +1023,16 @@ EOF;
         $init_context = 'global';
         $init_config = $configs[$init_context] ?? [];
 
-        // button args
+        // html button args
         $init_args = $init_config;
         $init_args['id'] = 'vipps-button-express-preview';
+
         ?>
         <div id="vipps-button-settings-express-container">
             <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
             <input type="hidden" name="action" value="update_vipps_button_settings" />
             <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
-  
+
             <!-- Context dropdown -->
             <p><?php _e('Button appearance config', 'woo-vipps'); ?></p>
             <div class="vipps-button-settings-section">
@@ -1051,7 +1050,8 @@ EOF;
             </div>
   
 
-            <!-- Button argument inputs. These input values are put into post data express.tmpConfig temporarily, on change stored in a global 'contextConfigs', and processed before submit. LP 2026-06-24 -->
+            <!-- Button paremeter inputs. These input values are put into post data express.tmpConfig temporarily. 
+            On context change, configs are stored in a global 'contextConfigs'. Each config is processed into new option structure before submit. LP 2026-06-24 -->
             <div id="vipps-button-settings-express-args">
                 <fieldset>
                     <label><input type="checkbox" name="express[tmpConfig][rounded]" checked=""><?php _e('Rounded', 'woo-vipps'); ?></label>
@@ -1098,9 +1098,10 @@ EOF;
             // When inputs change, update the preview args. LP 2026-06-24
             jQuery('#vipps-button-settings-express-args input').on('click', updatePreview);
 
-            var currentContext = '<?php echo $init_context; ?>';
-            var contextConfigs = <?php echo json_encode($configs) ?: "{}"; ?> // maps context key to config. LP 2026-06-24
+            let currentContext = '<?php echo $init_context; ?>';
+            let contextConfigs = <?php echo json_encode($configs) ?: "{}"; ?> // maps context slug to config object. LP 2026-06-24
 
+            // Updates the actual html inputs from given config. LP 2026-07-01
             function setInputsFromConfig(context, config) {
                 const useGlobalConfig = Boolean(config?.["use-global-config"]);
                 const isGlobal = "global" === context;
@@ -1142,7 +1143,6 @@ EOF;
              // init the starting config from option. LP 2026-06-25
             setInputsFromConfig(currentContext, contextConfigs[currentContext]);
 
-
             // Update the preview web component's attributes. LP 2026-06-24
             function updatePreview(event) {
                 const args = getPreviewArgs();
@@ -1175,8 +1175,7 @@ EOF;
                 return args;
             }
 
-            // Stores selected config for context and switches to another (if changed).
-            // AcontextConfigslso toggles display for the "use global config" checkbox. LP 2026-06-25
+            // Stores selected config for context and switches to another (if changed). LP 2026-07-01
             function updateContext() {
                 const wasGlobal = "global" === currentContext;
                 const useGlobalConfig = jQuery('#use-global-config-container input').prop("checked");
@@ -1194,7 +1193,8 @@ EOF;
                 setInputsFromConfig(newContext, newConfig);
                 currentContext = newContext;
             }
-            // On submit: delete the tmpConfig for the current selected values, and add the stored contextConfigs to the post data. LP 2026-06-24
+
+            // Before submit: delete the tmpConfig for the current selected values, and add the stored contextConfigs to the post data. LP 2026-06-24
             jQuery('#vipps-button-settings-form').on('formdata', e => {
                 const formData = e?.originalEvent?.formData;
                 if (!formData) return;
@@ -1202,7 +1202,7 @@ EOF;
                 // run this to store current context config before posting. LP 2026-06-24
                 updateContext();
 
-                // now we can delete the current context config from post data. LP 2026-06-24
+                // now we can delete the current temporary config from post data. LP 2026-06-24
                 const keysToDelete = [];
                 for (const [key] of formData.entries()) {
                     if (key.startsWith("express[tmpConfig][")) {
@@ -1211,7 +1211,7 @@ EOF;
                 }
                 keysToDelete.forEach(key => formData.delete(key));
 
-                // Now add configs for each context updated in this settings menu to the form data. LP 2026-06-24
+                // Now add the actual post data from the stored global contextConfigs. LP 2026-06-24
                 Object.entries(contextConfigs).forEach(([context, config]) => {
                     Object.entries(config).forEach(([key, val]) => {
                         formData.append(`express[configs][${context}][${key}]`, val);
