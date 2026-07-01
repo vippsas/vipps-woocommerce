@@ -5778,8 +5778,6 @@ else:
             }
         }
 
-
-
         if ($new_options) {
             /* translators: placeholders are arrays */
             $this->log(sprintf(__('Migrating from old button options. Old: %s, new: %s', 'woo-vipps'), print_r($options, true), print_r($new_options, true)), 'debug');
@@ -5788,13 +5786,14 @@ else:
     }
 
     // Old variant string => new config array. LP 2026-06-26
-    public function migrate_button_variant_to_config($variant) {
+    public function migrate_button_variant_to_config($variant_slug) {
+        if (!is_string($variant_slug)) return [];
         $config = $this->get_html_button_default_attrs();
-        $config['rounded'] = str_contains($variant, 'pill') ? 'true' : 'false';
-        $config['compact'] = str_contains($variant, 'mini') ? 'true' : 'false';
-        if (str_contains($variant, 'buy-now')) {
+        $config['rounded'] = str_contains($variant_slug, 'pill') ? 'true' : 'false';
+        $config['compact'] = str_contains($variant_slug, 'mini') ? 'true' : 'false';
+        if (str_contains($variant_slug, 'buy-now')) {
             $config['verb'] = 'buy';
-        } else if (str_contains($variant, 'express')) {
+        } else if (str_contains($variant_slug, 'express')) {
             $config['verb'] = 'express';
         }
         return $config;
