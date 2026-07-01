@@ -31,5 +31,5 @@ if ($supported) {
         $button_args[$str_attr] = $block->attributes[$str_attr] ?? '';
     }
 
-    echo "<div class='wp-block-button wc-block-components-product-button wc-block-button-vipps'>" . $vipps->get_buy_now_button_manual($product->get_id(), null, null, false, '', null, null, 'gutenberg', $button_args) . "</div>";
+    echo "<div class='wp-block-button wc-block-components-product-button wc-block-button-vipps'>" . $vipps->get_buy_now_button($product->get_id(), null, null, false, '', 'gutenberg', $button_args) . "</div>";
 }

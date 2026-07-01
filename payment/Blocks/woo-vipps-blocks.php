@@ -31,11 +31,7 @@ add_action('enqueue_block_assets', function () {
 
 // Inject block config variables to block editor assets
 add_action('enqueue_block_editor_assets', function () {
-
-
     wp_enqueue_script('vipps-button');
-
-    // FIXME: migrate to using web component
 
     // vipps-badge config
     $vipps = Vipps::instance();
@@ -124,7 +120,7 @@ add_action('enqueue_block_editor_assets', function () {
         $variant_migration_map = [];
         foreach(array_keys(Vipps::instance()->get_express_logo_variants()) as $old_variant) {
             $new_config = Vipps::instance()->migrate_button_variant_to_config($old_variant);
-            unset($new_config['brand']);
+            unset($new_config['brand']); // brand needs to be dynamic from payment method! LP 2026-07-01
             unset($new_config['language']);
             unset($new_config['stretched']);
             $variant_migration_map[$old_variant] = $new_config;

@@ -919,7 +919,7 @@ jQuery('a.webhook-adder').click(function (e) {
             'verb' => 'buy',
             'stretched' => 'false',
             'compact' => 'false',
-            'brand' => strtolower($this->get_payment_method_name()),
+            'brand' => strtolower($this->get_payment_method_name()), // NB: if setting wp option, you need to remember to unset this value so it's dynamic. LP 2026-07-01
         ];
     }
 
@@ -1266,7 +1266,7 @@ EOF;
                                 inputs.filter(`[value="${val}"]`).prop('checked', true);
                                 break;
                             default:
-                                console.error(`Unexpected input type '${type}' for <?php echo self::CompanyName(); ?> button config with key=${key}, val=${val}`);
+                                console.error(`woo-vipps: Unexpected input type '${type}' for <?php echo self::CompanyName(); ?> button config with key=${key}, val=${val}`);
                         }
                 });
 
@@ -1291,7 +1291,7 @@ EOF;
                     const matches = [...this.name.matchAll(/\[([^\]]+)\]/g)];
                     const attr = matches.length ? matches[matches.length - 1][1] : null;
                     if (!attr) {
-                        console.error("Could not extract attribute name for <?php echo self::CompanyName(); ?> button preview:", this);
+                        console.error("woo-vipps: Could not extract attribute name for <?php echo self::CompanyName(); ?> button preview:", this);
                         return;
                     }
                     if (this.type === 'checkbox') {
@@ -5063,7 +5063,7 @@ else:
     // Legacy function as of using new web component buttons. LP 2026-06-26
     // NB: previously this returned the url to a svg logo. We don't do this anymore, so it returns html. LP 2026-06-30
     public function get_express_logo($_payment_method = null, $_lang = null, $_variant = null, $context = 'global') {
-        return $this->get_html_button($context);
+        return $this->get_html_button_for_context($context);
     }
 
     // Legacy function as of using new web component buttons. LP 2026-06-26
@@ -5071,7 +5071,7 @@ else:
     // and based on custom variant setting. $context is where it is to be used, e.g 'cart', 'product'. LP 2025-12-15
     // NB: previously this returned the url to a svg logo. We don't do this anymore, so it returns html. LP 2026-06-30
     public function get_payment_logo($context = 'global') {
-        return $this->get_express_logo($context);
+        return $this->get_express_logo(null, null, null, $context);
     }
 
     // Get express banner logo based on payment method. LP 2025-09-03
@@ -5848,6 +5848,7 @@ else:
          */
         $options = get_option('vipps_button_options');
         $default_config = $this->get_html_button_default_attrs();
+        unset($default_config['brand']); // brand needs to be dynamic from payment method! LP 2026-07-01
 
         $default_options = [
             'version' => $this->button_options_version,
@@ -5877,15 +5878,16 @@ else:
 
             $new_options = $default_options;
 
-
             // Migrate chosen variant to new global config. LP 2026-06-26
             $new_options['express']['configs']['global'] = $this->migrate_button_variant_to_config($options['express']['variant'] ?? '');
+            unset($new_options['express']['configs']['global']['brand']); // dont set brand, this needs to be dynamic. LP 2026-07-01
 
             // Migrate context/page mini override to new context config. LP 2026-06-26
             if (is_array($options['express']['force-mini'] ?? null)) {
                 foreach($options['express']['force-mini'] as $context => $use_mini) {
                     if ("yes" === $use_mini)  {
                         $config = $this->migrate_button_variant_to_config($options['express']['mini-variant'] ?? '');
+                        unset($config['brand']); // brand needs to be dynamic from payment method! LP 2026-07-01
                         $config['compact'] = 'true';
                         $new_options['express']['configs'][$context] = $config;
                     }
