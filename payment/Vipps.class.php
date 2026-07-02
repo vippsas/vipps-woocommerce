@@ -1076,7 +1076,6 @@ EOF;
                     <legend><?php _e('Verb', 'woo-vipps'); ?></legend>
                     <label><input type="radio" name="express[tmpConfig][verb]" checked value="buy"><?php _e('Buy', 'woo-vipps'); ?></label>
                     <label><input type="radio" name="express[tmpConfig][verb]" value="pay"><?php _e('Pay', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="register"><?php _e('Register', 'woo-vipps'); ?></label>
                     <label><input type="radio" name="express[tmpConfig][verb]" value="continue"><?php _e('Continue', 'woo-vipps'); ?></label>
                     <label><input type="radio" name="express[tmpConfig][verb]" value="confirm"><?php _e('Confirm', 'woo-vipps'); ?></label>
                     <label><input type="radio" name="express[tmpConfig][verb]" value="donate"><?php _e('Donate', 'woo-vipps'); ?></label>
@@ -1806,8 +1805,32 @@ EOF;
     // A shortcode for a single buy now button. Express checkout must be active; but I don't check for this here, as this button may be
     // cached. Therefore stock, purchasability etc will be done later. IOK 2018-10-02
     public function buy_now_button_shortcode ($atts) {
-        $args = shortcode_atts( array( 'id' => '','variant'=>'','sku' => '',), $atts );
-        return "<div class='vipps_buy_now_wrapper noloop'>".  $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false, '', 'shortcode') . "</div>";
+        // The new web component button args. LP 2026-07-02
+        $button_args = $this->get_html_button_default_attrs();
+        unset($button_args['brand']);
+
+        // Variant exists for the product variant. LP 2026-07-02
+        if (isset($button_args['variant'])) $button_args['button_variant'] = $button_args['variant'];
+        unset($button_args['variant']);
+
+        $args = shortcode_atts(
+            array(...$button_args,
+                'id' => '','variant'=> '','sku' => '',
+            ),
+            $atts,
+        );
+
+        // Variant exists for the product variant. LP 2026-07-02
+        $button_args = $args;
+        if (isset($button_args['button_variant'])) $button_args['variant'] = $button_args['button_variant'];
+        unset($button_args['button_variant']);
+        unset($button_args['sku']);
+        unset($button_args['id']);
+        // NB: the language may be incorrect for the shortcode, see web component bug at https://developer.vippsmobilepay.com/docs/knowledge-base/buttons/
+        // "Note also that there is a bug in the library, and it currently only renders one language per page."
+        // it seems like get_html_button() runs once before this shortcode code (whic gets default attrs including language), so I think this is why language bug appears. LP 2026-07-02
+
+        return "<div class='vipps_buy_now_wrapper noloop'>".  $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false, '', 'shortcode', $button_args) . "</div>";
     }
 
     // The express checkout shortcode implementation. It does not need to check if we are to show the button, obviously, but needs to see if the cart works
