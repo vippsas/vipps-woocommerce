@@ -136,7 +136,7 @@ add_action('enqueue_block_editor_assets', function () {
             'verbs' => $buy_now_verbs,
             'vippsresturl' => '/woo-vipps/v1',
             'paymentMethod' => Vipps::instance()->get_payment_method_name(),
-            'storeLanguage' => VIpps::instance()->get_customer_language(),
+            'storeLanguage' => Vipps::instance()->get_customer_language(),
             'variantMigrationMap' => $variant_migration_map,
         ];
         wp_add_inline_script('woo-vipps-buy-now-editor-script', 'const vippsBuyNowBlockConfig = ' . json_encode($buy_now_config), 'before');

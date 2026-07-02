@@ -1019,6 +1019,7 @@ EOF;
             'catalog' => __('Catalog', 'woo-vipps'),
             'cart' => __('Cart', 'woo-vipps'),
             'minicart' => __('Mini cart', 'woo-vipps'),
+            'checkout' => __('Checkout', 'woo-vipps'),
         ];
         $init_context = 'global';
         $init_config = $configs[$init_context] ?? [];
@@ -1725,7 +1726,7 @@ EOF;
         $header = "<legend class='express-header'>$header_text</legend>";
         $div_classes = "legacy-checkout vipps-express-checkout $payment_method";
         echo "<fieldset class='$div_classes'>$header";
-        $this->cart_express_checkout_button_html();
+        $this->checkout_express_checkout_button_html();
         echo '</fieldset>';
     }
 
@@ -1752,6 +1753,25 @@ EOF;
         ?>
         <div class="<?php echo $div_classes;?>"><?php echo $message;?></div>
             <?php
+    }
+
+    public function checkout_express_checkout_button() {
+        $gw = $this->gateway();
+
+        if ($gw->show_express_checkout()){
+            return $this->checkout_express_checkout_button_html();
+        }
+    }
+
+    public function checkout_express_checkout_button_html() {
+        $url = $this->express_checkout_url();
+        $url = wp_nonce_url($url,'express','sec');
+        $button= apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context('checkout'));
+        $method = $this->get_payment_method_name();
+        $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
+        $html = "<a href='$url' class='button vipps-express-checkout short $method' title='$title'>$button</a>";
+        $html = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
+        echo $html;
     }
 
     // Show the express button if reasonable to do so
