@@ -1146,6 +1146,9 @@ EOF;
             // Update the preview web component's attributes. LP 2026-06-24
             function updatePreview(event) {
                 const args = getPreviewArgs();
+                // LP FIXME: when i use get_customer_language() here it gives me my user language, but on frontend it gives the site language, i.e not the same value. So this preview will be wrong language. so use get_locale for now. LP 2026-07-02
+                // if ('store' === args.language) args.language = '<?php echo $this->get_customer_language(); ?>';
+                if ('store' === args.language) args.language = '<?php echo substr(get_locale(), 0, 2); ?>';
                 const button = jQuery('#vipps-button-express-preview');
                 button.attr(args);
             }
@@ -1163,12 +1166,7 @@ EOF;
                     if (this.type === 'checkbox') {
                         args[attr] = this.checked;
                     } else if (this.checked) {
-                        // Override for store language. LP 2026-06-24
-                        if ("store" === this.value) {
-                            args[attr] = '<?php echo $this->get_customer_language(); ?>';
-                        } else {
-                            args[attr] = this.value;
-                        }
+                        args[attr] = this.value;
                     }
                 });
 
