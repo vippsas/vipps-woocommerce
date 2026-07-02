@@ -5625,11 +5625,13 @@ else:
         $checkout_page = $this->gateway()->vipps_checkout_available();
         $standard_checkout = get_permalink(get_option('woocommerce_checkout_page_id'));
         $checkout_url = $checkout_page ? get_permalink($checkout_page) : $standard_checkout;
+
         $cart_data = array(
                 'cart_hide_express' =>  !$this->gateway()->show_express_checkout(),
                 'cart_supports_checkout' =>  (bool) $checkout_page,
                 'checkout_url' => $checkout_url,
                 );
+
         return $cart_data;
     }
 

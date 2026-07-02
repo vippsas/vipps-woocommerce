@@ -19,6 +19,14 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         descriptionKey="cartexpress.description"
       />
 
+      {/* Renders a checkbox to enable Express Checkout in checkout */}
+      <CheckboxFormField
+        name="express_show_in_checkout"
+        titleKey="express_show_in_checkout.title"
+        labelKey="express_show_in_checkout.title"
+        descriptionKey="express_show_in_checkout.description"
+      />
+
       {/* Renders a select field that allows an admin to specify which products should have the "express checkout" option enabled  */}
       <SelectFormField
         name="singleproductexpress"

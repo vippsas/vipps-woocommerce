@@ -662,11 +662,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // True if "Express checkout" should be displayed IOK 2018-06-18
     public function show_express_checkout() {
         if (!$this->express_checkout_available()) return false;
-        $show = ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
-        $show = $show && $this->cart_supports_express_checkout();
+        $show = 'yes' == $this->enabled && $this->cart_supports_express_checkout();
 
+        if (is_checkout()) {
+            $show = $show && $this->get_option('express_show_in_checkout') == 'yes';
+        } else { // for cart, and all other contexts, since this is how the method functioned before we checked checkout explicitly. LP 2026-07-02
+            $show = $show && $this->get_option('cartexpress') == 'yes';
+        }
         // Earlier, we disabled this if Checkout was active; but we will now respect the setting in all
         // cases. Also, there is a filter. IOK 2026-02-19
+        // Now there is also a separate setting for just checkout, 'express_show_in_checkout'. See above branch. LP 2026-07-01
 
         return apply_filters('woo_vipps_show_express_checkout', $show);
     }
@@ -1044,6 +1049,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // For existing installs: set failed payments order status to cancelled to keep same default behaviour.
             // New installs will be set to failed instead of cancelled. LP 2026-03-26
             $default_status_on_fail = 'cancelled';
+
+            // New setting 'express_show_in_checkout', previously 'cartexpress' affected both cart and checkout.
+            // Therefore, set new one equal to 'cartexpress' IF it isn't set yet, so that the functionality stays the same for users. LP 2026-07-02
+            $default_express_show_in_checkout = 'yes';
+            if (!isset($current['express_show_in_checkout']) && isset($current['cartexpress'])) {
+                $default_express_show_in_checkout = $current['cartexpress'];
+            }
         }
 
         // Get the already-set country code. For existing sites, this will guess the country based on the currency; for new sites, use 
@@ -1417,12 +1429,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             ),
         );
 
-         $expressfields = array(  
+         $expressfields = array(
                 'express_options' => array(
                         'title' => sprintf(__('Express Checkout', 'woo-vipps')),
                         'type'  => 'title',
                         'class' => 'tab',
-                        'description' => sprintf(__("%1\$s allows you to buy products by a single click from the cart page or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately.", 'woo-vipps'), Vipps::ExpressCheckoutName())
+                        'description' => sprintf(__("%1\$s allows you to buy products by a single click from the cart, checkout, or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately.", 'woo-vipps'), Vipps::ExpressCheckoutName())
                         ),
 
                 'cartexpress' => array(
@@ -1432,6 +1444,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => sprintf(__('Enable this to allow customers to shop using %1$s directly from the cart with no login or address input needed', 'woo-vipps'), Vipps::ExpressCheckoutName()) . '.<br>' .
                         sprintf(__('Please note that for Express Checkout, shipping must be calculated in a callback from the %1$s app, without any knowledge of the customer. This means that Express Checkout may not be compatible with all Shipping plugins or setup. You should test that your setup works if you intend to provide this feature.', 'woo-vipps'), Vipps::CompanyName()),
                         'default'     => 'yes',
+                        ),
+
+                'express_show_in_checkout' => array(
+                        'title'       => __('Enable Express Checkout in checkout', 'woo-vipps'),
+                        'label'       => __('Enable Express Checkout in checkout', 'woo-vipps'),
+                        'type'        => 'checkbox',
+                        'description' => sprintf(__('Enable this to allow customers to shop using %1$s directly from the checkout page with no login or address input needed', 'woo-vipps'), Vipps::ExpressCheckoutName()) . '.<br>' .
+                        sprintf(__('Please note that for Express Checkout, shipping must be calculated in a callback from the %1$s app, without any knowledge of the customer. This means that Express Checkout may not be compatible with all Shipping plugins or setup. You should test that your setup works if you intend to provide this feature.', 'woo-vipps'), Vipps::CompanyName()),
+                        'default'     => $default_express_show_in_checkout,
                         ),
 
                 'singleproductexpress' => array(
