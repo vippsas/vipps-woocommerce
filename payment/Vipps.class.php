@@ -997,10 +997,13 @@ EOF;
             <h1><?php echo sprintf(__('%1$s button configuration', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
             <span><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></span>
             <form id="vipps-button-settings-form" class="vipps-button-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
+                <input type="hidden" name="action" value="update_vipps_button_settings" />
+                <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
+
                 <!-- Express section -->
                 <?php $this->button_menu_express_section(); ?>
 
-                <!-- Save button -->
+                <!-- submit button -->
                 <div id="vipps-button-settings-save">
                     <input class="btn button primary" type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
                 </div>
@@ -1029,14 +1032,11 @@ EOF;
         $init_args['id'] = 'vipps-button-express-preview';
 
         ?>
-        <div id="vipps-button-settings-express-container">
+        <div class="vipps-button-settings-section" id="vipps-button-settings-express-container">
             <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
-            <input type="hidden" name="action" value="update_vipps_button_settings" />
-            <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
 
             <!-- Context dropdown -->
-            <p><?php _e('Button appearance config', 'woo-vipps'); ?></p>
-            <div class="vipps-button-settings-section">
+            <div id="vipps-button-settings-express-context">
                 <label>
                     <?php _e('Config context', 'woo-vipps'); ?>
                 </label>
@@ -1047,13 +1047,13 @@ EOF;
                     </option>
                   <?php endforeach; ?>
                 </select>
-            <label style="display: none;" id="use-global-config-container"><input onchange="updateContext()" type="checkbox" name="express[tmpConfig][use-global-config]" checked><?php _e('Use global config', 'woo-vipps'); ?></label>
+                <label class="hidden" id="use-global-config-container"><input onchange="updateContext()" type="checkbox" name="express[tmpConfig][use-global-config]" checked><?php _e('Use global config', 'woo-vipps'); ?></label>
             </div>
   
 
             <!-- Button paremeter inputs. These input values are put into post data express.tmpConfig temporarily. 
             On context change, configs are stored in a global 'contextConfigs'. Each config is processed into new option structure before submit. LP 2026-06-24 -->
-            <div id="vipps-button-settings-express-args">
+            <div class="vipps-button-settings-section" id="vipps-button-settings-express-args">
                 <fieldset>
                     <label><input type="checkbox" name="express[tmpConfig][rounded]" checked=""><?php _e('Rounded', 'woo-vipps'); ?></label>
                     <label><input type="checkbox" name="express[tmpConfig][compact]"><?php _e('Compact', 'woo-vipps'); ?></label>
@@ -1068,10 +1068,13 @@ EOF;
                     <label><input type="radio" name="express[tmpConfig][language]" value="sv"><?php _e('Swedish', 'woo-vipps'); ?></label>
                     <?php if ($this->get_payment_method_name() === 'MobilePay'): ?>
                     <label><input type="radio" disabled="" name="express[tmpConfig][language]" value="fi"><?php _e('Finnish', 'woo-vipps'); ?></label>
-                    <?php else: ?>
-                    <div><?php printf(__('Finnish is currently only available with the %s payment method.', 'woo-vipps'), 'MobilePay'); ?></div>
                     <?php endif; ?>
                 </fieldset>
+
+                <?php if ($this->get_payment_method_name() !== 'MobilePay'): ?>
+                <p><?php printf(__('Finnish is currently only available with the %s payment method.', 'woo-vipps'), 'MobilePay'); ?></p>
+                <?php endif; ?>
+
                 <fieldset>
                     <legend><?php _e('Verb', 'woo-vipps'); ?></legend>
                     <label><input type="radio" name="express[tmpConfig][verb]" checked value="buy"><?php _e('Buy', 'woo-vipps'); ?></label>
@@ -1088,10 +1091,10 @@ EOF;
                     <label><input type="radio" name="express[tmpConfig][variant]" value="light"><?php _e('Light (WCAG AAA)', 'woo-vipps'); ?></label>
                 </fieldset>
             </div>
-        </div>
 
-        <!-- Button preview that changes depending on the chosen parameters. LP 2026-06-24 -->
-        <?php echo $this->get_html_button($init_args); ?>
+            <!-- Button preview that changes depending on the chosen parameters. LP 2026-06-24 -->
+            <?php echo $this->get_html_button($init_args); ?>
+        </div>
         </div>
 
         <script>
@@ -1107,7 +1110,7 @@ EOF;
                 const isGlobal = "global" === context;
 
                 // Only show the 'use-global-config' checkbox for nonglobal context. LP 2026-06-26
-                jQuery('#use-global-config-container').toggle(!isGlobal);
+                jQuery('#use-global-config-container').toggleClass('hidden', isGlobal);
 
                 // Nonglobal contexts with useGlobalConfig, and empty configs, should fallback to the global config. LP 2026-06-26
                 if (!config || (!isGlobal && useGlobalConfig)) {
