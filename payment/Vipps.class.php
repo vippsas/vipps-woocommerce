@@ -5767,7 +5767,7 @@ else:
                 'version' => $this->button_options_express_version,
                 'configs' => [
                     'global' => $default_config,
-                    'catalog' => array_replace($default_config, ['compact' => true]), // default to compact version for product catalog. LP 2026-06-26
+                    'catalog' => array_replace($default_config, ['compact' => 'true']), // default to compact version for product catalog. LP 2026-06-26
                 ],
                 'product_configs' => [],
             ],
