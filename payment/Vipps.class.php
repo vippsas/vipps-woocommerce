@@ -5760,6 +5760,7 @@ else:
         $options = get_option('vipps_button_options');
         $default_config = $this->get_html_button_default_attrs();
         unset($default_config['brand']); // brand needs to be dynamic from payment method! LP 2026-07-01
+        $default_compact = array_replace($default_config, ['compact' => 'true']);
 
         $default_options = [
             'version' => $this->button_options_version,
@@ -5767,7 +5768,9 @@ else:
                 'version' => $this->button_options_express_version,
                 'configs' => [
                     'global' => $default_config,
-                    'catalog' => array_replace($default_config, ['compact' => 'true']), // default to compact version for product catalog. LP 2026-06-26
+                    // Need compact version by default for these pages. LP 2026-07-07
+                    'catalog' => $default_compact,
+                    'minicart' => $default_compact, // storefront needs compact, tho 2025 theme it has a lot of room... LP 2026-07-07
                 ],
                 'product_configs' => [],
             ],
