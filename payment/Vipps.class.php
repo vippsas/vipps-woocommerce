@@ -347,7 +347,6 @@ class Vipps {
         add_action('admin_post_update_vipps_button_settings', array($this, 'update_button_settings'));
         add_action('admin_post_vipps_delete_webhook', array($this, 'vipps_delete_webhook'));
         add_action('admin_post_vipps_add_webhook', array($this, 'vipps_add_webhook'));
-        add_action('admin_post_get_vipps_button', array($this, 'ajax_get_vipps_button'));
 
         // Link to the settings page from the plugin list
         add_filter( 'plugin_action_links_'.plugin_basename(WC_VIPPS_MAIN_FILE ), array($this, 'plugin_action_links'));
