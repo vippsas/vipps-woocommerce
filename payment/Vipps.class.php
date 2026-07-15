@@ -275,6 +275,7 @@ class Vipps {
             add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
         }
 
+        // Set default button options, migrating any older setup IOK 2026-07-15
         $this->init_button_options();
     }
 
@@ -821,7 +822,7 @@ jQuery('a.webhook-adder').click(function (e) {
             wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
         }
 
-        $old = get_option('vipps_button_options', []);
+        $old = get_option('vipps_button_options2', []);
         $new = $old;
         if (isset($_POST['express']['configs'])) {
             foreach ($_POST['express']['configs'] as $ctx => $config) {
@@ -836,7 +837,7 @@ jQuery('a.webhook-adder').click(function (e) {
                 }
             }
         }
-        update_option('vipps_button_options', $new);
+        update_option('vipps_button_options2', $new);
         wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu"));
         exit();
     }
@@ -923,7 +924,7 @@ jQuery('a.webhook-adder').click(function (e) {
     }
 
     public function get_html_button_attrs_for_context($context = 'global') {
-        $options = get_option('vipps_button_options', []);
+        $options = get_option('vipps_button_options2', []);
         if (!is_string($context)) $context = 'global';
         $config = $options['express']['configs'][$context] ?? [];
         if (!$config || ($config['use-global-config'] ?? false)) {
@@ -1012,7 +1013,7 @@ EOF;
     }
 
     private function button_menu_express_section() {
-        $options = get_option('vipps_button_options', []);
+        $options = get_option('vipps_button_options2', []);
         $express = $options['express'] ?? [];
         $configs = $express['configs'] ?? [];
         $contexts = [
@@ -4259,7 +4260,7 @@ else:
         $should_delete = $gw->get_option( 'delete_settings_on_deactivation' ) === 'yes';
         if ($should_delete) {
             // Delete options.
-            $options = ['woocommerce_vipps_settings', 'woocommerce_vipps_card_settings', 'woo-vipps-configured', 'vipps_badge_options', 'vipps_button_options', '_vipps_dismissed_notices', 'woo_vipps_checkout_activated'];
+            $options = ['woocommerce_vipps_settings', 'woocommerce_vipps_card_settings', 'woo-vipps-configured', 'vipps_badge_options', 'vipps_button_options', 'vipps_button_options2', '_vipps_dismissed_notices', 'woo_vipps_checkout_activated'];
             foreach($options as $option) {
                 delete_option($option);
             }
@@ -5736,6 +5737,7 @@ else:
     }
 
     // Inits option 'vipps_button_options' and handles migration from older versions. LP 2026-06-26
+    // new version is stored as vipps_button_options2 to avoid breaking older versions on version revert. IOK 2026-07-15
     private function init_button_options() {
         /* New structure as of now
          * [
@@ -5756,7 +5758,10 @@ else:
          *      ],
          * ]
          */
-        $options = get_option('vipps_button_options');
+        $options = get_option('vipps_button_options2');
+        if (!empty($options)) return;
+
+        $old_options = get_option('vipps_button_options');
         $default_config = $this->get_html_button_default_attrs();
         unset($default_config['brand']); // brand needs to be dynamic from payment method! LP 2026-07-01
         $default_compact = array_replace($default_config, ['compact' => 'true']);
@@ -5765,40 +5770,29 @@ else:
             'version' => $this->button_options_version,
             'express' => [
                 'version' => $this->button_options_express_version,
-                'configs' => [
-                    'global' => $default_config,
-                    // Need compact version by default for these pages. LP 2026-07-07
-                    'catalog' => $default_compact,
-                    'minicart' => $default_compact, // storefront needs compact, tho 2025 theme has a lot of room. Just use compact LP 2026-07-07
-                ],
-                'product_configs' => [],
+            'configs' => [
+                'global' => $default_config,
+            // Need compact version by default for these pages. LP 2026-07-07
+            'catalog' => $default_compact,
+            'minicart' => $default_compact, // storefront needs compact, tho 2025 theme has a lot of room. Just use compact LP 2026-07-07
+            ],
+            'product_configs' => [],
             ],
         ];
 
-        $new_options = null;
-
-        // Missing option structure: set default. LP 2026-06-26
-        if (!$options
-            || !is_array($options)
-            || !is_array($options['express'] ?? null)
-        ) {
-            $new_options = $default_options;
-        }
-        // Old (or missing) version: Migrate from old button option structure. LP 2026-06-26
-        else if (!isset($options['express']['version'])
-                || version_compare($options['express']['version'], '2.0', '<')
-        ) {
             $new_options = $default_options;
 
-            // Migrate chosen variant to new global config. LP 2026-06-26
-            $new_options['express']['configs']['global'] = $this->migrate_button_variant_to_config($options['express']['variant'] ?? '');
-            unset($new_options['express']['configs']['global']['brand']); // dont set brand, this needs to be dynamic. LP 2026-07-01
+            //Actually, we have some options from the old structure IOK 2026-07-15
+            if (!empty($old_options)) {
+                $new_options['express']['configs']['global'] = $this->migrate_button_variant_to_config($old_options['express']['variant'] ?? '');
+                unset($new_options['express']['configs']['global']['brand']); // dont set brand, this needs to be dynamic. LP 2026-07-01
+            }
 
             // Migrate context/page mini override to new context config. LP 2026-06-26
-            if (is_array($options['express']['force-mini'] ?? null)) {
-                foreach($options['express']['force-mini'] as $context => $use_mini) {
+            if (is_array($old_options['express']['force-mini'] ?? null)) {
+                foreach($old_options['express']['force-mini'] as $context => $use_mini) {
                     if ("yes" === $use_mini)  {
-                        $config = $this->migrate_button_variant_to_config($options['express']['mini-variant'] ?? '');
+                        $config = $this->migrate_button_variant_to_config($old_options['express']['mini-variant'] ?? '');
                         unset($config['brand']); // brand needs to be dynamic from payment method! LP 2026-07-01
                         $config['compact'] = 'true';
                         $new_options['express']['configs'][$context] = $config;
@@ -5806,23 +5800,22 @@ else:
                 }
             }
 
-        }
-        else if ($this->get_payment_method_name() !== 'MobilePay') {
-            // Finnish is only available in the MobilePay component right now, so reset language in any configs. LP 2026-07-01
-            foreach(($options['express']['configs'] ?? []) as $context => $config) {
-                if ('fi' === ($config['language'] ?? '')) {
-                        if (!$new_options) $new_options = $options;
+            if ($this->get_payment_method_name() !== 'MobilePay') {
+                // Finnish is only available in the MobilePay component right now, so reset language in any configs. LP 2026-07-01
+                foreach(($new_options['express']['configs'] ?? []) as $context => $config) {
+                    if ('fi' === ($config['language'] ?? '')) {
                         $config['language'] = 'store';
                         $new_options['express']['configs'][$context] = $config;
+                    }
                 }
             }
-        }
 
-        if ($new_options) {
             /* translators: placeholders are arrays */
             $this->log(sprintf(__('Migrating from old button options. Old: %s, new: %s', 'woo-vipps'), print_r($options, true), print_r($new_options, true)), 'debug');
-            update_option('vipps_button_options', $new_options);
-        }
+
+
+
+            update_option('vipps_button_options2', $new_options);
     }
 
     // Old variant string => new config array. LP 2026-06-26
