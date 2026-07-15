@@ -1095,7 +1095,6 @@ EOF;
             <!-- Button preview that changes depending on the chosen parameters. LP 2026-06-24 -->
             <?php echo $this->get_html_button($init_args); ?>
         </div>
-        </div>
 
         <script>
             // When inputs change, update the preview args. LP 2026-06-24
