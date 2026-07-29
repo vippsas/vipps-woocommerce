@@ -1474,12 +1474,15 @@ jQuery('a.webhook-adder').click(function (e) {
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
 
         // Badges - web components provided by Vipps MobilePay to display payment options in-store.
-        wp_register_script('vipps-onsite-messageing','https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js',array(),WOO_VIPPS_VERSION,
-           array(
-                'in_footer' => true,
-                'strategy'  => 'async',
-            ));
-
+        wp_register_script('vipps-onsite-messageing',
+                plugins_url('js/vipps-on-site-messaging.js', WC_VIPPS_PAYMENT_MAIN_FILE),
+                array(),
+                filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/vipps-on-site-messaging.js'),
+                [
+                    'in_footer' => true,
+                    'strategy'  => 'async',
+                ],
+                );
     }
 
     // Runs late in both wp_enqueue_scripts and admin_enqueue_scripts to make it more compatible with translation plugins IOK 2026-02-02
@@ -4884,7 +4887,7 @@ else:
 
     /** Returns the correct variant to use for the given page, found from the wp option. LP 2025-12-23 */
     private function get_express_logo_page_variant($page = null) {
-        $options = get_option('vipps_button_options');
+        $options = get_option('vipps_button_options', []);
 
         // Init defaults, use mini version by default in below pages. LP 2025-12-17
         $use_mini = in_array($page, ['catalog']);
@@ -4892,11 +4895,11 @@ else:
 
         // Find correct variant from button settings. LP 2025-12-17
         if (is_array($options) && array_key_exists('express', $options)) {
-            if (array_key_exists($page, $options['express']['force-mini'])) {
+            if (isset($options['express']['force-mini'][$page])) {
                 $use_mini = sanitize_title($options['express']['force-mini'][$page]) === 'yes';
             }
             $key = $use_mini ? 'mini-variant' : 'variant';
-            $variant = sanitize_title($options['express'][$key]) ?? '';
+            $variant = sanitize_title($options['express'][$key] ?? '');
         }
 
         if (!$variant) {
@@ -5622,11 +5625,13 @@ else:
         $checkout_page = $this->gateway()->vipps_checkout_available();
         $standard_checkout = get_permalink(get_option('woocommerce_checkout_page_id'));
         $checkout_url = $checkout_page ? get_permalink($checkout_page) : $standard_checkout;
+
         $cart_data = array(
                 'cart_hide_express' =>  !$this->gateway()->show_express_checkout(),
                 'cart_supports_checkout' =>  (bool) $checkout_page,
                 'checkout_url' => $checkout_url,
                 );
+
         return $cart_data;
     }
 

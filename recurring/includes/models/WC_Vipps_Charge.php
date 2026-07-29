@@ -45,12 +45,21 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 		self::TRANSACTION_TYPE_RESERVE_CAPTURE,
 	];
 
+	public const PROCESSING_MODE_MULTIPLE_ATTEMPTS = "MULTIPLE_ATTEMPTS";
+	public const PROCESSING_MODE_SINGLE_ATTEMPT = "SINGLE_ATTEMPT";
+
+	protected array $valid_processing_modes = [
+		self::PROCESSING_MODE_MULTIPLE_ATTEMPTS,
+		self::PROCESSING_MODE_SINGLE_ATTEMPT,
+	];
+
 	protected array $required_fields = [
 		"amount",
 		"order_id",
 		"description",
 		"due",
-		"retry_days"
+		"retry_days",
+		"processing_mode",
 	];
 
 	public ?string $id = null;
@@ -63,6 +72,7 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 	public ?string $description = null;
 	public ?string $currency = null;
 	public ?string $external_id = null;
+	public ?string $processing_mode = self::PROCESSING_MODE_MULTIPLE_ATTEMPTS;
 
 	/**
 	 * @var DateTime|string $due
@@ -134,6 +144,20 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 		return $this;
 	}
 
+	/**
+	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
+	 */
+	public function set_processing_mode( string $processing_mode ): self {
+		if ( ! in_array( $processing_mode, $this->valid_processing_modes, true ) ) {
+			$class = get_class( $this );
+			throw new WC_Vipps_Recurring_Invalid_Value_Exception( "$processing_mode is not a valid value for `processing_mode` in $class." );
+		}
+
+		$this->processing_mode = $processing_mode;
+
+		return $this;
+	}
+
 	public function set_transaction_id( string $transaction_id ): self {
 		$this->transaction_id = $transaction_id;
 
@@ -188,11 +212,12 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 
 		return array_merge(
 			[
-				"orderId"     => $this->order_id,
-				"amount"      => $this->amount,
-				"description" => $this->description,
-				"due"         => $this->serialize_value( $this->due, 'Y-m-d' ),
-				"retryDays"   => $this->retry_days
+				"orderId"        => $this->order_id,
+				"amount"         => $this->amount,
+				"description"    => $this->description,
+				"due"            => $this->serialize_value( $this->due, 'Y-m-d' ),
+				"retryDays"      => $this->retry_days,
+				"processingMode" => $this->processing_mode,
 			],
 			$this->conditional( "type", $this->type ),
 			$this->conditional( "transactionType", $this->transaction_type ),
