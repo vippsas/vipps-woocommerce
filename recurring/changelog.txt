@@ -1,5 +1,16 @@
 == Changelog ==
 
+= 2.2.14 =
+* Added: It's now possible to disable retry days completely by setting WC_VIPPS_RECURRING_RETRY_DAYS to 0.
+* Tweak: Default `WC_VIPPS_RECURRING_RETRY_DAYS` to 0 when WooCommerce Subscriptions' retry system is active.
+
+= 2.2.13 =
+* Fix: Treat duplicate recurring capture attempts as successful when Vipps/MobilePay reports that the amount is higher than the remaining capturable amount, provided the charge is confirmed as already captured.
+
+= 2.2.12 =
+* Refactor: Improved readability of charge checking logic.
+* Fix: Run our `wcs_renewal_order_created` before Kustom's hook to address a code smell from their side.
+
 = 2.2.11 =
 * Fix: Solved an edge case where a subscription could not be found when checking for a gateway change. Stopped checking in this scenario.
 * Fix: Solved an edge case where we attempt to charge a reserved charge older than 180 days.

@@ -203,7 +203,8 @@ class WC_Vipps_Recurring_Api {
 		                                   ->set_description( $agreement->product_name ?? get_bloginfo() )
 		                                   ->set_transaction_type( WC_Vipps_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE )
 		                                   ->set_due( $due_at )
-		                                   ->set_retry_days( $this->retry_days );
+		                                   ->set_retry_days( $this->retry_days )
+		                                   ->set_processing_mode( $this->retry_days > 0 ? WC_Vipps_Charge::PROCESSING_MODE_MULTIPLE_ATTEMPTS : WC_Vipps_Charge::PROCESSING_MODE_SINGLE_ATTEMPT );
 
 		$data = apply_filters( 'wc_vipps_recurring_create_charge_data', $charge->to_array(), $agreement->id, $order_id );
 

@@ -123,7 +123,7 @@ add_action('after_setup_theme', function () {
                 if (!$order || is_wp_error($order)) {
                     return;
                 }
-                if ($order->get_payment_method() != 'vipps') {
+                if (! Vipps::is_vipps_order($order)) {
                     return;
                 }
                 add_filter('option_woocommerce_dibs_easy_settings', function ($value, $option) {
