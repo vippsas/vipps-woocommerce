@@ -889,7 +889,7 @@ class VippsApi {
         $configuration['customerInteraction'] = apply_filters('woo_vipps_checkout_customerInteraction', 'CUSTOMER_NOT_PRESENT', $orderid);
         $configuration['userFlow'] = "WEB_REDIRECT"; // Change to NATIVE_REDIRECT for apps in below filter
         // Require consent of email and openid sub - really for login
-        $configuration['requireUserInfo'] = apply_filters('woo_vipps_checkout_requireUserInfo', $gw->get_option('requireUserInfo_checkout') == 'yes' , $orderid);
+        $configuration['requireUserInfo'] = (bool) apply_filters('woo_vipps_checkout_requireUserInfo', $gw->get_option('requireUserInfo_checkout') == 'yes' , $orderid);
 
 
         // IOK 2023-12-22 and we can add an order summary, so do so by default
@@ -950,8 +950,8 @@ class VippsApi {
         }
 
         if (!$needs_shipping) {
-            $nocontacts = $this->gateway->get_option('noContactFields') == 'yes';
-            $noaddress = $this->gateway->get_option('noAddressFields') == 'yes';
+            $nocontacts = (bool) ($this->gateway->get_option('noContactFields') == 'yes');
+            $noaddress = (bool) ($this->gateway->get_option('noAddressFields') == 'yes');
             if ($noaddress) {
                 $configuration['elements'] = "PaymentAndContactInfo";
             }
