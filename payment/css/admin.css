@@ -199,26 +199,42 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
 }
 
 /* Button page stuff */
-.vipps-button-settings label {
-    width: 20%;
-    display: inline-block;
-    font-weight: 550;
+#vipps-button-settings-save {
+    margin-top: 1rem;
 }
-
-.vipps-button-settings-img-container {
-    max-width: 768px;
-    display: flex;
-    justify-content: center;
-}
-
-.vipps-button-settings-img-container img {
-    margin-top: 0.5rem;
-}
-
 .vipps-button-settings-section {
-    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+#vipps-button-settings-express-args fieldset {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
-.vipps-button-settings-express-force-mini-container {
-    margin-bottom: .5rem;
+#use-global-config-container {
+    display: block;
+    visibility: visible;
+}
+#use-global-config-container.hidden {
+    visibility: hidden;
+}
+
+#vipps-button-settings-express-args legend {
+    font-weight: bold;
+    margin-bottom: .3rem;
+}
+#vipps-button-settings-express-args p {
+    margin: 0;
+    font-weight: bold;
+}
+#vipps-button-settings-express-context {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
 }

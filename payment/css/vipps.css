@@ -171,23 +171,6 @@ h2.confirmVippsExpressCheckoutHeader {
  margin-top: 0;
 }
 
-
-a.button.vipps-express-checkout img {
-    max-width: 100%;
-    width: 13.5rem;
-    max-height: 100%;
-    filter: drop-shadow( 0px 1px 2px #d7d7d7);
-}
-a.button.vipps-express-checkout.short img {
-    width:initial;
-}
-a.button.vipps-express-checkout:hover img {
-    opacity: 0.9;
-}
-a.button.vipps-express-checkout.disabled img {
-    opacity: 0.7;
-}
-
 li.wc_payment_method.payment_method_vipps img {
     max-width: 145px;
 }
@@ -210,32 +193,6 @@ a.button.vipps-buy-now:focus {
 }
 .wc-block-grid__products .wc-block-grid__product .wp-block-button__link.vipps-buy-now:hover, .woocommerce ul.products li.product .button.vipps-buy-now:hover, a.button.vipps-buy-now:hover {
     opacity: 0.9;
-}
-
-ul.products li.product a.button.vipps-buy-now img {
- margin:0px;
- display:inline;
-}
-
-a.button.vipps-express-checkout {
- background-color: #fff;
- color: transparent;
- vertical-align: bottom;
- padding: 0;
- margin-left:.5em;
-}
-a.button.vipps-express-checkout:active, a.button.vipps-buy-now:active {
- border: 0;
-}
-a.button.vipps-express-checkout:hover, a.button.vipps-buy-now:hover {
- border: 0;
-}
-
-/* New-style button for Vipps and Mobile Pay is 100% svg */
-a.single-product.button.vipps-buy-now  {
-    padding-left:0;
-    padding-right:0;
-    padding-bottom:0;
 }
 
 body .widget_shopping_cart a.button.vipps-express-checkout, body .widget_shopping_cart a.button.vipps-express-checkout:hover {
@@ -320,6 +277,17 @@ img.inline {
  display:inline;
 }
 
+.vipps-buy-now {
+    padding-left: 0;
+    padding-right: 0;
+}
+.vipps_buy_now_wrapper.noloop {
+    margin-top: .5rem;
+}
+.wp-block-woo-vipps-buy-now-cart.wc-block-button-vipps {
+    margin-bottom: .5rem;
+}
+
 .vippsorange {
  background-color: #fe5b24;
 }
@@ -356,10 +324,6 @@ img.inline {
     padding: 0 0.75rem;
     line-height: 1;
     font-size: var(--wp--preset--font-size--small);
-}
-.legacy-checkout.vipps-express-checkout a, .legacy-checkout.vipps-express-checkout img {
-    padding: 0 !important;
-    border: 0 !important;
 }
 
 .vipps_checkout_button_wrapper {

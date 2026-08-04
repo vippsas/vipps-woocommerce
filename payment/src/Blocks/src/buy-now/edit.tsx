@@ -11,6 +11,7 @@ import {
 	PanelBody,
 	ToolbarGroup,
 	ToolbarButton,
+	ToggleControl,
 } from '@wordpress/components';
 import { pencil } from '@wordpress/icons';
 
@@ -20,8 +21,14 @@ import { blockConfig } from './config';
 
 export interface EditAttributes extends BlockAttributes {
 	align: string;
+
+	// Web component args
 	variant: string;
 	language: string;
+	verb: string;
+	rounded: boolean;
+	compact: boolean;
+
 	/** Only set with manual product selection, i.e when not in a product context. LP 2026-01-23 */
 	productId: string;
 	productName: string;
@@ -36,6 +43,12 @@ export default function Edit({
 	attributes,
 	setAttributes,
 }: EditProps) {
+	// Migrate some attributes if variant is one of the old ones. LP 2026-07-01
+	const newConfig = blockConfig.variantMigrationMap[attributes.variant];
+	if (typeof newConfig === "object") {
+		setAttributes({...attributes, ...newConfig});
+	}
+
 	// If this block is a child of a product context. e.g. when this block is inserted into the blocks Product collection, Single product. LP 2026-01-23
 	const hasProductContext = context['postType'] === 'product';
 	useEffect(() => {
@@ -44,16 +57,17 @@ export default function Edit({
 		}
 	}, []);
 
-	const langLogos =
-		blockConfig.logos[attributes.language] ?? blockConfig.logos['en'];
-	const logoSrc = langLogos[attributes.variant ?? 'default']; 
-
 	const showEditButton = !attributes.hasProductContext;
 
 	// only show product selection if we are not in a product context and we don't have a product id. LP 2026-01-19
 	const [showProductSelection, setShowProductSelection] = useState(
 		!hasProductContext && !attributes.productId
 	);
+
+	const language =
+		'store' === attributes.language
+			? blockConfig.storeLanguage
+			: attributes.language;
 
 	return (
 		<>
@@ -84,12 +98,18 @@ export default function Edit({
 							className="single-product button vipps-buy-now wp-block-button__link"
 							title={blockConfig['vippsbuynowbutton']}
 						>
-							<img
-								className="inline vipps-logo-negative"
-								src={logoSrc}
-								alt={blockConfig['vippsbuynowbutton']}
-							/>
-						</a>
+								{ /* Web component https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/buttons/#javascript-button-library. :LP 2026-01-26 */ }
+								{ /* @ts-ignore */ }
+								<vipps-mobilepay-button
+									brand={ blockConfig.paymentMethod.toLowerCase() }
+									language={ language }
+									variant={ attributes.variant }
+									rounded={ attributes.rounded }
+									verb={ attributes.verb }
+									compact={ attributes.compact }
+									// @ts-ignore
+								></vipps-mobilepay-button>
+							</a>
 
 						{/* Toolbar button to switch to product selection mode. LP 2026-01-19 */}
 						{showEditButton && (
@@ -116,8 +136,8 @@ export default function Edit({
 			<InspectorControls>
 				<PanelBody>
 					<SelectControl
-						onChange={(newVariant) =>
-							setAttributes({ variant: newVariant })
+						onChange={variant =>
+							setAttributes({ variant })
 						}
 						label={__('Variant', 'woo-vipps')}
 						value={attributes.variant}
@@ -128,13 +148,36 @@ export default function Edit({
 						)}
 					/>
 					<SelectControl
-						onChange={(newLanguage) =>
-							setAttributes({ language: newLanguage })
+						onChange={language =>
+							setAttributes({ language })
 						}
 						label={__('Language', 'woo-vipps')}
 						value={attributes.language}
 						options={blockConfig.languages}
 						help={__('Choose language', 'woo-vipps')}
+					/>
+					<SelectControl
+						onChange={verb =>
+							setAttributes({ verb })
+						}
+						label={__('Verb', 'woo-vipps')}
+						value={attributes.verb}
+						options={blockConfig.verbs}
+						help={__('Choose verb', 'woo-vipps')}
+					/>
+					<ToggleControl
+						onChange={ rounded =>
+							setAttributes( { rounded } )
+						}
+						label={ __( 'Rounded', 'woo-vipps' ) }
+						checked={ attributes.rounded }
+					/>
+					<ToggleControl
+						onChange={ compact =>
+							setAttributes( { compact } )
+						}
+						label={ __( 'Compact', 'woo-vipps' ) }
+						checked={ attributes.compact }
 					/>
 				</PanelBody>
 			</InspectorControls>
