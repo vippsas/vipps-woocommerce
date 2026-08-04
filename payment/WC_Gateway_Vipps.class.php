@@ -3489,7 +3489,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Handle the callback from Vipps ePayment
     public function handle_callback($result, $order, $ischeckout=false, $iswebhook=false) {
-    return;
         global $Vipps;
 
         $vippsorderid = $result['orderId'];
