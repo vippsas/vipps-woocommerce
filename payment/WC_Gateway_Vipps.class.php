@@ -3571,8 +3571,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     /** Runs in action scheduler: sync woo status from Vipps callback data. Handle shipping etc. for Express. LP 2026-03-31 */
     public function action_process_callback($order_id, $is_checkout, $is_webhook) {
-        global $Vipps;
-
         $order = wc_get_order($order_id);
         if (!is_a($order, 'WC_Order')) {
             /* translators: order id */
