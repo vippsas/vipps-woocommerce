@@ -5780,19 +5780,15 @@ else:
         ];
 
             $new_options = $default_options;
-            $migrated = false;
 
             //Actually, we have some options from the old structure IOK 2026-07-15
             if (!empty($old_options)) {
-                $migrated = true;
                 $new_options['express']['configs']['global'] = $this->migrate_button_variant_to_config($old_options['express']['variant'] ?? '');
                 unset($new_options['express']['configs']['global']['brand']); // dont set brand, this needs to be dynamic. LP 2026-07-01
-
             }
 
             // Migrate context/page mini override to new context config. LP 2026-06-26
             if (is_array($old_options['express']['force-mini'] ?? null)) {
-                $migrated = true;
                 foreach($old_options['express']['force-mini'] as $context => $use_mini) {
                     if ("yes" === $use_mini)  {
                         $config = $this->migrate_button_variant_to_config($old_options['express']['mini-variant'] ?? '');
@@ -5813,10 +5809,10 @@ else:
                 }
             }
 
-            if ($migrated) {
-                /* translators: placeholders are arrays */
-                $this->log(sprintf(__('Migrating from old button options. Old: %s, new: %s', 'woo-vipps'), print_r($options, true), print_r($new_options, true)), 'debug');
-            }
+            /* translators: placeholders are arrays */
+            $this->log(sprintf(__('Migrating from old button options. Old: %s, new: %s', 'woo-vipps'), print_r($options, true), print_r($new_options, true)), 'debug');
+
+
 
             update_option('vipps_button_options2', $new_options);
     }
