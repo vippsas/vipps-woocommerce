@@ -5771,9 +5771,9 @@ else:
                 'version' => $this->button_options_express_version,
             'configs' => [
                 'global' => $default_config,
-            // Need compact version by default for these pages. LP 2026-07-07
-            'catalog' => $default_compact,
-            'minicart' => $default_compact, // storefront needs compact, tho 2025 theme has a lot of room. Just use compact LP 2026-07-07
+                // Need compact version by default for below pages. LP 2026-07-07
+                'catalog' => $default_compact,
+                'minicart' => $default_compact, // storefront needs compact, tho 2025 theme has a lot of room. Just use compact LP 2026-07-07
             ],
             'product_configs' => [],
             ],
