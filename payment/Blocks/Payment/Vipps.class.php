@@ -49,8 +49,9 @@ final class Vipps extends AbstractPaymentMethodType {
 	}
 
         public function get_express_checkout_button () {
-            $button = \Vipps::instance()->express_checkout_button_shortcode();
-            return  $button;
+            $context = is_cart() ? 'cart' : 'checkout';
+            $button = \Vipps::instance()->get_html_button_for_context($context);
+            return $button;
         }
         public function show_express_checkout_button () {
             $gw = \Vipps::instance()->gateway();

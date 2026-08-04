@@ -31,18 +31,11 @@ div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.s
     margin-left: auto;
     margin-right: auto;
     display: inline-block;
-    padding-top:0;
     background-color: transparent;
-}
-div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
-    max-width: 9rem;
-    margin-bottom:0;
+    padding: 0;
 }
 div.vipps_buy_now_wrapper.loop {
     text-align:center;
-}
-div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
-    max-width: 9rem;
 }
 
 /* Specifically the buy-now block injected with blockHooks in minicart guten template. LP 2026-01-29 */
