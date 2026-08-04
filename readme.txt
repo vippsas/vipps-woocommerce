@@ -120,6 +120,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 Version 6.1.0
 Removed support for beta block-based product editor
 Changed express checkout buttons to use web components
+Changed callback/webhook handler to use Async Queue to avoid race conditions
 
 == Frequently Asked Questions ==
 
@@ -293,9 +294,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2027-08-xx version 6.1.0
+= 2027-08-04 version 6.1.0
 Removed experimental support for beta product editor 
 Changed express checkout buttons to use web components
+Changed callback/webhook handler to use Async Queue to avoid race conditions
 
 = 2026-06-24 version 6.0.5 =
 Fix compatibility when inheriting PayPal gateway order
