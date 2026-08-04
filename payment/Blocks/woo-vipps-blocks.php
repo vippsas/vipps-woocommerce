@@ -147,7 +147,7 @@ add_action('enqueue_block_editor_assets', function () {
             'vippsbuynowbutton' => $buy_now_config['vippsbuynowbutton'],
             'vippssmileurl' => $buy_now_config['vippssmileurl'],
             'BuyNowWithVipps' => $buy_now_config['BuyNowWithVipps'],
-            'minicartLogo' => $vipps->get_payment_logo('minicart'),
+            'buttonHtml' => $vipps->get_html_button_for_context('minicart'),
         ];
         wp_add_inline_script('woo-vipps-buy-now-cart-editor-script', 'const vippsBuyNowCartBlockConfig = ' . json_encode($buy_now_cart_config), 'before');
     }

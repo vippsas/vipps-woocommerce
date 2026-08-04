@@ -43,3 +43,6 @@ div.vipps_buy_now_wrapper.loop {
     align-self: center;
 }
 
+.wc-block-button-vipps .vipps-buy-now.single-product.minicart {
+    margin-bottom: 0.5rem;
+}
