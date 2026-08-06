@@ -1085,6 +1085,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $default_static_shipping_for_checkout = 'no';
         $default_ask_address_for_express = 'no';
         $default_status_on_fail = 'failed';
+        $default_express_show_in_checkout = 'yes';
         if ($current) {
             $default_static_shipping_for_checkout = (isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
             $default_ask_address_for_express = (isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
