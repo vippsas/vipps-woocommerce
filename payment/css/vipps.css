@@ -32,6 +32,11 @@ vipps-mobilepay-badge {
     width: 90vw;
 }
 
+/* Avoid having the new web component button get outlined IOK 2026-08-07  */
+vipps-mobilepay-button:focus,
+vipps-mobilepay-button:focus-visible {
+    outline: none;
+}
 
 /* Vipps Checkout Widgets */
 .vipps_checkout_widget_wrapper {
