@@ -1774,8 +1774,8 @@ EOF;
         $button= apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context('checkout'));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
-        $html = "<a href='$url' class='button vipps-express-checkout short $method' title='$title'>$button</a>";
-        $html = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
+        $html = "<a href='$url' class='vipps-express-checkout short $method' title='$title'>$button</a>";
+        $html = apply_filters('woo_vipps_cart_express_checkout_button', $html, $url);
         echo $html;
     }
 
@@ -1803,8 +1803,8 @@ EOF;
         $button= apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context($context));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
-        $html = "<a href='$url' class='button vipps-express-checkout short $method' title='$title'>$button</a>";
-        $html = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
+        $html = "<a href='$url' class='vipps-express-checkout short $method' title='$title'>$button</a>";
+        $html = apply_filters('woo_vipps_cart_express_checkout_button', $html, $url);
         echo $html;
     }
 
