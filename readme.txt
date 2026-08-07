@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 6.1.1
-Stable tag: 6.1.1
+Version: 6.1.2
+Stable tag: 6.1.2
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 8.0
@@ -117,6 +117,8 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 6.1.2
+Fix buttons not working in cart and checkout
 Version 6.1.1
 Fix warning
 Version 6.1.0
@@ -296,10 +298,13 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2027-08-06 version 6.1.1 =
+= 2026-08-07 version 6.1.2 =
+Fix buttons not working in cart and checkout
+
+= 2026-08-06 version 6.1.1 =
 Fix warning in settings for uninitialized sites (Thanks to @absdhiten for reporting)
 
-= 2027-08-04 version 6.1.0
+= 2026-08-04 version 6.1.0
 Removed experimental support for beta product editor 
 Changed express checkout buttons to use web components
 Changed callback/webhook handler to use Async Queue to avoid race conditions

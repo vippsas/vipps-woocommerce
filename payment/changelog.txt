@@ -1,8 +1,12 @@
 == Changelog ==
-= 2027-08-06 version 6.1.1 =
+
+= 2026-08-07 version 6.1.2 =
+Fix buttons not working in cart and checkout
+
+= 2026-08-06 version 6.1.1 =
 Fix warning in settings for uninitialized sites (Thanks to @absdhiten for reporting)
 
-= 2027-08-04 version 6.1.0
+= 2026-08-04 version 6.1.0
 Removed experimental support for beta product editor 
 Changed express checkout buttons to use web components
 Changed callback/webhook handler to use Async Queue to avoid race conditions
