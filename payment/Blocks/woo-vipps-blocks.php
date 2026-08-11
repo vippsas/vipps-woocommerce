@@ -46,19 +46,19 @@ add_action('enqueue_block_editor_assets', function () {
     if ($store_language == 'nb' || $store_language == 'nn') {
         $store_language = 'no';
     }
-    if ($store_language == 'da') {
-        $store_language = 'dk';
-    }
-    if (!in_array($store_language, ['en', 'no', 'dk', 'fi'])) {
+    if (!in_array($store_language, ['en', 'no', 'dk', 'da', 'fi'])) {
         $store_language = 'en'; // english default fallback
     }
+    // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+    if ('dk' === $store_language) $store_language = 'da';
 
     $languages = [
                 ['label' => __('Default', 'woo-vipps'), 'value' => $store_language],
                 ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                 ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
+                ['label' => __('Swedish', 'woo-vipps'), 'value' => 'sv'],
                 ['label' => __('Finnish', 'woo-vipps'), 'value' => 'fi'],
-                ['label' => __('Danish', 'woo-vipps'), 'value' => 'dk'],
+                ['label' => __('Danish', 'woo-vipps'), 'value' => 'da'],
             ];
 
     $badge_config = [
@@ -81,6 +81,9 @@ add_action('enqueue_block_editor_assets', function () {
     if (version_compare(WC_VERSION, '9.4', '>=')) {
         $payment_method = Vipps::instance()->get_payment_method_name();
         $store_language = Vipps::instance()->get_customer_language();
+        // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+        if ('dk' === $store_language) $store_language = 'da';
+
 
         switch ($payment_method) {
             case 'Vipps':
@@ -89,14 +92,17 @@ add_action('enqueue_block_editor_assets', function () {
                     ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                     ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
                     ['label' => __('Swedish', 'woo-vipps'), 'value' => 'sv'],
+                    ['label' => __('Danish', 'woo-vipps'), 'value' => 'da'],
                 ];
                 break;
             case 'MobilePay':
                 $buy_now_languages = [
                     ['label' => __('Store language', 'woo-vipps'), 'value' => "store"],
                     ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
+                    ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
+                    ['label' => __('Swedish', 'woo-vipps'), 'value' => 'sv'],
+                    ['label' => __('Danish', 'woo-vipps'), 'value' => 'da'],
                     ['label' => __('Finnish', 'woo-vipps'), 'value' => 'fi'],
-                    ['label' => __('Danish', 'woo-vipps'), 'value' => 'dk'],
                 ];
                 break;
         }

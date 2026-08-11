@@ -30,6 +30,8 @@ if ($supported) {
     foreach(['verb', 'variant', 'language'] as $str_attr) {
         $button_args[$str_attr] = $block->attributes[$str_attr] ?? '';
     }
+    // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+    if ('dk' === $button_args['language']) $button_args['language'] = 'da';
 
     echo "<div class='wp-block-button wc-block-components-product-button wc-block-button-vipps'>" . $vipps->get_buy_now_button($product->get_id(), null, null, false, '', 'gutenberg', $button_args) . "</div>";
 }

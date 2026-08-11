@@ -797,7 +797,7 @@ jQuery('a.webhook-adder').click(function (e) {
            <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
            <p><?php echo sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), "https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/on-site-messaging/"); ?></p>
            <br><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
-              <pre>[vipps-mobilepay-badge variant={white|filled|light|grey|purple}<br>                       language={en|no|fi|dk} ] </pre><br> 
+              <pre>[vipps-mobilepay-badge variant={white|filled|light|grey|purple}<br>                       language={en|no|fi|da|sv} ] </pre><br> 
               <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?></br>
               <?php _e("The brand will be automatically applied.", 'woo-vipps'); ?>
            </p>
@@ -877,7 +877,10 @@ jQuery('a.webhook-adder').click(function (e) {
         $args = shortcode_atts( array('id'=>'', 'class'=>'', 'brand' => '', 'variant' => '','language'=>''), $atts );
 
         $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple', 'filled', 'light']) ? $args['variant'] : "";
-        $language = in_array($args['language'], ['en','no', 'fi', 'dk']) ? $args['language'] : $this->get_customer_language();
+        $language = in_array($args['language'], ['en', 'no', 'sv', 'da', 'dk', 'fi']) ? $args['language'] : $this->get_customer_language();
+        if ('se' === $language) $language = 'sv';
+        // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+        if ('dk' === $language) $language = 'da';
         $id = sanitize_title($args['id']);
         $class = sanitize_text_field($args['class']);
 
@@ -895,11 +898,16 @@ jQuery('a.webhook-adder').click(function (e) {
     }
 
     // legacy vipps_badge shortcode, the new one is vipps_mobilepay_badge_shortcode. LP 19.11.2024
+    // Diff: this one doesn't support brand (JUST VIPPS). LP 2026-08-11
     public function vipps_badge_shortcode($atts) {
         $args = shortcode_atts( array('id'=>'', 'class'=>'','variant' => '','language'=>''), $atts );
         
         $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple']) ? $args['variant'] : "";
-        $language = in_array($args['language'], ['en','no', 'dk', 'fi']) ? $args['language'] : $this->get_customer_language();
+        $language = in_array($args['language'], ['en', 'no', 'sv', 'da', 'dk', 'fi']) ? $args['language'] : $this->get_customer_language();
+        if ('se' === $language) $language = 'sv';
+        // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+        if ('dk' === $language) $language = 'da';
+
         $id = sanitize_title($args['id']);
         $class = sanitize_text_field($args['class']);
 
@@ -953,6 +961,8 @@ jQuery('a.webhook-adder').click(function (e) {
         if ('store' === $attrs['language']) $attrs['language'] = $this->get_customer_language();
         // Don't support these login verbs. LP 2026-06-04
         if (in_array($attrs['verb'], ['login', 'register'])) $attrs['verb'] = 'buy';
+        // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+        if ('dk' === $attrs['language']) $attrs['language'] = 'da';
 
         $escaped_attrs = [];
         foreach($attrs as $k => $v) {
@@ -5029,7 +5039,6 @@ else:
         if ($sku) $data['product_sku'] = $sku;
         if ($product_id) $data['product_id'] = $product_id;
         if ($variation_id) $data['variation_id'] = $variation_id;
-
 
         $buttoncode = "<a href='javascript:void(0)' $disabled ";
         foreach($data as $key=>$value) {

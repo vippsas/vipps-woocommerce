@@ -64,10 +64,12 @@ export default function Edit({
 		!hasProductContext && !attributes.productId
 	);
 
-	const language =
-		'store' === attributes.language
+	let language = 'store' === attributes.language
 			? blockConfig.storeLanguage
 			: attributes.language;
+	// Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+        if ('dk' === language) language = 'da';
+
 
 	return (
 		<>
