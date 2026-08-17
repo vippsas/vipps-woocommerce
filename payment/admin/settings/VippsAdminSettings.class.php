@@ -205,6 +205,13 @@ class VippsAdminSettings
                 'kustom_sale_5' => __('If you have questions, you can check our <a href="https://vippsmobilepay.com/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps'),
                 );
 
+        /* We need to postprocess the settings for.. various reasons IOK 2024-06-04  */
+        /* Also we need to run init_form_fields here, because for whatever reason the
+         * first time it is called, it does wrong things in this context. IOK 2024-06-04 */
+        $gw->init_form_fields();
+        $settings = $gw->settings;
+        error_log('LP settings: ' . print_r($settings, true));
+
         $wizardTranslations = [
             'wizard_header' => [
                 'title' => __('Initial settings', 'woo-vipps'),
@@ -214,14 +221,6 @@ class VippsAdminSettings
                 'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                 'description' => sprintf(__('%1$s is a service from %2$s, which allows you to replace the usual WooCommerce checkout page with a super simple checkout screen, where your customers can pay with Vipps, Visa, and MasterCard!', 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
             ),
-            /*
-            'vipps_checkout_enabled_wizard' => array(
-                'title' => Vipps::CheckoutName(),
-                'label' => sprintf(__('Yes, I want to start using %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                'description' => sprintf(__('If activated, this will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy checkout using %1$s or credit card, with no need to type in addresses.', 'woo-vipps'), Vipps::CheckoutName()),
-                'default' => 'no',
-            ),
-             */
             'enablestaticshipping_checkout_wizard' => array(
                 'title' => __('Are you going to base shipping price on the customers address?', 'woo-vipps'),
                 'label' => __('Yes, I want dynamic shipping calculation', 'woo-vipps'),
@@ -302,14 +301,17 @@ class VippsAdminSettings
                 'accept' => sprintf(__('Start using %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                 'skip' => __('Skip & save', 'woo-vipps'),
             ],
-
+            'express_options_wizard' => array(
+                'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                'description' => sprintf(__("%1\$s allows you to buy products by a single click from the cart, checkout, or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately.", 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                'readmore' => __('Read more', 'woo-vipps'),
+            ),
+            'singleproductexpressarchives_wizard' => [
+                'title'       => sprintf(__('%s on product catalog pages', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                'label'       => sprintf(__('Enable a %s button for relevant products on catalog pages', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+            ],
         ];
-        
-        /* We need to postprocess the settings for.. various reasons IOK 2024-06-04  */
-        /* Also we need to run init_form_fields here, because for whatever reason the
-         * first time it is called, it does wrong things in this context. IOK 2024-06-04 */
-        $gw->init_form_fields();
-        $settings = $gw->settings;
+
         if (!empty($settings['receiptimage'])) {
             $settings['receiptimage_url'] = wp_get_attachment_url($settings['receiptimage']);
         }

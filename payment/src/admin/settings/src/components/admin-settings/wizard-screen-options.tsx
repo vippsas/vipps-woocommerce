@@ -3,7 +3,7 @@ import fixCheckoutName from '../../lib/fix-checkout-name';
 import { detectPaymentMethodName } from '../../lib/payment-method';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
-import { WPButton, WPFormField, WPLabel, boolToTruth, truthToBool } from '../form-elements';
+import { WPButton, WPFormField, WPLabel, truthToBool } from '../form-elements';
 import { CheckboxFormField, InputFormField, SelectFormField } from '../options-form-fields';
 import { UnsafeHtmlText } from '../unsafe-html-text';
 
@@ -16,7 +16,9 @@ interface Props {
   isLoading: boolean;
 }
 
-type Steps = 'ESSENTIAL' | 'CHECKOUT_CONFIRM' | 'CHECKOUT';
+// Step flow: Essential => EXPRESS/CHECKOUT => save and quit. 
+// Its EXPRESS unless vipps mobilepay checkout is already enabled and they somehow returned to the wizard. LP 2026-08-13
+type Steps = 'ESSENTIAL' | 'EXPRESS' | 'CHECKOUT';
 
 export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Element {
   const { getOption, setOption, hasOption } = useWP();
@@ -103,21 +105,6 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 required
               />
 
-              {/* Renders a simplified checkbox to enable the Alternative checkout screen. LP 23.12.2024 */}
-              {/* Deactivated as of 2026-04-30 IOK 2026-04-30 
-              <h3 className="vipps-mobilepay-react-tab-description">
-                {fixCheckoutName(gettext("vipps_checkout_enabled_wizard.title"), paymentMethod)}
-              </h3>
-              <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("vipps_checkout_enabled_wizard.description"), paymentMethod)} /></p>
-
-              <CheckboxFormField
-                name="vipps_checkout_enabled"
-                titleKey=""
-                labelKey="vipps_checkout_enabled_wizard.label"
-                descriptionKey=""
-              />
-              */}
-
               {/* Renders a button to progress to the next form step. LP 23.12.2024 */}
               <WPFormField>
                 <WPLabel></WPLabel>
@@ -143,7 +130,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                         if (truthToBool(getOption('vipps_checkout_enabled'))) {
                             setStep('CHECKOUT');
                         } else {
-                            form.requestSubmit();
+                            setStep('EXPRESS');
                         }
                       } else {
                            // no validity reported. 
@@ -151,7 +138,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                     }}
                   >
                     {/* no next step at this point if no checkout */}
-                    {truthToBool(getOption('vipps_checkout_enabled')) ? gettext("next_step") :  fixCheckoutName(gettext('save_changes'), paymentMethod)}
+                    {truthToBool(getOption('vipps_checkout_enabled')) ? gettext("next_step") : fixCheckoutName(gettext('save_changes'), paymentMethod)}
                   </WPButton>
                 </div>
               </WPFormField>
@@ -174,46 +161,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
         </>
       )}
 
-      {step === 'CHECKOUT_CONFIRM' && (
-        <>
-        <div className="vipps-mobilepay-react-checkout-confirm">
-          <h1 className="title">{ fixCheckoutName(gettext( 'checkout_confirm.title' ), getOption("payment_method_name")) }</h1>
-            <p>{fixCheckoutName(gettext("checkout_options_wizard.description"), paymentMethod)}</p>
-          <div className="body">
-            <div className="list">
-              <strong>{ fixCheckoutName(gettext( 'checkout_confirm.paragraph1.header' ), paymentMethod) }</strong>
-              <ul>
-                <li>{fixCheckoutName(gettext('checkout_confirm.paragraph1.first'), paymentMethod)}</li>
-                <li>{fixCheckoutName(gettext('checkout_confirm.paragraph1.second'), paymentMethod)}</li>
-                <li>{fixCheckoutName(gettext('checkout_confirm.paragraph1.third'), paymentMethod)}</li>
-              </ul>
-              <strong>{fixCheckoutName(gettext('checkout_confirm.paragraph2.header'), paymentMethod)}</strong>
-              <ul>
-                <li>{fixCheckoutName(gettext('checkout_confirm.paragraph2.first'), paymentMethod)}</li>
-                <li>{fixCheckoutName(gettext('checkout_confirm.paragraph2.second'), paymentMethod)}</li>
-              </ul>
-            </div>
-            <img src={gettext( paymentMethod === "Vipps" ? 'checkout_confirm.img.vipps.src' : 'checkout_confirm.img.mobilepay.src' )} alt={gettext( paymentMethod === "Vipps" ? 'checkout_confirm.img.vipps.alt' : 'checkout_confirm.img.vipps.alt') }/>
-          </div>
-          <div className="vipps-mobilepay-react-button-actions">
-            <WPButton variant="secondary" type="button" onClick={() => setStep(prevStep)}>
-              {fixCheckoutName(gettext('previous_step'), paymentMethod)}
-            </WPButton>
-            <WPButton variant="primary" isLoading={isLoading} onClick={() => {
-              setOption('vipps_checkout_enabled', boolToTruth(true));
-              setPrevStep(step);
-              setStep('CHECKOUT');
-            }}>
-              {fixCheckoutName(gettext('checkout_confirm.accept'), paymentMethod)}
-            </WPButton>
-            <WPButton variant="secondary" onClick={() => setOption('vipps_checkout_enabled', boolToTruth(false))}>
-              {fixCheckoutName(gettext('checkout_confirm.skip'), paymentMethod)}
-            </WPButton>
-          </div>
-        </div>
-        </>
-      )}
-
+      {/* Only shown in checkout is previously enabled, we don't promote checkout anymore, but express. LP 2026-08-13 */}
       {step === 'CHECKOUT' && (
         <>
           <div className="vipps-mobilepay-react-checkout-confirm">
@@ -371,6 +319,62 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               <WPButton variant="primary" isLoading={isLoading}>
                 {fixCheckoutName(gettext('save_changes'), paymentMethod)}
               </WPButton>
+            </div>
+          </div>
+        </>
+      )}
+
+      {step === 'EXPRESS' && (
+        <>
+          <div className="vipps-mobilepay-react-express-confirm">
+            <h1 className="vipps-mobilepay-react-tab-description title">
+              {gettext("express_options_wizard.title")}
+            </h1>
+            <p>{gettext("express_options_wizard.description")}</p>
+            <p><a href="https://vippsmobilepay.com/nb-NO/express">{gettext("express_options_wizard.readmore")}</a></p>
+
+            {/* Checkbox to enable express in cart. LP 2026-08-13 */}
+            <CheckboxFormField
+              name="cartexpress"
+              titleKey={"cartexpress.title"}
+              labelKey={"cartexpress.label"}
+            />
+            {/* Checkbox to enable express in checkout. LP 2026-08-13 */}
+            <CheckboxFormField
+              name="express_show_in_checkout"
+              titleKey={"express_show_in_checkout.title"}
+              labelKey={"express_show_in_checkout.label"}
+            />
+            {/* Select to express on single product templates. LP 2026-08-13*/}
+            <SelectFormField
+              name="singleproductexpress"
+              titleKey="singleproductexpress.title"
+              descriptionKey="singleproductexpress.description"
+              required
+              includeEmptyOption={false}
+              options={
+                /* @ts-ignore */
+                Object.entries(gettext('singleproductexpress')?.options ?? {})
+                .map(([k, v]) => ({value: k, label: v as string}))
+              }
+              />
+            {/* Checkbox to enable express on catalog pages. LP 2026-08-13 */}
+            <CheckboxFormField
+              name="singleproductexpressarchives"
+              titleKey={"singleproductexpressarchives_wizard.title"}
+              labelKey={"singleproductexpressarchives_wizard.label"}
+              descriptionKey={"singleproductexpressarchives.description"}
+            />
+
+            <div className="vipps-mobilepay-react-button-actions">
+              <WPButton variant="secondary" 
+                type="button" 
+                onClick={() => {
+                  setStep(prevStep);
+                  setPrevStep('ESSENTIAL');
+                }}
+              >{gettext('previous_step')}</WPButton>
+              <WPButton variant="primary" isLoading={isLoading}>{gettext('save_changes')}</WPButton>
             </div>
           </div>
         </>
