@@ -1230,7 +1230,10 @@ class VippsApi {
     }
 
     // Implement part of the userInfo api, just to be able to get  user data from Express Orders that aren't express
-    // orders (because they didn't need shipping). In the future, will probably be used more + for integration with Login With Vipps
+    // orders (because they didn't need shipping). 
+    // If a user has a sub, it is because we've added a scope to the epayment call, or because of integration with login.
+    // This is not used as of 2026-08-18, because we do not need to call this to retreive user details any more with ecom -
+    // we get that by just calling the payment details. Still may be useful in the future without depending on login integration. IOK 2026-08-18
     public function get_userinfo($sub) {
         $command = "vipps-userinfo-api/userinfo" . "/" . $sub;
         $msn = $this->get_merchant_serial();
