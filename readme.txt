@@ -306,7 +306,6 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 Settings wizard now promotes Express.
 Fix danish and swedish language for badge preview in badge settings
 
-
 = 2026-08-11 version 6.1.3 =
 Fix language issue with danish buttons and badges
 
