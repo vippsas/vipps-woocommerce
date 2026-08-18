@@ -281,8 +281,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($orderid);
         if (!$order) return;
         if (! Vipps::is_vipps_order($order)) return false;
-        // Cannot partially cancel legacy ecom orders
-        if ('epayment' != $order->get_meta('_vipps_api')) return false; 
 
         // Check that the normal maybe_capture_order hook has actually ran *and* done something,
         // it's only after this we know we have captured 'everything' so if there is anything left, 
@@ -586,7 +584,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function webhook_callback_url () {
         $url = home_url("/", 'https');
         $queryargs = ['callback'=>'webhook'];
-        $forwhat = 'wc_gateway_vipps'; // Same callback as for ecom, checkout, express checkout
+        $forwhat = 'wc_gateway_vipps'; // Same callback as for epayment, checkout, express checkout
         // HTTPS required. IOK 2018-05-18
         // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
         if ( !get_option('permalink_structure')) {
@@ -810,7 +808,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             case 'epayment':
                 return true;
                 break;
-                // Default is old-style ecom v2.
+                // Default is true; but the above are exhaustive IOK 2026-08-18
             default:
                 return true;
                 break;
@@ -2143,10 +2141,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 // This is an error - we should not ever get to the 'capture' branch if we are a banktransfer payment.
                 // IOK 2024-01-09
                 $content = [];
-            } elseif ($api == 'epayment') {
-                $content =  $this->api->epayment_capture_payment($order,$amount,$requestid);
             } else {
-                $content =  $this->api->capture_payment($order,$amount,$requestid);
+                // Now the only other api is 'epayment' IOK 2026-08-18
+                $content =  $this->api->epayment_capture_payment($order,$amount,$requestid);
             }
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not capture %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
@@ -2199,26 +2196,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // We'll use the same transaction id for all cancel jobs, as we can only do it completely. IOK 2018-05-07
         // For epayment, partial cancellations will be possible. IOK 2022-11-12
+        // IOK 2026-08-18 actually, epayment does *not* support partial cancellation - all remaining funds are cancelled.
         $api = $order->get_meta('_vipps_api');
         try {
             $requestid = "";
             if ($api == 'banktransfer') {
                 // If we are here, and the order is somehow not captured, just do nothing. IOK 2024-01-09
                 $content = [];
-            } elseif ($api == 'epayment') {
+            } else {
+                // api is here 'epayment'. IOK 2026-07-18
                 $requestid = 1;
                 // This will cancel any remaining, not-captured amount IOK 2026-01-28
                 $content =  $this->api->epayment_cancel_payment($order,$requestid);
-            } else {
-                // If we have captured the order, we can't cancel it with the ecom API IOK 2018-05-07
-                $captured = intval($order->get_meta('_vipps_captured'));
-                if ($captured>0) {
-                    $msg = sprintf(__('Cannot cancel a captured %1$s transaction - use refund instead', 'woo-vipps'), "ECOM " .  $this->get_payment_method_name());
-                    $this->adminerr($msg);
-                    return false;
-                }
-                $content =  $this->api->cancel_payment($order,$requestid);
-            }
+            } 
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not cancel %1$s payment for order_id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
             $this->adminerr(sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
@@ -2234,7 +2224,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Removed epay branch 2025-08-12 IOK
         $total = intval($order->get_meta('_vipps_amount'));
         $captured = intval($order->get_meta('_vipps_captured'));
-#            $cancelled =  $amount + intval($order->get_meta('_vipps_cancelled');
         $cancelled = $total;
         $remaining = $total - $captured - $cancelled;
 
@@ -2284,11 +2273,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $msg = sprintf(__("Cannot refund bank transfer order %1\$d", 'woo-vipps'), $order->get_id());
             $this->log($msg, 'error');
             throw new Exception($msg);
-        } elseif ($api == 'epayment') {
-            $content =  $this->api->epayment_refund_payment($order,$requestid,$amount,$cents);
         } else {
-            $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
-        }
+            // api is now 'epayment' IOK 2026-08-18
+            $content =  $this->api->epayment_refund_payment($order,$requestid,$amount,$cents);
+        } 
 
         $currency = $order->get_currency();
 
@@ -2474,8 +2462,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
             if (!empty($paymentdetails)) {
-
-
                 // checkout has a string, epayment has an array with upper case "type" and apparently, cardBin IOK 2025-08-12
                 $paymentMethod = $paymentdetails['paymentMethod'] ?? "epayment";
                 // After normalization, all APIs will have data here.
