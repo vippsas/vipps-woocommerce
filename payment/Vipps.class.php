@@ -5155,23 +5155,38 @@ else:
 
     // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
     // IOK 2026-04-30 remove this when checkout is end-of-life'd
+    // We now also use this for the vipps special page, previously a fakepage. LP 2026-08-18
     public function woocommerce_create_pages ($data) {
+        // Vipps Checkout page
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
-        if (!$vipps_checkout_activated) return $data;
+        if ($vipps_checkout_activated) {
+            $data['vipps_checkout'] = array(
+                    'name'    => _x( 'vipps_checkout', 'Page slug', 'woo-vipps' ),
+                    'title'   => _x( 'Vipps MobilePay Checkout', 'Page title', 'woo-vipps' ),
+                    'content' => '<!-- wp:shortcode -->[' . 'vipps_checkout' . ']<!-- /wp:shortcode -->',
+                    );
+        }
 
-        $data['vipps_checkout'] = array(
-                'name'    => _x( 'vipps_checkout', 'Page slug', 'woo-vipps' ),
-                'title'   => _x( 'Vipps MobilePay Checkout', 'Page title', 'woo-vipps' ),
-                'content' => '<!-- wp:shortcode -->[' . 'vipps_checkout' . ']<!-- /wp:shortcode -->',
-                );
-
+        // Vipps special page for certain payment flow actions. Previously a fake page. LP 2026-08-18
+        $data['woo_vipps_special_page'] = [
+            'name' => 'woo_vipps_special_page', // slug
+            /* translators: company name */
+            'title' => sprintf(__('%s special page', 'woo-vipps'), static::CompanyName()),
+            'content' => 'TEST PAGE',
+        ];
         return $data;
     }
 
     // Creates any necessary Vipps pages. Will be called e.g. when activating Vipps Checkout or turning it on.
+    // Update: now called on init instead of when activating Vipps Checkout cause of special page (previously a fake page). LP 2026-08-18)
     public function maybe_create_vipps_pages () {
+            // Vipps Checkout page. LP 2026-08-18
             $checkoutid = wc_get_page_id('vipps_checkout');
             $makeit = !$checkoutid || ! get_post_status($checkoutid);
+
+            // vipps special page, previously a fake page. LP 2026-08-18
+            if (true) $makeit = true; // LP FIXME: check when we need to create special page. LP 2026-08-18
+
             if ($makeit) {
                delete_option('woocommerce_vipps_checkout_page_id');
             }
