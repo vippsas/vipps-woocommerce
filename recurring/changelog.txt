@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.2.16 =
+* Fix: Do not create a campaign or an initial charge for deferred synchronized subscriptions when nothing is due at sign-up, while retaining campaigns for free trials, discounts, and subscription switches.
+
 = 2.2.15 =
 * Fix: Avoid a DivisionByZeroError during checkout when a subscription has a zero initial order line total.
 * Added: An constant that overrides whether we should show the Recurring Checkout setting. `WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION`.
