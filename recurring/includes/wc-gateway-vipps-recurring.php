@@ -1689,7 +1689,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$capture_immediately = $is_virtual || $direct_capture || $is_gateway_change || $is_failed_renewal_order;
 		$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
 
-		$sign_up_fee       = WC_Subscriptions_Order::get_sign_up_fee( $order );
+		// WC_Subscriptions_Order::get_sign_up_fee() may divide by the original
+		// order line total, which causes a DivisionByZeroError for subscriptions
+		// where nothing is charged at sign-up.
+		$sign_up_fee = 0;
+		if ( (float) $subscription_item->get_total() !== 0.0 ) {
+			$sign_up_fee = WC_Subscriptions_Order::get_sign_up_fee( $order );
+		}
+
 		$has_campaign      = $has_trial || $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
 		$has_free_campaign = $is_subscription_switch || $sign_up_fee || $has_synced_product || $has_trial;
 

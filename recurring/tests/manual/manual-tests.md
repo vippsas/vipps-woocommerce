@@ -18,6 +18,7 @@ I should be able to create an order for a subscription product and pay via Vipps
     - I can capture an order through changing the status to "Completed" or "Processing"
     - With the "capture payment instantly" option set
     - With a free trial
+    - With no sign-up fee and a zero initial order line total
   
 - Digital products
     - On different intervals (day, week, month, year)

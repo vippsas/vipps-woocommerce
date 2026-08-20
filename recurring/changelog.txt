@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 2.2.15 =
+* Fix: Avoid a DivisionByZeroError during checkout when a subscription has a zero initial order line total.
+* Added: An constant that overrides whether we should show the Recurring Checkout setting. `WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION`.
+
 = 2.2.14 =
 * Added: It's now possible to disable retry days completely by setting WC_VIPPS_RECURRING_RETRY_DAYS to 0.
 * Tweak: Default `WC_VIPPS_RECURRING_RETRY_DAYS` to 0 when WooCommerce Subscriptions' retry system is active.
