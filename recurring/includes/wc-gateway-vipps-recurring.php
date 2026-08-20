@@ -2114,7 +2114,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Hide checkout unless it is already enabled.
 		// todo: remove the checkout settings in a future release.
-		if ( $this->get_option( 'checkout_enabled' ) !== "yes" ) {
+		if ( $this->get_option( 'checkout_enabled' ) !== "yes" && ! WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION ) {
 			foreach ( array_keys( $this->form_fields ) as $key ) {
 				if ( $key === 'title_checkout' || strpos( $key, 'checkout_' ) === 0 ) {
 					unset( $this->form_fields[ $key ] );

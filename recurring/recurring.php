@@ -67,6 +67,10 @@ if ( ! defined( 'WC_VIPPS_RECURRING_TEST_MODE' ) ) {
     define( 'WC_VIPPS_RECURRING_TEST_MODE', false );
 }
 
+if ( ! defined( 'WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION' ) ) {
+    define( 'WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION', false );
+}
+
 WC_Vipps_Recurring::register_hooks();
 if ( get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false ) ) {
     require_once __DIR__ . '/includes/wc-vipps-recurring-checkout.php';
