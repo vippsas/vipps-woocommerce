@@ -5015,14 +5015,6 @@ else:
         return null;
     }
 
-    // DEPRECATED: Legacy function as of new web component express buttons. see get_buy_now_button and get_html_button. LP 2026-06-26
-    public function get_buy_now_button_manual($product_id, $variation_id=null, $sku=null, $disabled=false, $classes='',
-        $_logo_variant=null, $_logo_lang=null, // deprecated params
-        $context='global', $button_args_override = [],
-    ) {
-        return $this->get_buy_now_button($product_id, $variation_id, $sku, $disabled, $classes, $context, $button_args_override);
-    }
-
     // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
     // $context is slug describing where its to be used, like 'catalog', 'cart', 'product' etc. and will
     // be used unless $button_args_override is nonempty. See init_button_options() and get_html_button() LP 2026-06-26
@@ -5068,6 +5060,9 @@ else:
         if ($short) $classes = "short $classes";
 
         $buttoncode .=  " class='single-product button vipps-buy-now $payment_method $disabled$classes' title='$title'>$button</a>";
+
+
+
         return apply_filters('woo_vipps_buy_now_button', $buttoncode, $product_id, $variation_id, $sku, $disabled);
     }
 
