@@ -733,6 +733,9 @@ jQuery('a.webhook-adder').click(function (e) {
         // Get current brand and language
         $current_brand = strtolower($this->get_payment_method_name());
         $current_language = $this->get_customer_language();
+        if ('se' === $current_language) $current_language = 'sv';
+        // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-13
+        if ('dk' === $current_language) $current_language = 'da';
 
         $variants = ['white'=> __('White', 'woo-vipps'), 'grey' => __('Grey','woo-vipps'), 
                      'filled'=> __('Filled', 'woo-vipps'), 'light'=>__('Light','woo-vipps'), 
