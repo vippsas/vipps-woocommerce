@@ -117,6 +117,8 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 6.1.6
+Fix performance issue with order notes with certain configurations of NGINX Helper
 Version 6.1.5
 Fix crash in certain situations when checking order status
 Version 6.1.4
@@ -304,6 +306,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2026-08-xx version 6.1.6
+Fix performance issue with order notes with certain configurations of NGINX Helper
+
 = 2026-08-20 version 6.1.5 =
 Fix crash in certain situations when checking order status
 

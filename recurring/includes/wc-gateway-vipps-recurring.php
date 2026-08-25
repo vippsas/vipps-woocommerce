@@ -1685,12 +1685,22 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$has_trial           = WC_Subscriptions_Product::get_trial_length( $product ) !== 0;
-		$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
+		$is_zero_amount      = (float) $order->get_total() === 0.0 || $is_gateway_change;
 		$capture_immediately = $is_virtual || $direct_capture || $is_gateway_change || $is_failed_renewal_order;
 		$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
 
-		$sign_up_fee       = WC_Subscriptions_Order::get_sign_up_fee( $order );
-		$has_campaign      = $has_trial || $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
+		// WC_Subscriptions_Order::get_sign_up_fee() may divide by the original
+		// order line total, which causes a DivisionByZeroError for subscriptions
+		// where nothing is charged at sign-up.
+		$sign_up_fee = 0;
+		if ( (float) $subscription_item->get_total() !== 0.0 ) {
+			$sign_up_fee = WC_Subscriptions_Order::get_sign_up_fee( $order );
+		}
+
+		// A synchronized first payment does not need a campaign when nothing is due
+		// now. Actual promotions and subscription switches still need a campaign,
+		// even when they reduce the initial total to zero.
+		$has_campaign      = $has_trial || ( $has_synced_product && ! $is_zero_amount ) || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
 		$has_free_campaign = $is_subscription_switch || $sign_up_fee || $has_synced_product || $has_trial;
 
 		// when Prorate First Renewal is set to "Never (charge the full recurring amount at sign-up)" we don't want to have a campaign
@@ -1929,7 +1939,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$response = $this->api->create_agreement( $agreement, $idempotency_key );
 
 			$is_subscription_switch = wcs_order_contains_switch( $order );
-			$is_zero_amount         = (int) $order->get_total() === 0 || $is_gateway_change;
+			$is_zero_amount         = (float) $order->get_total() === 0.0 || $is_gateway_change;
 
 			// mark the old agreement for cancellation to leave no dangling agreements in Vipps
 			$should_cancel_old = $is_gateway_change || $is_subscription_switch || $is_failed_renewal_order;
@@ -2114,7 +2124,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Hide checkout unless it is already enabled.
 		// todo: remove the checkout settings in a future release.
-		if ( $this->get_option( 'checkout_enabled' ) !== "yes" ) {
+		if ( $this->get_option( 'checkout_enabled' ) !== "yes" && ! WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION ) {
 			foreach ( array_keys( $this->form_fields ) as $key ) {
 				if ( $key === 'title_checkout' || strpos( $key, 'checkout_' ) === 0 ) {
 					unset( $this->form_fields[ $key ] );

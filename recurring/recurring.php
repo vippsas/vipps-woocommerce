@@ -3,7 +3,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '2.2.14' );
+define( 'WC_VIPPS_RECURRING_VERSION', '2.2.16' );
 
 /**
  * Polyfills
@@ -65,6 +65,10 @@ if ( ! defined( 'WC_VIPPS_RECURRING_RETRY_DAYS' ) ) {
  */
 if ( ! defined( 'WC_VIPPS_RECURRING_TEST_MODE' ) ) {
     define( 'WC_VIPPS_RECURRING_TEST_MODE', false );
+}
+
+if ( ! defined( 'WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION' ) ) {
+    define( 'WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION', false );
 }
 
 WC_Vipps_Recurring::register_hooks();
