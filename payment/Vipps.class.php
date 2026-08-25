@@ -4226,7 +4226,7 @@ else:
             $order_data = $gw->get_payment_details($order);
 
             // If we already know the order failed, we don't need to process the order further below. LP 2026-05-19
-            if ('CANCEL' === $order_data['STATE']) {
+            if ('CANCEL' === ($order_data['state'] ?? "")) {
                 /* translators: company name */
                 $order->update_status('cancelled', sprintf(__('Payment cancelled at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
                 return;
