@@ -4188,7 +4188,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // If enabling this, ensure the page in question exists
         if ($this->get_option('vipps_checkout_enabled') == 'yes') {
             update_option('woo_vipps_checkout_activated', true, true); // This must be true here, but still, make sure
-            // Update: moved this call to init since we now use real page for the special page, previously a fake page. LP 2026-08-18
+            // LP FIXME: delete below comments if maybe_create_vipps_pages is decided to run on Vipps.class.php->init(), else uncomment the call below to make sure Checkout page is created on activation. LP 2026-08-25
+            // Update: moved this page creation call for new special page, previously a fake page. LP 2026-08-18
             // Vipps::instance()->maybe_create_vipps_pages();
         }
 
