@@ -210,7 +210,6 @@ class VippsAdminSettings
          * first time it is called, it does wrong things in this context. IOK 2024-06-04 */
         $gw->init_form_fields();
         $settings = $gw->settings;
-        error_log('LP settings: ' . print_r($settings, true));
 
         $wizardTranslations = [
             'wizard_header' => [
