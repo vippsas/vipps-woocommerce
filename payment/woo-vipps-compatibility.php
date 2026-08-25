@@ -95,6 +95,28 @@ add_action('after_setup_theme', function () {
 
     }
 
+    // Default setup of NGINX Helper purges on comment insertion, which includes order notes. 
+    // We'll remove this action in the very last filter before wp_insert_comment is called,
+    // when still adding order notes. IOK 2026-08-25
+    if (class_exists('FastCGI_Purger')) {
+        add_filter('woocommerce_new_order_note_data', function ($data) {
+            global $wp_filter;
+            if (empty($wp_filter['wp_insert_comment'])) return $data;
+            $callbacks = $wp_filter['wp_insert_comment']->callbacks[200] ?? [];
+            $f = null;
+            foreach($callbacks as $callback) {
+                $fun = $callback['function'];
+                if (is_array($fun) && isset( $fun[0], $fun[1]) && $fun[1] == 'purge_post_on_comment') {
+                    $f = $fun; break;
+                }
+            }
+            if ($f) {
+                remove_action('wp_insert_comment', $f, 200);
+            }
+            return $data;
+        });
+    }
+
 }, 20);
 
 // IOK 2020-03-17: Klarna Checkout now supports external payment methods, such as Vipps. This is great, but we need first to check
