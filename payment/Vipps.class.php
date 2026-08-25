@@ -4596,9 +4596,46 @@ else:
         exit();
     }
 
+    // Actually create a exprss checkout order object, with no shipping or personal information, returning information about
+    // the result. The order should at this point be in a/the cart. For single product purchases, this is a different cart than 
+    // the main one; for cart purchases, it's just the WC()->cart object. IOK 2026-08-25
+    private function create_and_process_express_order() {
+        $result = null;
+        $gw = $this->gateway();
+        try {
+            $orderid = $gw->create_partial_order();
+            do_action('woo_vipps_ajax_do_express_checkout', $orderid);
+        } catch (Exception $e) {
+            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps') . ': ' . $e->getMessage(), 'url'=>false);
+            return $result;
+        } 
+        if (!$orderid) {
+            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
+            return $result;
+        }
+
+        try {
+            $this->maybe_add_static_shipping($gw,$orderid);
+        } catch (Exception $e) {
+            $this->log(__("Error calculating static shipping", 'woo-vipps'), 'error');
+            $this->log($e->getMessage(),'error');
+            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
+            return $result;
+        }
+
+        // Now pass this to the Woo gateway and get a redirect URL back IOK 2026-08-25
+        $ok = $gw->process_payment($orderid);
+        if ($ok && $ok['result'] == 'success') {
+            $result = array('ok'=>1, 'msg'=>'', 'url'=>$ok['redirect']);
+            return $result;
+        }
+        $result = array('ok'=>0, 'msg'=> sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()), 'url'=>'');
+        return $result;
+    }
+
     public function ajax_do_express_checkout () {
         check_ajax_referer('do_express','sec');
-	Vipps::nocache();
+        Vipps::nocache();
         static::set_locale_if_in_header();
         $gw = $this->gateway();
 
@@ -4608,22 +4645,19 @@ else:
             exit();
         }
 
-
-        
-
         // Validate cart going forward using same logic as WC_Cart->check_cart() but not adding notices.
         $toolate = false;
         $msg = "";
         $valid  = WC()->cart->check_cart_item_validity();
         if ( is_wp_error( $valid) ) {
-               $toolate = true;
-               $msg = "<br>" .  $valid->get_error_message();
+            $toolate = true;
+            $msg = "<br>" .  $valid->get_error_message();
         }
         $stock = WC()->cart->check_cart_item_stock();
-	if ( is_wp_error( $stock) ) {
-		$toolate = true;
-		$msg = "<br>" .  $stock->get_error_message();
-	}
+        if ( is_wp_error( $stock) ) {
+            $toolate = true;
+            $msg = "<br>" .  $stock->get_error_message();
+        }
 
         if ($toolate) {
             $result = array('ok'=>0, 'msg'=>sprintf(__('Some of the products in your cart are no longer available in the quantities you have ordered. Please <a href="%1$s">edit your order</a> before continuing the checkout','woo-vipps'), wc_get_cart_url()) . $msg, 'url'=>false);
@@ -4631,38 +4665,7 @@ else:
             exit();
         }
 
-        try {
-            $orderid = $gw->create_partial_order();
-            do_action('woo_vipps_ajax_do_express_checkout', $orderid);
-        } catch (Exception $e) {
-            $this->log($e->getMessage(),'error');
-            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps') . ': ' . $e->getMessage(), 'url'=>false);
-            wp_send_json($result);
-            exit();
-        } 
-        if (!$orderid) {
-            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
-            wp_send_json($result);
-            exit();
-        }
-
-        try {
-            $this->maybe_add_static_shipping($gw,$orderid); 
-        } catch (Exception $e) {
-                $this->log(__("Error calculating static shipping", 'woo-vipps'), 'error');
-                $this->log($e->getMessage(),'error');
-                $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
-                wp_send_json($result);
-                exit();
-        }
-        
-        $ok = $gw->process_payment($orderid);
-        if ($ok && $ok['result'] == 'success') {
-            $result = array('ok'=>1, 'msg'=>'', 'url'=>$ok['redirect']);
-            wp_send_json($result);
-            exit();
-        }
-        $result = array('ok'=>0, 'msg'=> sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()), 'url'=>'');
+        $result = $this->create_and_process_express_order();
         wp_send_json($result);
         exit();
     }
@@ -4670,7 +4673,7 @@ else:
     // Same as ajax_do_express_checkout, but for a single product/variation. Duplicate code because we want to manipulate the cart differently here. IOK 2018-09-25
     public function ajax_do_single_product_express_checkout() {
         check_ajax_referer('do_express','sec');
-	Vipps::nocache();
+        Vipps::nocache();
         static::set_locale_if_in_header();
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = $this->gateway();
@@ -4680,7 +4683,6 @@ else:
             wp_send_json($result);
             exit();
         }
-
 
         // Here we will either have a product-id, a variant-id and a product-id, or just a SKU. The product-id will not be a variant - but 
         // we'll double-check just in case. Also if we somehow *just* get a variant-id we should fix that too. But a SKU trumps all. IOK 2018-10-02
@@ -4771,45 +4773,16 @@ else:
             WC()->cart->add_to_cart($product->get_id(),$quantity);
         }
 
-        try {
-            $orderid = $gw->create_partial_order();
-            do_action('woo_vipps_ajax_do_express_checkout', $orderid);
-        } catch (Exception $e) {
-            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps') . ': ' . $e->getMessage(), 'url'=>false);
-            wp_send_json($result);
-            exit();
-        } 
+        $result = $this->create_and_process_express_order();
 
-        if (!$orderid) {
-            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
-            wp_send_json($result);
-            exit();
+        if ($result['ok'] ?? false) { 
+            // Single product purchase, so save any contents of the real cart
+            $order = wc_get_order($orderid);
+            $order->update_meta_data('_vipps_single_product_express',true);
+            $order->save();
+            $this->save_cart($order,$current_cart);
         }
 
-        try {
-            $this->maybe_add_static_shipping($gw,$orderid);
-        } catch (Exception $e) {
-                $this->log(__("Error calculating static shipping", 'woo-vipps'), 'error');
-                $this->log($e->getMessage(),'error');
-                $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
-                wp_send_json($result);
-                exit();
-       }
-
-
-        // Single product purchase, so save any contents of the real cart
-        $order = wc_get_order($orderid);
-        $order->update_meta_data('_vipps_single_product_express',true);
-        $order->save();
-        $this->save_cart($order,$current_cart);
-
-        $ok = $gw->process_payment($orderid);
-        if ($ok && $ok['result'] == 'success') {
-            $result = array('ok'=>1, 'msg'=>'', 'url'=>$ok['redirect']);
-            wp_send_json($result);
-            exit();
-        }
-        $result = array('ok'=>0, 'msg'=> sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()), 'url'=>'');
         wp_send_json($result);
         exit();
     }
