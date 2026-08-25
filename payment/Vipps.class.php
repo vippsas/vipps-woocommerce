@@ -118,7 +118,8 @@ class Vipps {
         }
         add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
         add_action( 'after_setup_theme', array($Vipps,'after_setup_theme'));
-        add_action('init',array($Vipps,'init'));
+        add_action( 'init',array($Vipps,'init'));
+        add_action( 'rest_api_init', array($Vipps, 'rest_api_init'));
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
         add_filter( 'woocommerce_available_payment_gateways', array($Vipps, 'payment_gateway_filter'));
         add_action( 'woocommerce_blocks_loaded',  [$Vipps, 'woocommerce_blocks_loaded']);
@@ -240,14 +241,6 @@ class Vipps {
         // Extra order actions on the order screen, now using ajax to be compatible with HPOS. IOK 2022-12-02
         add_action('wp_ajax_woo_vipps_order_action', array($this, 'order_handle_vipps_action'));
 
-        // Fetch wc products, but filter those only purchasable by VMP express checkout. LP 2026-01-22
-        add_action('rest_api_init', function() {
-                   register_rest_route(self::get_rest_namespace('v1'), '/express-products', [
-                        'methods' => 'GET',
-                        'callback' => [$this, 'rest_express_checkout_products'],
-                        'permission_callback' => '__return_true',
-                   ]);
-        });
 
         // We need a 5-minute scheduled event for the handler for missed callbacks. Using the 
         // action scheduler would be better, but we can't do that just yet because of backwards 
@@ -281,6 +274,23 @@ class Vipps {
 
         // Set default button options, migrating any older setup IOK 2026-07-15
         $this->init_button_options();
+    }
+
+    public function rest_api_init ()  {
+
+        // Fetch wc products, but filter those only purchasable by VMP express checkout. LP 2026-01-22
+        register_rest_route(self::get_rest_namespace('v1'), '/express-products', [
+                'methods' => 'GET',
+                'callback' => [$this, 'rest_express_checkout_products'],
+                'permission_callback' => '__return_true',
+        ]);
+
+        // Start a single product express checkout process. IOK 2026-08-25
+        register_rest_route(self::get_rest_namespace('v1'), '/express_checkout_single', [
+                'methods' => 'POST',
+                'callback' => [$this, 'rest_do_single_product_express_checkout'],
+                'permission_callback' => '__return_true',
+        ]);
     }
 
     public function admin_init () {
@@ -4670,6 +4680,44 @@ else:
         exit();
     }
 
+
+    // Rest handler for single product express checkout. Expects arguments as JSON. IOK 2026-08-25
+    public function rest_do_single_product_express_checkout ($request) {
+        // TODO if using the Store API none, we should check this here:
+        // wp_verify_nonce( $nonce, 'wc_store_api' )
+    	Vipps::nocache();
+        static::set_locale_if_in_header();
+
+        $raw_post = @file_get_contents( 'php://input' );
+        $input = @json_decode($raw_post,true);
+        if (!$input) {
+            return new WP_Error('no_data', __('No data passed to express checkout', 'woo-vipps'), ['status' => 400]);
+        }
+        $result = ['ok' => 0, 'msg'=>'', 'orderid'=>0, 'url'=>''];
+
+        // Now we want the id/varid/sku/quantity. We also want any attributes. We also want UTM fields and user fields.
+        // IOK HERE
+
+        $response = new WP_REST_Response($result);
+        $response->set_status(200);
+        // response->header I guess.
+
+        return $response;
+    }
+
+    // Ajax handler for single product express checkout. Recieves arguments from a POSTed form and checks nonce. IOK 2026-08-12
+    public function ajax_do_single_product_express_checkout() {
+        if ("POST" != $_SERVER['REQUEST_METHOD']) {
+          http_response_code(405);
+          echo "Not supported";
+          exit();
+        }
+        check_ajax_referer('do_express','sec');
+        Vipps::nocache();
+        static::set_locale_if_in_header();
+        return $this->really_do_single_product_express_checkout($_POST);
+    }
+
     // Common private method to do single product express checkout, used by the old ajax_do_single_product_express_checkout and the new
     private function really_do_single_product_express_checkout($args) {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
@@ -4776,20 +4824,6 @@ else:
         wp_send_json($result);
         exit();
     }
-
-    // Ajax handler for single product express checkout. Recieves arguments from a POSTed form and checks nonce. IOK 2026-08-12
-    public function ajax_do_single_product_express_checkout() {
-        if ("POST" != $_SERVER['REQUEST_METHOD']) {
-          http_response_code(405);
-          echo "Not supported";
-          exit();
-        }
-        check_ajax_referer('do_express','sec');
-        Vipps::nocache();
-        static::set_locale_if_in_header();
-        return $this->really_do_single_product_express_checkout($_POST);
-    }
-
     // This calculates and adds static shipping info to a partial order for express checkout if merchant has enabled this. IOK 2020-03-19
     // Made visible for consistency with add_static_shipping. IOK 2021-10-22
     public function maybe_add_static_shipping($gw, $orderid, $ischeckout=false) {
