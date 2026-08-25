@@ -124,6 +124,10 @@ class WC_Vipps_Recurring_Kc_Support {
 					&& WC_Vipps_Recurring::get_instance()->gateway_should_be_active();
 		$activate = apply_filters( 'wc_vipps_recurring_activate_kco_external_payment', $activate );
 
+		if ( get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false ) ) {
+			$activate = false;
+		}
+
 		if ( ! isset( $create['external_payment_methods'] ) || ! is_array( $create['external_payment_methods'] ) ) {
 			$create['external_payment_methods'] = [];
 		}
