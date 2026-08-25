@@ -4695,7 +4695,8 @@ else:
         }
         $result = ['ok' => 0, 'msg'=>'', 'orderid'=>0, 'url'=>''];
 
-        // Now we want the id/varid/sku/quantity. We also want any attributes. We also want UTM fields and user fields.
+        // Now we want the id/varid/sku/quantity. We also want any attributes - in the form like attribute_pa_color etc.
+        // We also want UTM fields, from cookies. And user fields, output-ed in the form itself.
         // IOK HERE
 
         $response = new WP_REST_Response($result);
