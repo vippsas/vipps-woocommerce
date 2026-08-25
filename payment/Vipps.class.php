@@ -4606,11 +4606,11 @@ else:
             $orderid = $gw->create_partial_order();
             do_action('woo_vipps_ajax_do_express_checkout', $orderid);
         } catch (Exception $e) {
-            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps') . ': ' . $e->getMessage(), 'url'=>false);
+            $result = array('ok'=>0, 'orderid'=>0, 'msg'=>__('Could not create order','woo-vipps') . ': ' . $e->getMessage(), 'url'=>false);
             return $result;
         } 
         if (!$orderid) {
-            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
+            $result = array('ok'=>0, 'orderid'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
             return $result;
         }
 
@@ -4619,17 +4619,17 @@ else:
         } catch (Exception $e) {
             $this->log(__("Error calculating static shipping", 'woo-vipps'), 'error');
             $this->log($e->getMessage(),'error');
-            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
+            $result = array('ok'=>0, 'orderid'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
             return $result;
         }
 
         // Now pass this to the Woo gateway and get a redirect URL back IOK 2026-08-25
         $ok = $gw->process_payment($orderid);
         if ($ok && $ok['result'] == 'success') {
-            $result = array('ok'=>1, 'msg'=>'', 'url'=>$ok['redirect']);
+            $result = array('ok'=>1, 'orderid'=>$orderid, 'msg'=>'', 'url'=>$ok['redirect']);
             return $result;
         }
-        $result = array('ok'=>0, 'msg'=> sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()), 'url'=>'');
+        $result = array('ok'=>0, 'orderid'=>$orderid, 'msg'=> sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()), 'url'=>'');
         return $result;
     }
 
@@ -4670,11 +4670,8 @@ else:
         exit();
     }
 
-    // Same as ajax_do_express_checkout, but for a single product/variation. Duplicate code because we want to manipulate the cart differently here. IOK 2018-09-25
-    public function ajax_do_single_product_express_checkout() {
-        check_ajax_referer('do_express','sec');
-        Vipps::nocache();
-        static::set_locale_if_in_header();
+    // Common private method to do single product express checkout, used by the old ajax_do_single_product_express_checkout and the new
+    private function really_do_single_product_express_checkout($args) {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = $this->gateway();
 
@@ -4683,30 +4680,23 @@ else:
             wp_send_json($result);
             exit();
         }
-
         // Here we will either have a product-id, a variant-id and a product-id, or just a SKU. The product-id will not be a variant - but 
         // we'll double-check just in case. Also if we somehow *just* get a variant-id we should fix that too. But a SKU trumps all. IOK 2018-10-02
-        $varid = intval(@$_POST['variation_id']);
-        $prodid = intval(@$_POST['product_id']);
-        $sku = sanitize_text_field(@$_POST['sku']);
-        $quant = intval(@$_POST['quantity']);
-
+        $varid = intval($args['variation_id'] ?? 0);
+        $prodid = intval($args['product_id'] ?? 0);
+        $sku = sanitize_text_field($args['sku'] ?? "");
+        $quant = intval($args['quantity'] ?? 0);
+        $variations = [];
         // Get any attributes posted for variable products (where one of the dimensions is "any" for instance)
         $variations = array();
-        foreach ($_POST as $key => $value ) {
+        foreach ($args as $key => $value ) {
             if ( 'attribute_' !== substr( $key, 0, 10 ) ) {
                 continue;
             }
             $variations[ sanitize_title( wp_unslash( $key ) ) ] = wp_unslash( $value );
         }
-
-        $product = null;
-        $variant = null;
-        $parent = null;
-        $parentid = null;
         $quantity = 1;
         if ($quant && $quant>1) $quantity=$quant;
-
         // Find the product, or variation, and get everything in order so we can check existence, availability etc. IOK 2018-10-02
         // Moved rules around as the _sku variant broke in 3.6.1 for stores that didn't bother to update the database IOK 2019-04-24
         // This broke single-product purchases for variable products; fixed IOK 2019-05-21 thanks to Gaute Terland Nilsen @ Easyweb for the report
@@ -4761,7 +4751,6 @@ else:
         }
 
         // Now it should be safe to continue to the checkout process. IOK 2018-10-02
-
         // Create a new temporary cart for this order. We need to get (and save) the real session cart,
         // because some plugins actually override this.
         $current_cart = clone WC()->cart;
@@ -4777,6 +4766,7 @@ else:
 
         if ($result['ok'] ?? false) { 
             // Single product purchase, so save any contents of the real cart
+            $orderid = $result['orderid'];
             $order = wc_get_order($orderid);
             $order->update_meta_data('_vipps_single_product_express',true);
             $order->save();
@@ -4785,6 +4775,19 @@ else:
 
         wp_send_json($result);
         exit();
+    }
+
+    // Ajax handler for single product express checkout. Recieves arguments from a POSTed form and checks nonce. IOK 2026-08-12
+    public function ajax_do_single_product_express_checkout() {
+        if ("POST" != $_SERVER['REQUEST_METHOD']) {
+          http_response_code(405);
+          echo "Not supported";
+          exit();
+        }
+        check_ajax_referer('do_express','sec');
+        Vipps::nocache();
+        static::set_locale_if_in_header();
+        return $this->really_do_single_product_express_checkout($_POST);
     }
 
     // This calculates and adds static shipping info to a partial order for express checkout if merchant has enabled this. IOK 2020-03-19
