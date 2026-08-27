@@ -4689,19 +4689,51 @@ else:
         static::set_locale_if_in_header();
 
         $raw_post = @file_get_contents( 'php://input' );
-        $input = @json_decode($raw_post,true);
+        $args = @json_decode($raw_post,true);
         if (!$input) {
             return new WP_Error('no_data', __('No data passed to express checkout', 'woo-vipps'), ['status' => 400]);
         }
         $result = ['ok' => 0, 'msg'=>'', 'orderid'=>0, 'url'=>''];
 
-        // Now we want the id/varid/sku/quantity. We also want any attributes - in the form like attribute_pa_color etc.
-        // We also want UTM fields, from cookies. And user fields, output-ed in the form itself.
-        // IOK HERE
+        // We receive the varid, prodid, sku and quantity directly. One of these. The sku is the dominant one. IOK 2026-08-27
+        $varid = intval($args['variation_id'] ?? 0);
+        $prodid = intval($args['product_id'] ?? 0);
+        $sku = sanitize_text_field($args['sku'] ?? "");
+        $quantity = max(1, intval($args['quantity'] ?? 0));
+
+        // We expect the variations - that is, the fields named "attribute_..." to be sent in a separate field, variations. But we 
+        // still sanitize them. 
+        $variations = [];
+        $invars = $args['variations'] ?? [];
+        foreach ($invars as $key => $value) {
+            if ( 'attribute_' !== substr( $key, 0, 10 ) ) {
+                continue;
+            }
+            $variations[ sanitize_title( wp_unslash( $key ) ) ] = wp_unslash( $value );
+        }
+
+        // Then the cookies. These would be the _ga and sbjs_ cookies typically, but we'll let users handle these themselves.
+        // These are passed as arguments from the javascript, since proxies are likely to strip them. This should allow
+        // systems like MonsterInsights that look for the _GA cookie to succeed. IOK 2026-08-30
+        $cookies = $args['cookies'] ?? [];
+        foreach($cookies as $key => $value) {
+            if (!isset($_COOKIE[$key])) {
+                $_COOKIE[$key] = $value;
+            }
+        }
+
+        // There might be extra values here now, which would typically have been posted as POST arguments, in a form.
+        // User-defined stuff and so on. We'll initiate the POST value with these to simulate this for backwards compatibility.
+        $others =$args['post'] ?? [];
+        foreach($args['post'] as $key=>$value) {
+            $_POST[$key] = $value;
+        }
+
+        // Basically always return 200 after this, and always return an object with an 'ok' and a 'msg' value, possibly 'orderid' and 'url'.
+        $result = $this->really_do_single_product_express_checkout($prodid, $varid, $sku, $quantity, $variations);
 
         $response = new WP_REST_Response($result);
         $response->set_status(200);
-        // response->header I guess.
 
         return $response;
     }
@@ -4716,36 +4748,36 @@ else:
         check_ajax_referer('do_express','sec');
         Vipps::nocache();
         static::set_locale_if_in_header();
-        return $this->really_do_single_product_express_checkout($_POST);
-    }
 
-    // Common private method to do single product express checkout, used by the old ajax_do_single_product_express_checkout and the new
-    private function really_do_single_product_express_checkout($args) {
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = $this->gateway();
-
-        if (!$gw->express_checkout_available()) {
-            $result = array('ok'=>0, 'msg'=>sprintf(__('%1$s is not available for this order','woo-vipps'), Vipps::ExpressCheckoutName()), 'url'=>false);
-            wp_send_json($result);
-            exit();
-        }
-        // Here we will either have a product-id, a variant-id and a product-id, or just a SKU. The product-id will not be a variant - but 
-        // we'll double-check just in case. Also if we somehow *just* get a variant-id we should fix that too. But a SKU trumps all. IOK 2018-10-02
-        $varid = intval($args['variation_id'] ?? 0);
-        $prodid = intval($args['product_id'] ?? 0);
-        $sku = sanitize_text_field($args['sku'] ?? "");
-        $quant = intval($args['quantity'] ?? 0);
-        $variations = [];
         // Get any attributes posted for variable products (where one of the dimensions is "any" for instance)
         $variations = array();
-        foreach ($args as $key => $value ) {
+        foreach ($_POST as $key => $value ) {
             if ( 'attribute_' !== substr( $key, 0, 10 ) ) {
                 continue;
             }
             $variations[ sanitize_title( wp_unslash( $key ) ) ] = wp_unslash( $value );
         }
-        $quantity = 1;
-        if ($quant && $quant>1) $quantity=$quant;
+        $varid = intval($_POST['variation_id'] ?? 0);
+        $prodid = intval($_POST['product_id'] ?? 0);
+        $sku = sanitize_text_field($_POST['sku'] ?? "");
+        $quantity = max(1, intval($_POST['quantity'] ?? 0));
+        $result = $this->really_do_single_product_express_checkout($prodid, $varid, $sku, $quantity, $variations);
+        wp_send_json($result);
+        exit();
+    }
+
+    // Common private method to do single product express checkout, used by the old ajax_do_single_product_express_checkout and the new
+    private function really_do_single_product_express_checkout($prodid, $varid, $sku, $quantity=1, $variations=[]) {
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = $this->gateway();
+
+        if (!$gw->express_checkout_available()) {
+            $result = array('ok'=>0, 'msg'=>sprintf(__('%1$s is not available for this order','woo-vipps'), Vipps::ExpressCheckoutName()), 'url'=>false);
+            return $result;
+        }
+        // Here we will either have a product-id, a variant-id and a product-id, or just a SKU. The product-id will not be a variant - but 
+        // we'll double-check just in case. Also if we somehow *just* get a variant-id we should fix that too. But a SKU trumps all. IOK 2018-10-02
+        
         // Find the product, or variation, and get everything in order so we can check existence, availability etc. IOK 2018-10-02
         // Moved rules around as the _sku variant broke in 3.6.1 for stores that didn't bother to update the database IOK 2019-04-24
         // This broke single-product purchases for variable products; fixed IOK 2019-05-21 thanks to Gaute Terland Nilsen @ Easyweb for the report
@@ -4760,15 +4792,12 @@ else:
             }
         } catch (Exception $e) {
             $result = array('ok'=>0, 'msg'=>__('Error finding product - cannot create order','woo-vipps'), 'url'=>false);
-            wp_send_json($result);
-            exit();
+            return $result;
         }
-
 
         if (!$product) {
             $result = array('ok'=>0, 'msg'=>__('Unknown product, cannot create order','woo-vipps'), 'url'=>false);
-            wp_send_json($result);
-            exit();
+            return $result;
         }
 
         $parentid = $product ? $product->get_parent_id() : null; // If the product is a variation, then the parent product is the parentid.
@@ -4777,26 +4806,22 @@ else:
         // This can't really happen, but if it did..
         if ($prodid && $parentid && ($prodid != $parentid)) {
             $result = array('ok'=>0, 'msg'=>__('Selected product variant is not available','woo-vipps'), 'url'=>false);
-            wp_send_json($result);
-            exit();
+            return $result;
         }
         if (!$gw->product_supports_express_checkout($product)) {
             $result = array('ok'=>0, 'msg'=>sprintf(__('%1$s is not available for this order','woo-vipps'), Vipps::ExpressCheckoutName()), 'url'=>false);
-            wp_send_json($result);
-            exit();
+            return $result;
         }
 
         // Somebody addded the wrong SKU
         if ($product->get_type() == 'variable'){
             $result = array('ok'=>0, 'msg'=>__('Selected product variant is not available for purchase','woo-vipps'), 'url'=>false);
-            wp_send_json($result);
-            exit();
+            return $result;
         } 
         // Final check of availability
         if (!$product->is_purchasable() || !$product->is_in_stock()) {
             $result = array('ok'=>0, 'msg'=>__('Your product is temporarily no longer available for purchase','woo-vipps'), 'url'=>false);
-            wp_send_json($result);
-            exit();
+            return $result;
         }
 
         // Now it should be safe to continue to the checkout process. IOK 2018-10-02
@@ -4822,9 +4847,9 @@ else:
             $this->save_cart($order,$current_cart);
         }
 
-        wp_send_json($result);
-        exit();
+        return $result;
     }
+
     // This calculates and adds static shipping info to a partial order for express checkout if merchant has enabled this. IOK 2020-03-19
     // Made visible for consistency with add_static_shipping. IOK 2021-10-22
     public function maybe_add_static_shipping($gw, $orderid, $ischeckout=false) {
