@@ -2546,7 +2546,9 @@ else:
             // dont cache special page. LP 2026-08-25
             $this->nocache();
 
-            // Hide title frontend. LP 2026-08-27
+            // Hide special page title frontend. NB this will also hide the title for an
+            // admin-selected special page, not only our '/vipps_special_page'.
+            // Override with filter below. LP 2026-08-27
             if (!apply_filters('woo_vipps_special_page_show_title', false)) {
                 /* Suppress the title for this page, but on the front page only IOK 2023-01-27 (by request from Vipps) */
                 $special_page_id = $this->get_special_page_id();
@@ -5195,22 +5197,12 @@ else:
                 error_log('LP creating pages!');
                 WC_Install::create_pages();
 
-                // If special page is set to our own 'vipps_special_page', then update the id to the newly created one. LP 2026-08-27
-                $wrong_special_page_id = false;
+                // Ensure we have a special page - if is deleted then we need to fall back to our custom special page, which was potentially just created. LP 2026-08-27
                 $post = get_post($this->get_special_page_id());
-
-                if (is_a($post, 'WP_Post')) {
-                    error_log('LP found special page');
-                    // If this is not our custom page, which is fine, then we shouldn't need to update anything. LP 2026-08-27
-                    $wrong_special_page_id = 'vipps_special_page' === $post->post_name && $this->gateway()->get_option('vippsspecialpageid') !== $post->ID;
-                } else {
-                    error_log('LP missing special page');
-                    $wrong_special_page_id = true;
+                if (!is_a($post, 'WP_Post')) {
                     $post = get_page_by_path('vipps_special_page');
-                }
 
-                if ($wrong_special_page_id) {
-                    error_log('LP wrong special page id: updating vippsspecialpageid to post id ' . $post->ID);
+                    error_log('LP wrong special page: updating vippsspecialpageid to post id ' . $post->ID);
                     $this->gateway()->update_option('vippsspecialpageid', $post->ID);
                 }
             }
@@ -5785,6 +5777,7 @@ else:
         echo $this->special_page_format(__('Waiting for your order confirmation','woo-vipps'), $content);
     }
 
+    // Returns html for the vipps special page. LP 2026-08-27
     private function special_page_format($title, $content) {
         $html = <<<EOF
         <h2 class="vipps-special-page-title page-title">$title</h2>
