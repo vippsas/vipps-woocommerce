@@ -5216,6 +5216,7 @@ else:
         if (defined('REST_REQUEST') && REST_REQUEST ) return;
 
 
+
         $action = $_GET['action'] ?? '';
         do_action('woo_vipps_before_handling_special_page', $action);
         if (apply_filters('woo_vipps_special_page_handled', false, $action)) { // LP FIXME: do we still need this?
@@ -5224,16 +5225,18 @@ else:
         error_log('LP action: ' . print_r($action, true));
         switch ($action) {
             case 'wait_for_payment':
-                $this->vipps_wait_for_payment();
+                $html = $this->vipps_wait_for_payment();
                 break;
             case 'do_express_checkout':
-                $this->vipps_express_checkout();
+                $html = $this->vipps_express_checkout();
                 break;
             case 'buy_product':
-                $this->vipps_buy_product();
+                $html = $this->vipps_buy_product();
                 break;
         }
         error_log('LP shortcode action is done');
+        // NB: for certain themes, like twentytwentyfive, echo'ing the html output messes up the ordering and placement, so we need to return in in this shrotcode handler, so each action submethod needs to return its html. LP 2026-08-27
+        return $html; 
         // add_filter('woo_vipps_special_page_handled', '__return_true'); // LP FIXME: is this a thing we do?
 
 
@@ -5732,8 +5735,7 @@ else:
             $content .= "<div id=failure><p>". __('Order cancelled','woo-vipps') . '</p>';
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
             $content .= "</div>";
-            echo $this->special_page_format(__('Order cancelled','woo-vipps'), $content);
-            return;
+            return $this->special_page_format(__('Order cancelled','woo-vipps'), $content);
         }
 
         // Still pending and order is supposed to exist, so wait for Vipps. This happens all the time, so logging is removed. IOK 2018-09-27
@@ -5775,7 +5777,7 @@ else:
         $content .= "<a id='continueToOrderFailedFallback' style='display:none' href='" . $gw->get_return_url($order) . "'></a>";
         $content .= "</div>";
 
-        echo $this->special_page_format(__('Waiting for your order confirmation','woo-vipps'), $content);
+        return $this->special_page_format(__('Waiting for your order confirmation','woo-vipps'), $content);
     }
 
     // Returns html for the vipps special page. LP 2026-08-27
