@@ -5332,9 +5332,6 @@ else:
     // The argument passed must be a shareable link created for a given product - so this in effect acts as a landing page for 
     // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
-        status_header(200,'OK');
-	Vipps::nocache();
-
         add_filter('body_class', function ($classes) {
             $classes[] = 'vipps-express-checkout';
             $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
@@ -5390,7 +5387,7 @@ else:
             $args[sanitize_title(wp_unslash($key))] = sanitize_text_field(wp_unslash($value));
         }
 
-        $this->print_express_checkout_page(true,'do_single_product_express_checkout',$args);
+        return $this->express_checkout_page(true,'do_single_product_express_checkout',$args);
     }
 
     //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.
@@ -5423,7 +5420,7 @@ else:
 
         do_action('woo_vipps_express_checkout_page');
 
-        return $this->print_express_checkout_page(true, 'do_express_checkout');
+        return $this->express_checkout_page(true, 'do_express_checkout');
     }
 
     // This method tries to ensure that a customer does not 'lose' the return page and
@@ -5520,7 +5517,8 @@ else:
     }
 
     // Used as a landing page for launching express checkout - borh for the cart and for single products. IOK 2018-09-28
-    protected function print_express_checkout_page($execute,$action,$productinfo=null) {
+    // Returns the html. LP 2026-08-27
+    protected function express_checkout_page($execute,$action,$productinfo=null) {
         $gw = $this->gateway();
 
         $expressCheckoutMessages = array();
