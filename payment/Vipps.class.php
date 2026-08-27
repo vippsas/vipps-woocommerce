@@ -2562,7 +2562,6 @@ else:
         }
 
         $consentremoval = $this->is_consent_removal();
-        // LP FIXME: do we need to touch this for new special page real page logic?. LP 2026-08-25
         if ($consentremoval) {
             remove_filter('template_redirect', 'redirect_canonical', 10);
             do_action('woo_vipps_before_handling_special_page', 'consentremoval');
@@ -2571,21 +2570,6 @@ else:
             }
         }
     }
-
-    // Template handling for special pages. IOK 2018-11-21
-    // Unnecessary now that special page is a real page. Keep it for now, but removed from the settings menu from now on. LP 2026-08-27
-    public function template_include($template) {
-        if ($this->is_special_page() ) {
-            // Get any special template override from the options IOK 2020-02-18
-            $specific = $this->gateway()->get_option('vippsspecialpagetemplate');
-            $found = locate_template($specific,false,false);
-            if ($found) $template=$found;
-
-            return apply_filters('woo_vipps_special_page_template', $template, $_GET['action'] ?? '');
-        }
-        return $template;
-    }
-
 
     // Can't use wc-api for this, as that does not support DELETE . IOK 2018-05-18
     private function is_consent_removal () {
