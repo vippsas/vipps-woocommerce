@@ -282,7 +282,7 @@ class Vipps {
         // Set default button options, migrating any older setup IOK 2026-07-15
         $this->init_button_options();
 
-        $this->maybe_create_vipps_pages(); // LP FIXME: should this be moved to activate() or some other hook? running here guarantees it exists for use in payment, but it could run on some payment init hook too. If this is moved out of this init, then add the call back on Checkout activation in gateway->process_admin_options(). LP 2026-08-25
+        $this->maybe_create_vipps_pages(); // LP FIXME: should this be moved to activate() or some other hook? running here guarantees it exists for use in payment, but it could instead run once before we would redirect to the special page. If this is moved out of this init, then add the call back on Checkout activation in gateway->process_admin_options(). LP 2026-08-25
     }
 
     public function admin_init () {
@@ -5198,7 +5198,7 @@ else:
                 // Ensure we have a special page - if is deleted then we need to fall back to our custom special page, which was potentially just created. LP 2026-08-27
                 $post = get_post($this->get_special_page_id());
                 if (!is_a($post, 'WP_Post')) {
-                    $post = get_page_by_path('vipps_special_page');
+                    $post = get_page_by_path('vipps_special_page'); // works without permalink_structure enabled. LP 2026-08-27
 
                     error_log('LP wrong special page: updating vippsspecialpageid to post id ' . $post->ID);
                     $this->gateway()->update_option('vippsspecialpageid', $post->ID);
