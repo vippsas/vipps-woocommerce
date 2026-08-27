@@ -73,6 +73,17 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         descriptionKey="vippsorderattribution.description"
       />
 
+      {/*  Renders a checkbox to override the page template used for the special Vipps pages */}
+      <SelectFormField
+        name="vippsspecialpagetemplate"
+        titleKey="vippsspecialpagetemplate.title"
+        descriptionKey="vippsspecialpagetemplate.description"
+        options={Object.entries(gettext('vippsspecialpagetemplate.options')).map(([templateid,templatename]) => ({
+          label: templatename,
+          value:  templateid ? templateid : ""
+        }))}
+      />
+
       {/* Renders a checkbox to use a real page ID for the special Vipps pages */}
       <SelectFormField
         name="vippsspecialpageid"

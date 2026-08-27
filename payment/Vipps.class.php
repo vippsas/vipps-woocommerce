@@ -2571,9 +2571,7 @@ else:
             }
         }
     }
-
     // Template handling for special pages. IOK 2018-11-21
-    // Unnecessary now that special page is a real page. Keep it for now, but removed from the settings menu from now on. LP 2026-08-27
     public function template_include($template) {
         if ($this->is_special_page() ) {
             // Get any special template override from the options IOK 2020-02-18
