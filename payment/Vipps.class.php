@@ -5685,10 +5685,12 @@ else:
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($do_poll && $status == 'pending') {
+            error_log('LP wait_for_payment polling vipps for order status');
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
             $newstatus = $gw->callback_check_order_status($order);
             if ($status != $newstatus) {
                 $status = $newstatus;
+                error_log('LP status changed to: ' . print_r($status, true));
                 clean_post_cache($orderid);
                 $order = wc_get_order($orderid); // Reload order object
             }
