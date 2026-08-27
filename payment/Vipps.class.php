@@ -2546,9 +2546,7 @@ else:
             // dont cache special page. LP 2026-08-25
             $this->nocache();
 
-            // Hide special page title frontend. NB this will also hide the title for an
-            // admin-selected special page, not only our '/vipps_special_page'.
-            // Override with filter below. LP 2026-08-27
+            // Hide special page title frontend.
             if (!apply_filters('woo_vipps_special_page_show_title', false)) {
                 /* Suppress the title for this page, but on the front page only IOK 2023-01-27 (by request from Vipps) */
                 $special_page_id = $this->get_special_page_id();
