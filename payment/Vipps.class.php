@@ -5234,7 +5234,6 @@ else:
                 break;
         }
         error_log('LP shortcode action is done');
-        exit();
         // add_filter('woo_vipps_special_page_handled', '__return_true'); // LP FIXME: is this a thing we do?
 
 
