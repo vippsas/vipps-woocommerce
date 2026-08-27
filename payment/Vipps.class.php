@@ -2541,9 +2541,24 @@ else:
 
     // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
-        // dont cache special page. LP 2026-08-25
         if ($this->is_special_page()) {
+            error_log('LP template_redirect we are in special page');
+            // dont cache special page. LP 2026-08-25
             $this->nocache();
+
+            // Hide title frontend. LP 2026-08-27
+            if (!apply_filters('woo_vipps_special_page_show_title', false)) {
+                /* Suppress the title for this page, but on the front page only IOK 2023-01-27 (by request from Vipps) */
+                $special_page_id = $this->get_special_page_id();
+                error_log('LP special_page_id: ' . print_r($special_page_id, true));
+                add_filter('the_title', function ($title, $postid = 0) use($special_page_id) {
+                    if (!is_admin() && $postid == $special_page_id && is_singular()  && in_the_loop()) {
+                        error_log('LP hiding title for special page');
+                        $title = "";
+                    }
+                    return $title;
+                } , 10, 2);
+            }
         }
 
         $consentremoval = $this->is_consent_removal();
@@ -5152,10 +5167,10 @@ else:
         }
 
         // Vipps special page for certain payment flow actions. Previously a fake page. LP 2026-08-18
-        $data['woo_vipps_special_page'] = [
-            'name' => 'woo_vipps_special_page', // slug
+        $data['vipps_special_page'] = [
+            'name' => 'vipps_special_page', // slug
             /* translators: company name */
-            'title' => sprintf(__('%s special page', 'woo-vipps'), static::CompanyName()), // LP FIXME: this title will be shown to customer, so think about what we want here. maybe just 'Vipps MobilePay' but slug is the same
+            'title' => sprintf(__('%s special page', 'woo-vipps'), static::CompanyName()), // we hide the title frontend in template_redirect for the selected special page, which is this one by default. LP 2026-08-27
             'content' => '<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->',
         ];
         return $data;
@@ -5174,10 +5189,30 @@ else:
             }
 
             // vipps special page, previously a fake page. LP 2026-08-18
-            if (true) $make_pages = true; // LP FIXME: check when we need to create special page. LP 2026-08-18
+            if (!get_page_by_path('vipps_special_page')) $make_pages = true;
 
             if ($make_pages) {
-               WC_Install::create_pages();
+                error_log('LP creating pages!');
+                WC_Install::create_pages();
+
+                // If special page is set to our own 'vipps_special_page', then update the id to the newly created one. LP 2026-08-27
+                $wrong_special_page_id = false;
+                $post = get_post($this->get_special_page_id());
+
+                if (is_a($post, 'WP_Post')) {
+                    error_log('LP found special page');
+                    // If this is not our custom page, which is fine, then we shouldn't need to update anything. LP 2026-08-27
+                    $wrong_special_page_id = 'vipps_special_page' === $post->post_name && $this->gateway()->get_option('vippsspecialpageid') !== $post->ID;
+                } else {
+                    error_log('LP missing special page');
+                    $wrong_special_page_id = true;
+                    $post = get_page_by_path('vipps_special_page');
+                }
+
+                if ($wrong_special_page_id) {
+                    error_log('LP wrong special page id: updating vippsspecialpageid to post id ' . $post->ID);
+                    $this->gateway()->update_option('vippsspecialpageid', $post->ID);
+                }
             }
     }
 
@@ -5200,12 +5235,14 @@ else:
                 $this->vipps_wait_for_payment();
                 break;
             case 'do_express_checkout':
+                $this->vipps_express_checkout();
                 break;
             case 'buy_product':
+                $this->vipps_buy_product();
                 break;
-            default:
-                return;
         }
+        error_log('LP shortcode action is done');
+        exit();
         // add_filter('woo_vipps_special_page_handled', '__return_true'); // LP FIXME: is this a thing we do?
 
 
@@ -5340,7 +5377,7 @@ else:
         if (!$productinfo) {
             $title = __("Product is no longer available",'woo-vipps');
             $content =  __("The link you have followed is for a product that is no longer available at this location. Please return to the store and try again",'woo-vipps');
-            // return $this->fakepage($title,$content); // LP FIXME: delete
+            return $this->special_page_format($title,$content);
         }
 
         // Pass the productinfo to the express checkout form
@@ -5576,7 +5613,7 @@ else:
         if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
             $content .= "<div id='vipps-status-message'></div>";
-            // $this->fakepage(__('Order in progress','woo-vipps'), $content); // LP FIXME: delete
+            $this->special_page_format(__('Order in progress','woo-vipps'), $content);
             return;
         } else {
             $content .= $askForConfirmationHTML;
@@ -5586,7 +5623,7 @@ else:
             $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->get_payment_method_name());
             $content .= "<div class='vipps_buy_now_wrapper noloop'><a href='#' id='do-express-checkout' class='vipps-express-checkout' title='$title'>$buttonhtml</a></div>";
             $content .= "<div id='vipps-status-message'></div>";
-            // $this->fakepage(sprintf(__('%1$s Express Checkout','woo-vipps'), $this->get_payment_method_name()), $content); // LP FIXME: delete
+            $this->special_page_format(sprintf(__('%1$s Express Checkout','woo-vipps'), $this->get_payment_method_name()), $content);
             return;
         }
     }
@@ -5702,7 +5739,7 @@ else:
             $content .= "<div id=failure><p>". __('Order cancelled','woo-vipps') . '</p>';
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
             $content .= "</div>";
-            echo $content;
+            echo $this->special_page_format(__('Order cancelled','woo-vipps'), $content);
             return;
         }
 
@@ -5745,7 +5782,15 @@ else:
         $content .= "<a id='continueToOrderFailedFallback' style='display:none' href='" . $gw->get_return_url($order) . "'></a>";
         $content .= "</div>";
 
-        echo $content;
+        echo $this->special_page_format(__('Waiting for your order confirmation','woo-vipps'), $content);
+    }
+
+    private function special_page_format($title, $content) {
+        $html = <<<EOF
+        <h2 class="vipps-special-page-title page-title">$title</h2>
+        <div class="vipps-special-page-content">$content</div>
+        EOF;
+        return apply_filters('woo_vipps_special_page_html', $html, $title, $content);
     }
 
 
