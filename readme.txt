@@ -308,6 +308,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 == Changelog ==
 = 2026-08-xx version 6.1.6
 Fix performance issue with order notes with certain configurations of NGINX Helper
+Remove all usage of eCom v2 and userInfo api
 
 = 2026-08-20 version 6.1.5 =
 Fix crash in certain situations when checking order status
