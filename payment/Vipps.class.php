@@ -4690,7 +4690,7 @@ else:
 
         $raw_post = @file_get_contents( 'php://input' );
         $args = @json_decode($raw_post,true);
-        if (!$input) {
+        if (!$args) {
             return new WP_Error('no_data', __('No data passed to express checkout', 'woo-vipps'), ['status' => 400]);
         }
         $result = ['ok' => 0, 'msg'=>'', 'orderid'=>0, 'url'=>''];
@@ -4727,6 +4727,20 @@ else:
         $others =$args['post'] ?? [];
         foreach($args['post'] as $key=>$value) {
             $_POST[$key] = $value;
+        }
+
+        // Since this is the REST api, we need to load the cart manually here. *Not* loading the cart could be an option but unpredictable. IOK 2026-08-27
+        if ( is_null( WC()->cart ) ) {
+            WC()->frontend_includes();
+            if ( ! WC()->session instanceof WC_Session ) {
+                WC()->session = new WC_Session_Handler();
+                WC()->session->init();
+            }
+            if (is_null( WC()->customer)) {
+                WC()->customer = new WC_Customer( get_current_user_id(), true );
+            }
+            WC()->cart = new WC_Cart();
+            WC()->cart->get_cart_from_session();
         }
 
         // Basically always return 200 after this, and always return an object with an 'ok' and a 'msg' value, possibly 'orderid' and 'url'.
@@ -4827,6 +4841,7 @@ else:
         // Now it should be safe to continue to the checkout process. IOK 2018-10-02
         // Create a new temporary cart for this order. We need to get (and save) the real session cart,
         // because some plugins actually override this.
+        // NB: Please note the cart must have been loaded here, be aware when doing REST. IOK 2026-08-27
         $current_cart = clone WC()->cart;
         WC()->cart->empty_cart();
 
