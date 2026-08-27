@@ -1604,6 +1604,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                      'description' => __('Turn this on to add support for Woos Order Attribution API for Checkout and Express Checkout. Some stores have reported problems when using this API together with Vipps, so be sure to test this if you turn it on.', 'woo-vipps'),
 ),
 
+                // Now that special page is a real page, this is uneccesary - but we keep the logic and just remove it from the settings menu as of now. LP 2026-08-27
                  'vippsspecialpagetemplate' => array(
                      'title'       => sprintf(__('Override page template used for the special %1$s pages', 'woo-vipps'), Vipps::CompanyName()),
                      'label'       => sprintf(__('Use specific template for %1$s', 'woo-vipps'), Vipps::CompanyName()),
