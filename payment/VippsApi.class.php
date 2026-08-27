@@ -1075,140 +1075,6 @@ class VippsApi {
         return $res;
     }
 
-    // Capture a payment made. Amount is in cents and required. IOK 2018-05-07
-    public function capture_payment($order,$amount,$requestid=1) {
-        $orderid = $order->get_meta('_vipps_orderid');
-
-        $command = 'Ecomm/v2/payments/'.$orderid.'/capture';
-        $msn = $this->get_merchant_serial();
-        $subkey = $this->get_key($msn);
-        if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        if (!$msn) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        $headers = $this->get_headers($msn);
-        $headers['X-Request-Id'] = $requestid;
-
-        $transaction = array();
-        // Ignore refOrderId - for child-transactions 
-        $transaction['amount'] = round($amount);
-
-        $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
-
-        $transaction['transactionText'] = __('Order capture for order','woo-vipps') . ' ' . $orderid . ' ' . $shop_identification;
-
-        // The limit for the transaction text is 100. Ensure we don't go over. Thanks to Marco1970 on wp.org for reporting this. IOK 2019-10-17
-        $length = strlen($transaction['transactionText']);
-        if ($length>99) {
-          $this->log(__('The transaction text is too long! We are using a shorter transaction text to allow the transaction text to go through, but please check the \'woo_vipps_transaction_text_shop_id\' filter so that you can use a shorter name for your store', 'woo-vipps'));
-          $transaction['transactionText'] = __('Order capture for order','woo-vipps') . ' ' . $orderid;
-          $transaction['transactionText'] = substr($transaction['transactionText'],0,90); // Add some slack if this happens. IOK 2019-10-17
-        }
-        
-
-
-        $data = array();
-        $data['merchantInfo'] = array('merchantSerialNumber' => $msn);
-        $data['transaction'] = $transaction;
-
-        $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
-        return $res;
-    }
-
-    // Cancel a reserved but not captured payment IOK 2018-05-07
-    public function cancel_payment($order,$requestid=1) {
-        $orderid = $order->get_meta('_vipps_orderid');
-
-        $command = 'Ecomm/v2/payments/'.$orderid.'/cancel';
-        $msn = $this->get_merchant_serial();
-        $subkey = $this->get_key($msn);
-        if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        if (!$msn) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        $headers = $this->get_headers($msn);
-        $headers['X-Request-Id'] = $requestid;
-
-        $transaction = array();
-        $transaction['transactionText'] = __('Order cancel for order','woo-vipps') . ' ' . $orderid . ' ';
-
-        $data = array();
-        $data['merchantInfo'] = array('merchantSerialNumber' => $msn);
-        $data['transaction'] = $transaction;
-
-        $res = $this->http_call($msn,$command,$data,'PUT',$headers,'json'); 
-        return $res;
-    }
-
-    // Refund a captured payment.  IOK 2018-05-08
-    public function refund_payment($order,$requestid=1,$amount=0,$cents=false) {
-        $orderid = $order->get_meta('_vipps_orderid');
-        $amount = $amount ? $amount : wc_format_decimal($order->get_total(),'');
-
-        $command = 'Ecomm/v2/payments/'.$orderid.'/refund';
-        $msn = $this->get_merchant_serial();
-        $subkey = $this->get_key($msn);
-        if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        if (!$msn) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        $headers = $this->get_headers($msn);
-        $headers['X-Request-Id'] = $requestid;
-
-        // Ignore refOrderId - for child-transactions 
-        $transaction = array();
-        // If we have passed the value as 'øre' we don't need to calculate any more.
-        if ($cents) {
-            $transaction['amount'] = $amount;
-        } else { 
-            $transaction['amount'] = round($amount * 100); 
-        }
-        $transaction['transactionText'] = __('Refund for order','woo-vipps') . ' ' . $orderid;
-
-
-        $data = array();
-        $data['merchantInfo'] = array('merchantSerialNumber' => $msn);
-        $data['transaction'] = $transaction;
-
-        $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
-        return $res;
-    }
-
-    // Used to retrieve shipping and user details for express checkout orders where relevant and the callback isn't coming.
-    public function payment_details ($order) {
-	$requestid=0;
-        $orderid = $order->get_meta('_vipps_orderid');
-        $command = 'Ecomm/v2/payments/'.$orderid.'/details';
-        $msn = $this->get_merchant_serial();
-        $subkey = $this->get_key($msn);
-        if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        if (!$msn) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        $headers = $this->get_headers($msn);
-        $headers['X-Request-Id'] = $requestid;
-
-        $data = array();
-
-        $res = $this->http_call($msn,$command,$data,'GET',$headers,'json'); 
-        return $res;
-    }
 
     // Support for then new epayment API, which is also used by Checkout
     // Cancel a reserved but not captured payment IOK 2018-05-07
@@ -1364,7 +1230,10 @@ class VippsApi {
     }
 
     // Implement part of the userInfo api, just to be able to get  user data from Express Orders that aren't express
-    // orders (because they didn't need shipping). In the future, will probably be used more + for integration with Login With Vipps
+    // orders (because they didn't need shipping). 
+    // If a user has a sub, it is because we've added a scope to the epayment call, or because of integration with login.
+    // This is not used as of 2026-08-18, because we do not need to call this to retreive user details any more with ecom -
+    // we get that by just calling the payment details. Still may be useful in the future without depending on login integration. IOK 2026-08-18
     public function get_userinfo($sub) {
         $command = "vipps-userinfo-api/userinfo" . "/" . $sub;
         $msn = $this->get_merchant_serial();
