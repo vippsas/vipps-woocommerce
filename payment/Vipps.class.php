@@ -5234,7 +5234,7 @@ else:
                 $html = $this->vipps_buy_product();
                 break;
         }
-        error_log('LP shortcode action is done');
+        error_log("LP shortcode action is done. html output is $html");
         // NB: for certain themes, like twentytwentyfive, echo'ing the html output messes up the ordering and placement, so we need to return in in this shrotcode handler, so each action submethod needs to return its html. LP 2026-08-27
         return $html; 
         // add_filter('woo_vipps_special_page_handled', '__return_true'); // LP FIXME: is this a thing we do?
@@ -5395,8 +5395,6 @@ else:
 
     //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.
     public function vipps_express_checkout() {
-        status_header(200,'OK');
-	Vipps::nocache();
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
         $ok = isset($_REQUEST['sec']) && wp_verify_nonce($_REQUEST['sec'],'express');
@@ -5425,7 +5423,7 @@ else:
 
         do_action('woo_vipps_express_checkout_page');
 
-        $this->print_express_checkout_page(true, 'do_express_checkout');
+        return $this->print_express_checkout_page(true, 'do_express_checkout');
     }
 
     // This method tries to ensure that a customer does not 'lose' the return page and
@@ -5607,8 +5605,7 @@ else:
         if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
             $content .= "<div id='vipps-status-message'></div>";
-            $this->special_page_format(__('Order in progress','woo-vipps'), $content);
-            return;
+            return $this->special_page_format(__('Order in progress','woo-vipps'), $content);
         } else {
             $content .= $askForConfirmationHTML;
             $content .= $extraHTML;
@@ -5617,8 +5614,7 @@ else:
             $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->get_payment_method_name());
             $content .= "<div class='vipps_buy_now_wrapper noloop'><a href='#' id='do-express-checkout' class='vipps-express-checkout' title='$title'>$buttonhtml</a></div>";
             $content .= "<div id='vipps-status-message'></div>";
-            $this->special_page_format(sprintf(__('%1$s Express Checkout','woo-vipps'), $this->get_payment_method_name()), $content);
-            return;
+            return $this->special_page_format(sprintf(__('%1$s Express Checkout','woo-vipps'), $this->get_payment_method_name()), $content);
         }
     }
 
