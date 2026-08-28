@@ -4701,6 +4701,7 @@ else:
         $sku = sanitize_text_field($args['sku'] ?? "");
         $quantity = max(1, intval($args['quantity'] ?? 0));
 
+
         // We expect the variations - that is, the fields named "attribute_..." to be sent in a separate field, variations. But we 
         // still sanitize them. 
         $variations = [];
@@ -4743,8 +4744,29 @@ else:
             WC()->cart->get_cart_from_session();
         }
 
-        // Basically always return 200 after this, and always return an object with an 'ok' and a 'msg' value, possibly 'orderid' and 'url'.
-        $result = $this->really_do_single_product_express_checkout($prodid, $varid, $sku, $quantity, $variations);
+        // Now based on this, compute a hash. We'll store that in the session for ~5 minutes, and if there is a previous order with this
+        // hash *in session* we'll ask the user their intent.
+        // FIXME abstract this and stuff it deeper in the system.
+        $last_express_purchase_hash = WC()->session->get('woo_vipps_last_express');
+        $last_express_the_same = false;
+        $current_hash = md5("$prodid:$varid:$quantity");
+        if ($last_express_purchase_hash) {
+           list($hash, $stamp) = explode(":", $last_express_purchase_hash);
+           $cutoff = $stamp + apply_filters('woo_vipps_recent_order_cutoff', (3*60));
+           if ($hash == $current_hash && (time() <= $cutoff )) {
+              error_log("This is the same purchase as earlier");
+              $result = [ 'ok' => 0, 'msg' => 'Repurchase', 'orderid'=>0, 'url'=>'']; // FIXME here we should return a restart thing.
+           }
+        } else {
+            // Basically always return 200 after this, and always return an object with an 'ok' and a 'msg' value, possibly 'orderid' and 'url'.
+            $result = $this->really_do_single_product_express_checkout($prodid, $varid, $sku, $quantity, $variations);
+            // And if we're going to express now so let's note the order. IOK 2026-08-27. Now this assumes success, but *basically* I think this is ok.
+            // We'll reset it on order failure I think. IOK 2026-08-20 FIXME
+            if ($result['ok']) {
+                WC()->session->set('woo_vipps_last_express', "$current_hash:" . time());
+                WC()->session->save_data();
+            }
+        }
 
         $response = new WP_REST_Response($result);
         $response->set_status(200);
@@ -5415,7 +5437,7 @@ else:
     protected function get_orderspec_from_cart () {
         $cartitems = WC()->cart->get_cart();
         $orderspec = array();
-        foreach($cartitems as $item => $values) {
+        foreach($cartitms as $item => $values) {
             $orderspec[] = array('product_id'=>$values['product_id'], 'variation_id'=>$values['variation_id'], 'quantity'=>$values['quantity']);
         }
         return $orderspec;
