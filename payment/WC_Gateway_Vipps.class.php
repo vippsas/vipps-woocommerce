@@ -3579,11 +3579,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $transaction['paymentmethod'] = $details['paymentMethod'] ?? "";
         $this->order_set_transaction_metadata($order, $transaction);
 
-        // This order is ready to set order shipping details etc for IOK 2025-09-19
-        $ready = false;
-        if (in_array($newstatus, ['authorized', 'complete'])) {
-            $ready = true;
+        // Dont do anything if order is not finalized. LP 2026-08-31
+        if (!in_array($newstatus, ['authorized', 'complete', 'cancelled'])) {
+            return;
         }
+
+        // This order is ready to set order shipping details etc for IOK 2025-09-19
+        $ready = in_array($newstatus, ['authorized', 'complete']);
+
         if ($ready) {
             // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
             // IOK 2024-01-09 ensure this is called only when order is complete/authorized
