@@ -2007,7 +2007,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'redirect' => $response['vippsConfirmationUrl'],
 			];
 		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
-			wc_add_notice( $e->getMessage(), 'error' );
+			$error_message = $e->getLocalizedMessage() ?: $e->getMessage();
+			wc_add_notice( $error_message, 'error' );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Temporary error in process_payment: %s', $order_id, $e->getMessage() ) );
 
