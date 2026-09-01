@@ -2890,9 +2890,21 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		WC()->cart->calculate_totals();
 		do_action( 'wc_vipps_recurring_before_create_express_checkout_order', WC()->cart );
 
-		$order_id  = absint( WC()->session->get( 'order_awaiting_payment' ) );
-		$cart_hash = WC()->cart->get_cart_hash();
-		$order     = $order_id ? wc_get_order( $order_id ) : null;
+		$order_id    = absint( WC()->session->get( 'order_awaiting_payment' ) );
+		$cart_hash   = WC()->cart->get_cart_hash();
+		$order       = $order_id ? wc_get_order( $order_id ) : null;
+		$customer_id = absint( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
+
+		if ( $order ) {
+			$order_customer_id   = $order->get_customer_id( 'edit' );
+			$belongs_to_customer = ( $customer_id && ( ! $order_customer_id || $order_customer_id === $customer_id ) )
+			                       || ( ! $customer_id && ! $order_customer_id );
+
+			if ( ! $belongs_to_customer ) {
+				$order    = null;
+				$order_id = 0;
+			}
+		}
 
 		/**
 		 * If there is an order pending payment, we can resume it here so
@@ -2942,7 +2954,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			# To help with address fields, scope etc in initiate payment
 			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_NEEDS_SHIPPING, $needs_shipping );
 
-			$order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
+			$order->set_customer_id( $customer_id );
 			$order->set_currency( get_woocommerce_currency() );
 			$order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
 			$order->set_customer_ip_address( WC_Geolocation::get_ip_address() );
