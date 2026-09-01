@@ -1167,7 +1167,7 @@ EOF;
             // Update the preview web component's attributes. LP 2026-06-24
             function updatePreview(event) {
                 const args = getPreviewArgs();
-                // LP FIXME: when i use get_customer_language() here it gives me my user language, but on frontend it gives the site language, i.e not the same value. So this preview will be wrong language. so use get_locale for now. LP 2026-07-02
+                // FIXME: when i use get_customer_language() here it gives me my user language, but on frontend it gives the site language, i.e not the same value. So this preview will be wrong language. so use get_locale for now. LP 2026-07-02
                 // if ('store' === args.language) args.language = '<?php echo $this->get_customer_language(); ?>';
                 if ('store' === args.language) args.language = '<?php echo substr(get_locale(), 0, 2); ?>';
                 const button = jQuery('#vipps-button-express-preview');
@@ -4275,7 +4275,14 @@ else:
        // IOK 2023-12-20 for the epayment api, we need to re-initialize webhooks at this point. 
        $gw->initialize_webhooks();
        $this->payment_method_name = $gw->get_option('payment_method_name');
-    }  
+
+       // Migrate special page to real woo one, previously a fake page. LP 2026-09-01
+       $special_page_id = $this->gateway()->get_option('vippsspecialpageid');
+       if (!$this->get_special_page_id() && $special_page_id && get_post_status($special_page_id)) {
+            // there is no wc_set_page_id() so we update the option directly. LP 2026-09-01
+            update_option('woocommerce_vipps_special_page_page_id', $special_page_id);
+       }
+    }
 
     // We have added some hooks to wp-cron; remove these. IOK 2020-04-01
     public static function deactivate() {
@@ -4959,7 +4966,7 @@ else:
     }
 
     public function get_special_page_id() {
-        return $this->gateway()->get_option('vippsspecialpageid');
+        return wc_get_page_id('vipps_special_page');
     }
 
     public function get_special_page_url() {
