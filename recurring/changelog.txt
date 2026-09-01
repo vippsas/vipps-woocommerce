@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.2.17 =
+* Fix: No longer load the Checkout SDK on every single page if Checkout is enabled. The actual Checkout page is enough.
+
 = 2.2.16 =
 * Fix: Do not create a campaign or an initial charge for deferred synchronized subscriptions when nothing is due at sign-up, while retaining campaigns for free trials, discounts, and subscription switches.
 
