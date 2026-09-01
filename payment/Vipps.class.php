@@ -5187,19 +5187,18 @@ else:
             }
 
             // vipps special page, previously a fake page. LP 2026-08-18
-            if (!get_page_by_path('vipps_special_page')) $make_pages = true;
+            $builtin_special_page_id = wc_get_page_id('vipps_special_page');
+            if (!$builtin_special_page_id || !get_post_status($builtin_special_page_id)) $make_pages = true;
 
             if ($make_pages) {
                 error_log('LP creating pages!');
                 WC_Install::create_pages();
 
                 // Ensure we have a special page - if is deleted then we need to fall back to our custom special page, which was potentially just created. LP 2026-08-27
-                $post = get_post($this->get_special_page_id());
-                if (!is_a($post, 'WP_Post')) {
-                    $post = get_page_by_path('vipps_special_page'); // works without permalink_structure. LP 2026-08-27
-
-                    error_log('LP wrong special page: updating vippsspecialpageid to post id ' . $post->ID);
-                    $this->gateway()->update_option('vippsspecialpageid', $post->ID);
+                if (!get_post_status($this->get_special_page_id())) {
+                    $builtin_special_page_id = wc_get_page_id('vipps_special_page');
+                    error_log('LP wrong special page: updating vippsspecialpageid to post id ' . $builtin_special_page_id);
+                    $this->gateway()->update_option('vippsspecialpageid', $builtin_special_page_id);
                 }
             }
     }
