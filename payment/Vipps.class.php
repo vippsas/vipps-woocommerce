@@ -5297,7 +5297,7 @@ else:
             $args[sanitize_title(wp_unslash($key))] = sanitize_text_field(wp_unslash($value));
         }
 
-        return $this->express_checkout_page(true,'do_single_product_express_checkout',$args);
+        return $this->express_checkout_page_html(true,'do_single_product_express_checkout',$args);
     }
 
     //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.
@@ -5330,7 +5330,7 @@ else:
 
         do_action('woo_vipps_express_checkout_page');
 
-        return $this->express_checkout_page(true, 'do_express_checkout');
+        return $this->express_checkout_page_html(true, 'do_express_checkout');
     }
 
     // This method tries to ensure that a customer does not 'lose' the return page and
@@ -5428,7 +5428,7 @@ else:
 
     // Used as a landing page for launching express checkout - borh for the cart and for single products. IOK 2018-09-28
     // Returns the html. LP 2026-08-27
-    protected function express_checkout_page($execute,$action,$productinfo=null) {
+    protected function express_checkout_page_html($execute,$action,$productinfo=null) {
         $gw = $this->gateway();
 
         $expressCheckoutMessages = array();
