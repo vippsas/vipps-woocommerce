@@ -638,18 +638,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             global $wpdb;
             $page_list = array();
 
-            foreach($wpdb->get_results("SELECT ID,post_title FROM {$wpdb->prefix}posts WHERE post_type='page' and post_status='publish'") as $page) {
+            $builtin_special_page = null;
+            foreach($wpdb->get_results("SELECT ID, post_title, post_name FROM {$wpdb->prefix}posts WHERE post_type='page' and post_status='publish'") as $page) {
+                if ('vipps_special_page' === $page->post_name) {
+                    $builtin_special_page = $page;
+                    continue;
+                }
                 $page_list[$page->ID] = $page->post_title;
             }
 
             // First element is the default; our builtin special page. LP 2026-09-01
-            $builtin_special_page = $wpdb->get_row("SELECT ID, post_title FROM {$wpdb->prefix}posts WHERE post_name='vipps_special_page'", ARRAY_A);
             if ($builtin_special_page) {
-                unset($page_list[$builtin_special_page['ID']]);
-                $default_title = $builtin_special_page['post_title'] . ' (' . __('default', 'woo-vipps') . ')';
-                $page_list = [$builtin_special_page['ID'] => $default_title] + $page_list;
+                $builtin_title = $builtin_special_page->post_title . ' (' . __('default', 'woo-vipps') . ')';
+                $page_list = [$builtin_special_page->ID => $builtin_title] + $page_list;
             } else {
-                // We should not be here. LP 2026-09-01
+                // We should not be here, it should've been created if missing in Vipps->init(). LP 2026-09-01
                 $this->log(__('Missing built-in special page'), 'error');
             }
 
@@ -1110,7 +1113,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $default_express_show_in_checkout = $current['cartexpress'];
             }
 
-            // Migrate special page mechanism from fake pages: move default value to our builin special page. LP 2026-09-01
+            // Migrate special page mechanism from fake pages: move default value to our builtin special page. LP 2026-09-01
             if (!$current['vippsspecialpageid']) {
                 $current['vippsspecialpageid'] = array_key_first($page_list);
                 update_option('woocommerce_vipps_settings', $current);
