@@ -5278,7 +5278,7 @@ else:
         if (!$productinfo) {
             $title = __("Product is no longer available",'woo-vipps');
             $content =  __("The link you have followed is for a product that is no longer available at this location. Please return to the store and try again",'woo-vipps');
-            return $this->special_page_format($title,$content);
+            return $this->special_page_html($title,$content);
         }
 
         // Pass the productinfo to the express checkout form
@@ -5513,7 +5513,7 @@ else:
         if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
             $content .= "<div id='vipps-status-message'></div>";
-            return $this->special_page_format(__('Order in progress','woo-vipps'), $content);
+            return $this->special_page_html(__('Order in progress','woo-vipps'), $content);
         } else {
             $content .= $askForConfirmationHTML;
             $content .= $extraHTML;
@@ -5522,7 +5522,7 @@ else:
             $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->get_payment_method_name());
             $content .= "<div class='vipps_buy_now_wrapper noloop'><a href='#' id='do-express-checkout' class='vipps-express-checkout' title='$title'>$buttonhtml</a></div>";
             $content .= "<div id='vipps-status-message'></div>";
-            return $this->special_page_format(sprintf(__('%1$s Express Checkout','woo-vipps'), $this->get_payment_method_name()), $content);
+            return $this->special_page_html(sprintf(__('%1$s Express Checkout','woo-vipps'), $this->get_payment_method_name()), $content);
         }
     }
 
@@ -5639,7 +5639,7 @@ else:
             $content .= "<div id=failure><p>". __('Order cancelled','woo-vipps') . '</p>';
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
             $content .= "</div>";
-            return $this->special_page_format(__('Order cancelled','woo-vipps'), $content);
+            return $this->special_page_html(__('Order cancelled','woo-vipps'), $content);
         }
 
         // Still pending and order is supposed to exist, so wait for Vipps. This happens all the time, so logging is removed. IOK 2018-09-27
@@ -5681,11 +5681,11 @@ else:
         $content .= "<a id='continueToOrderFailedFallback' style='display:none' href='" . $gw->get_return_url($order) . "'></a>";
         $content .= "</div>";
 
-        return $this->special_page_format(__('Waiting for your order confirmation','woo-vipps'), $content);
+        return $this->special_page_html(__('Waiting for your order confirmation','woo-vipps'), $content);
     }
 
-    // Returns html for the vipps special page. LP 2026-08-27
-    private function special_page_format($title, $content) {
+    // Returns formatted html for the vipps special page. LP 2026-08-27
+    private function special_page_html($title, $content) {
         $html = <<<EOF
         <h2 class="vipps-special-page-title page-title">$title</h2>
         <div class="vipps-special-page-content">$content</div>
