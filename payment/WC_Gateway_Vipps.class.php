@@ -1630,11 +1630,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                  'vippsspecialpageid' =>  array(
                      'title' => __('Special page', 'woo-vipps'),
-                     'label' => sprintf(__('Select which page to use for the %s special page mechanism', 'woo-vipps'), Vipps::CompanyName()),
+                     'label' => sprintf(__('Select page to use for the %s special page mechanism', 'woo-vipps'), Vipps::CompanyName()),
                      'type'  => 'select',
                      'options' => $page_list,
                      /* translators: %1 = company name, %2 = page title. */
-                     'description' => sprintf(__('The page to use for the %1$s special page mechanism. The selected special page needs to include the shortcode [vipps_special_page]. The default (%2$s) will include the shortcode by default. <br>The chosen special page will have its title hidden frontend.', 'woo-vipps'), Vipps::CompanyName(), Vipps::get_special_page_default_title()),
+                     'description' => sprintf(__('The page to use for the %1$s special page mechanism. The selected special page needs to include the shortcode [vipps_special_page]. The default (%2$s) will include the shortcode by default.<br>The chosen special page will have its title hidden frontend.', 'woo-vipps'), Vipps::CompanyName(), Vipps::get_special_page_default_title()),
                      'default' => array_key_first($page_list)),
 
                 'sendreceipts' => array(
