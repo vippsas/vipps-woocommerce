@@ -266,6 +266,8 @@ class Vipps {
         // Check periodically for orders that are stuck pending with no callback IOK 2021-06-21
         add_action('vipps_cron_missing_callback_hook', array($this, 'cron_check_for_missing_callbacks'));
 
+        $this->maybe_create_vipps_pages(); // LP FIXME: should this be moved to activate() or some other hook? running here guarantees it exists for use in payment, but it could instead run once before we would redirect to the special page. If this is moved out of this init, then add the call back on Checkout activation in gateway->process_admin_options(). LP 2026-08-25
+
         // For the rest, we need to read the payment gateways setting, and the payment gateway may not actually 
         // exist at this point. This is because for it to exist, WooCommerce must have loaded, and if it hasn't, for instance
         // because it is self-updating or because it has been deactivated just now or something, we won't have access to it.
@@ -281,8 +283,6 @@ class Vipps {
 
         // Set default button options, migrating any older setup IOK 2026-07-15
         $this->init_button_options();
-
-        $this->maybe_create_vipps_pages(); // LP FIXME: should this be moved to activate() or some other hook? running here guarantees it exists for use in payment, but it could instead run once before we would redirect to the special page. If this is moved out of this init, then add the call back on Checkout activation in gateway->process_admin_options(). LP 2026-08-25
     }
 
     public function admin_init () {
@@ -4966,6 +4966,10 @@ else:
         return get_permalink($this->get_special_page_id());
     }
 
+    public static function get_special_page_default_title() {
+        return sprintf(__('%s special page', 'woo-vipps'), static::CompanyName());
+    }
+
     // Just create a spinner and a overlay.
     public function spinner () {
         $flavour = sanitize_title($this->get_payment_method_name());
@@ -5170,7 +5174,7 @@ else:
         $data['vipps_special_page'] = [
             'name' => 'vipps_special_page', // slug
             /* translators: company name */
-            'title' => sprintf(__('%s special page', 'woo-vipps'), static::CompanyName()), // we hide the title frontend in template_redirect for the selected special page, which is this one by default. LP 2026-08-27
+            'title' => static::get_special_page_default_title(), // we hide the title frontend in template_redirect. LP 2026-08-27
             'content' => '<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->',
         ];
         return $data;

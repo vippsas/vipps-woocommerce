@@ -638,10 +638,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function get_pagelist () {
         if (!$this->page_list) {
             global $wpdb;
-            $page_list = array(''=>__('Use a simulated page (default)', 'woo-vipps'));
+            $page_list = array();
+
             foreach($wpdb->get_results("SELECT ID,post_title FROM {$wpdb->prefix}posts WHERE post_type='page' and post_status='publish'") as $page) {
                 $page_list[$page->ID] = $page->post_title;
             }
+
+            // First element is the default; our builtin special page. LP 2026-09-01
+            $builtin_special_page = $wpdb->get_row("SELECT ID, post_title FROM {$wpdb->prefix}posts WHERE post_name='vipps_special_page'", ARRAY_A);
+            if ($builtin_special_page) {
+                unset($page_list[$builtin_special_page['ID']]);
+                $default_title = $builtin_special_page['post_title'] . ' (' . __('default', 'woo-vipps') . ')';
+                $page_list = [$builtin_special_page['ID'] => $default_title] + $page_list;
+            } else {
+                // We should not be here. LP 2026-09-01
+                $this->log(__('Missing built-in special page'), 'error');
+            }
+
             $this->page_list = $page_list;
         }
         return $this->page_list;
@@ -1075,10 +1088,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            }
         }
 
-        // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
-        $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
-
-
         // This is used for new options,to set reasonable defaults based on older settings. We can't use WC_Settings->get_option for this unfortunately.
         $current = get_option('woocommerce_vipps_settings');
         // New defaults based on old defaults
@@ -1101,6 +1110,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $default_express_show_in_checkout = 'yes';
             if (!isset($current['express_show_in_checkout']) && isset($current['cartexpress'])) {
                 $default_express_show_in_checkout = $current['cartexpress'];
+            }
+
+            // Migrate special page mechanism from fake pages: move default value to our builin special page. LP 2026-09-01
+            if (!$current['vippsspecialpageid']) {
+                $current['vippsspecialpageid'] = array_key_first($page_list);
+                update_option('woocommerce_vipps_settings', $current);
             }
         }
 
@@ -1613,12 +1628,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                      'default' => ''),
 
                  'vippsspecialpageid' =>  array(
-                     'title' => sprintf(__('Use a real page ID for the special %1$s pages - neccessary for some themes', 'woo-vipps'), Vipps::CompanyName()),
-                     'label' => __('Use a real page ID', 'woo-vipps'),
+                     'title' => __('Special page', 'woo-vipps'),
+                     'label' => sprintf(__('Select which page to use for the %s special page mechanism', 'woo-vipps'), Vipps::CompanyName()),
                      'type'  => 'select',
                      'options' => $page_list,
-                     'description' => sprintf(__('Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special %1$s pages.', 'woo-vipps'), Vipps::CompanyName()),
-                     'default'=>''),
+                     /* translators: %1 = company name, %2 = page title. */
+                     'description' => sprintf(__('The page to use for the %1$s special page mechanism. The selected special page needs to include the shortcode [vipps_special_page]. The default (%2$s) will include the shortcode by default. <br>The chosen special page will have its title hidden frontend.', 'woo-vipps'), Vipps::CompanyName(), Vipps::get_special_page_default_title()),
+                     'default' => array_key_first($page_list)),
 
                 'sendreceipts' => array(
                      'title' => __("Send receipts and order confirmation info to the customers' app on completed purchases.", 'woo-vipps'),
