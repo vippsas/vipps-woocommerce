@@ -638,22 +638,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             global $wpdb;
             $page_list = array();
 
-            $builtin_special_page = null;
             foreach($wpdb->get_results("SELECT ID, post_title, post_name FROM {$wpdb->prefix}posts WHERE post_type='page' and post_status='publish'") as $page) {
-                if ('vipps_special_page' === $page->post_name) {
-                    $builtin_special_page = $page;
-                    continue;
-                }
                 $page_list[$page->ID] = $page->post_title;
-            }
-
-            // First element is the default; our builtin special page. LP 2026-09-01
-            if ($builtin_special_page) {
-                $builtin_title = $builtin_special_page->post_title . ' (' . __('default', 'woo-vipps') . ')';
-                $page_list = [$builtin_special_page->ID => $builtin_title] + $page_list;
-            } else {
-                // We should not be here, it should've been created if missing in Vipps->init(). LP 2026-09-01
-                $this->log(__('Missing built-in special page'), 'error');
             }
 
             $this->page_list = $page_list;
@@ -1072,7 +1058,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Used for defaults in the admin interface; however this functions is called a loot more often than that.
         $page_templates = $this->get_theme_page_templates();
-        $page_list = $this->get_pagelist();
 
         $orderprefix = $Vipps->generate_order_prefix();
 
@@ -1111,12 +1096,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $default_express_show_in_checkout = 'yes';
             if (!isset($current['express_show_in_checkout']) && isset($current['cartexpress'])) {
                 $default_express_show_in_checkout = $current['cartexpress'];
-            }
-
-            // Migrate special page mechanism from fake pages: move default value to our builtin special page. LP 2026-09-01
-            if (!$current['vippsspecialpageid']) {
-                $current['vippsspecialpageid'] = array_key_first($page_list);
-                update_option('woocommerce_vipps_settings', $current);
             }
         }
 
@@ -1628,14 +1607,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                      'description' => sprintf(__('Use this template from your theme or child-theme for the special %1$s page.<br>Legacy: This is not necessary anymore - you should instead choose a template by editing the page like any other page.','woo-vipps'), Vipps::CompanyName()),
                      'default' => ''),
 
+                 // Deprecated, not shown anymore: TODO: remove this option in future. LP 2026-09-01
                  'vippsspecialpageid' =>  array(
-                     'title' => __('Special page', 'woo-vipps'),
-                     'label' => sprintf(__('Select page to use for the %s special page mechanism', 'woo-vipps'), Vipps::CompanyName()),
+                     'title' => sprintf(__('Use a real page ID for the special %1$s pages - neccessary for some themes', 'woo-vipps'), Vipps::CompanyName()),
+                     'label' => __('Use a real page ID', 'woo-vipps'),
                      'type'  => 'select',
-                     'options' => $page_list,
-                     /* translators: %1 = company name, %2 = page title. */
-                     'description' => sprintf(__('The page to use for the %1$s special page mechanism. The selected special page needs to include the shortcode [vipps_special_page]. The default (%2$s) will include the shortcode by default.<br>The chosen special page will have its title hidden frontend.', 'woo-vipps'), Vipps::CompanyName(), Vipps::get_special_page_default_title()),
-                     'default' => array_key_first($page_list)),
+                     'options' => [],
+                     'description' => sprintf(__('Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special %1$s pages.', 'woo-vipps'), Vipps::CompanyName()),
+                     'default' => ''
+                 ),
 
                 'sendreceipts' => array(
                      'title' => __("Send receipts and order confirmation info to the customers' app on completed purchases.", 'woo-vipps'),
@@ -4133,12 +4113,30 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $hooks = $this->initialize_webhooks();
         }
 
+        $maybe_create_vipps_pages = false;
+
         // If enabling this, ensure the page in question exists
         if ($this->get_option('vipps_checkout_enabled') == 'yes') {
             update_option('woo_vipps_checkout_activated', true, true); // This must be true here, but still, make sure
-            // LP FIXME: delete below comments if maybe_create_vipps_pages is decided to run on Vipps.class.php->init(), else uncomment the call below to make sure Checkout page is created on activation. LP 2026-08-25
-            // Update: moved this page creation call for new special page, previously a fake page. LP 2026-08-18
-            // Vipps::instance()->maybe_create_vipps_pages();
+            $maybe_create_vipps_pages = true;
+        }
+
+        // Ensure special page has the necessary shortcode. LP 2026-09-01
+        $special_page = get_post(Vipps::get_special_page_id());
+        if ($special_page && !has_shortcode($special_page->post_content, 'vipps_special_page')) {
+            error_log('LP special page missing shortcode, adding it!');
+            $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
+            wp_update_post([
+                    'ID'           => Vipps::get_special_page_id(),
+                    'post_content' => $new_content,
+            ]);
+        } else if (!Vipps::get_special_page_id()) {
+            $maybe_create_vipps_pages = true;
+            error_log('LP missing special page id, doing maybe_create_vipps_pages');
+        }
+
+        if ($maybe_create_vipps_pages) {
+            Vipps::instance()->maybe_create_vipps_pages();
         }
 
         return $saved;

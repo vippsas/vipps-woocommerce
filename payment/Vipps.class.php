@@ -266,8 +266,6 @@ class Vipps {
         // Check periodically for orders that are stuck pending with no callback IOK 2021-06-21
         add_action('vipps_cron_missing_callback_hook', array($this, 'cron_check_for_missing_callbacks'));
 
-        $this->maybe_create_vipps_pages(); // LP FIXME: should this be moved to activate() or some other hook? running here guarantees it exists for use in payment, but it could instead run once before we would redirect to the special page. If this is moved out of this init, then add the call back on Checkout activation in gateway->process_admin_options(). LP 2026-08-25
-
         // For the rest, we need to read the payment gateways setting, and the payment gateway may not actually 
         // exist at this point. This is because for it to exist, WooCommerce must have loaded, and if it hasn't, for instance
         // because it is self-updating or because it has been deactivated just now or something, we won't have access to it.
@@ -2529,7 +2527,7 @@ else:
     // If this is a special page, return true very early because we are handling this. IOK 2023-02-22
     public function pre_handle_404($current, $query) {
         if (!is_admin()) {
-            $special = $this->is_special_page();
+            $special = static::is_special_page();
             if ($special) {
                 // Ensure very early on that Autooptimize does not try to optimize us (if installed) IOK 2023-03-04
                 add_filter( 'autoptimize_filter_noptimize', '__return_true');
@@ -2541,7 +2539,7 @@ else:
 
     // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
-        if ($this->is_special_page()) {
+        if (static::is_special_page()) {
             error_log('LP template_redirect we are in special page');
             // dont cache special page. LP 2026-08-25
             $this->nocache();
@@ -2549,7 +2547,7 @@ else:
             // Hide special page title frontend.
             if (!apply_filters('woo_vipps_special_page_show_title', false)) {
                 /* Suppress the title for this page, but on the front page only IOK 2023-01-27 (by request from Vipps) */
-                $special_page_id = $this->get_special_page_id();
+                $special_page_id = static::get_special_page_id();
                 error_log('LP special_page_id: ' . print_r($special_page_id, true));
                 add_filter('the_title', function ($title, $postid = 0) use($special_page_id) {
                     if (!is_admin() && $postid == $special_page_id && is_singular()  && in_the_loop()) {
@@ -2573,7 +2571,7 @@ else:
     }
     // Template handling for special pages. IOK 2018-11-21
     public function template_include($template) {
-        if ($this->is_special_page()) {
+        if (static::is_special_page()) {
             // Get any special template override from the options IOK 2020-02-18
             $specific = $this->gateway()->get_option('vippsspecialpagetemplate');
             $found = locate_template($specific,false,false);
@@ -4278,9 +4276,12 @@ else:
 
        // Migrate special page to real woo one, previously a fake page. LP 2026-09-01
        $special_page_id = $this->gateway()->get_option('vippsspecialpageid');
-       if (!$this->get_special_page_id() && $special_page_id && get_post_status($special_page_id)) {
+       if (!static::get_special_page_id() && $special_page_id && get_post_status($special_page_id)) {
             // there is no wc_set_page_id() so we update the option directly. LP 2026-09-01
             update_option('woocommerce_vipps_special_page_page_id', $special_page_id);
+       } else  {
+            // Create special page if its missing. LP 2026-09-01
+            $this->maybe_create_vipps_pages();
        }
     }
 
@@ -4961,20 +4962,16 @@ else:
         return $this->make_special_page_url('buy_product');
     }
 
-    public function is_special_page() {
-        return is_page($this->get_special_page_id());
+    public static function is_special_page() {
+        return is_page(static::get_special_page_id());
     }
 
-    public function get_special_page_id() {
+    public static function get_special_page_id() {
         return wc_get_page_id('vipps_special_page');
     }
 
-    public function get_special_page_url() {
-        return get_permalink($this->get_special_page_id());
-    }
-
-    public static function get_special_page_default_title() {
-        return sprintf(__('%s special page', 'woo-vipps'), static::CompanyName());
+    public static function get_special_page_url() {
+        return get_permalink(static::get_special_page_id());
     }
 
     // Just create a spinner and a overlay.
@@ -5176,13 +5173,13 @@ else:
         $data['vipps_special_page'] = [
             'name' => 'vipps_special_page', // slug
             /* translators: company name */
-            'title' => static::get_special_page_default_title(), // we hide the title frontend in template_redirect. LP 2026-08-27
+            'title' => sprintf(__('%s special page', 'woo-vipps'), static::CompanyName()), // we hide the title frontend in template_redirect. LP 2026-08-27
             'content' => '<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->',
         ];
         return $data;
     }
 
-    // Creates any necessary Vipps pages
+    // Creates any necessary Vipps pages. E.g vipps checkout page or vipps special page. LP 2026-09-01
     public function maybe_create_vipps_pages () {
             $make_pages = false;
 
@@ -5194,28 +5191,24 @@ else:
             }
 
             // vipps special page, previously a fake page. LP 2026-08-18
-            $builtin_special_page_id = wc_get_page_id('vipps_special_page');
-            if (!$builtin_special_page_id || !get_post_status($builtin_special_page_id)) $make_pages = true;
+            $builtin_special_page_id = static::get_special_page_id();
+            if (!$builtin_special_page_id || !get_post_status($builtin_special_page_id)) {
+                delete_option('woocommerce_vipps_special_page_page_id');
+                $make_pages = true;
+            }
 
             if ($make_pages) {
                 error_log('LP creating pages!');
                 WC_Install::create_pages();
-
-                // Ensure we have a special page - if is deleted then we need to fall back to our custom special page, which was potentially just created. LP 2026-08-27
-                if (!get_post_status($this->get_special_page_id())) {
-                    $builtin_special_page_id = wc_get_page_id('vipps_special_page');
-                    error_log('LP wrong special page: updating vippsspecialpageid to post id ' . $builtin_special_page_id);
-                    $this->gateway()->update_option('vippsspecialpageid', $builtin_special_page_id);
-                }
             }
     }
 
     public function vipps_special_page_shortcode($atts, $content) {
-        error_log('LP we are in vipps_special_page_shortcode');
         // No point in expanding this unless we are actually doing the special actions. LP 2026-08-25
         if (is_admin()) return;
         if (wp_doing_ajax()) return;
         if (defined('REST_REQUEST') && REST_REQUEST) return;
+        error_log('LP we are in vipps_special_page_shortcode');
 
 
 
@@ -5235,6 +5228,8 @@ else:
             case 'buy_product':
                 $html = $this->vipps_buy_product();
                 break;
+            default:
+                $html = '';
         }
         error_log("LP shortcode action is done. html output is $html");
         // add_filter('woo_vipps_special_page_handled', '__return_true'); // LP FIXME: is this a thing we should do?

@@ -89,19 +89,6 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         />
       }
 
-      {/* Renders a checkbox to use a real page ID for the special Vipps pages */}
-      <SelectFormField
-        name="vippsspecialpageid"
-        titleKey="vippsspecialpageid.title"
-        descriptionKey="vippsspecialpageid.description"
-        options={Object.entries(gettext('vippsspecialpageid.options')).map(([pageid,pagename]) => ({
-          label: pagename,
-          value: pageid ? pageid : ""
-        })
-
-       )}
-      />
-
       {/* Renders a checkbox to enable the sending of receipts */}
       <CheckboxFormField
         name="sendreceipts"
