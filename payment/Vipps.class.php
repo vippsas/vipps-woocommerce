@@ -5175,8 +5175,7 @@ else:
         return $data;
     }
 
-    // Creates any necessary Vipps pages. Will be called e.g. when activating Vipps Checkout or turning it on.
-    // Update: also called otherwise because of new special page (previously a fake page). LP 2026-08-18)
+    // Creates any necessary Vipps pages
     public function maybe_create_vipps_pages () {
             $make_pages = false;
 
@@ -5197,7 +5196,7 @@ else:
                 // Ensure we have a special page - if is deleted then we need to fall back to our custom special page, which was potentially just created. LP 2026-08-27
                 $post = get_post($this->get_special_page_id());
                 if (!is_a($post, 'WP_Post')) {
-                    $post = get_page_by_path('vipps_special_page'); // works without permalink_structure enabled. LP 2026-08-27
+                    $post = get_page_by_path('vipps_special_page'); // works without permalink_structure. LP 2026-08-27
 
                     error_log('LP wrong special page: updating vippsspecialpageid to post id ' . $post->ID);
                     $this->gateway()->update_option('vippsspecialpageid', $post->ID);
@@ -5210,7 +5209,7 @@ else:
         // No point in expanding this unless we are actually doing the special actions. LP 2026-08-25
         if (is_admin()) return;
         if (wp_doing_ajax()) return;
-        if (defined('REST_REQUEST') && REST_REQUEST ) return;
+        if (defined('REST_REQUEST') && REST_REQUEST) return;
 
 
 
