@@ -5231,96 +5231,10 @@ else:
                 break;
         }
         error_log("LP shortcode action is done. html output is $html");
+        // add_filter('woo_vipps_special_page_handled', '__return_true'); // LP FIXME: is this a thing we should do?
+
         // NB: for certain themes, like twentytwentyfive, echo'ing the html output messes up the ordering and placement, so we need to return in in this shrotcode handler, so each action submethod needs to return its html. LP 2026-08-27
-        return $html; 
-        // add_filter('woo_vipps_special_page_handled', '__return_true'); // LP FIXME: is this a thing we do?
-
-
-        /// LP FIXME: this stuff is for referrence checkout shortcode. just delete it all when implemented
-        // // Defer to the normal code for endpoints IOK 2022-12-09
-        // if (is_wc_endpoint_url( 'order-pay' ) || is_wc_endpoint_url( 'order-received' )) {
-        //    return do_shortcode("[woocommerce_checkout]");
-        // } 
-
-        // if (!WC()->cart ||  WC()->cart->is_empty() ) {
-        //     ob_start();
-        //     wc_get_template( 'cart/cart-empty.php' );
-        //     return ob_get_clean();
-        // }
-
-        // WC()->session->set( 'chosen_payment_method', 'vipps'); // This is to stop KCO from trying to replace Vipps Checkout with KCO and failing. IOK 2024-05-13
-
-        // // Previously registered, now enqueue this script which should then appear in the footer.
-        // // Then call a hook for people adding custom javascript. This needs to be moved to template redirect. IOK 2025-06-02
-        // wp_enqueue_script('vipps-checkout');
-        // do_action('woo_vipps_checkout_enqueue_scripts');
-
-        // do_action('vipps_checkout_before_get_session');
-
-        // // We need to be able to check if we still have a live, good session, in which case
-        // // we can open the iframe directly. Otherwise, the form we are going to output will 
-        // // create the iframe after a button press which will create a new order.
-        // $sessioninfo = $this->vipps_checkout_current_pending_session();
-
-        // $out = ""; // Start generating output already to make debugging easier
-
-        // // This is the current pending order id, if it exists. Will be used to restart orders etc . IOK 2023-08-15 FIXME
-        // $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
-
-        // if ($sessioninfo['redirect']) {
-        //    // This is always either the thankyou page or home_url()  IOK 2021-09-03
-        //    $redir = json_encode($sessioninfo['redirect']);
-        //    $out .= "<script>window.location.replace($redir);</script>";
-        //    return $out;
-        // }
-
-        // // Now the normal case.
-        // $errortext = apply_filters('woo_vipps_checkout_error', __('An error has occured - please reload the page to restart your transaction, or return to the shop', 'woo-vipps'));
-        // $expiretext = apply_filters('woo_vipps_checkout_error', __('Your session has expired - please reload the page to restart, or return to the shop', 'woo-vipps')); 
-
-        // $out .= Vipps::instance()->spinner();
-
-        // if (!$sessioninfo['session']) {
-        //    $out .= "<div style='visibility:hidden' class='vipps_checkout_startdiv'>";
-        //    $out .= "<h2>" . sprintf(__('Press the button to complete your order with %1$s!', 'woo-vipps'), Vipps::instance()->get_payment_method_name()) . "</h2>";
-        //    $out .= '<div class="vipps_checkout_button_wrapper" ><button type="submit" class="button vipps_checkout_button vippsorange" value="1">' . sprintf(__('%1$s', 'woo-vipps'), Vipps::CheckoutName()) . '</button></div>';
-        //    $out .= "</div>";
-        // }
-
-        // // If we have an actual live session right now, add it to the page on load. Otherwise, the session will be started using ajax after the page loads (and is visible)
-        // if ($sessioninfo['session']) {
-        //     $token = $sessioninfo['session']['token'];      // From Vipps
-        //     $src = $sessioninfo['session']['checkoutFrontendUrl'];  // From Vipps
-        //     $out .= "<script>VippsSessionState = " . json_encode(array('token'=>$token, 'checkoutFrontendUrl'=>$src)) . ";</script>\n";
-        // } else {
-        //     $out .= "<script>VippsSessionState = null;</script>\n";
-        // }
-
-        // // Mount point for widgets. IOK 2025-05-13
-        // // starts hidden. is shown when vipps checkout loads successfully. LP 2025-05-12
-        // $out .= "<div id='vippscheckoutframe'>";
-        // $out .= "<div id='vipps_checkout_widget_mount'></div>";
-
-        // $out .= "</div>";
-        // $out .= "<div style='display:none' id='vippscheckouterror'><p>$errortext</p></div>";
-        // $out .= "<div style='display:none' id='vippscheckoutexpired'><p>$expiretext</p></div>";
-
-
-        // // We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
-        // $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
-        // $out .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
-        // $out .= "<input type='hidden' id='vippsorderid' name='_vippsorder' value='" . intval($current_pending) . "' />";
-        // // And this is for the order attribution feature of Woo 8.5 IOK 2024-01-09
-        // if (WC_Gateway_Vipps::instance()->get_option('vippsorderattribution') == 'yes') {
-        //     $out .= '<input type="hidden" id="vippsorderattribution" value="1" />';
-        //     ob_start();
-        //     do_action( 'woocommerce_after_order_notes');
-        //     $out .= ob_get_clean();
-        // }
-        // $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
-        // $out .= "</form>";
-
-        // return $out;
+        return $html;
     }
 
 
