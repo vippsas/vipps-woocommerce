@@ -2544,18 +2544,35 @@ else:
             // dont cache special page. LP 2026-08-25
             $this->nocache();
 
-            // Hide special page title frontend.
+            // Change title dynamically depending on action. LP 2026-09-02
             // LP FIXME: test if this works with block theme. LP 2026-09-02
-            $special_page_id = static::get_special_page_id();
-            error_log('LP special_page_id: ' . print_r($special_page_id, true));
-            add_filter('the_title', function ($title, $postid = 0) use($special_page_id) {
-                if (!is_admin() && $postid == $special_page_id && is_singular()  && in_the_loop()) {
-                    error_log('LP hiding title for special page');
-                    $title = "";
-                }
-                return $title;
-            } , 10, 2);
+            add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
         }
+    }
+
+    // Dynamic special page title depending on endpoint/action, only frontend. LP 2026-09-02
+    public function vipps_special_page_endpoint_title($title, $postid = 0) {
+        global $wp_query;
+
+        // Comment from woocommerce's wc_page_endpoint_title where this logic is from: LP 2026-09-02
+
+        // In block themes the whole template (header, footer, content) renders inside the main
+        // loop, so `the_title` fires for any post title rendered on the page (e.g. a product in a
+        // server-rendered mini-cart) - not just the page's own heading. Only replace the title of
+        // the queried page so an earlier title doesn't consume this one-shot filter.
+        if ( ! is_null( $wp_query ) && ! is_admin() && is_main_query() && in_the_loop() && is_page() && $postid == static::get_special_page_id() ) {
+            switch ($_GET['action'] ?? '') {
+                case 'wait_for_payment':
+                    $title = __('Processing order', 'woo-vipps');
+                    break;
+                case 'do_express_checkout':
+                case 'buy_product':
+                    $title = __('Express Checkout', 'woo-vipps');
+                    break;
+            }
+            error_log("LP potentially changing title for special page. Title=$title");
+        }
+        return $title;
     }
 
     // Template handling for special pages. IOK 2018-11-21
@@ -5505,7 +5522,7 @@ else:
         if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
             $content .= "<div id='vipps-status-message'></div>";
-            return $this->special_page_html(__('Order in progress','woo-vipps'), $content);
+            return $this->special_page_html('', $content);
         } else {
             $content .= $askForConfirmationHTML;
             $content .= $extraHTML;
@@ -5514,7 +5531,7 @@ else:
             $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->get_payment_method_name());
             $content .= "<div class='vipps_buy_now_wrapper noloop'><a href='#' id='do-express-checkout' class='vipps-express-checkout' title='$title'>$buttonhtml</a></div>";
             $content .= "<div id='vipps-status-message'></div>";
-            return $this->special_page_html(sprintf(__('%1$s Express Checkout','woo-vipps'), $this->get_payment_method_name()), $content);
+            return $this->special_page_html('', $content);
         }
     }
 
@@ -5631,7 +5648,7 @@ else:
             $content .= "<div id=failure><p>". __('Order cancelled','woo-vipps') . '</p>';
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
             $content .= "</div>";
-            return $this->special_page_html(__('Order cancelled','woo-vipps'), $content);
+            return $this->special_page_html('', $content);
         }
 
         // Still pending and order is supposed to exist, so wait for Vipps. This happens all the time, so logging is removed. IOK 2018-09-27
@@ -5673,16 +5690,17 @@ else:
         $content .= "<a id='continueToOrderFailedFallback' style='display:none' href='" . $gw->get_return_url($order) . "'></a>";
         $content .= "</div>";
 
-        return $this->special_page_html(__('Waiting for your order confirmation','woo-vipps'), $content);
+        return $this->special_page_html('', $content);
     }
 
     // Returns formatted html for the vipps special page. LP 2026-08-27
-    private function special_page_html($title, $content) {
+    public function special_page_html($header, $content) {
+        $header_html = $header ? "<h2 class='vipps-special-page-title page-title'>$header</h2>" : '';
         $html = <<<EOF
-        <h2 class="vipps-special-page-title page-title">$title</h2>
+        $header_html
         <div class="vipps-special-page-content">$content</div>
         EOF;
-        return apply_filters('woo_vipps_special_page_html', $html, $title, $content);
+        return apply_filters('woo_vipps_special_page_html', $html, $header, $content);
     }
 
 
