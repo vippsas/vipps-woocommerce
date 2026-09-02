@@ -2545,7 +2545,6 @@ else:
             $this->nocache();
 
             // Change title dynamically depending on action. LP 2026-09-02
-            // LP FIXME: test if this works with block theme. LP 2026-09-02
             add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
         }
     }
