@@ -4274,11 +4274,22 @@ else:
        $gw->initialize_webhooks();
        $this->payment_method_name = $gw->get_option('payment_method_name');
 
-       // Migrate special page to real woo one, previously a fake page. LP 2026-09-01
+       // Migrate special page setting to real woo page, if user had set it (default was a fake page). LP 2026-09-01
        $special_page_id = $this->gateway()->get_option('vippsspecialpageid');
        if (!static::get_special_page_id() && $special_page_id && get_post_status($special_page_id)) {
             // there is no wc_set_page_id() so we update the option directly. LP 2026-09-01
             update_option('woocommerce_vipps_special_page_page_id', $special_page_id);
+
+            // Ensure this special page has the necessary shortcode. LP 2026-09-01
+            $special_page = get_post($special_page_id);
+            if ($special_page && !has_shortcode($special_page->post_content, 'vipps_special_page')) {
+                error_log('LP activate: special page missing shortcode, adding it!');
+                $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
+                wp_update_post([
+                        'ID'           => $special_page_id,
+                        'post_content' => $new_content,
+                ]);
+            }
        } else  {
             // Create special page if its missing. LP 2026-09-01
             $this->maybe_create_vipps_pages();
