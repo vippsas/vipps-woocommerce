@@ -4275,24 +4275,26 @@ else:
        $this->payment_method_name = $gw->get_option('payment_method_name');
 
        // Migrate special page setting to real woo page, if user had set it (default was a fake page). LP 2026-09-01
-       $special_page_id = $this->gateway()->get_option('vippsspecialpageid');
-       if (!static::get_special_page_id() && $special_page_id && get_post_status($special_page_id)) {
-            // there is no wc_set_page_id() so we update the option directly. LP 2026-09-01
-            update_option('woocommerce_vipps_special_page_page_id', $special_page_id);
+       $old_special_page_id = $this->gateway()->get_option('vippsspecialpageid');
+       error_log('LP activate old_special_page_id: ' . print_r($old_special_page_id, true));
+       if (!static::get_special_page_id() && $old_special_page_id && ($special_page = get_post($old_special_page_id))) {
+           error_log("LP activate migrating special page id to $old_special_page_id");
+           // there is no wc_set_page_id() so we update the option directly. LP 2026-09-01
+           update_option('woocommerce_vipps_special_page_page_id', $old_special_page_id);
 
-            // Ensure this special page has the necessary shortcode. LP 2026-09-01
-            $special_page = get_post($special_page_id);
-            if ($special_page && !has_shortcode($special_page->post_content, 'vipps_special_page')) {
-                error_log('LP activate: special page missing shortcode, adding it!');
-                $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
-                wp_update_post([
-                        'ID'           => $special_page_id,
-                        'post_content' => $new_content,
-                ]);
-            }
-       } else  {
-            // Create special page if its missing. LP 2026-09-01
-            $this->maybe_create_vipps_pages();
+           // Ensure this special page has the necessary shortcode. LP 2026-09-01
+           if (!has_shortcode($special_page->post_content, 'vipps_special_page')) {
+               error_log('LP activate: special page missing shortcode, adding it!');
+               $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
+               wp_update_post([
+                       'ID'           => $old_special_page_id,
+                       'post_content' => $new_content,
+               ]);
+           }
+       } else if (!static::get_special_page_id()) {
+           error_log('LP activate maybe create pages');
+           // Create special page if its missing. LP 2026-09-01
+           $this->maybe_create_vipps_pages();
        }
     }
 
@@ -4978,7 +4980,8 @@ else:
     }
 
     public static function get_special_page_id() {
-        return wc_get_page_id('vipps_special_page');
+        $id = wc_get_page_id('vipps_special_page'); // -1 if not found
+        return $id > 0 ? $id : null;
     }
 
     public static function get_special_page_url() {
@@ -5191,6 +5194,7 @@ else:
     }
 
     // Creates any necessary Vipps pages. E.g vipps checkout page or vipps special page. LP 2026-09-01
+    // If a page slug already exists, then it won't overwrite or duplicate it!. LP 2026-09-02
     public function maybe_create_vipps_pages () {
             $make_pages = false;
 
