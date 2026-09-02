@@ -2546,17 +2546,15 @@ else:
 
             // Hide special page title frontend.
             // LP FIXME: test if this works with block theme. LP 2026-09-02
-            if (!apply_filters('woo_vipps_special_page_show_title', false)) {
-                $special_page_id = static::get_special_page_id();
-                error_log('LP special_page_id: ' . print_r($special_page_id, true));
-                add_filter('the_title', function ($title, $postid = 0) use($special_page_id) {
-                    if (!is_admin() && $postid == $special_page_id && is_singular()  && in_the_loop()) {
-                        error_log('LP hiding title for special page');
-                        $title = "";
-                    }
-                    return $title;
-                } , 10, 2);
-            }
+            $special_page_id = static::get_special_page_id();
+            error_log('LP special_page_id: ' . print_r($special_page_id, true));
+            add_filter('the_title', function ($title, $postid = 0) use($special_page_id) {
+                if (!is_admin() && $postid == $special_page_id && is_singular()  && in_the_loop()) {
+                    error_log('LP hiding title for special page');
+                    $title = "";
+                }
+                return $title;
+            } , 10, 2);
         }
     }
 
