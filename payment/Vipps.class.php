@@ -5209,9 +5209,6 @@ else:
 
         $action = $_GET['action'] ?? '';
         do_action('woo_vipps_before_handling_special_page', $action);
-        if (apply_filters('woo_vipps_special_page_handled', false, $action)) { // LP FIXME: do we still need this?
-            return;
-        }
         error_log('LP action: ' . print_r($action, true));
         switch ($action) {
             case 'wait_for_payment':
@@ -5227,7 +5224,6 @@ else:
                 $html = '';
         }
         error_log("LP shortcode action is done. html output is $html");
-        // add_filter('woo_vipps_special_page_handled', '__return_true'); // LP FIXME: is this a thing we should do?
 
         // NB: for certain themes, like twentytwentyfive, echo'ing the html output messes up the ordering and placement, so we need to return in in this shrotcode handler, so each action submethod needs to return its html. LP 2026-08-27
         return $html;
