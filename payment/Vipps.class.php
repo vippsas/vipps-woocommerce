@@ -2546,7 +2546,6 @@ else:
 
             // Hide special page title frontend.
             if (!apply_filters('woo_vipps_special_page_show_title', false)) {
-                /* Suppress the title for this page, but on the front page only IOK 2023-01-27 (by request from Vipps) */
                 $special_page_id = static::get_special_page_id();
                 error_log('LP special_page_id: ' . print_r($special_page_id, true));
                 add_filter('the_title', function ($title, $postid = 0) use($special_page_id) {
@@ -2558,17 +2557,8 @@ else:
                 } , 10, 2);
             }
         }
-
-        $consentremoval = $this->is_consent_removal();
-        // LP FIXME: do we need to touch this for new special page real page logic?. LP 2026-08-25
-        if ($consentremoval) {
-            remove_filter('template_redirect', 'redirect_canonical', 10);
-            do_action('woo_vipps_before_handling_special_page', 'consentremoval');
-            if (! apply_filters('woo_vipps_special_page_handled', false, 'consentremoval')) {
-                $this->vipps_consent_removal_callback($consentremoval);
-            }
-        }
     }
+
     // Template handling for special pages. IOK 2018-11-21
     public function template_include($template) {
         if (static::is_special_page()) {
@@ -4129,15 +4119,6 @@ else:
         header("X-Accel-Expires: 0"); 
     }
 
-
-
-    // Handle DELETE on a vipps consent removal callback
-    public function vipps_consent_removal_callback ($callback) {
-	    Vipps::nocache();
-            // Currently, no such requests will be posted, and as this code isn't sufficiently tested,we'll just have 
-            // to escape here when the API is changed. IOK 2020-10-14
-            $this->log("Consent removal is non-functional pending API changes as of 2020-10-14"); print "1"; exit();
-    }
 
     public function woocommerce_payment_gateways($methods) {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
