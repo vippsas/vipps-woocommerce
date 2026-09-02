@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-09-01 version 6.1.7
+Compatibility fix for Login with Vipps
+
 = 2026-08-31 version 6.1.6
 Fix performance issue with order notes with certain configurations of NGINX Helper
 Remove all usage of eCom v2 and userInfo api

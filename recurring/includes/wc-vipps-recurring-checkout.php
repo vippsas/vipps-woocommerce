@@ -100,8 +100,6 @@ class WC_Vipps_Recurring_Checkout {
 
 		add_action( 'wp_loaded', [ $this, 'maybe_load_cart' ], 5 );
 
-		add_action( 'wp_loaded', [ $this, 'register_scripts' ] );
-
 		// Prevent previews and prefetches of the Vipps Checkout page starting and creating orders
 		add_action( 'wp_head', [ $this, 'wp_head' ] );
 
@@ -562,6 +560,8 @@ class WC_Vipps_Recurring_Checkout {
 		global $post;
 
 		if ( $post && is_page() && has_shortcode( $post->post_content, 'vipps_recurring_checkout' ) ) {
+			$this->register_scripts();
+
 			add_filter( 'woocommerce_is_checkout', '__return_true' );
 
 			add_filter( 'body_class', function ( $classes ) {
@@ -653,7 +653,7 @@ class WC_Vipps_Recurring_Checkout {
 		}
 
 		// Previously registered, now enqueue this script which should then appear in the footer.
-		wp_enqueue_script( 'vipps-recurring-checkout' );
+		wp_enqueue_script( 'woo-vipps-recurring-checkout' );
 
 		do_action( 'vipps_recurring_checkout_before_get_session' );
 
