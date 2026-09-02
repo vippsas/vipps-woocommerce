@@ -2545,6 +2545,7 @@ else:
             $this->nocache();
 
             // Hide special page title frontend.
+            // LP FIXME: test if this works with block theme. LP 2026-09-02
             if (!apply_filters('woo_vipps_special_page_show_title', false)) {
                 $special_page_id = static::get_special_page_id();
                 error_log('LP special_page_id: ' . print_r($special_page_id, true));
