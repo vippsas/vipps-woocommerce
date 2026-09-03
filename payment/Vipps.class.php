@@ -2576,20 +2576,6 @@ else:
         }
     }
 
-
-    // If this is a special page, return true very early because we are handling this. IOK 2023-02-22
-    public function pre_handle_404($current, $query) {
-        if (!is_admin()) {
-            $special = static::is_special_page();
-            if ($special) {
-                // Ensure very early on that Autooptimize does not try to optimize us (if installed) IOK 2023-03-04
-                add_filter( 'autoptimize_filter_noptimize', '__return_true');
-                return true;
-            }
-        }
-        return $current;
-    }
-
     // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
         if (static::is_special_page()) {
@@ -2766,10 +2752,8 @@ else:
         add_action('woocommerce_after_shop_loop_item', array($this, 'loop_single_product_buy_now_button'), 20);
 
 
-        // Special pages and callbacks handled by template_redirect
-        // We must also notify WP and other plugins that we are handling this 404-like situation. IOK 2023-02-22
+        // Special pages and callbacks handled by template_redirect. IOK 2023-02-22
         add_action('template_redirect', array($this,'template_redirect'),1);
-        add_action('pre_handle_404', array($this, 'pre_handle_404'), 1, 2);
 
         // Allow overriding their templates
         add_filter('template_include', array($this,'template_include'), 10, 1);
