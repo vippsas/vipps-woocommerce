@@ -673,6 +673,10 @@ class WC_Vipps_Recurring {
 	public function order_handle_vipps_recurring_action() {
 		check_ajax_referer( 'vipps_recurring_ajax_nonce', 'nonce' );
 
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_die( -1, 403 );
+		}
+
 		$order = wc_get_order( intval( $_REQUEST['orderId'] ) );
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;

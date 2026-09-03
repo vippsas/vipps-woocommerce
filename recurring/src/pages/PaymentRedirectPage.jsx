@@ -24,8 +24,11 @@ export default function PaymentRedirectPage () {
 		apiFetch({
 			path: `/vipps-mobilepay-recurring/v1/orders/status/${searchParams.get(
 				'order_id')}?key=${searchParams.get('key')}`, method: 'GET',
-		}).then(response => setResponse(response)).catch(() => {
-			setErrorCounter((value) => value += 1)
+		}).then(response => {
+			setResponse(response)
+			setErrorCounter(0)
+		}).catch(() => {
+			setErrorCounter((value) => value + 1)
 		})
 	}, [])
 

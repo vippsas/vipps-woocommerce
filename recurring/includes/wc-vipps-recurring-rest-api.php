@@ -44,7 +44,7 @@ class WC_Vipps_Recurring_Rest_Api {
 
 		$order = wc_get_order( $order_id );
 
-		if ( ! $order || $order_key !== $order->get_order_key() ) {
+		if ( ! $order || ! is_string( $order_key ) || ! hash_equals( $order->get_order_key(), $order_key ) ) {
 			return new WP_Error(
 				'not_found',
 				'Order not found.',
@@ -58,21 +58,38 @@ class WC_Vipps_Recurring_Rest_Api {
 
 		// Skip the lock here, otherwise we get a false result
 		$gateway->check_charge_status( $order_id, true );
+		$order        = wc_get_order( $order_id );
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 
 		if ( ! $agreement_id ) {
-			return new WP_Error(
-				'not_found',
-				'Subscription not found.',
-				[ 'status' => 404 ]
-			);
+			return new WP_REST_Response( [
+				'status'       => 'PENDING',
+				'redirect_url' => false
+			], 202 );
 		}
 
-		$agreement    = $gateway->api->get_agreement( $agreement_id );
+		try {
+			$agreement = $gateway->api->get_agreement( $agreement_id );
+		} catch ( WC_Vipps_Recurring_Exception $exception ) {
+			if ( $exception->response_code !== 404 ) {
+				throw $exception;
+			}
+
+			return new WP_REST_Response( [
+				'status'       => 'PENDING',
+				'redirect_url' => false
+			], 202 );
+		}
 
 		do_action( 'wc_vipps_recurring_after_rest_api_check_order_status', $order_id );
 
-		$return_url = $order->get_checkout_order_received_url();
+		$return_url = false;
+		if ( $agreement->status !== 'PENDING' ) {
+			if ( $agreement->status === 'ACTIVE' ) {
+				WC_Vipps_Recurring_Checkout::get_instance()->maybe_login_checkout_user( $order->get_id(), $order_key );
+			}
+			$return_url = $order->get_checkout_order_received_url();
+		}
 
 		return [
 			'status'       => $agreement->status,

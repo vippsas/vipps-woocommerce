@@ -543,10 +543,27 @@ class WC_Vipps_Recurring_Api {
 			return $body;
 		}
 
-		// Rate limiting, temporary error
-		if ( $status === 429 ) {
-			$error_msg = __( "We hit Vipps/MobilePay's rate limit, we will retry later.", 'woo-vipps' );
-			throw new WC_Vipps_Recurring_Temporary_Exception( $error_msg );
+		// A transport error or a retryable HTTP response does not tell us whether a
+		// state-changing request reached Vipps/MobilePay. Treat it as temporary so
+		// callers can retry with the same idempotency key instead of failing the order.
+		if ( $status === 0 || in_array( $status, [ 408, 425, 429 ], true ) || $status >= 500 ) {
+			$error_msg = trim( (string) $default_error );
+			if ( ! $error_msg ) {
+				$error_msg = sprintf( 'HTTP %d', $status );
+			}
+
+			$localized_msg = __( 'Vipps/MobilePay is temporarily unavailable. Please try again.', 'woo-vipps' );
+			if ( $status === 429 ) {
+				$localized_msg = __( "We hit Vipps/MobilePay's rate limit. Please try again shortly.", 'woo-vipps' );
+			}
+
+			$log_body = is_array( $body ) ? json_encode( $body ) : $body;
+			WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Temporary Error (%s): %s (%s) with request body: %s. The response was: %s', $status, $error_msg, $endpoint, $request_body, $log_body ) );
+
+			$exception                = new WC_Vipps_Recurring_Temporary_Exception( $error_msg, $localized_msg );
+			$exception->response_code = $status;
+
+			throw $exception;
 		}
 
 		// error handling
