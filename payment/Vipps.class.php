@@ -287,13 +287,16 @@ class Vipps {
         // Set default button options, migrating any older setup IOK 2026-07-15
         $this->init_button_options();
 
-        // Delete special page id option when its deleted, so that we dont have to load
+        // Delete special page id option when its deleted or trashed, so that we dont have to load
         // in the post to check status in woocommerce_loaded when we ensure the special page exists. LP 2026-09-03
-        add_action('delete_post', function($post_id, $post = null) {
+        $delete_special_page_id = function($post_id, $post = null) {
             if (static::get_special_page_id() === $post_id) {
+                error_log('LP delete/trash special page: deleting special page id');
                 delete_option('woocommerce_vipps_special_page_page_id');
             }
-        });
+        };
+        add_action('delete_post', $delete_special_page_id, 10, 2);
+        add_action('wp_trash_post', $delete_special_page_id, 10, 2);
 
         $this->ensure_special_page_exists();
     }
@@ -429,9 +432,9 @@ class Vipps {
         // If user had in previous version overriden the fake page with a real one: migrate this page to be the special page. LP 2026-09-01
         $old_special_page_id = $this->gateway()->get_option('vippsspecialpageid');
         error_log('LP old_special_page_id: ' . print_r($old_special_page_id, true));
-        if ($old_special_page_id && ($special_page = get_post($old_special_page_id))) {
+        if ($old_special_page_id && ($special_page = get_post($old_special_page_id)) && "trash" !== $special_page->post_status) {
             $this->log(__('Migrated old special page setting.', 'woo-vipps'), 'info');
-            error_log("LP activate migrating special page id to $old_special_page_id");
+            error_log("LP migrating special page id to $old_special_page_id");
             // there is no wc_set_page_id() so we update the option directly. LP 2026-09-01
             update_option('woocommerce_vipps_special_page_page_id', $old_special_page_id);
 
