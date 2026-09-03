@@ -4113,12 +4113,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $hooks = $this->initialize_webhooks();
         }
 
-        $maybe_create_vipps_pages = false;
-
         // If enabling this, ensure the page in question exists
         if ($this->get_option('vipps_checkout_enabled') == 'yes') {
             update_option('woo_vipps_checkout_activated', true, true); // This must be true here, but still, make sure
-            $maybe_create_vipps_pages = true;
+            Vipps::instance()->maybe_create_vipps_pages();
         }
 
         // Ensure special page has the necessary shortcode. LP 2026-09-01
@@ -4131,12 +4129,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'post_content' => $new_content,
             ]);
         } else if (!Vipps::get_special_page_id()) {
-            $maybe_create_vipps_pages = true;
-            error_log('LP missing special page id, doing maybe_create_vipps_pages');
-        }
-
-        if ($maybe_create_vipps_pages) {
-            Vipps::instance()->maybe_create_vipps_pages();
+            // We shouldn't really get here, the page should be ensured to exist in init. LP 2026-09-03
+            error_log('LP processing admin options: missing special page id');
+            /* translators: %s is current method name */
+            $this->log(sprintf(__('Missing special page in %s, attempting to fix', 'woo-vipps'), 'process_admin_options'), 'warning');
+            Vipps::instance()->ensure_special_page_exists();
         }
 
         return $saved;

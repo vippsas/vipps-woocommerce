@@ -126,6 +126,11 @@ class Vipps {
         // not have loaded if the default checkout solution isn't the Checkout block. We'll load it anyway if the user has any local pickup locations
         // stored in the database since we support this for both Vipps MobilePay checkokut and Express.  IOK 2026-02-25
         add_action('woocommerce_load_shipping_methods', array($Vipps, 'maybe_load_pickup_locations'), 90);
+
+        // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
+        // Will also probably be used to maintain a real utility-page for Vipps actions later for themes where this
+        // is important.
+        add_filter('woocommerce_create_pages', array($Vipps, 'woocommerce_create_pages'), 50, 1);
     }
 
     // Register woocommerce store api endpoint to use in buy-now minicart block. LP 2026-02-10
@@ -281,6 +286,16 @@ class Vipps {
 
         // Set default button options, migrating any older setup IOK 2026-07-15
         $this->init_button_options();
+
+        // Delete special page id option when its deleted, so that we dont have to load
+        // in the post to check status in woocommerce_loaded when we ensure the special page exists. LP 2026-09-03
+        add_action('delete_post', function($post_id, $post = null) {
+            if (static::get_special_page_id() === $post_id) {
+                delete_option('woocommerce_vipps_special_page_page_id');
+            }
+        });
+
+        $this->ensure_special_page_exists();
     }
 
     public function admin_init () {
@@ -399,6 +414,41 @@ class Vipps {
                     };
                 }
             }
+        }
+    }
+
+    
+    /** Ensure we have a special page for payment flows
+     *
+     * woocommerce_loaded is too late for this because of maybe_create_vipps_pages which calls WC_Install::create_pages. LP 2026-09-03
+     **/
+    public function ensure_special_page_exists() {
+        if (static::get_special_page_id()) return;
+        $this->log(__('Missing id for special page, attempting to fix.', 'woo-vipps'), 'info');
+
+        // If user had in previous version overriden the fake page with a real one: migrate this page to be the special page. LP 2026-09-01
+        $old_special_page_id = $this->gateway()->get_option('vippsspecialpageid');
+        error_log('LP old_special_page_id: ' . print_r($old_special_page_id, true));
+        if ($old_special_page_id && ($special_page = get_post($old_special_page_id))) {
+            $this->log(__('Migrated old special page setting.', 'woo-vipps'), 'info');
+            error_log("LP activate migrating special page id to $old_special_page_id");
+            // there is no wc_set_page_id() so we update the option directly. LP 2026-09-01
+            update_option('woocommerce_vipps_special_page_page_id', $old_special_page_id);
+
+            // Ensure this page has the necessary shortcode. LP 2026-09-01
+            error_log('LP special_page content: ' . print_r($special_page->post_content, true));
+            if (!has_shortcode($special_page->post_content, 'vipps_special_page')) {
+                error_log('LP special page missing shortcode, adding it!');
+                $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
+                wp_update_post([
+                        'ID'           => $old_special_page_id,
+                        'post_content' => $new_content,
+                ]);
+            }
+        } else {
+            error_log('LP maybe create pages');
+            // Create special page if its missing. LP 2026-09-01
+            $this->maybe_create_vipps_pages();
         }
     }
 
@@ -2560,10 +2610,12 @@ else:
         // server-rendered mini-cart) - not just the page's own heading. Only replace the title of
         // the queried page so an earlier title doesn't consume this one-shot filter.
         if ( ! is_null( $wp_query ) && ! is_admin() && is_main_query() && in_the_loop() && is_page() && $postid == static::get_special_page_id() ) {
+            error_log("LP potentially changing tile for special page, action = " . ($_GET['action'] ?? '<missing>'));
             switch ($_GET['action'] ?? '') {
                 case 'wait_for_payment':
                     $title = __('Processing order', 'woo-vipps');
                     break;
+                case 'edit':
                 case 'do_express_checkout':
                 case 'buy_product':
                     $title = __('Express Checkout', 'woo-vipps');
@@ -2671,7 +2723,6 @@ else:
         // Support adding pickup locations to any shipping rate using the 'woo_vipps_shipping_method_pickup_points' filter
         // IOK 2025-11-19
         add_filter('woo_vipps_modify_express_checkout_rate', array($this, 'express_add_pickup_location_options'), 10, 4);
-
     }
 
     public function get_payment_method_name() {
@@ -2692,12 +2743,6 @@ else:
     public function after_setup_theme() {
         // To facilitate development, allow loading the plugin-supplied translations. Must be called here at the earliest.
         $ok = Vipps::load_plugin_textdomain('woo-vipps', false, basename( dirname( dirname( __FILE__ ) ) ) . "/languages");
-
-        // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
-        // Will also probably be used to maintain a real utility-page for Vipps actions later for themes where this
-        // is important.
-        add_filter('woocommerce_create_pages', array($this, 'woocommerce_create_pages'), 50, 1);
-
 
         // Callbacks use the Woo API IOK 2018-05-18
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
@@ -4269,29 +4314,6 @@ else:
        // IOK 2023-12-20 for the epayment api, we need to re-initialize webhooks at this point. 
        $gw->initialize_webhooks();
        $this->payment_method_name = $gw->get_option('payment_method_name');
-
-       // Migrate special page setting to real woo page, if user had set it (default was a fake page). LP 2026-09-01
-       $old_special_page_id = $this->gateway()->get_option('vippsspecialpageid');
-       error_log('LP activate old_special_page_id: ' . print_r($old_special_page_id, true));
-       if (!static::get_special_page_id() && $old_special_page_id && ($special_page = get_post($old_special_page_id))) {
-           error_log("LP activate migrating special page id to $old_special_page_id");
-           // there is no wc_set_page_id() so we update the option directly. LP 2026-09-01
-           update_option('woocommerce_vipps_special_page_page_id', $old_special_page_id);
-
-           // Ensure this special page has the necessary shortcode. LP 2026-09-01
-           if (!has_shortcode($special_page->post_content, 'vipps_special_page')) {
-               error_log('LP activate: special page missing shortcode, adding it!');
-               $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
-               wp_update_post([
-                       'ID'           => $old_special_page_id,
-                       'post_content' => $new_content,
-               ]);
-           }
-       } else if (!static::get_special_page_id()) {
-           error_log('LP activate maybe create pages');
-           // Create special page if its missing. LP 2026-09-01
-           $this->maybe_create_vipps_pages();
-       }
     }
 
     // We have added some hooks to wp-cron; remove these. IOK 2020-04-01
@@ -5204,6 +5226,7 @@ else:
             // vipps special page, previously a fake page. LP 2026-08-18
             $builtin_special_page_id = static::get_special_page_id();
             if (!$builtin_special_page_id || !get_post_status($builtin_special_page_id)) {
+                error_log('LP maybe_create_vipps_pages missing special page');
                 delete_option('woocommerce_vipps_special_page_page_id');
                 $make_pages = true;
             }
