@@ -202,10 +202,13 @@
     const dialogUi = window.createVippsMobilepayDialog();
     const checkout = createCheckoutController();
 
+    // Hook vippsInit to woocommerce/product-collection render event. LP 29.11.2024
+    // IOK 2026-01-14 available from woo 9.4 - so the buy now block will not be available until that version
     body.addEventListener("wc-blocks_product_list_rendered", () => {
         body.dispatchEvent(new Event("vippsInit"));
     });
 
+    // Allow other guys to do this too
     body.addEventListener("vippsInit", vippsInit);
     if (window.jQuery) {
         window.jQuery(body).on("vippsInit", vippsInit);
@@ -438,8 +441,10 @@
         return response.json();
     }
 
+    // Using the Vipps SDK, get a payment URL from the new REST endpoint and let
+    // the SDK start the express checkout session. IOK 2026-09-04
     async function handlePurchaseClick(event) {
-        const wrapper = event.target.closest?.(".vipps-buy-now");
+        const wrapper = event.target.closest?.(".button.single-product.vipps-buy-now.initialized");
 
         if (!wrapper || !wrapper.querySelector("vipps-mobilepay-button")) {
             return;
@@ -477,12 +482,15 @@
             return;
         }
 
+        // First build the legacy data structure so existing hooks can still see
+        // the same input as before. IOK 2026-09-04
         let transaction = buildTransaction(wrapper);
         if (!transaction) {
             return;
         }
 
         const legacyData = transaction.legacyData;
+        // Finally, create a hook for even weirder themes.
         if (window.wp?.hooks) {
             transaction = transactionFromLegacyData(window.wp.hooks.applyFilters(
                 "vippsBuySingleProductData",
@@ -494,6 +502,13 @@
             transaction = transactionFromLegacyData(legacyData);
         }
 
+        // If filters and fallbacks could not identify the product, do not start
+        // an empty transaction against the REST endpoint. IOK 2026-09-04
+        if (!hasProductIdentifier(transaction)) {
+            showError("Cannot buy product: product id, variation id and sku are missing", wrapper);
+            return;
+        }
+
         if (!checkout.begin(transaction, wrapper, event)) {
             return;
         }
@@ -501,39 +516,42 @@
         await checkout.start();
     }
 
-    function buildTransaction(wrapper) {
-        if (wrapper.dataset.vippsPurchase === "single") {
-            return buildSingleProductTransaction(wrapper);
-        }
-
-        const legacyData = {
-            product_id: wrapper.dataset.productId || "",
-            variation_id: wrapper.dataset.variationId || "",
-            product_sku: wrapper.dataset.productSku || "",
-            quantity: wrapper.dataset.quantity || "1"
-        };
-
-        return { legacyData };
+    function hasProductIdentifier(transaction) {
+        return Boolean(
+            transaction?.product_id ||
+            transaction?.variation_id ||
+            transaction?.sku
+        );
     }
 
-    function buildSingleProductTransaction(wrapper) {
-        const form = wrapper.closest("form.cart");
+    function buildTransaction(wrapper) {
+        // Older buttons may carry product data directly on the button. Preserve
+        // both jQuery-style underscore attributes and modern dataset names.
+        // IOK 2026-09-04
+        const legacyData = getElementData(wrapper);
 
+        if (legacyData.product_id || legacyData.product_sku) {
+            return { legacyData };
+        }
+
+        const form = wrapper.closest("form.cart");
         if (!form) {
             showError("Cannot buy product: product form not found", wrapper);
             return null;
         }
 
-        const legacyData = {};
+        // Initialize with the entire content of the form if we have it.
         for (const [name, value] of new FormData(form).entries()) {
             if (name !== "add-to-cart") {
                 legacyData[name] = value;
             }
         }
 
+        const productDataButton = form.querySelector("button[data-product_id], button[data-product-id]");
         legacyData.product_id = legacyData.product_id ||
             form.querySelector('[name="product_id"]')?.value ||
-            form.querySelector('[name="add-to-cart"]')?.value || "";
+            form.querySelector('[name="add-to-cart"]')?.value ||
+            getElementData(productDataButton).product_id || "";
         legacyData.variation_id = legacyData.variation_id ||
             form.querySelector('[name="variation_id"]')?.value || "";
         legacyData.quantity = legacyData.quantity || "1";
@@ -544,6 +562,30 @@
         delete legacyData.sku;
 
         return { legacyData };
+    }
+
+    function getElementData(element) {
+        if (!element) {
+            return {};
+        }
+
+        const data = {};
+        Array.from(element.attributes || []).forEach((attribute) => {
+            if (!attribute.name.startsWith("data-")) {
+                return;
+            }
+
+            const name = attribute.name.slice(5).replace(/-/g, "_");
+            data[name] = attribute.value;
+        });
+
+        return {
+            ...data,
+            product_id: data.product_id || element.dataset?.productId || "",
+            variation_id: data.variation_id || element.dataset?.variationId || "",
+            product_sku: data.product_sku || element.dataset?.productSku || "",
+            quantity: data.quantity || element.dataset?.quantity || ""
+        };
     }
 
     function transactionFromLegacyData(data) {
@@ -567,6 +609,9 @@
         });
 
         // Future: move post fields named attribute_* into a separate variations field.
+        // The REST endpoint expects the product identifiers at top level, while
+        // the rest of the serialized WooCommerce form data travels as post data.
+        // IOK 2026-09-04
         return {
             product_id: source.product_id || "",
             variation_id: source.variation_id || "",
@@ -585,6 +630,9 @@
             return;
         }
 
+        // In compatibility mode, we delegate to the existing buy now button
+        // instead of doing the logic ourselves. This allows more filters and
+        // actions in existing plugins to run. IOK 2019-02-26
         let action = () => {
             let input = form.querySelector("input[name='vipps_compat_mode']");
             if (!input) {
