@@ -322,7 +322,6 @@ class Vipps {
 
         // Scripts
         $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
-        wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
         add_action('admin_enqueue_scripts', array($this,'admin_enqueue_scripts'));
 
         // IOK 2026-05-26 redirect the old Woo-generated settings-screen to our own settings page.
@@ -1659,7 +1658,7 @@ EOF;
         if (!wp_script_is( 'wp-hooks', 'registered')) {
             wp_register_script('wp-hooks', plugins_url('/compat/hooks.min.js', __FILE__));
         }
-        wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+        wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks', 'vipps-widget-sdk'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
 
         // Badges - web components provided by Vipps MobilePay to display payment options in-store.
         wp_register_script('vipps-onsite-messageing',
@@ -1672,15 +1671,25 @@ EOF;
                 ],
         );
 
+       add_filter( 'script_loader_tag', function($tag, $handle,$src) {
+          if ($handle == 'vipps-widget-sdk') {
+            $tag = preg_replace("!^<script!", "<script data-vipps-widget-sdk ", $tag);
+            return $tag;  
+          }
+          return $tag;
+       },10,3);
+
+        wp_register_script('vipps-widget-sdk', "https://cdn.vippsmobilepay.com/js/widget-sdk/vipps-widget.js", 
+            array('vipps-button-webcomponent'), 
+            filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/vipps.js'),
+            ['in_footer' => true]
+        );
+
         // Button web component downloaded from https://cdn.vippsmobilepay.com/js/button/button.js. LP 2026-06-24
         wp_register_script('vipps-button-webcomponent',
                 plugins_url('js/vipps-button.js', WC_VIPPS_PAYMENT_MAIN_FILE),
                 array(),
                 filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/vipps-button.js'),
-                [
-                    'in_footer' => true,
-                    'strategy'  => 'async',
-                ],
                 );
     }
 

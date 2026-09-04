@@ -1,295 +1,772 @@
+(() => {
+    function createVippsMobilepayDialog() {
+        const actionDialog = document.createElement("dialog");
+        const actionForm = document.createElement("form");
+        const actionHtml = document.createElement("div");
+        const dialogActions = document.createElement("div");
+        const actionCancel = document.createElement("button");
+        const actionConfirm = document.createElement("vipps-mobilepay-button");
+
+        actionDialog.className = "vipps-mobilepay-dialog";
+        actionDialog.id = "action-required-dialog";
+        actionForm.id = "action-required-form";
+        actionForm.method = "dialog";
+        actionHtml.id = "action-required-html";
+        dialogActions.className = "dialog-actions";
+
+        actionCancel.id = "action-required-cancel";
+        actionCancel.type = "button";
+        actionCancel.className = "dialog-close";
+        actionCancel.setAttribute("aria-label", "Cancel");
+        actionCancel.title = "Cancel";
+        actionCancel.textContent = "×";
+
+        actionConfirm.id = "action-required-confirm";
+        actionConfirm.setAttribute("brand", "vipps");
+        actionConfirm.setAttribute("language", "no");
+        actionConfirm.setAttribute("verb", "continue");
+        actionConfirm.setAttribute("variant", "primary");
+        actionConfirm.setAttribute("type", "button");
+        actionConfirm.setAttribute("branded", "true");
+        actionConfirm.setAttribute("rounded", "true");
+
+        dialogActions.append(actionConfirm);
+        actionForm.append(actionHtml, dialogActions);
+        actionDialog.append(actionCancel, actionForm);
+        document.body.append(actionDialog);
+
+        return {
+            dialog: actionDialog,
+            form: actionForm,
+            html: actionHtml,
+            cancel: actionCancel,
+            confirm: actionConfirm
+        };
+    }
+
+    window.createVippsMobilepayDialog = createVippsMobilepayDialog;
+})();
 /*
+ * Keeps payment-handoff detection independent from the checkout implementation.
+ * The factory is exposed only because this page is currently using classic
+ * script tags rather than JavaScript modules.
+ */
+(() => {
+    function createVippsPaymentHandoff(options = {}) {
+        const storageKey = options.storageKey || "vippsPaymentHandoff";
+        const maxAgeMs = options.maxAgeMs || 30 * 60 * 1000;
+        const disabledSelector = options.disabledSelector ||
+            "[data-checkout-button], [data-cart-button]";
 
-This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
-Copyright (c) 2019 WP-Hosting AS
+        function get() {
+            const raw = sessionStorage.getItem(storageKey);
 
-MIT License
+            if (!raw) {
+                return null;
+            }
 
-Copyright (c) 2019 WP-Hosting AS
+            try {
+                const handoff = JSON.parse(raw);
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+                if (!handoff.createdAt || Date.now() - handoff.createdAt >= maxAgeMs) {
+                    clear();
+                    return null;
+                }
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+                return handoff;
+            } catch {
+                clear();
+                return null;
+            }
+        }
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+        function mark(result = {}) {
+            sessionStorage.setItem(storageKey, JSON.stringify({
+                createdAt: Date.now(),
+                path: location.pathname,
+                paymentReference: result.paymentReference || result.reference || null,
+                refreshedPaths: []
+            }));
+        }
 
-*/
+        function clear() {
+            sessionStorage.removeItem(storageKey);
+        }
 
-// Hook vippsInit to woocommerce/product-collection render event. LP 29.11.2024
-// IOK 2026-01-14 available from woo 9.4 - so the buy now block will not be available until that version
-document.body.addEventListener('wc-blocks_product_list_rendered',
-  function (event) {
-    document.body.dispatchEvent(new Event('vippsInit'));
-  }
-);
+        function setDisabled(disabled) {
+            document.querySelectorAll(disabledSelector).forEach((button) => {
+                if ("disabled" in button) {
+                    button.disabled = disabled;
+                }
 
+                if (disabled) {
+                    button.setAttribute("disabled", "");
+                    button.setAttribute("aria-disabled", "true");
+                } else {
+                    button.removeAttribute("disabled");
+                    button.removeAttribute("aria-disabled");
+                }
+            });
+        }
 
-jQuery( document ).ready( function() {
+        function activate() {
+            document.documentElement.classList.add("payment-handoff-active");
+            setDisabled(true);
+        }
 
- // This is for WooCommerce Product Bundles, which potentially have *several* variant-products or configurable products, so
- // the standard Woo hooks don't apply. Luckily, we have other, simpler events to use.
- // For this to work, we also have to force the compat-mode thing on. IOK 2020-04-21
- jQuery('.cart.bundle_data').on('woocommerce-product-bundle-hide', function (e, variant) {
-     jQuery('form .button.single-product.vipps-buy-now').removeClass('variation-found');
-     jQuery('form .button.single-product.vipps-buy-now').attr('disabled','disabled');
-     jQuery('form .button.single-product.vipps-buy-now').addClass('disabled');
-     // We don't know why the button is hidden, so ensure we use compatibility-mode IOK 2020-04-21
-     jQuery('.button.single-product.vipps-buy-now').addClass('compat-mode');
-     removeErrorMessages();
- });
- jQuery('.cart.bundle_data').on('woocommerce-product-bundle-show', function (e, variant) {
-     jQuery('form .button.single-product.vipps-buy-now').addClass('variation-found');
-     jQuery('form .button.single-product.vipps-buy-now').removeAttr('disabled');
-     jQuery('form .button.single-product.vipps-buy-now').removeClass('disabled');
-     removeErrorMessages();
- });
- 
- // Hooks for the 'buy now with vipps' button on product pages etc
- jQuery('body').on('found_variation', function (e,variation) {
-   const form = jQuery(e.target);
-   const target = form.find(".button.single-product.vipps-buy-now.variable-product");
+        function reloadOnceForStalePage() {
+            const handoff = get();
 
-   var purchasable=true;
-   if ( ! variation.is_purchasable || ! variation.is_in_stock || ! variation.variation_is_visible ) {
-     purchasable = false;
-   }
-   target.addClass('variation-found');
-   if (purchasable) {
-    target.removeAttr('disabled');
-    target.removeClass('disabled');
-    removeErrorMessages();
-   } else {
-    target.attr('disabled','disabled');
-    target.addClass('disabled');
-    removeErrorMessages();
-   }
- });
- jQuery('body').on('reset_data', function (e) {
-    const form = jQuery(e.target)
-    const target = form.find(".button.single-product.vipps-buy-now.variable-product");
-    target.removeClass('variation-found');
-    target.attr('disabled','disabled');
-    target.addClass('disabled');
-    removeErrorMessages();
- });
- // If this is triggered, somebody just loaded a variation form, so we need to redo the button init scripts
- jQuery('body').on('wc_variation_form', function () {
-	 vippsInit();
- });
- // Allow other guys to do this too
- jQuery('body').on('vippsInit', function () {
-  vippsInit(); 
- });
+            if (!handoff) {
+                return;
+            }
 
+            const refreshedPaths = Array.isArray(handoff.refreshedPaths)
+                ? handoff.refreshedPaths
+                : [];
 
- // Using ajax, get a session and a key and redirect to the "buy single product using express checkout" page.
- function buySingleProduct (event) {
-   event.preventDefault(); 
+            if (refreshedPaths.includes(location.pathname)) {
+                return;
+            }
 
-   var element = jQuery(this);
-   if (jQuery('body').hasClass('processing')) return; // Trying to stop doublecclickers. IOK 2018-09-27
+            sessionStorage.setItem(storageKey, JSON.stringify({
+                ...handoff,
+                refreshedPaths: [...refreshedPaths, location.pathname]
+            }));
 
-   if (jQuery(element).hasClass('disabled'))  {
-     if (typeof wc_add_to_cart_variation_params != 'undefined') { 
-        if (jQuery(element).hasClass('variation-found'))  {
-          window.alert(wc_add_to_cart_variation_params.i18n_unavailable_text);
+            location.reload();
+        }
+
+        function wasHistoryRestore(event) {
+            const navigation = performance.getEntriesByType("navigation")[0];
+            return event.persisted || navigation?.type === "back_forward";
+        }
+
+        function handlePageshow(event) {
+            const handoff = get();
+
+            if (!handoff) {
+                return;
+            }
+
+            if (wasHistoryRestore(event)) {
+                reloadOnceForStalePage();
+                return;
+            }
+
+            clear();
+        }
+
+        window.addEventListener("pageshow", handlePageshow);
+        window.addEventListener("focus", reloadOnceForStalePage);
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                reloadOnceForStalePage();
+            }
+        });
+
+        return {
+            mark,
+            get,
+            clear,
+            activate,
+            reloadOnceForStalePage
+        };
+    }
+
+    window.createVippsPaymentHandoff = createVippsPaymentHandoff;
+})();
+/*
+ * WooCommerce integration for the standalone Vipps trigger.
+ * The wrapper element remains the public integration point for CSS, hooks,
+ * filters, and third-party extensions.
+ */
+(() => {
+    const vippsSdk = window.vipps;
+    const config = window.VippsConfig || {};
+    const body = document.body;
+    const paymentHandoff = typeof window.createVippsPaymentHandoff === "function"
+        ? window.createVippsPaymentHandoff()
+        : null;
+
+    if (!vippsSdk) {
+        console.error("vipps: Widget SDK is not available");
+        return;
+    }
+
+    if (typeof window.createVippsMobilepayDialog !== "function") {
+        console.error("vipps: Dialog module is not available");
+        return;
+    }
+
+    const dialogUi = window.createVippsMobilepayDialog();
+    const checkout = createCheckoutController();
+
+    body.addEventListener("wc-blocks_product_list_rendered", () => {
+        body.dispatchEvent(new Event("vippsInit"));
+    });
+
+    body.addEventListener("vippsInit", vippsInit);
+    if (window.jQuery) {
+        window.jQuery(body).on("vippsInit", vippsInit);
+    }
+    document.addEventListener("click", handlePurchaseClick);
+
+    bindVariationEvents();
+    subscribeToCartChanges();
+    vippsInit();
+
+    function vippsInit() {
+        document.querySelectorAll(".button.single-product.vipps-buy-now").forEach((wrapper) => {
+            wrapper.classList.add("initialized");
+        });
+
+        if (window.wp?.hooks) {
+            window.wp.hooks.doAction("vippsInit");
+        }
+    }
+
+    function createCheckoutController() {
+        let locked = false;
+        let currentAttempt = null;
+        let nextAttemptId = 0;
+        let dialogBusy = false;
+
+        vippsSdk.host().start();
+
+        const trigger = vippsSdk.trigger(async () => {
+            if (!currentAttempt) {
+                return null;
+            }
+
+            const attemptId = currentAttempt.id;
+            let result;
+
+            result = await createPaymentSession(currentAttempt.transaction);
+
+            if (!currentAttempt || currentAttempt.id !== attemptId) {
+                return null;
+            }
+
+            currentAttempt.lastResponse = result;
+
+            if (Number(result.ok) === 1) {
+                if (!result.url) {
+                    clearAttempt();
+                    throw new Error("Successful checkout response has no payment URL");
+                }
+
+                paymentHandoff?.mark(result);
+                clearAttempt();
+                paymentHandoff?.activate();
+                return result.url;
+            }
+
+            if (Number(result.ok) === 2) {
+                showActionRequiredDialog(result.html || "");
+                return null;
+            }
+
+            if (Number(result.ok) === 0) {
+                const button = currentAttempt.button;
+                clearAttempt();
+                showError(result.msg || "Express checkout failed", button);
+
+                if (result.url) {
+                    window.location.assign(result.url);
+                }
+
+                throw new Error(result.msg || "Express checkout failed");
+            }
+
+            clearAttempt();
+            throw new Error("Unexpected express checkout response");
+        });
+
+        trigger
+            .on("success", (close, redirectUrl) => {
+                clearAttempt();
+                close();
+
+                if (redirectUrl) {
+                    window.location.assign(redirectUrl);
+                }
+            })
+            .on("cancel", (close, redirectUrl) => {
+                clearAttempt();
+                close();
+
+                if (redirectUrl) {
+                    window.location.assign(redirectUrl);
+                }
+            })
+            .on("close", clearAttempt)
+            .on("error", (error) => {
+                if (
+                    error instanceof vippsSdk.InvalidTriggerUrlError &&
+                    error.url === null
+                ) {
+                    return;
+                }
+
+                const button = currentAttempt?.button;
+                if (button) {
+                    clearAttempt();
+                    showError(error.message || "Vipps checkout failed", button);
+                }
+                console.error(error);
+            });
+
+        function begin(transaction, button, event) {
+            if (locked) {
+                return false;
+            }
+
+            locked = true;
+            currentAttempt = {
+                id: ++nextAttemptId,
+                transaction,
+                button,
+                event,
+                lastResponse: null
+            };
+            setPurchaseButtonsBusy(true);
+            return true;
+        }
+
+        function addPostData(extraPostData) {
+            if (!currentAttempt) {
+                throw new Error("No active checkout attempt");
+            }
+
+            currentAttempt.transaction.post = {
+                ...(currentAttempt.transaction.post || {}),
+                ...extraPostData
+            };
+        }
+
+        async function start() {
+            if (!currentAttempt) {
+                throw new Error("No active checkout attempt");
+            }
+
+            try {
+                await trigger.open();
+            } catch (error) {
+                if (
+                    error instanceof vippsSdk.InvalidTriggerUrlError &&
+                    error.url === null
+                ) {
+                    return;
+                }
+
+                const button = currentAttempt?.button;
+                if (button) {
+                    clearAttempt();
+                    showError(error.message || "Vipps checkout failed", button);
+                }
+                console.error(error);
+            }
+        }
+
+        function clearAttempt() {
+            locked = false;
+            currentAttempt = null;
+            dialogBusy = false;
+            setPurchaseButtonsBusy(false);
+            dialogUi.confirm.disabled = false;
+            dialogUi.confirm.removeAttribute("aria-disabled");
+        }
+
+        function showActionRequiredDialog(html) {
+            dialogUi.html.innerHTML = html;
+            dialogUi.confirm.disabled = false;
+            dialogUi.confirm.removeAttribute("aria-disabled");
+            dialogBusy = false;
+            dialogUi.dialog.showModal();
+        }
+
+        function cancelActionRequired() {
+            if (dialogUi.dialog.open) {
+                dialogUi.dialog.close();
+            }
+
+            clearAttempt();
+        }
+
+        dialogUi.cancel.addEventListener("click", cancelActionRequired);
+        dialogUi.confirm.addEventListener("click", async () => {
+            if (dialogBusy || !currentAttempt) {
+                return;
+            }
+
+            dialogBusy = true;
+            dialogUi.confirm.disabled = true;
+            dialogUi.confirm.setAttribute("aria-disabled", "true");
+
+            addPostData({
+                ...serializeForm(dialogUi.form),
+                confirmed: 1
+            });
+
+            dialogUi.dialog.close();
+            await start();
+        });
+
+        return { begin, addPostData, start };
+    }
+
+    async function createPaymentSession(transaction) {
+        const response = await fetch(
+            config.vippsresturl || "/wp-json/woo-vipps/v1/express_checkout_single",
+            {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-WooVipps": "yes",
+                    "Accept-Language": `${config.vippslocale || "nb_NO"}, *`
+                },
+                body: JSON.stringify(transaction)
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Express checkout request failed (${response.status})`);
+        }
+
+        return response.json();
+    }
+
+    async function handlePurchaseClick(event) {
+        const wrapper = event.target.closest?.(".vipps-buy-now");
+
+        if (!wrapper || !wrapper.querySelector("vipps-mobilepay-button")) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (body.classList.contains("processing")) {
+            return;
+        }
+
+        if (wrapper.classList.contains("disabled") || wrapper.hasAttribute("disabled")) {
+            showVariationMessage(wrapper);
+            return;
+        }
+
+        removeErrorMessages();
+
+        if (window.wp?.hooks) {
+            window.wp.hooks.doAction("vippsBuySingleProduct", wrapper, event);
+        }
+
+        let compatMode = wrapper.classList.contains("compat-mode");
+        if (window.wp?.hooks) {
+            compatMode = window.wp.hooks.applyFilters(
+                "vippsBuySingleProductCompatMode",
+                compatMode,
+                wrapper,
+                event
+            );
+        }
+
+        if (compatMode) {
+            runCompatibilityAction(wrapper, event);
+            return;
+        }
+
+        let transaction = buildTransaction(wrapper);
+        if (!transaction) {
+            return;
+        }
+
+        const legacyData = transaction.legacyData;
+        if (window.wp?.hooks) {
+            transaction = transactionFromLegacyData(window.wp.hooks.applyFilters(
+                "vippsBuySingleProductData",
+                legacyData,
+                wrapper,
+                event
+            ));
         } else {
-          window.alert(wc_add_to_cart_variation_params.i18n_make_a_selection_text);
+            transaction = transactionFromLegacyData(legacyData);
         }
-     } else {
-	     console.log("Missing the wc_add_to_cart_variation_params");
-     }
-     return false;
-   }
 
-   jQuery('body').addClass('processing');
-   removeErrorMessages();
-   jQuery(element).attr('disabled','disabled');
-   jQuery(element).attr('inactive','inactive');
-   jQuery(element).addClass('disabled');
-   jQuery(element).addClass('loading');
-
-   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
-      wp.hooks.doAction('vippsBuySingleProduct', element, event);
-   }
-
-   var compatMode = jQuery(element).hasClass('compat-mode');
-   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
-      compatMode = wp.hooks.applyFilters('vippsBuySingleProductCompatMode', compatMode,  element, event);
-   }
-
-   //  In compatibility mode, we delegate to the existing buy now button instead of doing the logic
-   //  ourselves. This allows more filters and actions in existing plugins to run. IOK 2019-02-26
-   if (compatMode) {
-       var form =   jQuery(element).closest('form');
-       var otherbutton =  form.find('.single_add_to_cart_button').first(); 
-       var compatAction = function () {
-           form.prepend('<input type=hidden id="vipps_compat_mode" name="vipps_compat_mode" value="1">');
-           if (otherbutton.length>0) otherbutton.click();
+        if (!checkout.begin(transaction, wrapper, event)) {
+            return;
         }
-       // If your theme or product is weird enough, you may need this
-       if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
-         compatAction = wp.hooks.applyFilters('vippsBuySingleProductCompatModeAction', compatAction, element, event);
-       }
-       compatAction();
-       return false;
-   }
 
-   var data  =  {};
-   if (element.data('product_id') || element.data('product_sku')) {
-     data = element.data();
-   } else {
-     var form = element.closest('form.cart');
-     if (!form) {
-       jQuery(element).removeClass('disabled');
-       jQuery(element).removeClass('loading');
-       jQuery(element).removeAttr('disabled');
-       jQuery(element).removeAttr('inactive');
-       jQuery('body').removeClass('processing');
-       addErrorMessage('Cannot add product - unknown error');
-       return false;
+        await checkout.start();
     }
-    // Initialize with the entire content of the form if we have it.
-    var serialized = form.serializeArray();
-    for (var i=0;i<serialized.length;i++) {
-        if (serialized[i]['name'] != 'add-to-cart') {
-            data[serialized[i]['name']] = serialized[i]['value'];
+
+    function buildTransaction(wrapper) {
+        if (wrapper.dataset.vippsPurchase === "single") {
+            return buildSingleProductTransaction(wrapper);
+        }
+
+        const legacyData = {
+            product_id: wrapper.dataset.productId || "",
+            variation_id: wrapper.dataset.variationId || "",
+            product_sku: wrapper.dataset.productSku || "",
+            quantity: wrapper.dataset.quantity || "1"
+        };
+
+        return { legacyData };
+    }
+
+    function buildSingleProductTransaction(wrapper) {
+        const form = wrapper.closest("form.cart");
+
+        if (!form) {
+            showError("Cannot buy product: product form not found", wrapper);
+            return null;
+        }
+
+        const legacyData = {};
+        for (const [name, value] of new FormData(form).entries()) {
+            if (name !== "add-to-cart") {
+                legacyData[name] = value;
+            }
+        }
+
+        legacyData.product_id = legacyData.product_id ||
+            form.querySelector('[name="product_id"]')?.value ||
+            form.querySelector('[name="add-to-cart"]')?.value || "";
+        legacyData.variation_id = legacyData.variation_id ||
+            form.querySelector('[name="variation_id"]')?.value || "";
+        legacyData.quantity = legacyData.quantity || "1";
+        legacyData.product_sku = legacyData.product_sku ||
+            legacyData.sku ||
+            form.querySelector('[name="sku"]')?.value ||
+            form.closest(".product")?.querySelector(".sku")?.textContent.trim() || "";
+        delete legacyData.sku;
+
+        return { legacyData };
+    }
+
+    function transactionFromLegacyData(data) {
+        const source = data || {};
+        const post = { ...(source.post || {}) };
+        const mainFields = new Set([
+            "product_id",
+            "variation_id",
+            "product_sku",
+            "sku",
+            "quantity",
+            "post",
+            "action",
+            "add-to-cart"
+        ]);
+
+        Object.entries(source).forEach(([name, value]) => {
+            if (!mainFields.has(name)) {
+                post[name] = value;
+            }
+        });
+
+        // Future: move post fields named attribute_* into a separate variations field.
+        return {
+            product_id: source.product_id || "",
+            variation_id: source.variation_id || "",
+            sku: source.sku || source.product_sku || "",
+            quantity: source.quantity || "1",
+            post
+        };
+    }
+
+    function runCompatibilityAction(wrapper, event) {
+        const form = wrapper.closest("form");
+        const addToCartButton = form?.querySelector(".single_add_to_cart_button");
+
+        if (!form || !addToCartButton) {
+            showError("Cannot add product: product form not found", wrapper);
+            return;
+        }
+
+        let action = () => {
+            let input = form.querySelector("input[name='vipps_compat_mode']");
+            if (!input) {
+                input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "vipps_compat_mode";
+                form.prepend(input);
+            }
+            input.value = "1";
+            addToCartButton.click();
+        };
+
+        if (window.wp?.hooks) {
+            action = window.wp.hooks.applyFilters(
+                "vippsBuySingleProductCompatModeAction",
+                action,
+                wrapper,
+                event
+            );
+        }
+
+        setPurchaseButtonsBusy(true);
+        action();
+    }
+
+    function serializeForm(form) {
+        const data = {};
+
+        for (const [name, value] of new FormData(form).entries()) {
+            if (name !== "add-to-cart") {
+                data[name] = value;
+            }
+        }
+
+        return data;
+    }
+
+    function setPurchaseButtonsBusy(busy) {
+        document.querySelectorAll(".vipps-buy-now").forEach((wrapper) => {
+            wrapper.classList.toggle("loading", busy);
+
+            if (busy) {
+                wrapper.dataset.vippsBusy = "true";
+                wrapper.setAttribute("disabled", "");
+                wrapper.setAttribute("inactive", "inactive");
+                wrapper.setAttribute("aria-disabled", "true");
+            } else {
+                delete wrapper.dataset.vippsBusy;
+                wrapper.removeAttribute("disabled");
+                wrapper.removeAttribute("inactive");
+                wrapper.removeAttribute("aria-disabled");
+                wrapper.classList.remove("loading");
+
+                if (wrapper.classList.contains("disabled")) {
+                    wrapper.setAttribute("disabled", "");
+                }
+            }
+        });
+
+        body.classList.toggle("processing", busy);
+    }
+
+    function bindVariationEvents() {
+        const $ = window.jQuery;
+        if (!$) return;
+
+        $(body).on("found_variation", (event, variation) => {
+            const form = event.target.closest?.("form.cart");
+            const wrapper = form?.querySelector(".vipps-buy-now");
+            if (!wrapper) return;
+
+            wrapper.classList.add("variation-found");
+            setPurchaseButtonDisabled(wrapper, !variation?.is_purchasable ||
+                !variation?.is_in_stock || !variation?.variation_is_visible);
+            removeErrorMessages();
+        });
+
+        $(body).on("reset_data", (event) => {
+            const form = event.target.closest?.("form.cart");
+            const wrapper = form?.querySelector(".vipps-buy-now");
+            if (!wrapper) return;
+
+            wrapper.classList.remove("variation-found");
+            setPurchaseButtonDisabled(wrapper, true);
+            removeErrorMessages();
+        });
+
+        $(body).on("wc_variation_form", () => {
+            vippsInit();
+        });
+
+        $(body).on("woocommerce-product-bundle-hide", () => {
+            document.querySelectorAll("form .vipps-buy-now").forEach((wrapper) => {
+                wrapper.classList.add("compat-mode");
+                setPurchaseButtonDisabled(wrapper, true);
+            });
+            removeErrorMessages();
+        });
+
+        $(body).on("woocommerce-product-bundle-show", () => {
+            document.querySelectorAll("form .vipps-buy-now").forEach((wrapper) => {
+                setPurchaseButtonDisabled(wrapper, false);
+            });
+            removeErrorMessages();
+        });
+    }
+
+    function setPurchaseButtonDisabled(wrapper, disabled) {
+        wrapper.classList.toggle("disabled", disabled);
+
+        if (disabled) {
+            wrapper.setAttribute("disabled", "");
+        } else {
+            wrapper.removeAttribute("disabled");
         }
     }
-    var prodid = jQuery(form).find('input[name="product_id"]');
-    var varid = jQuery(form).find('input[name="variation_id"]');
-    var quantity = jQuery(form).find('input[name="quantity"]');
-    data['quantity'] = (quantity.length>0) ? quantity.val() : 1;
-    data['product_id'] = (prodid.length>0) ? prodid.val() : 0;
-    data['variation_id'] = (varid.length>0) ? varid.val() : 0;
-    // Earlier versions, no variation:
-    if (prodid.length == 0) {
-      prodid = jQuery(form).find('button[name="add-to-cart"]');  
-      if (prodid.length > 0) {
-         data['product_id'] =  prodid.val();
-      } else {
-         // Some weird themes are even more incompatible
-         prodid = jQuery(form).find('button[data-product_id]');
-         data['product_id'] = prodid.length > 0 ? prodid.data('product_id') : 0;
-     }
+
+    function subscribeToCartChanges() {
+        if (!window.wp?.data) return;
+
+        let previousCheckoutUrl = "";
+        window.wp.data.subscribe(() => {
+            const button = document.querySelector(
+                "a.wp-block-woocommerce-mini-cart-checkout-button-block"
+            );
+            if (!button) return;
+
+            const cart = window.wp.data.select("wc/store/cart")?.getCartData?.();
+            const checkoutUrl = cart?.extensions?.["woo-vipps"]?.checkout_url;
+            if (!checkoutUrl || checkoutUrl === previousCheckoutUrl) return;
+
+            previousCheckoutUrl = checkoutUrl;
+            button.href = checkoutUrl;
+        });
     }
-   }
-   // Finally, create a hook for even weirder themes.
-   data = wp.hooks.applyFilters('vippsBuySingleProductData', data,  element, event);
-   data['action'] = 'vipps_buy_single_product';
 
-   jQuery.ajax(VippsConfig['vippsajaxurl'], {
-    "method": "POST",
-    "data":data,
-    "cache":false,
-    "headers": {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
-    "dataType": "json",
-    "error": function (xhr, statustext, error) {
-      console.log("Error creating express checkout:" + statustext + " " + error);
-      addErrorMessage(error, element);
-      jQuery(element).prop('disabled',true);
-      jQuery(element).prop('inactive',true);
-      jQuery('body').removeClass('processing');
-    },
-    "success": function (result, statustext, xhr) {
-     if (result["ok"]) {
-       console.log("We created the order!");
-       /* In case user presses the back button */
-       setTimeout(function () {
-          jQuery(element).removeClass('disabled');
-          jQuery(element).removeClass('loading');
-          jQuery(element).removeAttr('disabled');
-          jQuery(element).removeAttr('inactive');
-          jQuery('body').removeClass('processing');
-          }
-       , 1500);
-       window.location.assign(result["url"]);
-     } else {
-       console.log("Failure!");
-       jQuery(element).removeClass('disabled');
-       jQuery(element).removeClass('loading');
-       jQuery(element).removeAttr('disabled');
-       jQuery(element).removeAttr('inactive');
-       addErrorMessage(result['msg'],element);
-       jQuery('body').removeClass('processing');
-     }
-    },
-    "timeout": 0
-   });
+    function showVariationMessage(wrapper) {
+        const params = window.wc_add_to_cart_variation_params;
+        const message = wrapper.classList.contains("variation-found")
+            ? params?.i18n_unavailable_text || "This product variation is not available."
+            : params?.i18n_make_a_selection_text || "Please choose a product variation.";
+        showError(message, wrapper);
+    }
 
-  }
+    function removeErrorMessages() {
+        document.querySelectorAll(".woocommerce-error.vipps-error").forEach((element) => {
+            element.remove();
+        });
 
+        emitDocumentEvent("woo-vipps-remove-errors");
+        if (window.wp?.hooks) {
+            window.wp.hooks.doAction("vippsRemoveErrorMessages");
+        }
+    }
 
+    function showError(message, wrapper) {
+        removeErrorMessages();
 
- // Remove old error messages
- function removeErrorMessages () {
-   jQuery('.woocommerce-error.vipps-error').fadeOut(300, function () {  jQuery(this).remove(); });
-   jQuery(document).trigger('woo-vipps-remove-errors');
-   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
-      wp.hooks.doAction('vippsRemoveErrorMessages');
-   }
- }
+        let markup = `<p><ul class="woocommerce-error vipps-error vipps-default-error-message vipps-buy-now-error"><li>${escapeHtml(message)}</li></ul></p>`;
+        if (window.wp?.hooks) {
+            markup = window.wp.hooks.applyFilters("vippsErrorMessage", markup, wrapper);
+        }
 
- // And add new ones
- function addErrorMessage(msg,element) {
-   // Allow developers to customize error message by hiding vipps-default-error-message and hooking woo-vipps-error-message <messsage>,<element>
-   var msg = "<p><ul class='woocommerce-error vipps-error vipps-default-error-message vipps-buy-now-error'><li>"+msg+"!</li></ul></p>";
-   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
-      msg = wp.hooks.applyFilters('vippsErrorMessage',msg, element);
-   }
-   jQuery(document).trigger('woo-vipps-error-message',[msg, element]);
-   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
-      wp.hooks.doAction('vippsAddErrorMessage', msg, element);
-   }
+        emitDocumentEvent("woo-vipps-error-message", [markup, wrapper]);
+        if (window.wp?.hooks) {
+            window.wp.hooks.doAction("vippsAddErrorMessage", markup, wrapper);
+        }
 
-   jQuery(msg).hide().insertAfter(element).fadeIn(300);
-   jQuery('.woocommerce-error.vipps-error').click(removeErrorMessages);
- }
+        wrapper?.insertAdjacentHTML("afterend", markup);
+    }
 
- // Hooks for the button itself
- function vippsInit() {
-   jQuery('.button.single-product.vipps-buy-now:not(.initialized)').click(buySingleProduct);
-   jQuery('.button.single-product.vipps-buy-now').addClass('initialized');
-   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
-      wp.hooks.doAction('vippsInit');
-   }
- }
+    function emitDocumentEvent(name, args = []) {
+        document.dispatchEvent(new CustomEvent(name, { detail: args }));
 
- // For modern wp/woo we want to subscribe to events for the cart especially. IOK 2026-02-24
- if( window.wp?.data) {
-     // The interactivity based minicart is only loaded once; so if the cart changes wrt supporting Vipps Checkout we must handle that 
-     // by subscribing to the cart data. IOK 2026-02-23
-     let prevCheckoutUrl = "";
-     function handleCartChanges () {
-         const minicartbutton = document.querySelector('a.wp-block-woocommerce-mini-cart-checkout-button-block');
-         if (!minicartbutton) return;
+        if (window.jQuery) {
+            window.jQuery(document).trigger(name, args);
+        }
+    }
 
-         const cart = wp.data.select("wc/store/cart")?.getCartData?.();
-         if (!cart) return;
-         const vippsdata = cart?.extensions?.['woo-vipps'];
-         if (!vippsdata) return;
-         if (vippsdata['checkout_url'] && prevCheckoutUrl != vippsdata['checkout_url']) {
-             prevCheckoutUrl = vippsdata['checkout_url'];
-             minicartbutton.href = vippsdata['checkout_url'];
-         }
-     }
-     wp.data.subscribe(handleCartChanges);
- }
-
-
- 
- vippsInit();
-});
-
+    function escapeHtml(value) {
+        const element = document.createElement("div");
+        element.textContent = String(value || "");
+        return element.innerHTML;
+    }
+})();
