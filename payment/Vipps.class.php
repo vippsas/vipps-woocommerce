@@ -2597,7 +2597,6 @@ else:
                 case 'wait_for_payment':
                     $title = __('Processing order', 'woo-vipps');
                     break;
-                case 'edit':
                 case 'do_express_checkout':
                 case 'buy_product':
                     $title = __('Express Checkout', 'woo-vipps');
