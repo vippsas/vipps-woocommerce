@@ -291,6 +291,12 @@ class Vipps {
                 'callback' => [$this, 'rest_do_single_product_express_checkout'],
                 'permission_callback' => '__return_true',
         ]);
+        // And one for the cart. IOK 2026-09-04
+        register_rest_route(self::get_rest_namespace('v1'), '/express_checkout', [
+                'methods' => 'POST',
+                'callback' => [$this, 'rest_do_express_checkout'],
+                'permission_callback' => '__return_true',
+        ]);
     }
 
     public function admin_init () {
@@ -1834,7 +1840,9 @@ EOF;
         $button = apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context($context));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
-        $html = "<a href='#' class='vipps-express-checkout short " . esc_attr($method) . "' title='" . esc_attr($title) . "'>$button</a>";
+        $url = "#";
+        $sec = wp_create_nonce('express');
+        $html = "<a href='#' class='vipps-express-checkout short " . esc_attr($method) . "' title='" . esc_attr($title) . "' data-sec='" . esc_attr($sec) . "'>$button</a>";
         $html = apply_filters('woo_vipps_cart_express_checkout_button', $html, $url);
         echo $html;
     }
@@ -4660,6 +4668,123 @@ else:
         exit();
     }
 
+    public function rest_do_express_checkout ($request) {
+        Vipps::nocache();
+check_ajax_referer('express', 'sec');
+        static::set_locale_if_in_header();
+        $raw_post = @file_get_contents( 'php://input' );
+        $args = @json_decode($raw_post,true);
+        if (!$args) {
+            return new WP_Error('no_data', __('No data passed to express checkout', 'woo-vipps'), ['status' => 400]);
+        }
+
+        // Since this is the REST api, we need to load the cart manually here. IOK 2026-08-27
+        if ( is_null( WC()->cart ) ) {
+            WC()->frontend_includes();
+            if ( ! WC()->session instanceof WC_Session ) {
+                WC()->session = new WC_Session_Handler();
+                WC()->session->init();
+            }
+            if (is_null( WC()->customer)) {
+                WC()->customer = new WC_Customer( get_current_user_id(), true );
+            }
+            WC()->cart = new WC_Cart();
+            WC()->cart->get_cart_from_session();
+        }
+
+
+error_log("cart is " .print_r(WC()->cart, true));
+error_log("args are " . print_r($args, true));
+
+        $gw = $this->gateway();
+        if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
+            $result = array('ok'=>0, 'msg'=>sprintf(__('%1$s is not available for this order','woo-vipps'), Vipps::ExpressCheckoutName()), 'url'=>false);
+            return result;
+        }
+        // Validate cart going forward using same logic as WC_Cart->check_cart() but not adding notices.
+        $toolate = false;
+        $msg = "";
+        $valid  = WC()->cart->check_cart_item_validity();
+        if ( is_wp_error( $valid) ) {
+            $toolate = true;
+            $msg = "<br>" .  $valid->get_error_message();
+        }
+        $stock = WC()->cart->check_cart_item_stock();
+        if ( is_wp_error( $stock) ) {
+            $toolate = true;
+            $msg = "<br>" .  $stock->get_error_message();
+        }
+
+        if ($toolate) {
+            $result = array('ok'=>0, 'msg'=>sprintf(__('Some of the products in your cart are no longer available in the quantities you have ordered. Please <a href="%1$s">edit your order</a> before continuing the checkout','woo-vipps'), wc_get_cart_url()) . $msg, 'url'=>false);
+            return $result;
+        }
+
+        // Then the cookies. These would be the _ga and sbjs_ cookies typically, but we'll let users handle these themselves.
+        // These are passed as arguments from the javascript, since proxies are likely to strip them. This should allow
+        // systems like MonsterInsights that look for the _GA cookie to succeed. IOK 2026-08-30
+        $cookies = $args['cookies'] ?? [];
+        foreach($cookies as $key => $value) {
+            if (!isset($_COOKIE[$key])) {
+                $_COOKIE[$key] = $value;
+            }
+        }
+        // There might be extra values here now, which would typically have been posted as POST arguments, in a form.
+        // User-defined stuff and so on. We'll initiate the POST value with these to simulate this for backwards compatibility.
+        $others =$args['post'] ?? [];
+        foreach($args['post'] as $key=>$value) {
+            $_POST[$key] = $value;
+        }
+
+        $result = $this->create_and_process_express_order();
+        return $result;
+
+        // Try to avoid re-purchasing the same order repeatedly. IOK 2026-09-02
+        $current_hash = md5("$prodid:$varid:$quantity");
+
+        $confirmation = (bool) intval(($others['confirmed'] ?? 0));
+        $require_confirmation = false;
+        if (!$confirmation) {
+            // Now based on this, compute a hash. We'll store that in the session for ~5 minutes, and if there is a previous order with this
+            // hash *in session* we'll ask the user their intent.
+            // FIXME abstract this and stuff it deeper in the system.
+            $last_express_purchase_hash = WC()->session->get('woo_vipps_last_express');
+            $last_express_the_same = false;
+            if ($last_express_purchase_hash) {
+                list($hash, $stamp) = explode(":", $last_express_purchase_hash);
+                $cutoff = $stamp + apply_filters('woo_vipps_recent_order_cutoff', (3*60));
+                if ($hash == $current_hash && (time() <= $cutoff )) {
+                    $header = __("Are you sure?",'woo-vipps');
+                    $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
+                    $html = "<h1>$header</h1><p>$body</p>";
+
+                    $result = [ 'ok' => 2, 'msg' => 'confirm', 'html'=>$html, 'orderid'=>0, 'url'=>'']; 
+                    $require_confirmation = true;
+                }
+            }
+        }
+
+        // For testing.
+        if (! $confirmation) {
+            $header = __("Are you sure?",'woo-vipps');
+            $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
+            $html = "<h1>$header</h1><p>$body</p>";
+            $result = [ 'ok' => 2, 'msg' => 'confirm', 'html'=>$html, 'orderid'=>0, 'url'=>'']; 
+            $require_confirmation = true;
+        }
+
+        if (!$require_confirmation) {
+            // Basically always return 200 after this, and always return an object with an 'ok' and a 'msg' value, possibly 'orderid' and 'url'.
+            $result = $this->really_do_single_product_express_checkout($prodid, $varid, $sku, $quantity, $variations);
+            // And if we're going to express now so let's note the order. IOK 2026-08-27. Now this assumes success, but *basically* I think this is ok.
+            // We'll reset it on order failure I think. IOK 2026-08-20 FIXME
+            if ($result['ok']) {
+            WC()->session->set('woo_vipps_last_express', "$current_hash:" . time());
+            WC()->session->save_data();
+            }
+        }
+        return $result;
+    }
 
     // Rest handler for single product express checkout. Expects arguments as JSON. IOK 2026-08-25
     public function rest_do_single_product_express_checkout ($request) {
@@ -4729,7 +4854,7 @@ error_log("args are " . print_r($args, true));
         }
 
         // Try to avoid re-purchasing the same order repeatedly. IOK 2026-09-02
-        $current_hash = md5("$prodid:$varid:$quantity");
+        $current_hash = md5($this->get_orderspec_from_cart());
 
         $confirmation = (bool) intval(($others['confirmed'] ?? 0));
         $require_confirmation = false;

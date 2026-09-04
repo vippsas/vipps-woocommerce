@@ -485,7 +485,11 @@
 
         // Cart express checkout gets products from the WooCommerce cart session,
         // but still sends cookies and post metadata. IOK 2026-09-04
-        if (!checkout.begin(transaction, wrapper, event, "/woo-vipps/v1/express_checkout")) {
+        const path = wrapper.dataset.sec
+            ? `/woo-vipps/v1/express_checkout?sec=${encodeURIComponent(wrapper.dataset.sec)}`
+            : "/woo-vipps/v1/express_checkout";
+
+        if (!checkout.begin(transaction, wrapper, event, path)) {
             return;
         }
 
