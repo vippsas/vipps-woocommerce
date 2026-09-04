@@ -321,7 +321,6 @@ class Vipps {
         add_action('admin_head', array($this, 'admin_head'));
 
         // Scripts
-        $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
         add_action('admin_enqueue_scripts', array($this,'admin_enqueue_scripts'));
 
         // IOK 2026-05-26 redirect the old Woo-generated settings-screen to our own settings page.
@@ -1580,10 +1579,12 @@ EOF;
     }
     // Scripts used in the backend
     public function admin_enqueue_scripts($hook) {
-        // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
-        $this->script_add_vippslocale();
 
         wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'all');
+        $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
+        wp_localize_script('vipps-admin', 'VippsConfig', $this->vippsJSConfig);
+        // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
+        $this->script_add_vippslocale('vipps-admin');
         wp_enqueue_script('vipps-admin');
 
         wp_enqueue_style('vipps-admin-style',plugins_url('css/admin.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/admin.css"), 'all');
@@ -1694,20 +1695,20 @@ EOF;
     }
 
     // Runs late in both wp_enqueue_scripts and admin_enqueue_scripts to make it more compatible with translation plugins IOK 2026-02-02
-    public function script_add_vippslocale () {
+    public function script_add_vippslocale ($handle) {
         // This is actually for the payment block, where localize script has started to not-work in certain contexts. IOK 2022-12-13
         $strings = array(
                 'Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),
                 'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()),
                 'pay_with_card' => sprintf(__('Pay with card through %1$s', 'woo-vipps'), $this->get_payment_method_name()),
                 );
-        wp_localize_script('vipps-gw', 'VippsLocale', $strings);
+        wp_localize_script($handle, 'VippsLocale', $strings);
     }
 
     public function wp_enqueue_scripts() {
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
         // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
-        $this->script_add_vippslocale();
+        $this->script_add_vippslocale('vipps-gw');
 
         wp_enqueue_script('vipps-gw');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
@@ -2836,6 +2837,8 @@ else:
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
         $this->vippsJSConfig['vippslocale'] = get_locale();
         $this->vippsJSConfig['vippsexpressbuttonurl'] = $this->get_payment_method_name();
+        $this->vippsJSConfig['paymentMethodSlug'] = sanitize_title($this->get_payment_method_name());
+        $this->vippsJSConfig['paymentMethodName'] = $this->get_payment_method_name();
        
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
