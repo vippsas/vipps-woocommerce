@@ -422,7 +422,8 @@ class Vipps {
     
     /** Ensure we have a special page for payment flows
      *
-     * woocommerce_loaded is too late for this because of maybe_create_vipps_pages which calls WC_Install::create_pages. LP 2026-09-03
+     * woocommerce_loaded is too early for this because of maybe_create_vipps_pages which calls WC_Install::create_pages,
+     * and we hook unto this with woocommerce_create_pages. LP 2026-09-03
      **/
     public function ensure_special_page_exists() {
         if (static::get_special_page_id()) return;
