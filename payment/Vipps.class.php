@@ -1660,7 +1660,7 @@ EOF;
                 'in_footer' => true,
                 'strategy'  => 'async',
                 ],
-        );
+                );
 
         // Button web component downloaded from https://cdn.vippsmobilepay.com/js/button/button.js. LP 2026-06-24
         wp_register_script('vipps-button-webcomponent',
@@ -1668,8 +1668,7 @@ EOF;
                 array(),
                 filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/vipps-button.js'),
                 [
-                    'in_footer' => true,
-                    'strategy'  => 'async',
+                'in_footer' => false
                 ],
                 );
     }
