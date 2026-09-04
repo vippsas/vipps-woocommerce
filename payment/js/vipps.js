@@ -9,7 +9,8 @@
 
         actionDialog.className = "vipps-mobilepay-dialog";
         actionDialog.id = "action-required-dialog";
-        actionForm.id = "action-required-form";
+        actionForm.id = "vippsdata";
+        actionForm.className = "woocommerce-checkout";
         actionForm.method = "dialog";
         actionHtml.id = "action-required-html";
         dialogActions.className = "dialog-actions";
@@ -177,9 +178,7 @@
     window.createVippsPaymentHandoff = createVippsPaymentHandoff;
 })();
 /*
- * WooCommerce integration for the standalone Vipps trigger.
- * The wrapper element remains the public integration point for CSS, hooks,
- * filters, and third-party extensions.
+ * This implements express checkout for WooCommerce using the Vipps Mobilepay Widget SDK
  */
 (() => {
     const vippsSdk = window.vipps;
@@ -400,6 +399,14 @@
         dialogUi.cancel.addEventListener("click", cancelActionRequired);
         dialogUi.confirm.addEventListener("click", async () => {
             if (dialogBusy || !currentAttempt) {
+                return;
+            }
+
+            // Server-provided dialog HTML may contain required WooCommerce
+            // checkout fields, so let browser validation run before continuing.
+            // IOK 2026-09-04
+            if (!dialogUi.form.checkValidity()) {
+                dialogUi.form.reportValidity();
                 return;
             }
 
@@ -693,6 +700,45 @@
         });
 
         body.classList.toggle("processing", busy);
+        if (busy) {
+            ensureSpinner();
+        }
+    }
+
+    // The spinner used to be printed by PHP. Create the same markup on demand
+    // if it is not already present; CSS controls visibility using body.processing.
+    // IOK 2026-09-04
+    function ensureSpinner() {
+        let overlay = document.querySelector(".vippsoverlay");
+        if (overlay) {
+            return overlay;
+        }
+
+        const spinner = document.createElement("div");
+        spinner.id = "floatingCirclesG";
+        spinner.className = `vippsspinner ${sanitizeCssSlug(config.paymentMethodSlug || "")}`.trim();
+
+        for (let i = 1; i <= 8; i += 1) {
+            const circle = document.createElement("div");
+            circle.className = "f_circleG";
+            circle.id = `frotateG_${String(i).padStart(2, "0")}`;
+            spinner.append(circle);
+        }
+
+        overlay = document.createElement("div");
+        overlay.className = "vippsoverlay";
+        overlay.append(spinner);
+        document.body.append(overlay);
+
+        return overlay;
+    }
+
+    function sanitizeCssSlug(value) {
+        return String(value)
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9_-]+/g, "-")
+            .replace(/^-+|-+$/g, "");
     }
 
     function bindVariationEvents() {
