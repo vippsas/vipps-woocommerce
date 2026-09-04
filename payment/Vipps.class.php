@@ -1670,7 +1670,7 @@ EOF;
                 'in_footer' => true,
                 'strategy'  => 'async',
                 ],
-        );
+                );
 
        add_filter( 'script_loader_tag', function($tag, $handle,$src) {
           if ($handle == 'vipps-widget-sdk') {
@@ -1691,6 +1691,9 @@ EOF;
                 plugins_url('js/vipps-button.js', WC_VIPPS_PAYMENT_MAIN_FILE),
                 array(),
                 filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/vipps-button.js'),
+                [
+                'in_footer' => false
+                ]
                 );
     }
 
