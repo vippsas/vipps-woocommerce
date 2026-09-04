@@ -1830,13 +1830,11 @@ EOF;
     }
 
     public function cart_express_checkout_button_html($minicart = false) {
-        $url = $this->express_checkout_url();
-        $url = wp_nonce_url($url,'express','sec');
         $context = $minicart ? 'minicart' : 'cart';
-        $button= apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context($context));
+        $button = apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context($context));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
-        $html = "<a href='$url' class='vipps-express-checkout short $method' title='$title'>$button</a>";
+        $html = "<a href='#' class='vipps-express-checkout short " . esc_attr($method) . "' title='" . esc_attr($title) . "'>$button</a>";
         $html = apply_filters('woo_vipps_cart_express_checkout_button', $html, $url);
         echo $html;
     }

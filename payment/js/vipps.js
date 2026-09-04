@@ -219,7 +219,9 @@
     vippsInit();
 
     function vippsInit() {
-        document.querySelectorAll(".button.single-product.vipps-buy-now").forEach((wrapper) => {
+        document.querySelectorAll(
+            ".button.single-product.vipps-buy-now, .vipps-express-checkout"
+        ).forEach((wrapper) => {
             wrapper.classList.add("initialized");
         });
 
@@ -242,7 +244,10 @@
             const attemptId = currentAttempt.id;
             let result;
 
-            result = await createPaymentSession(currentAttempt.transaction);
+            result = await createPaymentSession(
+                currentAttempt.transaction,
+                currentAttempt.path
+            );
 
             if (!currentAttempt || currentAttempt.id !== attemptId) {
                 return null;
@@ -317,7 +322,7 @@
                 console.error(error);
             });
 
-        function begin(transaction, button, event) {
+        function begin(transaction, button, event, path) {
             if (locked) {
                 return false;
             }
@@ -326,6 +331,7 @@
             currentAttempt = {
                 id: ++nextAttemptId,
                 transaction,
+                path,
                 button,
                 event,
                 lastResponse: null
@@ -424,9 +430,9 @@
         return { begin, addPostData, start };
     }
 
-    async function createPaymentSession(transaction) {
+    async function createPaymentSession(transaction, path) {
         return wp.apiFetch({
-            path: "/woo-vipps/v1/express_checkout_single",
+            path,
             method: "POST",
             headers: {
                 "Accept-Language": `${config.vippslocale || "nb_NO"}, *`
@@ -438,7 +444,9 @@
     // Using the Vipps SDK, get a payment URL from the new REST endpoint and let
     // the SDK start the express checkout session. IOK 2026-09-04
     async function handlePurchaseClick(event) {
-        const wrapper = event.target.closest?.(".button.single-product.vipps-buy-now.initialized");
+        const wrapper = event.target.closest?.(
+            ".button.single-product.vipps-buy-now.initialized, .vipps-express-checkout"
+        );
 
         if (!wrapper || !wrapper.querySelector("vipps-mobilepay-button")) {
             return;
@@ -450,6 +458,41 @@
             return;
         }
 
+        if (wrapper.classList.contains("vipps-express-checkout")) {
+            await handleCartPurchase(wrapper, event);
+            return;
+        }
+
+        await handleSingleProductPurchase(wrapper, event);
+    }
+
+    async function handleCartPurchase(wrapper, event) {
+        if (wrapper.classList.contains("disabled") || wrapper.hasAttribute("disabled")) {
+            showError("Cannot start express checkout: cart checkout is unavailable", wrapper);
+            return;
+        }
+
+        removeErrorMessages();
+
+        wp.hooks.doAction("vippsBuyCart", wrapper, event);
+
+        const transaction = wp.hooks.applyFilters(
+            "vippsBuyCartData",
+            transactionFromPostData({}),
+            wrapper,
+            event
+        );
+
+        // Cart express checkout gets products from the WooCommerce cart session,
+        // but still sends cookies and post metadata. IOK 2026-09-04
+        if (!checkout.begin(transaction, wrapper, event, "/woo-vipps/v1/express_checkout")) {
+            return;
+        }
+
+        await checkout.start();
+    }
+
+    async function handleSingleProductPurchase(wrapper, event) {
         if (wrapper.classList.contains("disabled") || wrapper.hasAttribute("disabled")) {
             showVariationMessage(wrapper);
             return;
@@ -495,7 +538,7 @@
             return;
         }
 
-        if (!checkout.begin(transaction, wrapper, event)) {
+        if (!checkout.begin(transaction, wrapper, event, "/woo-vipps/v1/express_checkout_single")) {
             return;
         }
 
@@ -602,6 +645,12 @@
             variation_id: source.variation_id || "",
             sku: source.sku || source.product_sku || "",
             quantity: source.quantity || "1",
+            ...transactionFromPostData(post)
+        };
+    }
+
+    function transactionFromPostData(post) {
+        return {
             cookies: getCookies(),
             post: addOrderAttributionData(post)
         };
@@ -707,7 +756,7 @@
     }
 
     function setPurchaseButtonsBusy(busy) {
-        document.querySelectorAll(".vipps-buy-now").forEach((wrapper) => {
+        document.querySelectorAll(".vipps-buy-now, .vipps-express-checkout").forEach((wrapper) => {
             wrapper.classList.toggle("loading", busy);
 
             if (busy) {
@@ -856,6 +905,7 @@
         document.querySelectorAll(".woocommerce-error.vipps-error").forEach((element) => {
             element.remove();
         });
+        document.querySelector("#vipps-error-dialog")?.close();
 
         emitDocumentEvent("woo-vipps-remove-errors");
         wp.hooks.doAction("vippsRemoveErrorMessages");
@@ -870,7 +920,45 @@
         emitDocumentEvent("woo-vipps-error-message", [markup, wrapper]);
         wp.hooks.doAction("vippsAddErrorMessage", markup, wrapper);
 
-        wrapper?.insertAdjacentHTML("afterend", markup);
+        showErrorDialog(markup);
+    }
+
+    function showErrorDialog(markup) {
+        const dialog = ensureErrorDialog();
+        dialog.content.innerHTML = markup;
+        dialog.dialog.showModal();
+    }
+
+    // Cart and minicart layouts often render awkwardly with inline WooCommerce
+    // errors, so show checkout errors in a small dialog instead. IOK 2026-09-04
+    function ensureErrorDialog() {
+        let dialog = document.querySelector("#vipps-error-dialog");
+        if (dialog) {
+            return {
+                dialog,
+                content: dialog.querySelector(".vipps-error-dialog-content")
+            };
+        }
+
+        dialog = document.createElement("dialog");
+        dialog.id = "vipps-error-dialog";
+        dialog.className = "vipps-mobilepay-dialog vipps-error-dialog";
+
+        const close = document.createElement("button");
+        close.type = "button";
+        close.className = "dialog-close";
+        close.setAttribute("aria-label", "Close");
+        close.title = "Close";
+        close.textContent = "×";
+
+        const content = document.createElement("div");
+        content.className = "vipps-error-dialog-content";
+
+        close.addEventListener("click", () => dialog.close());
+        dialog.append(close, content);
+        document.body.append(dialog);
+
+        return { dialog, content };
     }
 
     function emitDocumentEvent(name, args = []) {
