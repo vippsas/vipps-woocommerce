@@ -617,22 +617,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $this->page_templates;
      }
 
-    // We can't use get_pages to get a default list of pages for our settings, because it triggers
-    // actions that can be used by other plugins. Therefore we must use the database directly and cache the results. IOK 2023-08-22
-    public function get_pagelist () {
-        if (!$this->page_list) {
-            global $wpdb;
-            $page_list = array();
-
-            foreach($wpdb->get_results("SELECT ID, post_title, post_name FROM {$wpdb->prefix}posts WHERE post_type='page' and post_status='publish'") as $page) {
-                $page_list[$page->ID] = $page->post_title;
-            }
-
-            $this->page_list = $page_list;
-        }
-        return $this->page_list;
-    }
-
     // Check to see if the product in question can be bought with express checkout IOK 2018-12-04
     public function product_supports_express_checkout($product) {
         // IOK 2023-12-12 Can only support express checkout for Vipps - not MobilePay (yet!)
