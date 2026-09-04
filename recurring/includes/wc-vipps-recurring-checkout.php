@@ -48,7 +48,7 @@ class WC_Vipps_Recurring_Checkout {
 				return;
 			}
 
-			$rest_prefix = WC_Vipps_Recurring_Checkout_Rest_Api::$api_namespace;
+			$rest_prefix = 'vipps-mobilepay-recurring/v1/';
 			$req_uri     = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
 
 			$is_my_endpoint = ( false !== strpos( $req_uri, $rest_prefix ) );
@@ -205,6 +205,7 @@ class WC_Vipps_Recurring_Checkout {
 			$auth_token = WC_Gateway_Vipps_Recurring::get_instance()->api->generate_idempotency_key();
 
 			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN, $auth_token );
+			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_ORIGINAL_CUSTOMER_ID, $order->get_customer_id( 'edit' ) );
 			$order->save();
 
 			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_CHECKOUT_PENDING_ORDER_ID, $partial_order_id );
@@ -438,22 +439,114 @@ class WC_Vipps_Recurring_Checkout {
 		}
 
 		$order_key_db = $order->get_order_key( 'code' );
-		if ( $order_key_db !== $key ) {
+		if ( ! hash_equals( $order_key_db, $key ) ) {
 			return;
 		}
 
-		// Attempt to log the user in
+		if ( ! WC()->session ) {
+			return;
+		}
+
+		// Only the browser session that created this Checkout order may log in its customer.
 		$session_auth_token = WC()->session->get( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN );
 		$order_auth_token   = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
 
-		if ( $order_auth_token !== $session_auth_token ) {
+		if ( ! is_string( $order_auth_token ) || ! is_string( $session_auth_token )
+		     || ! $order_auth_token || ! $session_auth_token
+		     || ! hash_equals( $order_auth_token, $session_auth_token ) ) {
+			return;
+		}
+
+		if ( is_user_logged_in() ) {
+			$current_user_id = get_current_user_id();
+			$order_user_id   = $order->get_customer_id( 'edit' );
+
+			if ( $current_user_id !== $order_user_id ) {
+				$this->assign_order_and_subscriptions_to_customer( $order, $current_user_id );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Assigned the Checkout order to returning logged-in customer %s instead of customer %s', $order_id, $current_user_id, $order_user_id ) );
+			}
+
+			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
+
 			return;
 		}
 
 		$user = $order->get_user();
+		if ( ! $user ) {
+			return;
+		}
+
+		$roles       = $user->roles;
+		$is_customer = ! empty( array_intersect( [ 'customer', 'subscriber' ], $roles ) );
+		if ( ! $is_customer || user_can( $user, 'manage_woocommerce' ) || user_can( $user, 'manage_options' ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Refusing to log in a privileged or non-customer user on the Checkout return', $order_id ) );
+			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
+
+			return;
+		}
 
 		wc_set_customer_auth_cookie( $user->ID );
 		WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
+	}
+
+	private function session_owns_checkout_order( WC_Order $order ): bool {
+		if ( ! WC()->session ) {
+			return false;
+		}
+
+		$session_auth_token = WC()->session->get( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN );
+		$order_auth_token   = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
+
+		return is_string( $order_auth_token ) && is_string( $session_auth_token )
+		       && $order_auth_token && $session_auth_token
+		       && hash_equals( $order_auth_token, $session_auth_token );
+	}
+
+	private function assign_order_and_subscriptions_to_customer( WC_Order $order, int $customer_id ): void {
+		$order->set_customer_id( $customer_id );
+		$order->save();
+
+		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		foreach ( $subscriptions as $subscription ) {
+			$subscription->set_customer_id( $customer_id );
+			$subscription->save();
+		}
+	}
+
+	private function prepare_pending_order_for_current_customer( WC_Order $order ): bool {
+		$current_user_id  = get_current_user_id();
+		$order_user_id    = (int) $order->get_customer_id( 'edit' );
+		$started_as_guest = $order->meta_exists( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_ORIGINAL_CUSTOMER_ID )
+		                    && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_ORIGINAL_CUSTOMER_ID );
+
+		if ( ! $current_user_id ) {
+			return ! $order_user_id || ( $started_as_guest && $this->session_owns_checkout_order( $order ) );
+		}
+
+		if ( $order_user_id && $order_user_id !== $current_user_id ) {
+			if ( ! $this->session_owns_checkout_order( $order ) ) {
+				return false;
+			}
+
+			$this->assign_order_and_subscriptions_to_customer( $order, $current_user_id );
+
+			return true;
+		}
+
+		if ( $order_user_id === $current_user_id ) {
+			return true;
+		}
+
+		if ( $order->meta_exists( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_ORIGINAL_CUSTOMER_ID )
+		     && ! $this->session_owns_checkout_order( $order ) ) {
+			return false;
+		}
+
+		$this->assign_order_and_subscriptions_to_customer( $order, $current_user_id );
+
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Assigned a migrated guest Checkout order to logged-in customer %s', $order->get_id(), $current_user_id ) );
+
+		return true;
 	}
 
 	public function cart_changed( string $source ): void {
@@ -636,7 +729,8 @@ class WC_Vipps_Recurring_Checkout {
 
 		if ( is_wc_endpoint_url( 'order-received' ) ) {
 			$order_id = absint( $wp->query_vars['order-received'] );
-			$this->maybe_login_checkout_user( $order_id, $_GET['key'] ?? null );
+			$key      = isset( $_GET['key'] ) && is_string( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : null;
+			$this->maybe_login_checkout_user( $order_id, $key );
 		}
 
 		// Defer to the normal code for endpoints IOK 2022-12-09
@@ -803,6 +897,13 @@ class WC_Vipps_Recurring_Checkout {
 		// If this is set, this is a currently pending order which is maybe still valid
 		$pending_order_id = WC_Vipps_Recurring_Helper::get_checkout_pending_order_id();
 		$order            = $pending_order_id ? wc_get_order( $pending_order_id ) : null;
+
+		if ( $order && ! $this->prepare_pending_order_for_current_customer( $order ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Ignoring a pending Checkout order that does not belong to the current customer', $order->get_id() ) );
+			$this->abandon_checkout_order( false );
+			$order            = null;
+			$pending_order_id = false;
+		}
 
 		# If we do have an order, we need to check if it is 'pending', and if not, we have to check its payment status
 		$payment_status = null;
@@ -1033,8 +1134,16 @@ class WC_Vipps_Recurring_Checkout {
 		}
 
 		// On success, we might have to create a user as well, if they don't already exist, this is because Woo Subscriptions REQUIRE a user.
-		$email         = $session['billingDetails']['email'];
-		$has_real_user = trim( $order->get_billing_email() ) !== trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL );
+		$email                 = sanitize_email( $session['billingDetails']['email'] ?? '' );
+		$customer_id           = (int) $order->get_customer_id( 'edit' );
+		$anonymous_customer_id = (int) get_option( WC_Vipps_Recurring_Helper::OPTION_ANONYMOUS_SYSTEM_CUSTOMER_ID );
+		$user                  = $customer_id ? get_user_by( 'ID', $customer_id ) : false;
+		$has_real_user         = $user && $customer_id !== $anonymous_customer_id;
+		if ( ! $has_real_user && ! $email ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Unable to assign the Checkout order because the billing email is empty', $order_id ) );
+
+			return;
+		}
 
 		if ( ! $has_real_user ) {
 			$user = get_user_by( 'email', $email );
@@ -1063,6 +1172,16 @@ class WC_Vipps_Recurring_Checkout {
 
 			$username = apply_filters( 'woo_vipps_express_checkout_new_username', '', $email, $userdata, $order );
 			$user_id  = wc_create_new_customer( $email, $username, wp_generate_password(), $userdata );
+			if ( is_wp_error( $user_id ) ) {
+				$user = get_user_by( 'email', $email );
+				if ( ! $user ) {
+					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Unable to create or find the Checkout customer: %s', $order_id, $user_id->get_error_message() ) );
+
+					return;
+				}
+
+				$user_id = $user->ID;
+			}
 
 			$customer = new WC_Customer( $user_id );
 			$this->maybe_update_billing_and_shipping( $customer, $session );
@@ -1122,7 +1241,7 @@ class WC_Vipps_Recurring_Checkout {
 			return;
 		}
 
-		if ( trim( $object->get_billing_email() ) === trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) ) {
+		if ( ! trim( $object->get_billing_email() ) || trim( $object->get_billing_email() ) === trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) ) {
 			$object->set_billing_email( $contact['email'] );
 		}
 
