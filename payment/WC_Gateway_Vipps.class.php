@@ -604,20 +604,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function shipping_details_callback_url($token='',$reference=0) {
         return $this->make_callback_urls('vipps_shipping_details',$token,$reference);
     }
-    // Callback for the consetn removal callback. Must use template redirect directly, because wc-api doesn't handle DELETE.
-    // IOK 2018-05-18
-    public function consent_removal_callback_url () {
-        $queryargs = [];
-        $url = home_url("/", 'https');
-        if ( !get_option('permalink_structure')) {
-            $queryargs['vipps-consent-removal']=1;
-        } else {
-            $url = trailingslashit(home_url('vipps-consent-removal', 'https'));
-        }
-        // And we need to add an empty "callback" query arg as the very last arg to receive the actual callback.
-        // We can't use add_query_arg for that, as an empty argument will remove the equals-sign.
-        return add_query_arg($queryargs, $url) . "&callback=";
-    }
 
     // Allow user to select the template to be used for the special Vipps MobilePay pages. IOK 2020-02-17
     public function get_theme_page_templates() {
