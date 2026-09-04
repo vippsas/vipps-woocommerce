@@ -4972,7 +4972,8 @@ else:
     }
 
     public static function is_special_page() {
-        return is_page(static::get_special_page_id());
+        $id = static::get_special_page_id();
+        return $id && is_page($id);
     }
 
     public static function get_special_page_id() {
