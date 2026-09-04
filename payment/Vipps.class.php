@@ -2737,18 +2737,9 @@ else:
         add_action('wp_ajax_nopriv_check_order_status', array($this, 'ajax_check_order_status'));
         add_action('wp_ajax_check_order_status', array($this, 'ajax_check_order_status'));
 
-
-        // Buying a single product directly using express checkout IOK 2018-09-28
-        add_action('wp_ajax_nopriv_vipps_buy_single_product', array($this, 'ajax_vipps_buy_single_product'));
-        add_action('wp_ajax_vipps_buy_single_product', array($this, 'ajax_vipps_buy_single_product'));
-
         // This is for express checkout which we will also do asynchronously IOK 2018-05-28
         add_action('wp_ajax_nopriv_do_express_checkout', array($this, 'ajax_do_express_checkout'));
         add_action('wp_ajax_do_express_checkout', array($this, 'ajax_do_express_checkout'));
-
-        // Same thing, but for single products IOK 2018-05-28
-        add_action('wp_ajax_nopriv_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
-        add_action('wp_ajax_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
 
         // Handle the cancel unpaid order action when the "hold stock" times out.
         // For *normal* vipps orders, we run another cronjob every 5. minute which checks order status,
@@ -4597,26 +4588,6 @@ else:
     }
 
 
-    public function ajax_vipps_buy_single_product () {
-	Vipps::nocache();
-        static::set_locale_if_in_header();
-        // We're not checking ajax referer here, because what we do is creating a session and redirecting to the
-        // 'create order' page wherein we'll do the actual work. IOK 2018-09-28
-        $session = WC()->session;
-        if (!$session->has_session()) {
-            $session->set_customer_session_cookie(true);
-        }
-        $session->set('__vipps_buy_product', json_encode($_REQUEST));
-
-        // Incredibly, some caches will cache this page even with cookies set and no-cache headers set. So we try to 
-        // add yet another way to inform caches that this is, in fact, not cacheable. IOK 2023-06-12
-        $url = add_query_arg('nc', sha1(uniqid(WC()->session->get_customer_id(),true)), $this->buy_product_url());
-
-        $result = array('ok'=>1, 'msg'=>__('Processing order... ','woo-vipps'), 'url'=> $url);
-        wp_send_json($result);
-        exit();
-    }
-
     // Actually create a exprss checkout order object, with no shipping or personal information, returning information about
     // the result. The order should at this point be in a/the cart. For single product purchases, this is a different cart than 
     // the main one; for cart purchases, it's just the WC()->cart object. IOK 2026-08-25
@@ -4808,34 +4779,6 @@ error_log("args are " . print_r($args, true));
         $response->set_status(200);
 
         return $response;
-    }
-
-    // Ajax handler for single product express checkout. Recieves arguments from a POSTed form and checks nonce. IOK 2026-08-12
-    public function ajax_do_single_product_express_checkout() {
-        if ("POST" != $_SERVER['REQUEST_METHOD']) {
-          http_response_code(405);
-          echo "Not supported";
-          exit();
-        }
-        check_ajax_referer('do_express','sec');
-        Vipps::nocache();
-        static::set_locale_if_in_header();
-
-        // Get any attributes posted for variable products (where one of the dimensions is "any" for instance)
-        $variations = array();
-        foreach ($_POST as $key => $value ) {
-            if ( 'attribute_' !== substr( $key, 0, 10 ) ) {
-                continue;
-            }
-            $variations[ sanitize_title( wp_unslash( $key ) ) ] = wp_unslash( $value );
-        }
-        $varid = intval($_POST['variation_id'] ?? 0);
-        $prodid = intval($_POST['product_id'] ?? 0);
-        $sku = sanitize_text_field($_POST['sku'] ?? "");
-        $quantity = max(1, intval($_POST['quantity'] ?? 0));
-        $result = $this->really_do_single_product_express_checkout($prodid, $varid, $sku, $quantity, $variations);
-        wp_send_json($result);
-        exit();
     }
 
     // Common private method to do single product express checkout, used by the old ajax_do_single_product_express_checkout and the new
