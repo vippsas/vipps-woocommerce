@@ -624,8 +624,61 @@
             variation_id: source.variation_id || "",
             sku: source.sku || source.product_sku || "",
             quantity: source.quantity || "1",
-            post
+            cookies: getCookies(),
+            post: addOrderAttributionData(post)
         };
+    }
+
+    function getCookies() {
+        const cookies = {};
+
+        document.cookie.split(";").forEach((cookie) => {
+            const separator = cookie.indexOf("=");
+            const name = separator >= 0 ? cookie.slice(0, separator).trim() : cookie.trim();
+
+            if (!name || name === "wordpress_test_cookie" || name.startsWith("wp-settings")) {
+                return;
+            }
+
+            const value = separator >= 0 ? cookie.slice(separator + 1) : "";
+            cookies[decodeCookieValue(name)] = decodeCookieValue(value);
+        });
+
+        return cookies;
+    }
+
+    function decodeCookieValue(value) {
+        try {
+            return decodeURIComponent(value);
+        } catch {
+            return value;
+        }
+    }
+
+    function addOrderAttributionData(post) {
+        const attribution = window.wc_order_attribution;
+
+        if (
+            !attribution?.params ||
+            !attribution?.fields ||
+            typeof attribution.getAttributionData !== "function"
+        ) {
+            return post;
+        }
+
+        const data = attribution.getAttributionData();
+        const prefix = attribution.params.prefix || "";
+
+        // WooCommerce form checkout posts these as prefixed fields, so keep the
+        // same shape for backwards compatibility. IOK 2026-09-04
+        Object.keys(attribution.fields).forEach((key) => {
+            const postKey = `${prefix}${key}`;
+            if (!(postKey in post)) {
+                post[postKey] = data?.[key] ?? "";
+            }
+        });
+
+        return post;
     }
 
     function runCompatibilityAction(wrapper, event) {
