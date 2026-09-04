@@ -4122,7 +4122,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Ensure special page has the necessary shortcode. LP 2026-09-01
         $special_page = get_post(Vipps::get_special_page_id());
         if ($special_page && !has_shortcode($special_page->post_content, 'vipps_special_page')) {
-            error_log('LP special page missing shortcode, adding it!');
             $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
             wp_update_post([
                     'ID'           => Vipps::get_special_page_id(),
@@ -4130,7 +4129,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             ]);
         } else if (!Vipps::get_special_page_id()) {
             // We shouldn't really get here, the page should be ensured to exist in init. LP 2026-09-03
-            error_log('LP processing admin options: missing special page id');
             /* translators: %s is current method name */
             $this->log(sprintf(__('Missing special page in %s, attempting to fix', 'woo-vipps'), 'process_admin_options'), 'warning');
             Vipps::instance()->ensure_special_page_exists();

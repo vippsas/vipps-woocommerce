@@ -291,7 +291,6 @@ class Vipps {
         // in the post to check status in woocommerce_loaded when we ensure the special page exists. LP 2026-09-03
         $delete_special_page_id = function($post_id, $post = null) {
             if (static::get_special_page_id() === $post_id) {
-                error_log('LP delete/trash special page: deleting special page id');
                 delete_option('woocommerce_vipps_special_page_page_id');
             }
         };
@@ -431,17 +430,13 @@ class Vipps {
 
         // If user had in previous version overriden the fake page with a real one: migrate this page to be the special page. LP 2026-09-01
         $old_special_page_id = $this->gateway()->get_option('vippsspecialpageid');
-        error_log('LP old_special_page_id: ' . print_r($old_special_page_id, true));
         if ($old_special_page_id && ($special_page = get_post($old_special_page_id)) && "trash" !== $special_page->post_status) {
             $this->log(__('Migrated old special page setting.', 'woo-vipps'), 'info');
-            error_log("LP migrating special page id to $old_special_page_id");
             // there is no wc_set_page_id() so we update the option directly. LP 2026-09-01
             update_option('woocommerce_vipps_special_page_page_id', $old_special_page_id);
 
             // Ensure this page has the necessary shortcode. LP 2026-09-01
-            error_log('LP special_page content: ' . print_r($special_page->post_content, true));
             if (!has_shortcode($special_page->post_content, 'vipps_special_page')) {
-                error_log('LP special page missing shortcode, adding it!');
                 $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
                 wp_update_post([
                         'ID'           => $old_special_page_id,
@@ -449,7 +444,6 @@ class Vipps {
                 ]);
             }
         } else {
-            error_log('LP maybe create pages');
             // Create special page if its missing. LP 2026-09-01
             $this->maybe_create_vipps_pages();
         }
@@ -2579,7 +2573,6 @@ else:
     // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
         if (static::is_special_page()) {
-            error_log('LP template_redirect we are in special page');
             // dont cache special page. LP 2026-08-25
             $this->nocache();
 
@@ -2599,7 +2592,6 @@ else:
         // server-rendered mini-cart) - not just the page's own heading. Only replace the title of
         // the queried page so an earlier title doesn't consume this one-shot filter.
         if ( ! is_null( $wp_query ) && ! is_admin() && is_main_query() && in_the_loop() && is_page() && $postid == static::get_special_page_id() ) {
-            error_log("LP potentially changing tile for special page, action = " . ($_GET['action'] ?? '<missing>'));
             switch ($_GET['action'] ?? '') {
                 case 'wait_for_payment':
                     $title = __('Processing order', 'woo-vipps');
@@ -2610,7 +2602,6 @@ else:
                     $title = __('Express Checkout', 'woo-vipps');
                     break;
             }
-            error_log("LP potentially changing title for special page. Title=$title");
         }
         return $title;
     }
@@ -5213,13 +5204,11 @@ else:
             // vipps special page, previously a fake page. LP 2026-08-18
             $builtin_special_page_id = static::get_special_page_id();
             if (!$builtin_special_page_id || !get_post_status($builtin_special_page_id)) {
-                error_log('LP maybe_create_vipps_pages missing special page');
                 delete_option('woocommerce_vipps_special_page_page_id');
                 $make_pages = true;
             }
 
             if ($make_pages) {
-                error_log('LP creating pages!');
                 WC_Install::create_pages();
             }
     }
@@ -5229,13 +5218,11 @@ else:
         if (is_admin()) return;
         if (wp_doing_ajax()) return;
         if (defined('REST_REQUEST') && REST_REQUEST) return;
-        error_log('LP we are in vipps_special_page_shortcode');
 
 
 
         $action = $_GET['action'] ?? '';
         do_action('woo_vipps_before_handling_special_page', $action);
-        error_log('LP action: ' . print_r($action, true));
         switch ($action) {
             case 'wait_for_payment':
                 $html = $this->vipps_wait_for_payment();
@@ -5249,7 +5236,6 @@ else:
             default:
                 $html = '';
         }
-        error_log("LP shortcode action is done. html output is $html");
 
         // NB: for certain themes, like twentytwentyfive, echo'ing the html output messes up the ordering and placement, so we need to return in in this shrotcode handler, so each action submethod needs to return its html. LP 2026-08-27
         return $html;
@@ -5547,18 +5533,14 @@ else:
 
 
     public function vipps_wait_for_payment() {
-        error_log('LP in vipps_wait_for_payment: ');
         $orderid = WC()->session->get('_vipps_pending_order');
-        error_log('LP orderid: ' . print_r($orderid, true));
 
         $order = null;
         $gw = $this->gateway();
 
         // Failsafe for when the session disappears IOK 2018-11-19
         $no_session  = $orderid ? false : true;
-        error_log('LP no_session: ' . print_r($no_session, true));
         $limited_session = sanitize_text_field(@$_GET['ls']);
-        error_log('LP limited_session: ' . print_r($limited_session, true));
 
         // Now we *should* have a session at this point, but the session may have been deleted,
         // or the session may be in another browser, because we get here by the Vipps app opening the app.
@@ -5567,7 +5549,6 @@ else:
         // IOK 2019-11-19, changed to using GET 2023-01-23
         if ($no_session && $limited_session) {
             $orderid = intval(@$_GET['id']);
-            error_log('LP orderid from limited session: ' . print_r($orderid, true));
         }
         if ($orderid) {
             clean_post_cache($orderid);
@@ -5575,7 +5556,6 @@ else:
         }
 
         // if we came here with no session, check to see if we are allowed to do stuff with the order.
-        error_log('LP has order obj?: ' . !!$order);
         if ($order && $no_session) {
             if (!$order->get_meta('_vipps_limited_session') || (!wp_check_password($limited_session, $order->get_meta('_vipps_limited_session')))) {
                 $this->log("Wrong order session id on Vipps payment return url", 'error');
@@ -5603,19 +5583,16 @@ else:
 
         // If we are done, we are done, so go directly to the end. IOK 2018-05-16
         $status = $deleted_order ? 'cancelled' : $order->get_status();
-        error_log('LP setting status to: ' . print_r($status, true));
 
         // This is for debugging only - set to false to ensure we wait for the callback. IOK 2023-08-04
         $do_poll = true;
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($do_poll && $status == 'pending') {
-            error_log('LP wait_for_payment polling vipps for order status');
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
             $newstatus = $gw->callback_check_order_status($order);
             if ($status != $newstatus) {
                 $status = $newstatus;
-                error_log('LP status changed to: ' . print_r($status, true));
                 clean_post_cache($orderid);
                 $order = wc_get_order($orderid); // Reload order object
             }
