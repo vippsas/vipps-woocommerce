@@ -198,11 +198,6 @@
         return;
     }
 
-    if (typeof window.wp?.apiFetch !== "function") {
-        console.error("vipps: WordPress apiFetch is not available");
-        return;
-    }
-
     const dialogUi = window.createVippsMobilepayDialog();
     const checkout = createCheckoutController();
 
@@ -228,9 +223,7 @@
             wrapper.classList.add("initialized");
         });
 
-        if (window.wp?.hooks) {
-            window.wp.hooks.doAction("vippsInit");
-        }
+        wp.hooks.doAction("vippsInit");
     }
 
     function createCheckoutController() {
@@ -432,7 +425,7 @@
     }
 
     async function createPaymentSession(transaction) {
-        return window.wp.apiFetch({
+        return wp.apiFetch({
             path: "/woo-vipps/v1/express_checkout_single",
             method: "POST",
             headers: {
@@ -464,19 +457,15 @@
 
         removeErrorMessages();
 
-        if (window.wp?.hooks) {
-            window.wp.hooks.doAction("vippsBuySingleProduct", wrapper, event);
-        }
+        wp.hooks.doAction("vippsBuySingleProduct", wrapper, event);
 
         let compatMode = wrapper.classList.contains("compat-mode");
-        if (window.wp?.hooks) {
-            compatMode = window.wp.hooks.applyFilters(
-                "vippsBuySingleProductCompatMode",
-                compatMode,
-                wrapper,
-                event
-            );
-        }
+        compatMode = wp.hooks.applyFilters(
+            "vippsBuySingleProductCompatMode",
+            compatMode,
+            wrapper,
+            event
+        );
 
         if (compatMode) {
             runCompatibilityAction(wrapper, event);
@@ -492,16 +481,12 @@
 
         const legacyData = transaction.legacyData;
         // Finally, create a hook for even weirder themes.
-        if (window.wp?.hooks) {
-            transaction = transactionFromLegacyData(window.wp.hooks.applyFilters(
-                "vippsBuySingleProductData",
-                legacyData,
-                wrapper,
-                event
-            ));
-        } else {
-            transaction = transactionFromLegacyData(legacyData);
-        }
+        transaction = transactionFromLegacyData(wp.hooks.applyFilters(
+            "vippsBuySingleProductData",
+            legacyData,
+            wrapper,
+            event
+        ));
 
         // If filters and fallbacks could not identify the product, do not start
         // an empty transaction against the REST endpoint. IOK 2026-09-04
@@ -698,14 +683,12 @@
             addToCartButton.click();
         };
 
-        if (window.wp?.hooks) {
-            action = window.wp.hooks.applyFilters(
-                "vippsBuySingleProductCompatModeAction",
-                action,
-                wrapper,
-                event
-            );
-        }
+        action = wp.hooks.applyFilters(
+            "vippsBuySingleProductCompatModeAction",
+            action,
+            wrapper,
+            event
+        );
 
         setPurchaseButtonsBusy(true);
         action();
@@ -843,16 +826,16 @@
     }
 
     function subscribeToCartChanges() {
-        if (!window.wp?.data) return;
+        if (!wp.data) return;
 
         let previousCheckoutUrl = "";
-        window.wp.data.subscribe(() => {
+        wp.data.subscribe(() => {
             const button = document.querySelector(
                 "a.wp-block-woocommerce-mini-cart-checkout-button-block"
             );
             if (!button) return;
 
-            const cart = window.wp.data.select("wc/store/cart")?.getCartData?.();
+            const cart = wp.data.select("wc/store/cart")?.getCartData?.();
             const checkoutUrl = cart?.extensions?.["woo-vipps"]?.checkout_url;
             if (!checkoutUrl || checkoutUrl === previousCheckoutUrl) return;
 
@@ -875,23 +858,17 @@
         });
 
         emitDocumentEvent("woo-vipps-remove-errors");
-        if (window.wp?.hooks) {
-            window.wp.hooks.doAction("vippsRemoveErrorMessages");
-        }
+        wp.hooks.doAction("vippsRemoveErrorMessages");
     }
 
     function showError(message, wrapper) {
         removeErrorMessages();
 
         let markup = `<p><ul class="woocommerce-error vipps-error vipps-default-error-message vipps-buy-now-error"><li>${escapeHtml(message)}</li></ul></p>`;
-        if (window.wp?.hooks) {
-            markup = window.wp.hooks.applyFilters("vippsErrorMessage", markup, wrapper);
-        }
+        markup = wp.hooks.applyFilters("vippsErrorMessage", markup, wrapper);
 
         emitDocumentEvent("woo-vipps-error-message", [markup, wrapper]);
-        if (window.wp?.hooks) {
-            window.wp.hooks.doAction("vippsAddErrorMessage", markup, wrapper);
-        }
+        wp.hooks.doAction("vippsAddErrorMessage", markup, wrapper);
 
         wrapper?.insertAdjacentHTML("afterend", markup);
     }
