@@ -615,7 +615,6 @@
             }
         });
 
-        // Future: move post fields named attribute_* into a separate variations field.
         // The REST endpoint expects the product identifiers at top level, while
         // the rest of the serialized WooCommerce form data travels as post data.
         // IOK 2026-09-04

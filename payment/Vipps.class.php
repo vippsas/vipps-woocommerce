@@ -4719,10 +4719,10 @@ error_log("args are " . print_r($args, true));
         $quantity = max(1, intval($args['quantity'] ?? 0));
 
 
-        // We expect the variations - that is, the fields named "attribute_..." to be sent in a separate field, variations. But we 
-        // still sanitize them. 
+        // We expect the variations - that is, the fields named "attribute_..." to be sent as post fields.
+        // We just need to sanitize them. 
         $variations = [];
-        $invars = $args['variations'] ?? [];
+        $invars = $args['post'] ?? [];
         foreach ($invars as $key => $value) {
             if ( 'attribute_' !== substr( $key, 0, 10 ) ) {
                 continue;
