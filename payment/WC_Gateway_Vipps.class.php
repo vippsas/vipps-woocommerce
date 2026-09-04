@@ -604,20 +604,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function shipping_details_callback_url($token='',$reference=0) {
         return $this->make_callback_urls('vipps_shipping_details',$token,$reference);
     }
-    // Callback for the consetn removal callback. Must use template redirect directly, because wc-api doesn't handle DELETE.
-    // IOK 2018-05-18
-    public function consent_removal_callback_url () {
-        $queryargs = [];
-        $url = home_url("/", 'https');
-        if ( !get_option('permalink_structure')) {
-            $queryargs['vipps-consent-removal']=1;
-        } else {
-            $url = trailingslashit(home_url('vipps-consent-removal', 'https'));
-        }
-        // And we need to add an empty "callback" query arg as the very last arg to receive the actual callback.
-        // We can't use add_query_arg for that, as an empty argument will remove the equals-sign.
-        return add_query_arg($queryargs, $url) . "&callback=";
-    }
 
     // Allow user to select the template to be used for the special Vipps MobilePay pages. IOK 2020-02-17
     public function get_theme_page_templates() {
@@ -630,20 +616,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         return $this->page_templates;
      }
-
-    // We can't use get_pages to get a default list of pages for our settings, because it triggers
-    // actions that can be used by other plugins. Therefore we must use the database directly and cache the results. IOK 2023-08-22
-    public function get_pagelist () {
-        if (!$this->page_list) {
-            global $wpdb;
-            $page_list = array(''=>__('Use a simulated page (default)', 'woo-vipps'));
-            foreach($wpdb->get_results("SELECT ID,post_title FROM {$wpdb->prefix}posts WHERE post_type='page' and post_status='publish'") as $page) {
-                $page_list[$page->ID] = $page->post_title;
-            }
-            $this->page_list = $page_list;
-        }
-        return $this->page_list;
-    }
 
     // Check to see if the product in question can be bought with express checkout IOK 2018-12-04
     public function product_supports_express_checkout($product) {
@@ -1056,7 +1028,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Used for defaults in the admin interface; however this functions is called a loot more often than that.
         $page_templates = $this->get_theme_page_templates();
-        $page_list = $this->get_pagelist();
 
         $orderprefix = $Vipps->generate_order_prefix();
 
@@ -1072,10 +1043,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
          //      $vippscreateuserdefault = "yes"; // However, for Vipps Checkout the email address is freetext so we'll treat the default a bit different.
            }
         }
-
-        // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
-        $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
-
 
         // This is used for new options,to set reasonable defaults based on older settings. We can't use WC_Settings->get_option for this unfortunately.
         $current = get_option('woocommerce_vipps_settings');
@@ -1603,20 +1570,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 ),
 
                  'vippsspecialpagetemplate' => array(
-                     'title'       => sprintf(__('Override page template used for the special %1$s pages', 'woo-vipps'), Vipps::CompanyName()),
+                     'title'       => sprintf(__('Legacy: Override page template used for the special %1$s page', 'woo-vipps'), Vipps::CompanyName()),
                      'label'       => sprintf(__('Use specific template for %1$s', 'woo-vipps'), Vipps::CompanyName()),
                      'type'        => 'select',
                      'options' =>  $page_templates,
-                     'description' => sprintf(__('Use this template from your theme or child-theme to display all the special %1$s pages. You will probably want a full-width template and it should call \'the_content()\' normally.', 'woo-vipps'), Vipps::CompanyName()),
+                     'description' => sprintf(__('Use this template from your theme or child-theme for the special %1$s page.<br>Legacy: This is not necessary anymore - you should instead choose a template by editing the page like any other page.','woo-vipps'), Vipps::CompanyName()),
                      'default' => ''),
 
+                 // Deprecated, not shown anymore: TODO: remove this option in future. LP 2026-09-01
                  'vippsspecialpageid' =>  array(
                      'title' => sprintf(__('Use a real page ID for the special %1$s pages - neccessary for some themes', 'woo-vipps'), Vipps::CompanyName()),
                      'label' => __('Use a real page ID', 'woo-vipps'),
                      'type'  => 'select',
-                     'options' => $page_list,
+                     'options' => [],
                      'description' => sprintf(__('Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special %1$s pages.', 'woo-vipps'), Vipps::CompanyName()),
-                     'default'=>''),
+                     'default' => ''
+                 ),
 
                 'sendreceipts' => array(
                      'title' => __("Send receipts and order confirmation info to the customers' app on completed purchases.", 'woo-vipps'),
@@ -4118,6 +4087,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($this->get_option('vipps_checkout_enabled') == 'yes') {
             update_option('woo_vipps_checkout_activated', true, true); // This must be true here, but still, make sure
             Vipps::instance()->maybe_create_vipps_pages();
+        }
+
+        // Ensure special page has the necessary shortcode. LP 2026-09-01
+        $special_page = get_post(Vipps::get_special_page_id());
+        if ($special_page && !has_shortcode($special_page->post_content, 'vipps_special_page')) {
+            $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
+            wp_update_post([
+                    'ID'           => Vipps::get_special_page_id(),
+                    'post_content' => $new_content,
+            ]);
+        } else if (!Vipps::get_special_page_id()) {
+            // We shouldn't really get here, the page should be ensured to exist in init. LP 2026-09-03
+            /* translators: %s is current method name */
+            $this->log(sprintf(__('Missing special page in %s, attempting to fix', 'woo-vipps'), 'process_admin_options'), 'warning');
+            Vipps::instance()->ensure_special_page_exists();
         }
 
         return $saved;
