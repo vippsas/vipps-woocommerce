@@ -198,6 +198,11 @@
         return;
     }
 
+    if (typeof window.wp?.apiFetch !== "function") {
+        console.error("vipps: WordPress apiFetch is not available");
+        return;
+    }
+
     const dialogUi = window.createVippsMobilepayDialog();
     const checkout = createCheckoutController();
 
@@ -427,25 +432,14 @@
     }
 
     async function createPaymentSession(transaction) {
-        const response = await fetch(
-            config.vippsresturl || "/wp-json/woo-vipps/v1/express_checkout_single",
-            {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-WooVipps": "yes",
-                    "Accept-Language": `${config.vippslocale || "nb_NO"}, *`
-                },
-                body: JSON.stringify(transaction)
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error(`Express checkout request failed (${response.status})`);
-        }
-
-        return response.json();
+        return window.wp.apiFetch({
+            path: "/woo-vipps/v1/express_checkout_single",
+            method: "POST",
+            headers: {
+                "Accept-Language": `${config.vippslocale || "nb_NO"}, *`
+            },
+            data: transaction
+        });
     }
 
     // Using the Vipps SDK, get a payment URL from the new REST endpoint and let

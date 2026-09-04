@@ -1580,7 +1580,7 @@ EOF;
     // Scripts used in the backend
     public function admin_enqueue_scripts($hook) {
 
-        wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'all');
+        wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'all');
         $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
         wp_localize_script('vipps-admin', 'VippsConfig', $this->vippsJSConfig);
         // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
@@ -1656,10 +1656,7 @@ EOF;
     public function wp_register_scripts () {
         //  We are going to use the 'hooks' library introduced by WP 5.1, but we still support WP 4.7. So if this isn't enqueues 
         //  (which it only is if Gutenberg is active) or not provided at all, add it now.
-        if (!wp_script_is( 'wp-hooks', 'registered')) {
-            wp_register_script('wp-hooks', plugins_url('/compat/hooks.min.js', __FILE__));
-        }
-        wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks', 'vipps-widget-sdk'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+        wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks', 'wp-api-fetch','vipps-widget-sdk'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
 
         // Badges - web components provided by Vipps MobilePay to display payment options in-store.
         wp_register_script('vipps-onsite-messageing',
@@ -4699,6 +4696,7 @@ else:
     public function rest_do_single_product_express_checkout ($request) {
         // TODO if using the Store API none, we should check this here:
         // wp_verify_nonce( $nonce, 'wc_store_api' )
+        // it should generally not be neccessary though, but if using a block theme it will be *there*.  IOK 2026-08-04
     	Vipps::nocache();
         static::set_locale_if_in_header();
 
