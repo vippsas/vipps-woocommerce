@@ -5338,6 +5338,7 @@ else:
       <a
           href='javascript:void(0)'
           class='single-product button vipps-buy-now Vipps'
+          data-vipps-autostart="true"
           data-vipps-purchase='single'
           data-product_id='{$args['product_id']}'
           data-variation_id='{$args['variation_id']}'
