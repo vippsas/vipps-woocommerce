@@ -4650,7 +4650,7 @@ else:
             $cartitems = WC()->cart->get_cart();
             $orderspec = array();
             foreach($cartitems as $item => $values) {
-                $orderspec[] = array('product_id'=>$values['product_id'], 'variation_id'=>$values['variation_id'], 'quantity'=>$values['quantity']);
+                $orderspec[] = array('sku'=> $values['sku'], 'product_id'=>$values['product_id'], 'variation_id'=>$values['variation_id'], 'quantity'=>$values['quantity']);
             }
             $args = $orderspec;
         }
@@ -4660,7 +4660,8 @@ else:
 
     // This method may provide HTML form elements to ask a user questions after starting
     // express checkout. It is used to detect duplicate orders, possibly for terms and conditions, and user-definiable customizations. IOK 2026-09-09
-    public function express_order_needs_confirmation($args, $current_hash) {
+    // NULL productinfo means use the cart; the "current hash" is used to detect duplicates, and is calculated by the caller.
+    public function express_order_needs_confirmation($args, $productinfo,  $current_hash) {
         $elements = [];
         $html = "";
 
@@ -4668,7 +4669,6 @@ else:
         $last_express_purchase_hash = WC()->session->get('woo_vipps_last_express');
         $last_express_the_same = false;
         if ($last_express_purchase_hash) {
-error_log("Last hash is $last_express_purchase_hash");
             list($hash, $stamp) = explode(":", $last_express_purchase_hash);
             $cutoff = $stamp + apply_filters('woo_vipps_recent_order_cutoff', (3*60));
             if ($hash == $current_hash && (time() <= $cutoff )) {
@@ -4694,15 +4694,20 @@ error_log("Last hash is $last_express_purchase_hash");
             $elements['terms'] = $termsHTML;
         }
 
+        // Custom fields
+        ob_start();
+        $extra_fields .= do_action('woo_vipps_express_checkout_orderspec_form', $productinfo);
+        $extra_fields .= ob_get_clean();
+        if (!empty($extra_fields)) {
+           $elements['extra'] = $extra_fields;
+        }
 
         if (!empty($elements)) {
             $html = join("\n", array_values($elements));
             $msg = join(",", array_keys($elements));
-error_log("Elements not empty");
             return ['ok'=>2, 'msg'=>$msg, 'html'=>$html, 'url'=>''];
         }
 
-error_log("Elements empty");
         return false;
 
     }
@@ -4731,9 +4736,6 @@ error_log("Elements empty");
             WC()->cart->get_cart_from_session();
         }
 
-
-        error_log("cart is " .print_r(WC()->cart, true));
-        error_log("args are " . print_r($args, true));
 
         $gw = $this->gateway();
         if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
@@ -4776,12 +4778,10 @@ error_log("Elements empty");
         }
 
         // Try to avoid re-purchasing the same order repeatedly. IOK 2026-09-02
-        $current_hash = md5("$prodid:$varid:$quantity");
-
+        $current_hash = $this->create_order_hash();
         $confirmation = (bool) intval(($others['confirmed'] ?? 0));
-error_log("Confirm: $confirmation");
         if (!$confirmation) {
-            $result = $this->express_order_needs_confirmation($args, $current_hash); 
+            $result = $this->express_order_needs_confirmation($args, null,  $current_hash); 
             if (!empty($result)) {
                 return $result;
             }
@@ -4808,8 +4808,6 @@ error_log("Confirm: $confirmation");
             return new WP_Error('no_data', __('No data passed to express checkout', 'woo-vipps'), ['status' => 400]);
         }
         $result = ['ok' => 0, 'msg'=>'', 'orderid'=>0, 'url'=>''];
-
-        error_log("args are " . print_r($args, true));
 
         // We receive the varid, prodid, sku and quantity directly. One of these. The sku is the dominant one. IOK 2026-08-27
         $varid = intval($args['variation_id'] ?? 0);
@@ -4862,12 +4860,13 @@ error_log("Confirm: $confirmation");
 
         // Try to avoid re-purchasing the same order repeatedly. IOK 2026-09-02
         // We calculate this here so we can add it to the session later. IOK 2026-09-09
-        $current_hash = $this->create_order_hash();
+        $orderspec = array('sku'=> $sku, 'product_id'=>$prodid, 'variation_id'=>$varid, 'quantity'=>$quantity);
+        $current_hash = $this->create_order_hash($orderspec);
 
         // Now to handle "extra questions" for an order, including terms + conditions and "possible duplicate order" IOK 2026-09-09
         $confirmation = (bool) intval(($others['confirmed'] ?? 0));
         if (!$confirmation) {
-            $result = $this->express_order_needs_confirmation($args, $current_hash);
+            $result = $this->express_order_needs_confirmation($args, $orderspec, $current_hash);
             if (!empty($result)) {
                 $response = new WP_REST_Response($result);
                 $response->set_status(200);
