@@ -3,6 +3,39 @@
     const buttonSelector = ".vipps-buy-now, .vipps-express-checkout";
     let purchaseStarted = false;
 
+    function getAutoStartStorageKey() {
+        return `vipps-auto-start:${window.location.pathname}:${window.location.search}`;
+    }
+
+    function getNavigationType() {
+        return window.performance
+            ?.getEntriesByType?.("navigation")?.[0]?.type || "navigate";
+    }
+
+    function getAutoStartAttempted() {
+        try {
+            return window.sessionStorage.getItem(getAutoStartStorageKey()) === "true";
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function setAutoStartAttempted() {
+        try {
+            window.sessionStorage.setItem(getAutoStartStorageKey(), "true");
+        } catch (error) {
+            // Checkout must still work when storage is unavailable.
+        }
+    }
+
+    function clearAutoStartAttempted() {
+        try {
+            window.sessionStorage.removeItem(getAutoStartStorageKey());
+        } catch (error) {
+            // Checkout must still work when storage is unavailable.
+        }
+    }
+
     function getAutoPurchaseButton() {
         const purchase = document.querySelector(purchaseSelector);
         return purchase?.querySelector(buttonSelector);
@@ -20,6 +53,7 @@
         }
 
         purchaseStarted = true;
+        setAutoStartAttempted();
         purchaseButton.dispatchEvent(new MouseEvent("click", {
             bubbles: true,
             cancelable: true
@@ -31,6 +65,18 @@
 
         if (!purchaseButton) {
             return;
+        }
+
+        const navigationType = getNavigationType();
+        const attempted = getAutoStartAttempted();
+
+        if ((navigationType === "reload" || navigationType === "back_forward") && attempted) {
+            setPurchaseFinished();
+            return;
+        }
+
+        if (navigationType !== "reload" && navigationType !== "back_forward") {
+            clearAutoStartAttempted();
         }
 
         if (purchaseButton.classList.contains("initialized")) {
