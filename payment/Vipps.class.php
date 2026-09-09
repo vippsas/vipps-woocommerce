@@ -2743,10 +2743,6 @@ else:
         add_action('wp_ajax_nopriv_check_order_status', array($this, 'ajax_check_order_status'));
         add_action('wp_ajax_check_order_status', array($this, 'ajax_check_order_status'));
 
-        // This is for express checkout which we will also do asynchronously IOK 2018-05-28
-        add_action('wp_ajax_nopriv_do_express_checkout', array($this, 'ajax_do_express_checkout'));
-        add_action('wp_ajax_do_express_checkout', array($this, 'ajax_do_express_checkout'));
-
         // Handle the cancel unpaid order action when the "hold stock" times out.
         // For *normal* vipps orders, we run another cronjob every 5. minute which checks order status,
         // therefore here it suffices to check if the order is 'cancelled' at Vipps, and if so we return.
@@ -4631,46 +4627,56 @@ else:
         return $result;
     }
 
-    public function ajax_do_express_checkout () {
-        check_ajax_referer('do_express','sec');
-        Vipps::nocache();
-        static::set_locale_if_in_header();
-        $gw = $this->gateway();
+    // This creates a simple hash for the 'current order' which we will store in the session if we proceed to checkout. We use this to 
+    // avoid/warn the user of duplicate purchases. IOK 2026-09-09
+    public function create_order_hash($args=null) {
+        // If we have no arguments, we'll hash the cart.
+        if (empty($args)) {
+            $cartitems = WC()->cart->get_cart();
+            $orderspec = array();
+            foreach($cartitms as $item => $values) {
+                $orderspec[] = array('product_id'=>$values['product_id'], 'variation_id'=>$values['variation_id'], 'quantity'=>$values['quantity']);
+            }
+            return md5($orderspec);
+        }
+        return md5($args);
+    }
 
-        if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
-            $result = array('ok'=>0, 'msg'=>sprintf(__('%1$s is not available for this order','woo-vipps'), Vipps::ExpressCheckoutName()), 'url'=>false);
-            wp_send_json($result);
-            exit();
+
+    // This method may provide HTML form elements to ask a user questions after starting
+    // express checkout. It is used to detect duplicate orders, possibly for terms and conditions, and user-definiable customizations. IOK 2026-09-09
+    public function express_order_needs_confirmation($args, $current_hash) {
+        $elements = [];
+        $html = "";
+
+        // First, let's check if we need to confirm the purchase.
+        $last_express_purchase_hash = WC()->session->get('woo_vipps_last_express');
+        $last_express_the_same = false;
+        if ($last_express_purchase_hash) {
+            list($hash, $stamp) = explode(":", $last_express_purchase_hash);
+            $cutoff = $stamp + apply_filters('woo_vipps_recent_order_cutoff', (3*60));
+            if ($hash == $current_hash && (time() <= $cutoff )) {
+                $header = __("Are you sure?",'woo-vipps');
+                $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
+                $elements['possible_duplicate'] = "<h1>$header</h1><p>$body</p>";
+            }
         }
 
-        // Validate cart going forward using same logic as WC_Cart->check_cart() but not adding notices.
-        $toolate = false;
-        $msg = "";
-        $valid  = WC()->cart->check_cart_item_validity();
-        if ( is_wp_error( $valid) ) {
-            $toolate = true;
-            $msg = "<br>" .  $valid->get_error_message();
-        }
-        $stock = WC()->cart->check_cart_item_stock();
-        if ( is_wp_error( $stock) ) {
-            $toolate = true;
-            $msg = "<br>" .  $stock->get_error_message();
-        }
+        /// TEST
+        $elements['possible_duplicate'] = "<h1>$header</h1><p>$body</p>";
 
-        if ($toolate) {
-            $result = array('ok'=>0, 'msg'=>sprintf(__('Some of the products in your cart are no longer available in the quantities you have ordered. Please <a href="%1$s">edit your order</a> before continuing the checkout','woo-vipps'), wc_get_cart_url()) . $msg, 'url'=>false);
-            wp_send_json($result);
-            exit();
+        if (!empty($elements)) {
+            $html = join("\n", array_values($elements));
+            $msg = join(",", array_keys($elements));
+            return ['ok'=>2, 'msg'=>$msg, 'html'=>$html, 'url'=>''];
         }
+        return false;
 
-        $result = $this->create_and_process_express_order();
-        wp_send_json($result);
-        exit();
     }
 
     public function rest_do_express_checkout ($request) {
         Vipps::nocache();
-check_ajax_referer('express', 'sec');
+        check_ajax_referer('express', 'sec');
         static::set_locale_if_in_header();
         $raw_post = @file_get_contents( 'php://input' );
         $args = @json_decode($raw_post,true);
@@ -4693,8 +4699,8 @@ check_ajax_referer('express', 'sec');
         }
 
 
-error_log("cart is " .print_r(WC()->cart, true));
-error_log("args are " . print_r($args, true));
+        error_log("cart is " .print_r(WC()->cart, true));
+        error_log("args are " . print_r($args, true));
 
         $gw = $this->gateway();
         if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
@@ -4736,62 +4742,27 @@ error_log("args are " . print_r($args, true));
             $_POST[$key] = $value;
         }
 
-        $result = $this->create_and_process_express_order();
-        return $result;
-
         // Try to avoid re-purchasing the same order repeatedly. IOK 2026-09-02
         $current_hash = md5("$prodid:$varid:$quantity");
 
         $confirmation = (bool) intval(($others['confirmed'] ?? 0));
-        $require_confirmation = false;
         if (!$confirmation) {
-            // Now based on this, compute a hash. We'll store that in the session for ~5 minutes, and if there is a previous order with this
-            // hash *in session* we'll ask the user their intent.
-            // FIXME abstract this and stuff it deeper in the system.
-            $last_express_purchase_hash = WC()->session->get('woo_vipps_last_express');
-            $last_express_the_same = false;
-            if ($last_express_purchase_hash) {
-                list($hash, $stamp) = explode(":", $last_express_purchase_hash);
-                $cutoff = $stamp + apply_filters('woo_vipps_recent_order_cutoff', (3*60));
-                if ($hash == $current_hash && (time() <= $cutoff )) {
-                    $header = __("Are you sure?",'woo-vipps');
-                    $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
-                    $html = "<h1>$header</h1><p>$body</p>";
-
-                    $result = [ 'ok' => 2, 'msg' => 'confirm', 'html'=>$html, 'orderid'=>0, 'url'=>'']; 
-                    $require_confirmation = true;
-                }
-            }
+            $result = $this->express_order_needs_confirmation($args, $current_hash); 
         }
 
-        // For testing.
-        if (! $confirmation) {
-            $header = __("Are you sure?",'woo-vipps');
-            $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
-            $html = "<h1>$header</h1><p>$body</p>";
-            $result = [ 'ok' => 2, 'msg' => 'confirm', 'html'=>$html, 'orderid'=>0, 'url'=>'']; 
-            $require_confirmation = true;
-        }
-
-        if (!$require_confirmation) {
-            // Basically always return 200 after this, and always return an object with an 'ok' and a 'msg' value, possibly 'orderid' and 'url'.
-            $result = $this->really_do_single_product_express_checkout($prodid, $varid, $sku, $quantity, $variations);
-            // And if we're going to express now so let's note the order. IOK 2026-08-27. Now this assumes success, but *basically* I think this is ok.
-            // We'll reset it on order failure I think. IOK 2026-08-20 FIXME
-            if ($result['ok']) {
-            WC()->session->set('woo_vipps_last_express', "$current_hash:" . time());
+        $result = $this->create_and_process_express_order();
+        if ($result['ok'] == 1) {
+            WC()->session->set('woo_vipps_last_express', "$current_hash" . time());
             WC()->session->save_data();
-            }
         }
         return $result;
+
     }
+
 
     // Rest handler for single product express checkout. Expects arguments as JSON. IOK 2026-08-25
     public function rest_do_single_product_express_checkout ($request) {
-        // TODO if using the Store API none, we should check this here:
-        // wp_verify_nonce( $nonce, 'wc_store_api' )
-        // it should generally not be neccessary though, but if using a block theme it will be *there*.  IOK 2026-08-04
-    	Vipps::nocache();
+        Vipps::nocache();
         static::set_locale_if_in_header();
 
         $raw_post = @file_get_contents( 'php://input' );
@@ -4801,8 +4772,7 @@ error_log("args are " . print_r($args, true));
         }
         $result = ['ok' => 0, 'msg'=>'', 'orderid'=>0, 'url'=>''];
 
-
-error_log("args are " . print_r($args, true));
+        error_log("args are " . print_r($args, true));
 
         // We receive the varid, prodid, sku and quantity directly. One of these. The sku is the dominant one. IOK 2026-08-27
         $varid = intval($args['variation_id'] ?? 0);
@@ -4854,48 +4824,27 @@ error_log("args are " . print_r($args, true));
         }
 
         // Try to avoid re-purchasing the same order repeatedly. IOK 2026-09-02
-        $current_hash = md5($this->get_orderspec_from_cart());
+        // We calculate this here so we can add it to the session later. IOK 2026-09-09
+        $current_hash = $this->create_order_hash();
 
+        // Now to handle "extra questions" for an order, including terms + conditions and "possible duplicate order" IOK 2026-09-09
         $confirmation = (bool) intval(($others['confirmed'] ?? 0));
-        $require_confirmation = false;
         if (!$confirmation) {
-            // Now based on this, compute a hash. We'll store that in the session for ~5 minutes, and if there is a previous order with this
-            // hash *in session* we'll ask the user their intent.
-            // FIXME abstract this and stuff it deeper in the system.
-            $last_express_purchase_hash = WC()->session->get('woo_vipps_last_express');
-            $last_express_the_same = false;
-            if ($last_express_purchase_hash) {
-                list($hash, $stamp) = explode(":", $last_express_purchase_hash);
-                $cutoff = $stamp + apply_filters('woo_vipps_recent_order_cutoff', (3*60));
-                if ($hash == $current_hash && (time() <= $cutoff )) {
-                    $header = __("Are you sure?",'woo-vipps');
-                    $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
-                    $html = "<h1>$header</h1><p>$body</p>";
-
-                    $result = [ 'ok' => 2, 'msg' => 'confirm', 'html'=>$html, 'orderid'=>0, 'url'=>'']; 
-                    $require_confirmation = true;
-                }
+            $result = $this->express_order_needs_confirmation($args, $current_hash);
+            if (!empty($result)) {
+                $response = new WP_REST_Response($result);
+                $response->set_status(200);
+                return $response;
             }
         }
 
-        // For testing.
-        if (! $confirmation) {
-            $header = __("Are you sure?",'woo-vipps');
-            $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
-            $html = "<h1>$header</h1><p>$body</p>";
-            $result = [ 'ok' => 2, 'msg' => 'confirm', 'html'=>$html, 'orderid'=>0, 'url'=>'']; 
-            $require_confirmation = true;
-        }
-
-        if (!$require_confirmation) {
-            // Basically always return 200 after this, and always return an object with an 'ok' and a 'msg' value, possibly 'orderid' and 'url'.
-            $result = $this->really_do_single_product_express_checkout($prodid, $varid, $sku, $quantity, $variations);
-            // And if we're going to express now so let's note the order. IOK 2026-08-27. Now this assumes success, but *basically* I think this is ok.
-            // We'll reset it on order failure I think. IOK 2026-08-20 FIXME
-            if ($result['ok']) {
+        // Basically always return 200 after this, and always return an object with an 'ok' and a 'msg' value, possibly 'orderid' and 'url'.
+        $result = $this->really_do_single_product_express_checkout($prodid, $varid, $sku, $quantity, $variations);
+        // And if we're going to express now so let's note the order. IOK 2026-08-27. Now this assumes success, but *basically* I think this is ok.
+        // We'll reset it on order failure I think. IOK 2026-08-20 FIXME
+        if ($result['ok'] == 1) {
             WC()->session->set('woo_vipps_last_express', "$current_hash:" . time());
             WC()->session->save_data();
-            }
         }
 
         $response = new WP_REST_Response($result);
