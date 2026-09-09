@@ -1501,20 +1501,25 @@ EOF;
     // 10 minutes so we can work with them in hooks and callbacks after they are cancelled. IOK 2019-10-22
 #    protected function delete_old_cancelled_orders() {
     public function delete_old_cancelled_orders() {
+error_log("Running delete old cancelled orders");
         $limit = 30;
         $cutoff = time() - 600; // Ten minutes old orders: Delete them
         $oldorders = time() - (60*60*24*7); // Very old orders: Ignore them to make this work on sites with enormous order databases
         $delenda = [];
 
         if  ($this->useHPOS()) {
+error_log("Using hpos");
             $args = array(
                 'status' => 'cancelled',
                 'limit' => $limit,
                 'date_modified' => "$oldorders...$cutoff",
                 'meta_query' =>  [[ 'key'  => '_vipps_delendum', 'value' => 1 ]]
             );
+error_log("Args are " . print_r($args, true));
             $delenda = wc_get_orders($args);
+error_log("Orders are " . count($delenda));
         } else {
+error_log("Not using hpos");
             // Old-style orders, we'll just use SQL
             global $wpdb;
             $sql = $wpdb->prepare("SELECT p.ID FROM {$wpdb->posts} p JOIN {$wpdb->postmeta} pm on (pm.post_id = p.ID AND pm.meta_key = '_vipps_delendum') WHERE p.post_type = 'shop_order' AND p.post_status = 'wc-cancelled' AND p.post_modified_gmt >= %s AND p.post_modified_gmt <= %s AND pm.meta_value = 1 LIMIT %d",
@@ -4192,6 +4197,7 @@ else:
 
     // This job runs in the wp-cron context, and is intended to clean up signal files and other temporariy data. IOK 2020-04-01
     public function cron_cleanup_hook () {
+error_log("In the cron cleanup hook");
        $this->cleanupCallbackSignals(); // Remove old callback signals (files in uploads)
        $this->delete_old_cancelled_orders(); // Remove cancelled express checkout orders if selected
     }
@@ -4260,7 +4266,9 @@ else:
 
     // This will probably be run in activate, but if the plugin is updated in other ways, will also be run on after_setup_theme. IOK 2020-04-01
     public static function maybe_add_cron_event() {
+error_log("Maybe add cron event");
        if (!wp_next_scheduled('vipps_cron_cleanup_hook')) {
+error_log("Maybe adding delete hourly");
           wp_schedule_event(time(), 'hourly', 'vipps_cron_cleanup_hook');
        }
        if (!wp_next_scheduled('vipps_cron_missing_callback_hook')) {
@@ -4634,12 +4642,12 @@ else:
         if (empty($args)) {
             $cartitems = WC()->cart->get_cart();
             $orderspec = array();
-            foreach($cartitms as $item => $values) {
+            foreach($cartitems as $item => $values) {
                 $orderspec[] = array('product_id'=>$values['product_id'], 'variation_id'=>$values['variation_id'], 'quantity'=>$values['quantity']);
             }
-            return md5($orderspec);
+            $args = $orderspec;
         }
-        return md5($args);
+        return md5(serialize($args));
     }
 
 

@@ -216,6 +216,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Possibly delete orders that never went anywhere
         add_action('woocommerce_order_status_pending_to_cancelled', array($this, 'maybe_delete_order'), 99999, 1);
+
+        // Disable emails for cancelled express orders that never went anywhere IOK 2026-09-09
+        add_filter('woocommerce_email_enabled_cancelled_order', function ( $enabled, $order, $email ) {
+                if ( ! $order instanceof WC_Order ) {
+                    return $enabled;
+                }
+                $pm = $order->get_payment_method();
+                if (! Vipps::is_vipps_order($pm)){
+                    return $enabled;
+                }
+                $is_vipps_express = (bool) $order->get_meta( '_vipps_express_checkout' );
+                $has_billing_email = (bool) $order->get_billing_email();
+                if ( $is_vipps_express && ! $has_billing_email ) {
+                    return false;
+                }
+                return $enabled;
+        }, 10, 3);
+
         // Handle orders when authorized
         add_action('woocommerce_payment_complete', array($this, 'order_payment_complete'), 10, 1);
 
