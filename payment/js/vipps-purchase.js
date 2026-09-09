@@ -1,13 +1,19 @@
 (() => {
+    const purchaseSelector = ".vipps-qr-purchase, .vipps-cart-purchase";
+    const buttonSelector = ".vipps-buy-now, .vipps-express-checkout";
     let purchaseStarted = false;
 
-    function startVippsQrPurchase() {
+    function getAutoPurchaseButton() {
+        const purchase = document.querySelector(purchaseSelector);
+        return purchase?.querySelector(buttonSelector);
+    }
+
+    function startVippsPurchase() {
         if (purchaseStarted) {
             return;
         }
 
-        const form = document.querySelector(".vipps-qr-purchase");
-        const purchaseButton = form?.querySelector(".vipps-buy-now");
+        const purchaseButton = getAutoPurchaseButton();
 
         if (!purchaseButton) {
             return;
@@ -21,19 +27,18 @@
     }
 
     function setupAutomaticPurchase() {
-        const form = document.querySelector(".vipps-qr-purchase");
-        const purchaseButton = form?.querySelector(".vipps-buy-now");
+        const purchaseButton = getAutoPurchaseButton();
 
         if (!purchaseButton) {
             return;
         }
 
         if (purchaseButton.classList.contains("initialized")) {
-            startVippsQrPurchase();
+            startVippsPurchase();
             return;
         }
 
-        document.body.addEventListener("vippsInit", startVippsQrPurchase, {
+        document.body.addEventListener("vippsInit", startVippsPurchase, {
             once: true
         });
     }
@@ -48,26 +53,26 @@
 
     function getPurchases(wrapper) {
         if (wrapper) {
-            const purchase = wrapper.closest?.(".vipps-qr-purchase");
+            const purchase = wrapper.closest?.(purchaseSelector);
             return purchase ? [purchase] : [];
         }
 
-        return Array.from(document.querySelectorAll(".vipps-qr-purchase"));
+        return Array.from(document.querySelectorAll(purchaseSelector));
     }
 
     function getWaitingElements() {
         return document.querySelectorAll(
-            "#waiting, [data-vipps-qr-waiting]"
+            "#waiting, [data-vipps-purchase-waiting], [data-vipps-qr-waiting]"
         );
     }
 
     function getErrorElement(purchase) {
-        let error = purchase.querySelector("[data-vipps-qr-error]");
+        let error = purchase.querySelector("[data-vipps-purchase-error]");
 
         if (!error) {
             error = document.createElement("p");
-            error.className = "vipps-qr-error woocommerce-error";
-            error.setAttribute("data-vipps-qr-error", "");
+            error.className = "vipps-purchase-error woocommerce-error";
+            error.setAttribute("data-vipps-purchase-error", "");
             error.setAttribute("role", "alert");
             purchase.append(error);
         }
@@ -77,8 +82,8 @@
 
     function setPurchaseStarted(wrapper) {
         getPurchases(wrapper).forEach((purchase) => {
-            const button = purchase.querySelector(".vipps-buy-now");
-            const error = purchase.querySelector("[data-vipps-qr-error]");
+            const button = purchase.querySelector(buttonSelector);
+            const error = purchase.querySelector("[data-vipps-purchase-error]");
 
             if (button) {
                 button.hidden = false;
@@ -98,7 +103,7 @@
 
     function setPurchaseFinished(wrapper) {
         getPurchases(wrapper).forEach((purchase) => {
-            const button = purchase.querySelector(".vipps-buy-now");
+            const button = purchase.querySelector(buttonSelector);
 
             if (button) {
                 button.hidden = false;
@@ -113,7 +118,7 @@
 
     function setPurchaseError(message, wrapper) {
         getPurchases(wrapper).forEach((purchase) => {
-            const button = purchase.querySelector(".vipps-buy-now");
+            const button = purchase.querySelector(buttonSelector);
             const error = getErrorElement(purchase);
 
             if (button) {
@@ -148,5 +153,3 @@
         setPurchaseStarted();
     }
 })();
-
-console.log("qr loaded");

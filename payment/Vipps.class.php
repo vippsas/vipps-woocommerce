@@ -5357,13 +5357,14 @@ else:
           </vipps-mobilepay-button>
       </a>
   </div>";
-$content .= '<script id="vipps-qr-js" src="' . plugins_url('js/vipps-qr-purchase.js',__FILE__) . '"></script>';
+        $content .= '<script id="vipps-purchase-js" src="' . plugins_url('js/vipps-purchase.js',__FILE__) . '"></script>';
 
 
         $this->fakepage("", $content);
     }
 
-    //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.
+    //  This is a landing page for the express checkout of the normal cart - it is done like this because this could take time on slower hosts.
+    // IOK 2026-09-09 - nowadays this is only used for compatibility mode. It will automatically start express checkout of the current cart when reached.
     public function vipps_express_checkout() {
         status_header(200,'OK');
 	Vipps::nocache();
@@ -5387,16 +5388,38 @@ $content .= '<script id="vipps-qr-js" src="' . plugins_url('js/vipps-qr-purchase
             exit();
         }
 
-        add_filter('body_class', function ($classes) {
-            $classes[] = 'vipps-express-checkout';
-            $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
-            return apply_filters('woo_vipps_express_checkout_body_class', $classes);
-        });
-
         do_action('woo_vipps_express_checkout_page');
 
+        $sec = esc_attr($_REQUEST['sec']);
 
-        $this->fakepage("TBD", "Her vil vi helst kjøre en standard express checkout!");
+// TBD
+        $content = "";
+        $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "...</p>";
+        $content .= '<div class="vipps-cart-purchase" style="visibility:hidden">
+      <a
+          href="javascript:void(0)"
+          class="vipps-express-checkout short Vipps"
+          data-vipps-autostart="true"
+          data-sec="' . $sec . '"
+          title="Kjøp nå med Vipps"
+      >
+          <vipps-mobilepay-button
+              type="button"
+              brand="vipps"
+              language="no"
+              variant="primary"
+              rounded="true"
+              verb="continue"
+              stretched="false"
+              compact="false">
+          </vipps-mobilepay-button>
+      </a>
+  </div>
+';
+        $content .= '<script id="vipps-purchase-js" src="' . plugins_url('js/vipps-purchase.js',__FILE__) . '"></script>';
+
+
+        $this->fakepage("", $content);
 
     }
 
