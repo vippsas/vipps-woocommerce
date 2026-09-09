@@ -5344,12 +5344,6 @@ else:
         status_header(200,'OK');
 	Vipps::nocache();
 
-        add_filter('body_class', function ($classes) {
-            $classes[] = 'vipps-express-checkout';
-            $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
-            return apply_filters('woo_vipps_express_checkout_body_class', $classes);
-        });
-
         do_action('woo_vipps_express_checkout_page');
 
         $session = WC()->session;
@@ -5385,21 +5379,63 @@ else:
 
         // Pass the productinfo to the express checkout form
         $args = array();
-        $args['quantity'] = 1;
-        if (array_key_exists('product_id',$productinfo)) $args['product_id'] = intval($productinfo['product_id']);
-        if (array_key_exists('variation_id',$productinfo)) $args['variation_id'] = intval($productinfo['variation_id']);
-        if (array_key_exists('product_sku',$productinfo)) $args['sku'] = sanitize_text_field($productinfo['product_sku']);
-        if (array_key_exists('quantity',$productinfo)) $args['quantity'] = intval($productinfo['quantity']);
+        $args['product_id'] = esc_attr(intval($productinfo['product_id'] ?? 0));
+        $args['variation_id'] = esc_attr(intval($productinfo['variation_id'] ?? 0));
+        $args['sku'] = esc_attr(sanitize_text_field($productinfo['product_sku'] ?? ""));
+        $args['quantity'] = esc_attr(max(1, intval($productinfo['quantity'] ?? 0)));
 
-        // For variable products where some of the attributes are "any", we need to add these as well. This is from woos form-handler for these.
-        foreach ($productinfo as $key => $value) {
-            if ( 'attribute_' !== substr( $key, 0, 10 ) ) {
-                continue;
-            }
-            $args[sanitize_title(wp_unslash($key))] = sanitize_text_field(wp_unslash($value));
-        }
+        $payment_method = $this->get_payment_method_name();
+        $btitle = esc_attr(sprintf(__('Buy now with %1$s', 'woo-vipps'), $payment_method));
 
-        $this->print_express_checkout_page(true,'do_single_product_express_checkout',$args);
+        $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "...</p>";
+        $content .= "<div class='vipps-qr-purchase' style='visibility:hidden'>
+      <a
+          href='javascript:void(0)'
+          class='single-product button vipps-buy-now Vipps'
+          data-vipps-purchase='single'
+          data-product_id='{$args['product_id']}'
+          data-variation_id='{$args['variation_id']}'
+          data-product_sku='{$args['sku']}'
+          data-quantity='{$args['quantity']}'
+          title='{$btitle}';
+      >
+          <vipps-mobilepay-button
+              type='button'
+              brand='vipps'
+              language='no'
+              variant='primary'
+              rounded='true'
+              verb='continue'
+              stretched='false'
+              compact='false'>
+          </vipps-mobilepay-button>
+      </a>
+  </div>
+  <script>
+      function startVippsQrPurchase() {
+          const form = document.querySelector(".vipps-qr-purchase");
+          const purchaseButton = form?.querySelector(".vipps-buy-now");
+
+          if (!purchaseButton) {
+              return;
+          }
+
+          purchaseButton.dispatchEvent(new MouseEvent("click", {
+              bubbles: true,
+              cancelable: true
+          }));
+      }
+
+      if (document.readyState === "complete") {
+          startVippsQrPurchase();
+      } else {
+          window.addEventListener("load", startVippsQrPurchase, { once: true });
+      }
+  </script>';
+
+
+
+        $this->fakepage("", $content);
     }
 
     //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.

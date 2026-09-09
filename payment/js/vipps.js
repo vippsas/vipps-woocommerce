@@ -24,8 +24,8 @@
         actionCancel.id = "action-required-cancel";
         actionCancel.type = "button";
         actionCancel.className = "dialog-close";
-        actionCancel.setAttribute("aria-label", "Cancel");
-        actionCancel.title = "Cancel";
+        actionCancel.setAttribute("aria-label", window.VippsLocale?.cancel || "Cancel");
+        actionCancel.title = window.VippsLocale?.cancel || "Cancel";
         actionCancel.textContent = "×";
 
         actionConfirm.id = "action-required-confirm";
@@ -190,6 +190,7 @@
 (() => {
     const vippsSdk = window.vipps;
     const config = window.VippsConfig || {};
+    const locale = window.VippsLocale || {};
     const body = document.body;
     const paymentHandoff = typeof window.createVippsPaymentHandoff === "function"
         ? window.createVippsPaymentHandoff()
@@ -207,6 +208,16 @@
 
     const dialogUi = window.createVippsMobilepayDialog();
     const checkout = createCheckoutController();
+
+    function translate(key, fallback, ...values) {
+        let message = locale[key] || fallback;
+
+        values.forEach((value) => {
+            message = message.replace("%s", String(value));
+        });
+
+        return message;
+    }
 
     // Hook vippsInit to woocommerce/product-collection render event. LP 29.11.2024
     // IOK 2026-01-14 available from woo 9.4 - so the buy now block will not be available until that version
@@ -265,7 +276,10 @@
             if (Number(result.ok) === 1) {
                 if (!result.url) {
                     clearAttempt();
-                    throw new Error("Successful checkout response has no payment URL");
+                    throw new Error(translate(
+                        "missingPaymentUrl",
+                        "Successful checkout response has no payment URL"
+                    ));
                 }
 
                 paymentHandoff?.mark(result);
@@ -282,17 +296,25 @@
             if (Number(result.ok) === 0) {
                 const button = currentAttempt.button;
                 clearAttempt();
-                showError(result.msg || "Express checkout failed", button);
+                showError(
+                    result.msg || translate("expressCheckoutFailed", "Express checkout failed"),
+                    button
+                );
 
                 if (result.url) {
                     window.location.assign(result.url);
                 }
 
-                throw new Error(result.msg || "Express checkout failed");
+                throw new Error(
+                    result.msg || translate("expressCheckoutFailed", "Express checkout failed")
+                );
             }
 
             clearAttempt();
-            throw new Error("Unexpected express checkout response");
+            throw new Error(translate(
+                "unexpectedCheckoutResponse",
+                "Unexpected express checkout response"
+            ));
         });
 
         trigger
@@ -324,7 +346,10 @@
                 const button = currentAttempt?.button;
                 if (button) {
                     clearAttempt();
-                    showError(error.message || "Vipps Mobilepay checkout failed", button);
+                    showError(
+                        error.message || translate("vippsCheckoutFailed", "Vipps checkout failed"),
+                        button
+                    );
                 }
                 console.error(error);
             });
@@ -376,7 +401,10 @@
                 const button = currentAttempt?.button;
                 if (button) {
                     clearAttempt();
-                    showError(error.message || "Vipps Mobilepay checkout failed", button);
+                    showError(
+                        error.message || translate("vippsCheckoutFailed", "Vipps checkout failed"),
+                        button
+                    );
                 }
                 console.error(error);
             }
@@ -444,7 +472,10 @@
             if (!dialogUi.form.checkValidity()) {
                 dialogUi.form.reportValidity();
                 validation = false;
-                setDialogValidationMessage("Please correct the highlighted fields.");
+                setDialogValidationMessage(translate(
+                    "correctHighlightedFields",
+                    "Please correct the highlighted fields."
+                ));
             }
 
             validation = wp.hooks.applyFilters(
@@ -455,7 +486,10 @@
             );
 
             if (!validation && !dialogUi.message.textContent) {
-                setDialogValidationMessage("Please check the form before continuing.");
+                setDialogValidationMessage(translate(
+                    "checkFormBeforeContinuing",
+                    "Please check the form before continuing."
+                ));
             }
 
             if (validation) {
@@ -488,10 +522,10 @@
             });
 
             if (!accepted) {
-                setDialogValidationMessage(
-                    window.VippsLocale?.termsAndConditionsError ||
+                setDialogValidationMessage(translate(
+                    "termsAndConditionsError",
                     "Please accept the terms and conditions."
-                );
+                ));
             }
 
             return accepted;
@@ -555,7 +589,10 @@
 
     async function handleCartPurchase(wrapper, event) {
         if (wrapper.classList.contains("disabled") || wrapper.hasAttribute("disabled")) {
-            showError("Cannot start express checkout: cart checkout is unavailable", wrapper);
+            showError(translate(
+                "cartCheckoutUnavailable",
+                "Cannot start express checkout: cart checkout is unavailable"
+            ), wrapper);
             return;
         }
 
@@ -625,7 +662,10 @@
         // If filters and fallbacks could not identify the product, do not start
         // an empty transaction against the REST endpoint. IOK 2026-09-04
         if (!hasProductIdentifier(transaction)) {
-            showError("Cannot buy product: product id, variation id and sku are missing", wrapper);
+            showError(translate(
+                "productIdentifiersMissing",
+                "Cannot buy product: product id, variation id and sku are missing"
+            ), wrapper);
             return;
         }
 
@@ -656,7 +696,10 @@
 
         const form = wrapper.closest("form.cart");
         if (!form) {
-            showError("Cannot buy product: product form not found", wrapper);
+            showError(translate(
+                "productFormNotFound",
+                "Cannot buy product: product form not found"
+            ), wrapper);
             return null;
         }
 
@@ -804,7 +847,10 @@
         const addToCartButton = form?.querySelector(".single_add_to_cart_button");
 
         if (!form || !addToCartButton) {
-            showError("Cannot add product: product form not found", wrapper);
+            showError(translate(
+                "productFormNotFound",
+                "Cannot add product: product form not found"
+            ), wrapper);
             return;
         }
 
@@ -987,8 +1033,14 @@
     function showVariationMessage(wrapper) {
         const params = window.wc_add_to_cart_variation_params;
         const message = wrapper.classList.contains("variation-found")
-            ? params?.i18n_unavailable_text || "This product variation is not available."
-            : params?.i18n_make_a_selection_text || "Please choose a product variation.";
+            ? params?.i18n_unavailable_text || translate(
+                "variationUnavailable",
+                "This product variation is not available."
+            )
+            : params?.i18n_make_a_selection_text || translate(
+                "variationSelectionRequired",
+                "Please choose a product variation."
+            );
         showError(message, wrapper);
     }
 
@@ -1038,8 +1090,8 @@
         const close = document.createElement("button");
         close.type = "button";
         close.className = "dialog-close";
-        close.setAttribute("aria-label", "Close");
-        close.title = "Close";
+        close.setAttribute("aria-label", locale.close || "Close");
+        close.title = locale.close || "Close";
         close.textContent = "×";
 
         const content = document.createElement("div");
