@@ -4597,7 +4597,7 @@ else:
             $cartitems = WC()->cart->get_cart();
             $orderspec = array();
             foreach($cartitems as $item => $values) {
-                $orderspec[] = array('sku'=> $values['sku'], 'product_id'=>$values['product_id'], 'variation_id'=>$values['variation_id'], 'quantity'=>$values['quantity']);
+                $orderspec[] = array('sku'=> ($values['sku'] ?? ""), 'product_id'=>($values['product_id'] ?? 0), 'variation_id'=>($values['variation_id'] ?? 0), 'quantity'=>($values['quantity'] ?? 1));
             }
             $args = $orderspec;
         }
@@ -4643,7 +4643,7 @@ else:
 
         // Custom fields
         ob_start();
-        $extra_fields .= do_action('woo_vipps_express_checkout_orderspec_form', $productinfo);
+        do_action('woo_vipps_express_checkout_orderspec_form', $productinfo);
         $extra_fields .= ob_get_clean();
         if (!empty($extra_fields)) {
            $elements['extra'] = $extra_fields;
@@ -5338,7 +5338,7 @@ else:
       <a
           href='javascript:void(0)'
           class='single-product button vipps-buy-now Vipps'
-          data-vipps-autostart="true"
+          data-vipps-autostart='true'
           data-vipps-purchase='single'
           data-product_id='{$args['product_id']}'
           data-variation_id='{$args['variation_id']}'
