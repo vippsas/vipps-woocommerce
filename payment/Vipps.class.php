@@ -4660,13 +4660,33 @@ error_log("Last hash is $last_express_purchase_hash");
                 $header = __("Are you sure?",'woo-vipps');
                 $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
                 $elements['possible_duplicate'] = "<h1>$header</h1><p>$body</p>";
+                $this->log(__("It seems a customer is trying to re-order product(s) recently bought in the same session, asking user for confirmation", 'woo-vipps'), 'info');
             }
         }
 
-        /// TEST
-        $header = __("Are you sure?",'woo-vipps');
-        $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
-        $elements['possible_duplicate'] = "<h1>$header</h1><p>$body</p>";
+         /// TEST
+        if (true) {
+            $header = __("Are you sure?",'woo-vipps');
+            $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
+            $elements['possible_duplicate'] = "<h1>$header</h1><p>$body</p>";
+        }
+
+
+        $gw = $this->gateway();
+        $askForTerms = function_exists('wc_terms_and_conditions_checkbox_enabled') ?  wc_terms_and_conditions_checkbox_enabled() : true;
+        $askForTerms = $askForTerms && ($gw->get_option('expresscheckout_termscheckbox') == 'yes');
+        $askForTerms = apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $askForTerms);
+
+        if ($askForTerms) {
+            $termsHTML = '';
+            // Include shop terms 
+            ob_start();
+            wc_get_template('checkout/terms.php');
+            $termsHTML = ob_get_clean();
+            $termsHTML = apply_filters('woo_vipps_express_checkout_terms_and_conditions_html',$termsHTML);
+            $elements['terms'] = $termsHTML;
+        }
+
 
         if (!empty($elements)) {
             $html = join("\n", array_values($elements));
