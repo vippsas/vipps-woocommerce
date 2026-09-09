@@ -216,6 +216,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Possibly delete orders that never went anywhere
         add_action('woocommerce_order_status_pending_to_cancelled', array($this, 'maybe_delete_order'), 99999, 1);
+
+        // Disable emails for cancelled express orders that never went anywhere IOK 2026-09-09
+        add_filter('woocommerce_email_enabled_cancelled_order', function ( $enabled, $order, $email ) {
+                if ( ! $order instanceof WC_Order ) {
+                    return $enabled;
+                }
+                $pm = $order->get_payment_method();
+                if (! Vipps::is_vipps_order($pm)){
+                    return $enabled;
+                }
+                $is_vipps_express = (bool) $order->get_meta( '_vipps_express_checkout' );
+                $has_billing_email = (bool) $order->get_billing_email();
+                if ( $is_vipps_express && ! $has_billing_email ) {
+                    return false;
+                }
+                return $enabled;
+        }, 10, 3);
+
         // Handle orders when authorized
         add_action('woocommerce_payment_complete', array($this, 'order_payment_complete'), 10, 1);
 
@@ -1855,7 +1873,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return [];
         }
 
-
         // From the request, get either    [billing_phone] =>  or [vipps phone]
         $phone = '';
         if (isset($_POST['vippsphone'])) {
@@ -1950,7 +1967,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $returnurl = add_query_arg('ls',$limited_session,$returnurl);
         $returnurl = add_query_arg('id', $order_id, $returnurl);
 
-
         try {
             // If the order was 'failed', it isnt any more! yet!
             if ($order->get_status() == 'failed') {
@@ -2000,17 +2016,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_orderurl', $url);
  
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
-        $order->add_order_note(sprintf(__('%1$s payment initiated','woo-vipps'), $this->get_payment_method_name()));
-        $order->add_order_note(sprintf(__('Awaiting %1$s payment confirmation','woo-vipps'), $this->get_payment_method_name()));
-        $order->save();
 
+        $name = $this->get_payment_method_name();
+        $order->add_order_note(sprintf(__('%1$s payment initiated','woo-vipps'), $name));
+        $order->add_order_note(sprintf(__('Awaiting %1$s payment confirmation','woo-vipps'),$name));
+
+        $order->save();
         // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
         try {
             $Vipps->createCallbackSignal($order);
         } catch (Exception $e) {
             // Could not create a signal file, but that's ok.
         }
-
         do_action('woo_vipps_before_redirect_to_vipps',$order_id);
 
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
