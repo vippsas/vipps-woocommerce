@@ -4654,6 +4654,7 @@ error_log("In it to win it");
         $last_express_purchase_hash = WC()->session->get('woo_vipps_last_express');
         $last_express_the_same = false;
         if ($last_express_purchase_hash) {
+error_log("Last hash is $last_express_purchase_hash");
             list($hash, $stamp) = explode(":", $last_express_purchase_hash);
             $cutoff = $stamp + apply_filters('woo_vipps_recent_order_cutoff', (3*60));
             if ($hash == $current_hash && (time() <= $cutoff )) {
@@ -4664,6 +4665,8 @@ error_log("In it to win it");
         }
 
         /// TEST
+        $header = __("Are you sure?",'woo-vipps');
+        $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
         $elements['possible_duplicate'] = "<h1>$header</h1><p>$body</p>";
 
         if (!empty($elements)) {
@@ -4760,7 +4763,7 @@ error_log("Confirm: $confirmation");
 
         $result = $this->create_and_process_express_order();
         if ($result['ok'] == 1) {
-            WC()->session->set('woo_vipps_last_express', "$current_hash" . time());
+            WC()->session->set('woo_vipps_last_express', "$current_hash:" . time());
             WC()->session->save_data();
         }
         return $result;
