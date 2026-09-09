@@ -3,6 +3,7 @@
         const actionDialog = document.createElement("dialog");
         const actionForm = document.createElement("form");
         const actionHtml = document.createElement("div");
+        const actionMessage = document.createElement("div");
         const dialogActions = document.createElement("div");
         const actionCancel = document.createElement("button");
         const actionConfirm = document.createElement("vipps-mobilepay-button");
@@ -13,6 +14,11 @@
         actionForm.className = "woocommerce-checkout";
         actionForm.method = "dialog";
         actionHtml.id = "action-required-html";
+        actionMessage.id = "action-required-message";
+        actionMessage.className = "vipps-form-message";
+        actionMessage.setAttribute("role", "alert");
+        actionMessage.setAttribute("aria-live", "polite");
+        actionMessage.hidden = true;
         dialogActions.className = "dialog-actions";
 
         actionCancel.id = "action-required-cancel";
@@ -32,7 +38,7 @@
         actionConfirm.setAttribute("rounded", "true");
 
         dialogActions.append(actionConfirm);
-        actionForm.append(actionHtml, dialogActions);
+        actionForm.append(actionHtml, actionMessage, dialogActions);
         actionDialog.append(actionCancel, actionForm);
         document.body.append(actionDialog);
 
@@ -40,6 +46,7 @@
             dialog: actionDialog,
             form: actionForm,
             html: actionHtml,
+            message: actionMessage,
             cancel: actionCancel,
             confirm: actionConfirm
         };
@@ -317,7 +324,7 @@
                 const button = currentAttempt?.button;
                 if (button) {
                     clearAttempt();
-                    showError(error.message || "Vipps checkout failed", button);
+                    showError(error.message || "Vipps Mobilepay checkout failed", button);
                 }
                 console.error(error);
             });
@@ -369,7 +376,7 @@
                 const button = currentAttempt?.button;
                 if (button) {
                     clearAttempt();
-                    showError(error.message || "Vipps checkout failed", button);
+                    showError(error.message || "Vipps Mobilepay checkout failed", button);
                 }
                 console.error(error);
             }
@@ -386,6 +393,7 @@
 
         function showActionRequiredDialog(html) {
             dialogUi.html.innerHTML = html;
+            clearDialogValidation();
             dialogUi.confirm.disabled = false;
             dialogUi.confirm.removeAttribute("aria-disabled");
             dialogBusy = false;
@@ -406,11 +414,7 @@
                 return;
             }
 
-            // Server-provided dialog HTML may contain required WooCommerce
-            // checkout fields, so let browser validation run before continuing.
-            // IOK 2026-09-04
-            if (!dialogUi.form.checkValidity()) {
-                dialogUi.form.reportValidity();
+            if (!validateConfirmationForm()) {
                 return;
             }
 
@@ -427,7 +431,90 @@
             await start();
         });
 
+        dialogUi.form.addEventListener("input", clearDialogValidation);
+        dialogUi.form.addEventListener("change", clearDialogValidation);
+
         return { begin, addPostData, start };
+
+        function validateConfirmationForm() {
+            clearDialogValidation();
+
+            let validation = validateTermsAndConditions(dialogUi.form);
+
+            if (!dialogUi.form.checkValidity()) {
+                dialogUi.form.reportValidity();
+                validation = false;
+                setDialogValidationMessage("Please correct the highlighted fields.");
+            }
+
+            validation = wp.hooks.applyFilters(
+                "vippsValidateExpressCheckoutForm",
+                validation,
+                dialogUi.form,
+                currentAttempt
+            );
+
+            if (!validation && !dialogUi.message.textContent) {
+                setDialogValidationMessage("Please check the form before continuing.");
+            }
+
+            if (validation) {
+                clearDialogValidation();
+            }
+
+            return Boolean(validation);
+        }
+
+        function validateTermsAndConditions(form) {
+            const termsBoxes = Array.from(
+                form.querySelectorAll('.input-checkbox[name="terms"], input[name="terms"]')
+            );
+
+            if (termsBoxes.length === 0) {
+                return true;
+            }
+
+            const accepted = termsBoxes.some((termsBox) => termsBox.checked);
+            termsBoxes.forEach((termsBox) => {
+                const container = termsBox.closest(".validate-required");
+
+                if (container) {
+                    container.classList.toggle("woocommerce-invalid", !accepted);
+                    container.classList.toggle(
+                        "woocommerce-invalid-required-field",
+                        !accepted
+                    );
+                }
+            });
+
+            if (!accepted) {
+                setDialogValidationMessage(
+                    window.VippsLocale?.termsAndConditionsError ||
+                    "Please accept the terms and conditions."
+                );
+            }
+
+            return accepted;
+        }
+
+        function clearDialogValidation() {
+            dialogUi.message.textContent = "";
+            dialogUi.message.hidden = true;
+
+            dialogUi.form
+                .querySelectorAll(".woocommerce-invalid, .woocommerce-invalid-required-field")
+                .forEach((element) => {
+                    element.classList.remove(
+                        "woocommerce-invalid",
+                        "woocommerce-invalid-required-field"
+                    );
+                });
+        }
+
+        function setDialogValidationMessage(message) {
+            dialogUi.message.textContent = message;
+            dialogUi.message.hidden = false;
+        }
     }
 
     async function createPaymentSession(transaction, path) {

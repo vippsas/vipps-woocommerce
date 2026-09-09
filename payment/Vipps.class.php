@@ -1703,10 +1703,25 @@ EOF;
     // Runs late in both wp_enqueue_scripts and admin_enqueue_scripts to make it more compatible with translation plugins IOK 2026-02-02
     public function script_add_vippslocale ($handle) {
         // This is actually for the payment block, where localize script has started to not-work in certain contexts. IOK 2022-12-13
+        $name = $this->get_payment_method_name();
         $strings = array(
-                'Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),
-                'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()),
-                'pay_with_card' => sprintf(__('Pay with card through %1$s', 'woo-vipps'), $this->get_payment_method_name()),
+                'Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $name),
+                'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $name),
+                'pay_with_card' => sprintf(__('Pay with card through %1$s', 'woo-vipps'), $name),
+                'termsAndConditionsError' => __( 'Please read and accept the terms and conditions to proceed with your order.', 'woocommerce' ),
+                'temporaryError' => sprintf(__('%1$s is temporarily unavailable.','woo-vipps'),$name),
+                'successMessage' => sprintf(__('To the %1$s app!','woo-vipps'), $name),
+                'cancel'=> __("Cancel", 'woo-vipps'),
+                'close'=> __("Close", 'woo-vipps'),
+                'missingPaymentUrl'=> __("Successful checkout response has no payment URL", 'woo-vipps'),
+                'expressCheckoutFailed'=> __("Express checkout failed", 'woo-vipps'),
+                'unexpectedCheckoutResponse'=> __("Unexpected express checkout response", 'woo-vipps'),
+                'vippsCheckoutFailed'=> __("Vipps Mobilepay checkout failed", 'woo-vipps'),
+                'correctHighlightedFields'=> __("Please correct the highlighted fields.", 'woo-vipps'),
+                'checkFormBeforeContinuing'=> __("Please check the form before continuing.", 'woo-vipps'),
+                'cartCheckoutUnavailable'=> __("Cannot start express checkout: cart checkout is unavailable", 'woo-vipps'),
+                'productIdentifiersMissing'=> __("Cannot buy product: product id, variation id and sku are missing", 'woo-vipps'),
+                'productFormNotFound'=> __("Cannot buy product: product form not found", 'woo-vipps'),
                 );
         wp_localize_script($handle, 'VippsLocale', $strings);
     }
@@ -4663,14 +4678,6 @@ error_log("Last hash is $last_express_purchase_hash");
                 $this->log(__("It seems a customer is trying to re-order product(s) recently bought in the same session, asking user for confirmation", 'woo-vipps'), 'info');
             }
         }
-
-         /// TEST
-        if (true) {
-            $header = __("Are you sure?",'woo-vipps');
-            $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
-            $elements['possible_duplicate'] = "<h1>$header</h1><p>$body</p>";
-        }
-
 
         $gw = $this->gateway();
         $askForTerms = function_exists('wc_terms_and_conditions_checkbox_enabled') ?  wc_terms_and_conditions_checkbox_enabled() : true;

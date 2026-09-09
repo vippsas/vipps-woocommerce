@@ -551,6 +551,11 @@ body.processing {
     background: rgba(0, 0, 0, 0.5);
 }
 
+.vipps-mobilepay-dialog .vipps-form-message {
+    color: #b32d2e;
+    font-weight: 600;
+}
+
 .vipps-mobilepay-dialog form {
     display: grid;
     gap: 1rem;
