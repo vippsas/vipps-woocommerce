@@ -1740,7 +1740,6 @@ EOF;
     public function add_shortcodes() {
         add_shortcode('woo_vipps_buy_now', array($this, 'buy_now_button_shortcode'));
         add_shortcode('woo_vipps_express_checkout_button', array($this, 'express_checkout_button_shortcode'));
-        add_shortcode('woo_vipps_express_checkout_banner', array($this, 'express_checkout_banner_shortcode'));
 
         // Badges, if using shortcodes
         // New vipps-mobilepay-badge shortcode. LP 19.11.2024
@@ -1785,52 +1784,8 @@ EOF;
         $header = "<legend class='express-header'>$header_text</legend>";
         $div_classes = "legacy-checkout vipps-express-checkout $payment_method";
         echo "<fieldset class='$div_classes'>$header";
-        $this->checkout_express_checkout_button_html();
+        echo $this->cart_express_checkout_button_html();
         echo '</fieldset>';
-    }
-
-    public function express_checkout_banner() {
-        $gw = $this->gateway();
-        if (!$gw->show_express_checkout()) return;
-        return $this->express_checkout_banner_html();
-    }
-
-    public function express_checkout_banner_html() {
-        $url = $this->express_checkout_url();
-        $url = wp_nonce_url($url,'express','sec');
-        $text = __('Skip entering your address and just checkout using', 'woo-vipps');
-        $linktext = 'Express'; // dont translate. LP 2025-09-03
-        $logo = $this->get_express_banner_logo();
-        $payment_method = $this->get_payment_method_name();
-
-        $img_classes = 'express-banner-logo inline negative ' . strtolower($payment_method) . '-logo';
-        $div_classes = 'woocommerce-info ' . strtolower($payment_method) . '-info';
-        $a_classes = 'express-banner-link ' . strtolower($payment_method) . '-link';
-
-        $message = $text . "<a href='$url' class='$a_classes'><img class='$img_classes' border=0 src='$logo' alt='$payment_method'/>$linktext!</a>";
-        $message = apply_filters('woo_vipps_express_checkout_banner', $message, $url, $payment_method);
-        ?>
-        <div class="<?php echo $div_classes;?>"><?php echo $message;?></div>
-            <?php
-    }
-
-    public function checkout_express_checkout_button() {
-        $gw = $this->gateway();
-
-        if ($gw->show_express_checkout()){
-            return $this->checkout_express_checkout_button_html();
-        }
-    }
-
-    public function checkout_express_checkout_button_html() {
-        $url = $this->express_checkout_url();
-        $url = wp_nonce_url($url,'express','sec');
-        $button= apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context('checkout'));
-        $method = $this->get_payment_method_name();
-        $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
-        $html = "<a href='$url' class='vipps-express-checkout short $method' title='$title'>$button</a>";
-        $html = apply_filters('woo_vipps_cart_express_checkout_button', $html, $url);
-        echo $html;
     }
 
     // Show the express button if reasonable to do so
@@ -1899,14 +1854,6 @@ EOF;
         if (!$gw->cart_supports_express_checkout()) return;
         ob_start();
         $this->cart_express_checkout_button_html('shortcode');
-        return ob_get_clean();
-    }
-    // Show a banner normally shown for non-logged-in-users at the checkout page.  It does not need to check if we are to show the button, obviously, but needs to see if the cart works
-    public function express_checkout_banner_shortcode() {
-        $gw = $this->gateway();
-        if (!$gw->cart_supports_express_checkout()) return;
-        ob_start();
-        $this->express_checkout_banner_html();
         return ob_get_clean();
     }
 
