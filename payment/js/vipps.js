@@ -219,6 +219,10 @@
         return message;
     }
 
+    function emitVippsPurchaseEvent(name, detail = {}) {
+        document.dispatchEvent(new CustomEvent(name, { detail }));
+    }
+
     // Hook vippsInit to woocommerce/product-collection render event. LP 29.11.2024
     // IOK 2026-01-14 available from woo 9.4 - so the buy now block will not be available until that version
     body.addEventListener("wc-blocks_product_list_rendered", () => {
@@ -227,7 +231,7 @@
 
     // Allow other code to trigger and observe this lifecycle event through
     // either the native or jQuery event API.
-    body.addEventListener("vippsInit", handleVippsInit);
+    body.addEventListener("vippsInit", handleVippsInit, true);
     if (window.jQuery) {
         window.jQuery(body).on("vippsInit", handleVippsInit);
     }
@@ -287,11 +291,14 @@
 
             if (Number(result.ok) === 1) {
                 if (!result.url) {
-                    clearAttempt();
-                    throw new Error(translate(
+                    const button = currentAttempt.button;
+                    const message = translate(
                         "missingPaymentUrl",
                         "Successful checkout response has no payment URL"
-                    ));
+                    );
+                    clearAttempt();
+                    showError(message, button);
+                    throw new Error(message);
                 }
 
                 paymentHandoff?.mark(result);
@@ -322,11 +329,14 @@
                 );
             }
 
-            clearAttempt();
-            throw new Error(translate(
+            const button = currentAttempt.button;
+            const message = translate(
                 "unexpectedCheckoutResponse",
                 "Unexpected express checkout response"
-            ));
+            );
+            clearAttempt();
+            showError(message, button);
+            throw new Error(message);
         });
 
         trigger
@@ -381,6 +391,10 @@
                 lastResponse: null
             };
             setPurchaseButtonsBusy(true);
+            body.dataset.vippsPurchaseActive = "true";
+            emitVippsPurchaseEvent("vippsPurchaseStarted", {
+                wrapper: button
+            });
             return true;
         }
 
@@ -423,12 +437,20 @@
         }
 
         function clearAttempt() {
+            const attempt = currentAttempt;
             locked = false;
             currentAttempt = null;
             dialogBusy = false;
             setPurchaseButtonsBusy(false);
             dialogUi.confirm.disabled = false;
             dialogUi.confirm.removeAttribute("aria-disabled");
+
+            if (attempt) {
+                delete body.dataset.vippsPurchaseActive;
+                emitVippsPurchaseEvent("vippsPurchaseFinished", {
+                    wrapper: attempt.button
+                });
+            }
         }
 
         function showActionRequiredDialog(html) {
@@ -578,7 +600,8 @@
     // the SDK start the express checkout session. IOK 2026-09-04
     async function handlePurchaseClick(event) {
         const wrapper = event.target.closest?.(
-            ".button.single-product.vipps-buy-now.initialized, .vipps-express-checkout"
+            ".button.single-product.vipps-buy-now.initialized, " +
+            ".vipps-express-checkout:not(body)"
         );
 
         if (!wrapper || !wrapper.querySelector("vipps-mobilepay-button")) {
@@ -1068,6 +1091,11 @@
 
     function showError(message, wrapper) {
         removeErrorMessages();
+
+        emitVippsPurchaseEvent("vippsPurchaseError", {
+            message: String(message),
+            wrapper
+        });
 
         let markup = `<p><ul class="woocommerce-error vipps-error vipps-default-error-message vipps-buy-now-error"><li>${escapeHtml(message)}</li></ul></p>`;
         markup = wp.hooks.applyFilters("vippsErrorMessage", markup, wrapper);

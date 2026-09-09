@@ -5410,29 +5410,8 @@ else:
               compact='false'>
           </vipps-mobilepay-button>
       </a>
-  </div>
-  <script>
-      function startVippsQrPurchase() {
-          const form = document.querySelector(".vipps-qr-purchase");
-          const purchaseButton = form?.querySelector(".vipps-buy-now");
-
-          if (!purchaseButton) {
-              return;
-          }
-
-          purchaseButton.dispatchEvent(new MouseEvent("click", {
-              bubbles: true,
-              cancelable: true
-          }));
-      }
-
-      if (document.readyState === "complete") {
-          startVippsQrPurchase();
-      } else {
-          window.addEventListener("load", startVippsQrPurchase, { once: true });
-      }
-  </script>';
-
+  </div>";
+$content .= '<script id="vipps-qr-js" src="' . plugins_url('js/vipps-qr-purchase.js',__FILE__) . '"></script>';
 
 
         $this->fakepage("", $content);
