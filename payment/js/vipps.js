@@ -225,16 +225,28 @@
         body.dispatchEvent(new Event("vippsInit"));
     });
 
-    // Allow other guys to do this too
-    body.addEventListener("vippsInit", vippsInit);
+    // Allow other code to trigger and observe this lifecycle event through
+    // either the native or jQuery event API.
+    body.addEventListener("vippsInit", handleVippsInit);
     if (window.jQuery) {
-        window.jQuery(body).on("vippsInit", vippsInit);
+        window.jQuery(body).on("vippsInit", handleVippsInit);
     }
     document.addEventListener("click", handlePurchaseClick);
 
     bindVariationEvents();
     subscribeToCartChanges();
-    vippsInit();
+    body.dispatchEvent(new Event("vippsInit"));
+
+    function handleVippsInit(event) {
+        const eventObject = event?.originalEvent || event;
+
+        if (eventObject.__vippsInitHandled) {
+            return;
+        }
+
+        eventObject.__vippsInitHandled = true;
+        vippsInit();
+    }
 
     function vippsInit() {
         document.querySelectorAll(
@@ -982,7 +994,7 @@
         });
 
         $(body).on("wc_variation_form", () => {
-            vippsInit();
+            body.dispatchEvent(new Event("vippsInit"));
         });
 
         $(body).on("woocommerce-product-bundle-hide", () => {
