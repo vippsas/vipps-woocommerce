@@ -4646,6 +4646,7 @@ else:
     // This method may provide HTML form elements to ask a user questions after starting
     // express checkout. It is used to detect duplicate orders, possibly for terms and conditions, and user-definiable customizations. IOK 2026-09-09
     public function express_order_needs_confirmation($args, $current_hash) {
+error_log("In it to win it");
         $elements = [];
         $html = "";
 
@@ -4668,8 +4669,11 @@ else:
         if (!empty($elements)) {
             $html = join("\n", array_values($elements));
             $msg = join(",", array_keys($elements));
+error_log("Elements not empty");
             return ['ok'=>2, 'msg'=>$msg, 'html'=>$html, 'url'=>''];
         }
+
+error_log("Elements empty");
         return false;
 
     }
@@ -4746,8 +4750,12 @@ else:
         $current_hash = md5("$prodid:$varid:$quantity");
 
         $confirmation = (bool) intval(($others['confirmed'] ?? 0));
+error_log("Confirm: $confirmation");
         if (!$confirmation) {
             $result = $this->express_order_needs_confirmation($args, $current_hash); 
+            if (!empty($result)) {
+                return $result;
+            }
         }
 
         $result = $this->create_and_process_express_order();
