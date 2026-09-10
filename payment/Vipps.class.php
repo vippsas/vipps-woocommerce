@@ -1670,8 +1670,8 @@ EOF;
                 array(),
                 filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/vipps-on-site-messaging.js'),
                 [
-                'in_footer' => true,
-                'strategy'  => 'async',
+                    'in_footer' => true,
+                    'strategy'  => 'async',
                 ],
                 );
 
@@ -4552,7 +4552,7 @@ else:
     }
 
 
-    // Actually create a exprss checkout order object, with no shipping or personal information, returning information about
+    // Actually create a express checkout order object, with no shipping or personal information, returning information about
     // the result. The order should at this point be in a/the cart. For single product purchases, this is a different cart than 
     // the main one; for cart purchases, it's just the WC()->cart object. IOK 2026-08-25
     private function create_and_process_express_order() {
