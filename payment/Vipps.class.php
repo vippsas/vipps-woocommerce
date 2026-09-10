@@ -4614,7 +4614,6 @@ else:
 
         // First, let's check if we need to confirm the purchase.
         $last_express_purchase_hash = WC()->session->get('woo_vipps_last_express');
-        $last_express_the_same = false;
         if ($last_express_purchase_hash) {
             list($hash, $stamp) = explode(":", $last_express_purchase_hash);
             $cutoff = $stamp + apply_filters('woo_vipps_recent_order_cutoff', (3*60));
@@ -4644,7 +4643,7 @@ else:
         // Custom fields
         ob_start();
         do_action('woo_vipps_express_checkout_orderspec_form', $productinfo);
-        $extra_fields .= ob_get_clean();
+        $extra_fields = ob_get_clean();
         if (!empty($extra_fields)) {
            $elements['extra'] = $extra_fields;
         }
@@ -4687,7 +4686,7 @@ else:
         $gw = $this->gateway();
         if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
             $result = array('ok'=>0, 'msg'=>sprintf(__('%1$s is not available for this order','woo-vipps'), Vipps::ExpressCheckoutName()), 'url'=>false);
-            return result;
+            return $result;
         }
         // Validate cart going forward using same logic as WC_Cart->check_cart() but not adding notices.
         $toolate = false;
@@ -5333,7 +5332,7 @@ else:
         $payment_method = $this->get_payment_method_name();
         $btitle = esc_attr(sprintf(__('Buy now with %1$s', 'woo-vipps'), $payment_method));
 
-        $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "...</p>";
+        $content = "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "...</p>";
         $content .= "<div class='vipps-qr-purchase' style='visibility:hidden'>
       <a
           href='javascript:void(0)'
