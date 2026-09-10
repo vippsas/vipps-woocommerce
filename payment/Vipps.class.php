@@ -1784,7 +1784,7 @@ EOF;
         $header = "<legend class='express-header'>$header_text</legend>";
         $div_classes = "legacy-checkout vipps-express-checkout $payment_method";
         echo "<fieldset class='$div_classes'>$header";
-        echo $this->checkout_express_checkout_button_html();
+        $this->checkout_express_checkout_button_html();
         echo '</fieldset>';
     }
 
