@@ -1784,7 +1784,7 @@ EOF;
         $header = "<legend class='express-header'>$header_text</legend>";
         $div_classes = "legacy-checkout vipps-express-checkout $payment_method";
         echo "<fieldset class='$div_classes'>$header";
-        echo $this->cart_express_checkout_button_html();
+        echo $this->checkout_express_checkout_button_html();
         echo '</fieldset>';
     }
 
@@ -1808,6 +1808,17 @@ EOF;
     public function cart_express_checkout_button_html($minicart = false) {
         $context = $minicart ? 'minicart' : 'cart';
         $button = apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context($context));
+        $method = $this->get_payment_method_name();
+        $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
+        $url = "#";
+        $sec = wp_create_nonce('express');
+        $html = "<a href='#' class='vipps-express-checkout short " . esc_attr($method) . "' title='" . esc_attr($title) . "' data-sec='" . esc_attr($sec) . "'>$button</a>";
+        $html = apply_filters('woo_vipps_cart_express_checkout_button', $html, $url);
+        echo $html;
+    }
+
+    public function checkout_express_checkout_button_html() {
+        $button = apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context('checkout'));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
         $url = "#";
