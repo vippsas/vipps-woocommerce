@@ -816,7 +816,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // IOK 2024-09-01 In general, we can refund most Vipps Mobilepay orders through the api,
-    // however, this is not the case for the Bank Transfer method available through Vipps Checkout. 
+    // however, this is not the case for the Bank Transfer method available through Checkout. 
     public function can_refund_order( $order ) {
         $method = $order->get_meta('_vipps_api');
         switch ($method) {
@@ -1087,11 +1087,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $woodefault = 'yes' === get_option('woocommerce_enable_signup_and_login_from_checkout');
            if ($woodefault) {
                $expresscreateuserdefault = "yes";
-         //      $vippscreateuserdefault = "yes"; // However, for Vipps Checkout the email address is freetext so we'll treat the default a bit different.
+         //      $vippscreateuserdefault = "yes"; // However, for Checkout the email address is freetext so we'll treat the default a bit different.
            }
         }
 
-        // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
+        // We will only show the Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
 
 
@@ -1259,7 +1259,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => '',
                         ),
 
-                // Vipps checkout *shipping options* - extra shipping options that only work with Vipps Checkout
+                // Vipps checkout *shipping options* - extra shipping options that only work with Checkout
                 'vcs_helthjem' => array(
                         'title'       => __('Helthjem', 'woo-vipps'),
                         'label'       => sprintf(__('Support Helthjem as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
@@ -1296,7 +1296,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                 );
 
-       /* Support for *certain* external payment methods in Vipps Checkout. IOK 2024-05-27  */
+       /* Support for *certain* external payment methods in Checkout. IOK 2024-05-27  */
        $externals = [];
        $external_payment_fields = [];
        $allow_external_payments = $this->allow_external_payments_in_checkout();
@@ -1800,7 +1800,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $ok; 
     }
 
-    // True if the alternative Vipps Checkout screen is both available and activated. Returns the page id of the checkout
+    // True if the alternative Checkout screen is both available and activated. Returns the page id of the checkout
     // page for convenience. IOK 2021-10-01
     public function vipps_checkout_available () {
 
@@ -2694,7 +2694,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         if ($ready && ($express || $checkout_session)) {
-            // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
+            // For Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
             // This will also normalize userDetails, adding 'sub' where possible and fields for backwards compatibility. 2025-08-12
             $result = $this->ensure_userDetails($result, $order);
 
@@ -2769,7 +2769,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
 
-    // IOK 2024-01-09 If using Vipps Checkout with the BankTransfer method, which is eg. used in Finland,
+    // IOK 2024-01-09 If using Checkout with the BankTransfer method, which is eg. used in Finland,
     //  we are (currently) not receiving any  'state' or 'aggregate', so add this iff the payment is successful.
     // The reason for this is that this payment type does not actually use the epayment API at all (!)
     // Also moved some other compatibility code here - 
@@ -2840,7 +2840,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $result;
     }
 
-    // Vipps Checkout v3 does *not* provide userDetails. Vipps Checkout v2 and epayment *does*. But Checkout additionally allows
+    // Checkout v3 does *not* provide userDetails. Checkout v2 and epayment *does*. But Checkout additionally allows
     // for anonymous purchases, in which case there is *no* user details. In this case we provide an anonymous user so we can actually create an order.
     // To handle this, we provide this utility that ensures we have userDetails no matter the input. For this we use the anonymous filters and "billingDetails" if present
     // if not, we use shippingDetails. IOK 2023-01-10
@@ -3241,7 +3241,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     }
                 }
 
-                // Possible extra metadata from Vipps Checkout IOK 2023-01-17
+                // Possible extra metadata from Checkout IOK 2023-01-17
                 // Store in the order, but also in the shipping rate so it will be visible in the order screen
                 // along with the shipping ragte
                 if (isset($shipping['pickupPoint'])) {
@@ -3303,7 +3303,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $shipping_method = $methodclass ? new $methodclass($shipping_rate->get_instance_id()) : null;
             $is_vipps_checkout_shipping = $shipping_method && is_a($shipping_method, 'VippsCheckout_Shipping_Method');
 
-            // Some Vipps Checkout-specific shipping methods calculate the cost in the Vipps window.
+            // Some Checkout-specific shipping methods calculate the cost in the Vipps window.
             if ($is_vipps_checkout_shipping && $shipping_method->dynamic_cost) {
                 $vippsamount = intval($order->get_meta('_vipps_amount'));
                 $shipping_tax_rate = floatval($order->get_meta('_vipps_shipping_tax_rates'));
@@ -3341,7 +3341,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->set_total($ordertotal + $total_shipping + $total_shipping_tax);
             $order->update_taxes(); // Necessary for the admin view only; does not recalculate order.
 
-            // Add an early hook for Vipps Checkout orders with special shipping methods
+            // Add an early hook for Checkout orders with special shipping methods
             $metadata = $shipping_rate->get_meta_data();
             if (isset($metadata['type'])) {
                 do_action('woo_vipps_checkout_special_shipping_method', $order, $shipping_rate, $metadata['type']);
@@ -3359,7 +3359,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // If we have the 'expresscreateuser' thing set to true, we will create or assign the order here, as it is the first-ish place where we can.
         // If possible and safe, user will be logged in before being sent to the thankyou screen.  IOK 2020-10-09
-        // Same thing for Vipps Checkout, mutatis mutandis. The function below returns false if no customer exists or gets created.
+        // Same thing for Checkout, mutatis mutandis. The function below returns false if no customer exists or gets created.
         $customer = false;
         if ($assigncustomer) {
             $customer = Vipps::instance()->express_checkout_get_vipps_customer($order);
@@ -3694,7 +3694,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // UPDATE: Should be no more race condition since we moved callback into the action scheduler, and this shipping finalization into this rest endpoint. LP 2026-03-30
         Vipps::instance()->callback_restore_session($order_id);
 
-        // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
+        // For Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
         // This will also normalize userDetails, adding 'sub' where possible and fields for backwards compatibility. 2025-08-12
         $data = $this->ensure_userDetails($data, $order);
 
@@ -4072,7 +4072,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 </div>
         <?php endif; ?>
     
-        <?php // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
+        <?php // We will only show the Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
         ?>
  

@@ -739,7 +739,7 @@ class VippsApi {
     }
 
 
-    // This is Vipps Checkout IOK 2021-06-19
+    // This is Checkout IOK 2021-06-19
     // Updated for V3 2023-01-09
     public function initiate_checkout($customerinfo,$order,$returnurl,$authtoken,$idempotency_key=null) {
         $command = 'checkout/v3/session';
@@ -815,7 +815,7 @@ class VippsApi {
         }
 
 
-        ## Vipps Checkout Shipping
+        ## Checkout Shipping
         $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
         $shippingcallback .= "/v3/checkout/" . $vippsorderid . "/shippingDetails"; # because this is how eCom v2 does it.
         $gw = $this->gateway;
