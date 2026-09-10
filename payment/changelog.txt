@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-09-10 version 6.1.9
+Minor textual changes
+
 = 2026-09-03 version 6.1.8
 Minor textual changes
 

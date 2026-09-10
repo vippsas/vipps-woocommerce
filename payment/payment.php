@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '6.1.8');
+define('WOO_VIPPS_VERSION', '6.1.9');
 
 define( 'WC_VIPPS_PAYMENT_MAIN_FILE', __FILE__ );
 
@@ -51,7 +51,7 @@ Vipps::register_hooks();
 require_once(dirname(__FILE__) . '/VippsQRCodeController.class.php');
 VippsQRCodeController::register_hooks();
 
-/* If Vipps Checkout is activated, load its support. It can still be turned on and off. */
+/* If Checkout is activated, load its support. It can still be turned on and off. */
 if (get_option('woo_vipps_checkout_activated', false)) {
     require_once(dirname(__FILE__) . '/VippsCheckout.class.php');
     VippsCheckout::register_hooks();
@@ -78,7 +78,7 @@ add_action ('before_woocommerce_init', function () {
  }
 },1);
 
-// Load the extra Vipps Checkout Shipping classes only when necessary
+// Load the extra Checkout Shipping classes only when necessary
 add_action( 'woocommerce_shipping_init', function () {
     if (!class_exists('VippsCheckout_Shipping_Method') && get_option('woo_vipps_checkout_activated', false)) {
         require_once(dirname(__FILE__) . '/VippsCheckoutShippingMethods.php');

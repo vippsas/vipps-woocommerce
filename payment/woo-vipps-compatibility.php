@@ -200,9 +200,9 @@ add_action('after_setup_theme', function () {
         });
     }
 
-    // Support Woo-Mailerlite in Vipps Checkout
+    // Support Woo-Mailerlite in Checkout
     if (class_exists('MailerLite\Includes\Classes\Settings\MailerLiteSettings')) {
-        // If Mailerlite is active as well as Vipps Checkout, then add support for it
+        // If Mailerlite is active as well as Checkout, then add support for it
         if (get_option('ml_account_authenticated') && (Vipps::instance()->gateway()->get_option('vipps_checkout_enabled') == 'yes')) {
 
             // If checkout is active, don't support saving "lost carts"
@@ -210,7 +210,7 @@ add_action('after_setup_theme', function () {
                 return 1;
             }, 10, 2);
 
-            // Check if the checkout feature is enabled for MailerLite, and if so, add the feature for Vipps Checkout
+            // Check if the checkout feature is enabled for MailerLite, and if so, add the feature for Checkout
             $checkout = MailerLite\Includes\Classes\Settings\MailerLiteSettings::getInstance()->getMlOption('checkout', 'no');
             if ($checkout == 'yes') {
                 add_filter('woo_vipps_checkout_consent_query', function ($text) {
@@ -237,7 +237,7 @@ add_action('after_setup_theme', function () {
         }
     }
 
-    // Support Mailchimp for WooCommerce in Vipps Checkout
+    // Support Mailchimp for WooCommerce in Checkout
     if (function_exists('mailchimp_is_configured') && class_exists('MailChimp_Service')) {
         // If mailchimp is configured and Checkout is on, add actions
         if (mailchimp_is_configured() && (Vipps::instance()->gateway()->get_option('vipps_checkout_enabled') == 'yes')) {
