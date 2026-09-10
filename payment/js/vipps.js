@@ -852,6 +852,10 @@
     }
 
     function addOrderAttributionData(post) {
+        // order attribution can be turned on or off in the settings because of some sites having issues with it in the past. IOK 2026-09-10
+        if (config.expressOrderAttribution  != "yes") {
+            return post;
+        }
         const attribution = window.wc_order_attribution;
 
         if (

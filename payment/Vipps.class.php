@@ -1727,6 +1727,8 @@ EOF;
     }
 
     public function wp_enqueue_scripts() {
+        // Add late: if this value isn't 'yes' we wil not add order attribution to express orders. IOK 2026-09-10
+        $this->vippsJSConfig['expressOrderAttribution'] = $this->gateway()->get_option('vippsorderattribution');
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
         // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
         $this->script_add_vippslocale('vipps-gw');
