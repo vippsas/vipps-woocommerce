@@ -200,8 +200,8 @@ class VippsAdminSettings
 
                 'kustom_sale_1' => __('Checkout - Important Update', 'woo-vipps'),
                 'kustom_sale_2' => __('Vipps MobilePay has entered into an agreement to sell the Checkout solution to Kustom. As part of this transition, <b>Vipps MobilePay Checkout will become Kustom Checkout</b>. You can follow <a href="https://docs.kustom.co/contents/partners/e-commerce-platforms/woocommerce-vipps-guide#switch-from-vipps-checkout-to-kustom-checkoutguide" target="_blank">this guide</a> to migrate over to Kustom Checkout.', 'woo-vipps'),
-                'kustom_sale_3' => __('Going forward, Kustom will be responsible for delivering and developing the Checkout solution. <b>Vipps will remain available as a payment method in Kustom Checkout</b>, so your customers can continue to pay with Vipps in the familiar way.', 'woo-vipps'),
-                'kustom_sale_4' => __('Please note that <b>accounts created after March 27, 2026 will not support Vipps Checkout in this plugin</b>.', 'woo-vipps'),
+                'kustom_sale_3' => __('Going forward, Kustom will be responsible for delivering and developing the Checkout solution. <b>Vipps MobilePay will remain available as a payment method in Kustom Checkout</b>, so your customers can continue to pay with Vipps MobilePay in the familiar way.', 'woo-vipps'),
+                'kustom_sale_4' => __('Please note that <b>accounts created after March 27, 2026 will not support Checkout in this plugin</b>.', 'woo-vipps'),
                 'kustom_sale_5' => __('If you have any questions about what the transition means for you, please see our <a href="https://vippsmobilepay.com/en-NO/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps'),
                 );
 
