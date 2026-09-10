@@ -4653,7 +4653,7 @@ else:
 
         // Custom fields
         ob_start();
-        do_action('woo_vipps_express_checkout_orderspec_form', $productinfo);
+        do_action('woo_vipps_express_checkout_orderspec_form', $productinfo, $args);
         $extra_fields = ob_get_clean();
         if (!empty($extra_fields)) {
            $elements['extra'] = $extra_fields;
@@ -4673,8 +4673,7 @@ else:
         Vipps::nocache();
         check_ajax_referer('express', 'sec');
         static::set_locale_if_in_header();
-        $raw_post = @file_get_contents( 'php://input' );
-        $args = @json_decode($raw_post,true);
+        $args = $request->get_json_params();
         if (!$args) {
             return new WP_Error('no_data', __('No data passed to express checkout', 'woo-vipps'), ['status' => 400]);
         }
@@ -4758,9 +4757,7 @@ else:
     public function rest_do_single_product_express_checkout ($request) {
         Vipps::nocache();
         static::set_locale_if_in_header();
-
-        $raw_post = @file_get_contents( 'php://input' );
-        $args = @json_decode($raw_post,true);
+        $args = $request->get_json_params();
         if (!$args) {
             return new WP_Error('no_data', __('No data passed to express checkout', 'woo-vipps'), ['status' => 400]);
         }
