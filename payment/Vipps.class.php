@@ -4835,7 +4835,7 @@ else:
         return $response;
     }
 
-    // Common private method to do single product express checkout, used by the old ajax_do_single_product_express_checkout and the new
+    // Common private method to do single product express checkout, used by the new REST express. IOK 2026-08-25
     private function really_do_single_product_express_checkout($prodid, $varid, $sku, $quantity=1, $variations=[]) {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = $this->gateway();
