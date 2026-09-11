@@ -287,6 +287,15 @@ class Vipps {
         // Set default button options, migrating any older setup IOK 2026-07-15
         $this->init_button_options();
 
+     /* 
+        From version 6.2.x we create a real physical page to handle the "special" vipps pages,
+        where we earlier used just a fake page with no real page id, unless especially configured.
+        We therefore need to add code to maintain this special page. 
+
+        woocommerce_loaded is too early for this because of maybe_create_vipps_pages which calls WC_Install::create_pages,
+        and we hook unto this with woocommerce_create_pages. LP 2026-09-03
+        */
+
         // Delete special page id option when its deleted or trashed, so that we dont have to load
         // in the post to check status in woocommerce_loaded when we ensure the special page exists. LP 2026-09-03
         $delete_special_page_id = function($post_id, $post = null) {
@@ -298,6 +307,16 @@ class Vipps {
         add_action('wp_trash_post', $delete_special_page_id, 10, 2);
 
         $this->ensure_special_page_exists();
+
+
+       // We want this special page to have a certain title and maybe special scripts and so on, 
+       // this gets run in template redirect for these pages.
+       add_action('woo_vipps_special_page_template_redirect', function ($action) {
+            // Change title dynamically depending on action. LP 2026-09-02
+            add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
+
+       });
+
     }
 
     public function admin_init () {
@@ -2576,16 +2595,14 @@ else:
         if (static::is_special_page()) {
             // dont cache special page. LP 2026-08-25
             $this->nocache();
-
-            // Change title dynamically depending on action. LP 2026-09-02
-            add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
+            // Do the custom pre-load actions for these pages IOK 2026-09-11
+            do_action('woo_vipps_special_page_template_redirect', $_GET['action']);
         }
     }
 
     // Dynamic special page title depending on endpoint/action, only frontend. LP 2026-09-02
     public function vipps_special_page_endpoint_title($title, $postid = 0) {
         global $wp_query;
-
         // Comment from woocommerce's wc_page_endpoint_title where this logic is from: LP 2026-09-02
 
         // In block themes the whole template (header, footer, content) renders inside the main
@@ -2607,6 +2624,7 @@ else:
     }
 
     // Template handling for special pages. IOK 2018-11-21
+    // This is legacy - the special page is now a real page, so it can have a special template using standard WP methods. IOK 2026-09-11
     public function template_include($template) {
         if (static::is_special_page()) {
             // Get any special template override from the options IOK 2020-02-18
@@ -2617,21 +2635,6 @@ else:
             return apply_filters('woo_vipps_special_page_template', $template, $_GET['action'] ?? '');
         }
         return $template;
-    }
-
-
-    // Can't use wc-api for this, as that does not support DELETE . IOK 2018-05-18
-    private function is_consent_removal () {
-        
-        if ($_SERVER['REQUEST_METHOD'] != 'DELETE') return false;
-        if ( !get_option('permalink_structure')) {
-            if (@$_REQUEST['vipps-consent-removal']) return @$_REQUEST['callback'];
-            return false;
-        }
-        if (preg_match("!/vipps-consent-removal/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
-            return @$_REQUEST['callback'];
-        }
-        return false;
     }
 
     // On the thank you page, we have a completed order, so we need to restore any saved cart and possibly log in 
@@ -5219,8 +5222,6 @@ else:
         if (is_admin()) return;
         if (wp_doing_ajax()) return;
         if (defined('REST_REQUEST') && REST_REQUEST) return;
-
-
 
         $action = $_GET['action'] ?? '';
         do_action('woo_vipps_before_handling_special_page', $action);
