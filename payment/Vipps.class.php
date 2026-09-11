@@ -4320,7 +4320,8 @@ else:
     private function maybe_set_vipps_as_default() {
         if (WC()->session->get('chosen_payment_method')) return; // User has already chosen payment method, so we're done.
         $gw = $this->gateway();
-        if ($gw->get_option('vippsdefault')=='yes') {
+        // Do *not* default to vipps if Kustom Checkout is installed IOK 2026-09-11
+        if ($gw->get_option('vippsdefault')=='yes' && !class_exists('KCO')) {
             WC()->session->set('chosen_payment_method', $gw->id);
         }
     }
