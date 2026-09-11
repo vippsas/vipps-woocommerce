@@ -5200,7 +5200,7 @@ error_log("In it to win it! title is $title action is " . $_GET['action']);
 
         // Vipps special page for certain payment flow actions. Previously a fake page. LP 2026-08-18
         $data['vipps_special_page'] = [
-            'name' => 'vipps_special_page', // slug
+            'name' => 'vipps-payment', // slug
             /* translators: company name */
             'title' => sprintf(__('%s special page', 'woo-vipps'), static::CompanyName()), // we hide the title frontend in template_redirect. LP 2026-08-27
             'content' => '<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->',
