@@ -14,6 +14,7 @@ import { NotificationBanner } from '../notification-banner';
 export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
   const { getOption, setOption } = useWP();
   const [error, setError] = useState<string | null>(null);
+  const [showSpecialPageTemplates] = useState(getOption('vippsspecialpagetemplate'));
 
   /**
    * Removes the image from the options and clears the image URL.
@@ -73,29 +74,20 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         descriptionKey="vippsorderattribution.description"
       />
 
-      {/*  Renders a checkbox to override the page template used for the special Vipps pages */}
-      <SelectFormField
-        name="vippsspecialpagetemplate"
-        titleKey="vippsspecialpagetemplate.title"
-        descriptionKey="vippsspecialpagetemplate.description"
-        options={Object.entries(gettext('vippsspecialpagetemplate.options')).map(([templateid,templatename]) => ({
-          label: templatename,
-          value:  templateid ? templateid : ""
-        }))}
-      />
-
-      {/* Renders a checkbox to use a real page ID for the special Vipps pages */}
-      <SelectFormField
-        name="vippsspecialpageid"
-        titleKey="vippsspecialpageid.title"
-        descriptionKey="vippsspecialpageid.description"
-        options={Object.entries(gettext('vippsspecialpageid.options')).map(([pageid,pagename]) => ({
-          label: pagename,
-          value: pageid ? pageid : ""
-        })
-
-       )}
-      />
+      {/*  Renders a checkbox to override the page template used for the special Vipps pages.
+      From now (2026-08-27) on the special page is now a real page, so hide this setting if its unset/default. But if changed, still show it so users can change it. LP 2026-08-27
+      */}
+      {showSpecialPageTemplates &&
+        <SelectFormField
+          name="vippsspecialpagetemplate"
+          titleKey="vippsspecialpagetemplate.title"
+          descriptionKey="vippsspecialpagetemplate.description"
+          options={Object.entries(gettext('vippsspecialpagetemplate.options')).map(([templateid,templatename]) => ({
+            label: templatename,
+            value:  templateid ? templateid : ""
+          }))}
+        />
+      }
 
       {/* Renders a checkbox to enable the sending of receipts */}
       <CheckboxFormField

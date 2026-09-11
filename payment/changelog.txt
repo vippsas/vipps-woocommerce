@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-09-11 Version 6.1.10 =
+Don't set Vipps as default payment method if Kustom Checkout is installed
+
 = 2026-09-10 version 6.1.9
 Minor textual changes
 
