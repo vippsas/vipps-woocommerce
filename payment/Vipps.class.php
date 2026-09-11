@@ -311,6 +311,8 @@ class Vipps {
 
        // We want this special page to have a certain title and maybe special scripts and so on, 
        // this gets run in template redirect for these pages.
+
+
        add_action('woo_vipps_special_page_template_redirect', function ($action) {
             // Change title dynamically depending on action. LP 2026-09-02
             add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
@@ -2593,10 +2595,12 @@ else:
     // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
         if (static::is_special_page()) {
+            // Legacy: Stop the canonical redirect here. Unclear if still necessary. IOK 2026-09-11
+            remove_filter('template_redirect', 'redirect_canonical', 10);
             // dont cache special page. LP 2026-08-25
             $this->nocache();
             // Do the custom pre-load actions for these pages IOK 2026-09-11
-            do_action('woo_vipps_special_page_template_redirect', $_GET['action']);
+            do_action('woo_vipps_before_handling_special_page', $_GET['action']);
         }
     }
 
@@ -5224,7 +5228,6 @@ else:
         if (defined('REST_REQUEST') && REST_REQUEST) return;
 
         $action = $_GET['action'] ?? '';
-        do_action('woo_vipps_before_handling_special_page', $action);
         switch ($action) {
             case 'wait_for_payment':
                 $html = $this->vipps_wait_for_payment();
@@ -5239,7 +5242,7 @@ else:
                 $html = '';
         }
 
-        // NB: for certain themes, like twentytwentyfive, echo'ing the html output messes up the ordering and placement, so we need to return in in this shrotcode handler, so each action submethod needs to return its html. LP 2026-08-27
+        // Remember, this is a shortcode, so the html must be returned, not echoed IOK 2026-09-11
         return $html;
     }
 
