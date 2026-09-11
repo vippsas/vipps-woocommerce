@@ -4300,16 +4300,37 @@ error_log("In it to win it! title is $title action is " . $_GET['action']);
     }
 
     public function activate () {
-       static::maybe_add_cron_event();
-       $gw = $this->gateway();
+        static::maybe_add_cron_event();
+        $gw = $this->gateway();
 
-       // If store is using the default "Woo" orderprefix, generate a new one, this time using the stores' sitename if possible. IOK 2020-05-19
-       if ($gw->get_option('orderprefix') == 'Woo') {
-         $gw->update_option('orderprefix', $this->generate_order_prefix()); 
-       }
-       // IOK 2023-12-20 for the epayment api, we need to re-initialize webhooks at this point. 
-       $gw->initialize_webhooks();
-       $this->payment_method_name = $gw->get_option('payment_method_name');
+        // If store is using the default "Woo" orderprefix, generate a new one, this time using the stores' sitename if possible. IOK 2020-05-19
+        if ($gw->get_option('orderprefix') == 'Woo') {
+            $gw->update_option('orderprefix', $this->generate_order_prefix()); 
+        }
+        // IOK 2023-12-20 for the epayment api, we need to re-initialize webhooks at this point. 
+        $gw->initialize_webhooks();
+        $this->payment_method_name = $gw->get_option('payment_method_name');
+
+
+        // Check if the special page is noted and actually does exist
+        $special = static::get_special_page_id();
+        if ($special) {
+            $status = get_post_status($special);
+            if (!$status || $status == 'trash') {
+                delete_option('woocommerce_vipps_special_page_page_id');
+            } else {
+                $special_page = get_post($special);
+                // Ensure this page has the necessary shortcode. LP 2026-09-01
+                if (!has_shortcode($special_page->post_content, 'vipps_special_page')) {
+                    $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
+                    wp_update_post([
+                            'ID'           => $special,
+                            'post_content' => $new_content,
+                    ]);
+                }
+            }
+        }
+
     }
 
     // We have added some hooks to wp-cron; remove these. IOK 2020-04-01
