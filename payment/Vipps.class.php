@@ -2595,7 +2595,7 @@ else:
         // Handle legacy vipps-buy-now urls that auto-start express checkout for  certain product - in QR codes etc IOK 2026-09-11
         // We redirect these to the new location.
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        if ($path && preg_match("!/vipps-buy-product/?$!", $path)) {
+        if (( ($_GET['VippsSpecialPage'] ?? '') == 'vipps-buy-product') || ($path && preg_match("!/vipps-buy-product/?$!", $path)) ) {
             $url = static::get_special_page_url();
             $_GET['action'] = 'buy_product';
             $q = build_query($_GET);
