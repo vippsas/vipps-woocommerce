@@ -311,12 +311,9 @@ class Vipps {
 
        // We want this special page to have a certain title and maybe special scripts and so on, 
        // this gets run in template redirect for these pages.
-
-
-       add_action('woo_vipps_special_page_template_redirect', function ($action) {
+       add_action('woo_vipps_before_handling_special_page', function ($action) {
             // Change title dynamically depending on action. LP 2026-09-02
             add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
-
        });
 
     }
@@ -2608,6 +2605,8 @@ else:
     public function vipps_special_page_endpoint_title($title, $postid = 0) {
         global $wp_query;
         // Comment from woocommerce's wc_page_endpoint_title where this logic is from: LP 2026-09-02
+
+error_log("In it to win it! title is $title action is " . $_GET['action']);
 
         // In block themes the whole template (header, footer, content) renders inside the main
         // loop, so `the_title` fires for any post title rendered on the page (e.g. a product in a
