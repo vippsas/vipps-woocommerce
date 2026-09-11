@@ -122,7 +122,7 @@ class Vipps {
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
         add_filter( 'woocommerce_available_payment_gateways', array($Vipps, 'payment_gateway_filter'));
         add_action( 'woocommerce_blocks_loaded',  [$Vipps, 'woocommerce_blocks_loaded']);
-        // Express Checkout and Vipps Checkout supports the new pickup_location shipping method, but the admin interface for this may
+        // Express Checkout and Checkout supports the new pickup_location shipping method, but the admin interface for this may
         // not have loaded if the default checkout solution isn't the Checkout block. We'll load it anyway if the user has any local pickup locations
         // stored in the database since we support this for both Vipps MobilePay checkokut and Express.  IOK 2026-02-25
         add_action('woocommerce_load_shipping_methods', array($Vipps, 'maybe_load_pickup_locations'), 90);
@@ -1766,7 +1766,7 @@ EOF;
                 'in_footer' => true,
                 'strategy'  => 'async',
                 ],
-        );
+                );
 
         // Button web component downloaded from https://cdn.vippsmobilepay.com/js/button/button.js. LP 2026-06-24
         wp_register_script('vipps-button-webcomponent',
@@ -1774,8 +1774,7 @@ EOF;
                 array(),
                 filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/vipps-button.js'),
                 [
-                    'in_footer' => true,
-                    'strategy'  => 'async',
+                'in_footer' => false
                 ],
                 );
     }
@@ -2696,7 +2695,7 @@ else:
         $order = wc_get_order($orderid);
         if ($order) {
             // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
-            // -- or the same thing for Vipps Checkout. Also, the NHG code should not be running, and there is a filter, too. IOK 2023-08-04
+            // -- or the same thing for Checkout. Also, the NHG code should not be running, and there is a filter, too. IOK 2023-08-04
             $this->maybe_log_in_user($order);
             $order->delete_meta_data('_vipps_limited_session');
             $order->save();
@@ -2779,6 +2778,11 @@ else:
     public function after_setup_theme() {
         // To facilitate development, allow loading the plugin-supplied translations. Must be called here at the earliest.
         $ok = Vipps::load_plugin_textdomain('woo-vipps', false, basename( dirname( dirname( __FILE__ ) ) ) . "/languages");
+
+        // Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
+        // Will also probably be used to maintain a real utility-page for Vipps actions later for themes where this
+        // is important.
+        add_filter('woocommerce_create_pages', array($this, 'woocommerce_create_pages'), 50, 1);
 
         // Callbacks use the Woo API IOK 2018-05-18
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
@@ -3088,12 +3092,12 @@ else:
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
-        // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
+        // This handler handles both Checkout and Vipps ECom IOK 2021-09-02
         // .. and the epayment webhooks 2023-12-19
         $ischeckout = false;
         $iswebhook = false;
         $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
-        // For Vipps Checkout v3 and onwards, we control the callback so the type is just this field
+        // For Checkout v3 and onwards, we control the callback so the type is just this field
         if ($callback == 'checkout') {
             $ischeckout = true;
         } 
@@ -3509,8 +3513,8 @@ else:
             exit();
         }
 
-        // If we are doing this for Vipps Checkout after version 3, communicate to any shipping methods with
-        // special support for Vipps Checkout that this is in fact happening. IOK 2023-01-19
+        // If we are doing this for Checkout after version 3, communicate to any shipping methods with
+        // special support for Checkout that this is in fact happening. IOK 2023-01-19
         // This needs to be done before "calculate totals".
         // Moved from "vipps_shipping_details_callback_handler" because we need it before restoring sessions. IOK 2025-05-06
         $ischeckout = $order->get_meta('_vipps_checkout');
@@ -3688,7 +3692,7 @@ else:
 
         }
        
-        // Add shipping tax rates to the *order* so we can calculate this correctly when using Vipps Checkouts 
+        // Add shipping tax rates to the *order* so we can calculate this correctly when using Checkouts 
         // 'dynamic pricing' 2023-01-26 
         // Which may be deprecated, but anyway, for future use IOK 2025-08-14
         $taxrate = 0;
@@ -3816,7 +3820,7 @@ else:
            $vippsmethod['shippingMethodId'] = $key;
            $vippsmethods[]=$vippsmethod;
 
-           // Metadata and settings stored for later use for Vipps Checkout
+           // Metadata and settings stored for later use for Checkout
            // and express checkout - basically, for each *key* have the corresponding object. IOK 2025-08-15
            // In the end, this data will be serialized and stored in the Order, and used in the gateways method set_order_shipping_details to
            // finalize the order. IOK 2025-08-15
@@ -3836,7 +3840,7 @@ else:
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$vippsmethods);
         $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
 
-        // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax and format.
+        // IOK 2021-11-16 Checkout uses a slightly different syntax and format.
         // IOK 2025-08-15 and new Express yet another slightly different format.
         // IOK 2025-08-15 pass the ratemap as a reference, so transforms can update them
         if ($ischeckout) {
@@ -4424,7 +4428,8 @@ else:
     private function maybe_set_vipps_as_default() {
         if (WC()->session->get('chosen_payment_method')) return; // User has already chosen payment method, so we're done.
         $gw = $this->gateway();
-        if ($gw->get_option('vippsdefault')=='yes') {
+        // Do *not* default to vipps if Kustom Checkout is installed IOK 2026-09-11
+        if ($gw->get_option('vippsdefault')=='yes' && !class_exists('KCO')) {
             WC()->session->set('chosen_payment_method', $gw->id);
         }
     }
@@ -4531,11 +4536,11 @@ else:
         if (!$order || ! self::is_vipps_order($order)) return;
 
         // We *do* want to log in express checkout customers, but not those that 
-        // use the Vipps Checkout solution - those can change their emails in the
+        // use the Checkout solution - those can change their emails in the
         // checkout screen. IOK 2021-09-03
         $do_login =  $order->get_meta('_vipps_express_checkout');
 
-        // We will not log in Vipps Checkout users unless the option for that is true
+        // We will not log in Checkout users unless the option for that is true
         if ($order->get_meta('_vipps_checkout') && 'yes' != $this->gateway()->get_option('checkoutcreateuser')) {
             $do_login = false;
         }
@@ -4572,7 +4577,7 @@ else:
         // Both Checkout and Express Checkout have the below value set to true
         if (!$order->get_meta('_vipps_express_checkout')) return;
 
-        // Creating/logging in users are handled separately for Vipps Checkout and Express Checkout, so check the correct setting
+        // Creating/logging in users are handled separately for Checkout and Express Checkout, so check the correct setting
         // IOK 2023-07-27
         $ischeckout = $order->get_meta('_vipps_checkout');
         if ($ischeckout) {
@@ -4959,7 +4964,7 @@ else:
         }
     }
 
-    // Vipps Checkout and Express Checkout allows loading specific kinds of shipping methods with non-standard APIs, such as PickupLocations. IOK 2025-05-08
+    // Checkout and Express Checkout allows loading specific kinds of shipping methods with non-standard APIs, such as PickupLocations. IOK 2025-05-08
     // Must be called *early*. IOK 2025-05-08. Called in callback methods, and if using static shipping, in the 'start session' callback.
     public function load_extra_shipping_methods($order, $addressdata, $ischeckout=false) {
         // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
@@ -5242,7 +5247,7 @@ else:
 
 
 
-    // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
+    // Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
     // IOK 2026-04-30 remove this when checkout is end-of-life'd
     // We now also use this for the vipps special page, previously a fakepage. LP 2026-08-18
     public function woocommerce_create_pages ($data) {

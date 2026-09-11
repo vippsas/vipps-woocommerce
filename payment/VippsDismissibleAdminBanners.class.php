@@ -54,6 +54,8 @@ class VippsDismissibleAdminBanners {
         if ($this->configured) {
            // Login with Vipps 
            $this->add_login_vipps_dismissible_admin_banner();
+           // The Checkout sold to Kustom banner
+           $this->add_kustom_checkout_banner();
         }
    }
 
@@ -111,5 +113,27 @@ class VippsDismissibleAdminBanners {
             });
     }
 
+    // Notify users of Checkout that this is sold to Custom and should be 
+    public function add_kustom_checkout_banner () {
+        $dismissed = $this->dismissed;
+        if (isset($dismissed['vippskustom01'])) return;
+
+        $gw = Vipps::instance()->gateway();
+        if (class_exists('VippsCheckout') && $gw->get_option('vipps_checkout_enabled') == 'yes') { 
+            add_action('admin_notices', function () {
+                    $logo = plugins_url('img/vipps-rgb-orange-neg.svg',__FILE__);
+                    $kustomurl = "https://docs.kustom.co/contents/partners/e-commerce-platforms/woocommerce-vipps-guide";
+                    ?>
+                    <div class='notice notice-vipps notice-vipps-neg notice-info is-dismissible'  data-key='vippskustom01'>
+                    <img src="<?php echo $logo; ?>" style="float:left; height: 3rem; margin-top: 0.2rem" alt="Vipps-logo">
+                    <div>
+                    <h2 style='color:white'><?php echo __('Checkout - Important Update', 'woo-vipps'); ?></h2>
+                    <p style="color:white;font-size:1rem"><?php echo sprintf(__("Vipps MobilePay has entered into an agreement to sell Checkout to Kustom. As part of this transition, <b>Vipps Mobilepay Checkout will become Kustom Checkout</b>. You can follow <a style='text-decoration:underline; font-weight:bold' target='_blank', href='%s'>this guide</a></b> to migrate over to Kustom Checkout.", 'woo-vipps'), esc_attr($kustomurl)); ?></p>
+                    </div>
+                    </div>
+                    <?php
+                    });
+        }
+    }
 
 }

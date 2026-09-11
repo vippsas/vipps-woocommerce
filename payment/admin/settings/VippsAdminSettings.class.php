@@ -199,10 +199,10 @@ class VippsAdminSettings
                 'settings_saved' => __('Settings saved', 'woo-vipps'),
 
                 'kustom_sale_1' => __('Checkout - Important Update', 'woo-vipps'),
-                'kustom_sale_2' => __('Vipps MobilePay has entered into an agreement to sell the Checkout solution to <a href="https://Kustom.co" target="_blank">Kustom</a>', 'woo-vipps'),
-                'kustom_sale_3' => __('As part of this transition, <b>Vipps MobilePay Checkout</b> will become <b>Kustom Checkout</b>. This means the Checkout product you ordered will be delivered and developed by Kustom going forward.', 'woo-vipps'),
-                'kustom_sale_4' => __('If your account is newer than March 27. 2026, it will <b>not</b> support Vipps MobilePay Checkout in this plugin.', 'woo-vipps'),
-                'kustom_sale_5' => __('If you have questions, you can check our <a href="https://vippsmobilepay.com/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps'),
+                'kustom_sale_2' => __('Vipps MobilePay has entered into an agreement to sell the Checkout solution to Kustom. As part of this transition, <b>Vipps MobilePay Checkout will become Kustom Checkout</b>. You can follow <a href="https://docs.kustom.co/contents/partners/e-commerce-platforms/woocommerce-vipps-guide#switch-from-vipps-checkout-to-kustom-checkoutguide" target="_blank">this guide</a> to migrate over to Kustom Checkout.', 'woo-vipps'),
+                'kustom_sale_3' => __('Going forward, Kustom will be responsible for delivering and developing the Checkout solution. <b>Vipps MobilePay will remain available as a payment method in Kustom Checkout</b>, so your customers can continue to pay with Vipps MobilePay in the familiar way.', 'woo-vipps'),
+                'kustom_sale_4' => __('Please note that <b>accounts created after March 27, 2026 will not support Checkout in this plugin</b>.', 'woo-vipps'),
+                'kustom_sale_5' => __('If you have any questions about what the transition means for you, please see our <a href="https://vippsmobilepay.com/en-NO/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps'),
                 );
 
         /* We need to postprocess the settings for.. various reasons IOK 2024-06-04  */

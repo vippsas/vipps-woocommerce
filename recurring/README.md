@@ -27,7 +27,7 @@ plugin for
 [WooCommerce](https://woocommerce.com).
 It is owned by [Vipps MobilePay](https://vippsmobilepay.com) and maintained by [Everyday AS](https://everyday.no).
 
-Vipps/MobilePay recurring payments is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
+Vipps/MobilePay recurring payments is perfect for you if you run a web shop with subscription-based services or other products that would benefit from subscriptions.
 
 With Vipps/MobilePay recurring payments you can:
 
@@ -80,7 +80,7 @@ for an overview.
 
 ### Retrieving Vipps MobilePay API keys
 
-Log-in to the [business portal](https://portal.vippsmobilepay.com/) and get your test API keys, as described in
+Log in to the [business portal](https://portal.vippsmobilepay.com/) and get your test API keys, as described in
 [API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/api-keys/).
 
 ### Configuration of the plugin
@@ -119,13 +119,13 @@ While creating your CSV file, make sure that you are mapping the fields as speci
 
 1. The `payment_method` field needs to be set to `vipps_recurring`.
 2. The `_agreement_id` field needs to be set to the agreement ID from Vipps MobilePay.
-3. The `payment_method_post_meta` field in your CSV needs to be mapped to the _`agreement_id` column. ([docs](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#importing-payment-gateway-meta-data)).
+3. The `payment_method_post_meta` field in your CSV needs to be mapped to the `_agreement_id` column. ([docs](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#importing-payment-gateway-meta-data)).
 
 After successfully importing your subscriptions you should now be able to use WooCommerce Subscriptions as normal.
 
 ## Extending the plugin
 
-WooCommerce and WooCommerce Subscriptions has a lot of [default actions](https://docs.woocommerce.com/document/subscriptions/develop/action-reference/) that interact with the payment flow, so there should not be any need to extend this plugin directly,
+WooCommerce and WooCommerce Subscriptions have a lot of [default actions](https://docs.woocommerce.com/document/subscriptions/develop/action-reference/) that interact with the payment flow, so there should not be any need to extend this plugin directly,
 but if you need an action or filter added to the plugin don't hesitate to create an issue on GitHub, and we will look into this as soon as possible.
 
 The plugin is currently in a pre-release phase and will have more filters, actions and features further down the road.
@@ -136,7 +136,7 @@ Constants can be re-defined by using `define('CONSTANT_NAME', 'value');` in `wp-
 
 `WC_VIPPS_RECURRING_RETRY_DAYS`: (integer) default: 2, or 0 when WooCommerce Subscriptions' retry system is active.
 
-The amount of days Vipps/MobilePay will retry a charge for before it fails.
+The number of days Vipps/MobilePay will retry a charge for before it fails.
 See [Charge retries](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/recurring-api-guide/#charge-retries) for more information.
 
 `WC_VIPPS_RECURRING_TEST_MODE`: (boolean) default: false
