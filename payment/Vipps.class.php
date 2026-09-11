@@ -2591,6 +2591,10 @@ else:
 
     // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
+
+        // Handle legacy vipps-buy-now urls that auto-start express checkout for  certain product - in QR codes etc IOK 2026-09-11
+//'vipps-buy-product'
+
         if (static::is_special_page()) {
             // Legacy: Stop the canonical redirect here. Unclear if still necessary. IOK 2026-09-11
             remove_filter('template_redirect', 'redirect_canonical', 10);
