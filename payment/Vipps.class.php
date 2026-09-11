@@ -2658,8 +2658,6 @@ else:
         global $wp_query;
         // Comment from woocommerce's wc_page_endpoint_title where this logic is from: LP 2026-09-02
 
-error_log("In it to win it! title is $title action is " . $_GET['action']);
-
         // In block themes the whole template (header, footer, content) renders inside the main
         // loop, so `the_title` fires for any post title rendered on the page (e.g. a product in a
         // server-rendered mini-cart) - not just the page's own heading. Only replace the title of
