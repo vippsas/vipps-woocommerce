@@ -4355,11 +4355,8 @@ error_log("In it to win it! title is $title action is " . $_GET['action']);
         // Check if the special page is noted and actually does exist
         $special = static::get_special_page_id();
         if ($special) {
-            $status = get_post_status($special);
-            if (!$status || $status == 'trash') {
-                delete_option('woocommerce_vipps_special_page_page_id');
-            } else {
-                $special_page = get_post($special);
+            $special_page = get_post($special);
+            if ($special_page && 'trash' !== $special_page->post_status) {
                 // Ensure this page has the necessary shortcode. LP 2026-09-01
                 if (!has_shortcode($special_page->post_content, 'vipps_special_page')) {
                     $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
@@ -4368,6 +4365,8 @@ error_log("In it to win it! title is $title action is " . $_GET['action']);
                             'post_content' => $new_content,
                     ]);
                 }
+            } else {
+                delete_option('woocommerce_vipps_special_page_page_id');
             }
         }
 
