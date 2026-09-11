@@ -316,6 +316,9 @@ class Vipps {
             add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
        });
 
+       // Add an admin interface for this page as well IOK 2026-09-11
+       add_action('woocommerce_settings_pages', array($this, 'woocommerce_settings_pages'));
+
     }
 
     public function admin_init () {
@@ -467,6 +470,43 @@ class Vipps {
             $this->maybe_create_vipps_pages();
         }
     }
+
+    // Admin interface for the special page on woo/advanced/pages
+    public function woocommerce_settings_pages ($settings) {
+        $i = -1;
+        foreach($settings as $entry) {
+            $i++;
+            if ($entry['type'] == 'sectionend' && $entry['id'] == 'advanced_page_options') {
+                break;
+            }
+        }
+        if ($i > 0) {
+            $vippspagesettings = array(
+                    array(
+                        'title'    => sprintf(__( '%1$s Page', 'woo-vipps' ), Vipps::CompanyName()),
+                        'desc'     => sprintf(__('This page is used for various special pages used by %1$s', 'woo-vipps'), Vipps::CompanyName()) .  sprintf( __( 'Page contents: [%1$s]', 'woocommerce' ), 'vipps_special_page') ,
+                        'id'       => 'woocommerce_vipps_special_page_page_id',
+                        'type'     => 'single_select_page_with_search',
+                        'default'  => '',
+                        'class'    => 'wc-page-search',
+                        'css'      => 'min-width:300px;',
+                        'args'     => array(
+                            'exclude' =>
+                            array(
+                                wc_get_page_id( 'myaccount' ),
+                                wc_get_page_id( 'checkout' ),
+                                wc_get_page_id( 'cart' ),
+                                ),
+                            ),
+                        'desc_tip' => true,
+                        'autoload' => false,
+                        ));
+            array_splice($settings, $i, 0, $vippspagesettings);
+        }
+
+        return $settings;
+    }
+
 
 
     // Runs on init, adds the Vipps badge feature if activated
