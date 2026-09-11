@@ -2593,7 +2593,15 @@ else:
     public function template_redirect() {
 
         // Handle legacy vipps-buy-now urls that auto-start express checkout for  certain product - in QR codes etc IOK 2026-09-11
-//'vipps-buy-product'
+        // We redirect these to the new location.
+        $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        if ($path && preg_match("!/vipps-buy-product/?$!", $path)) {
+            $url = static::get_special_page_url();
+            $_GET['action'] = 'buy_product';
+            $q = build_query($_GET);
+            wp_redirect($url . "?" . $q, 302);
+            exit();
+        }
 
         if (static::is_special_page()) {
             // Legacy: Stop the canonical redirect here. Unclear if still necessary. IOK 2026-09-11
