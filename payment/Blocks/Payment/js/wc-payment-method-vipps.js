@@ -23,6 +23,33 @@ const CHECKOUT_HANDOFF_STORAGE_KEY = 'vippsCheckoutPaymentHandoff';
 let vippsCheckoutController = null;
 let setVippsCheckoutBusy = () => {};
 
+function logVippsCheckout(message, data) {
+        if (data === undefined) {
+                console.log('[Vipps Checkout Block]', message);
+                return;
+        }
+
+        console.log('[Vipps Checkout Block]', message, data);
+}
+
+function warnVippsCheckout(message, data) {
+        if (data === undefined) {
+                console.warn('[Vipps Checkout Block]', message);
+                return;
+        }
+
+        console.warn('[Vipps Checkout Block]', message, data);
+}
+
+function errorVippsCheckout(message, data) {
+        if (data === undefined) {
+                console.error('[Vipps Checkout Block]', message);
+                return;
+        }
+
+        console.error('[Vipps Checkout Block]', message, data);
+}
+
 function translate(key, fallback) {
         return VippsLocale?.[key] || fallback;
 }
@@ -44,6 +71,7 @@ function createVippsCheckoutHandoff() {
                 try {
                         raw = window.sessionStorage.getItem(CHECKOUT_HANDOFF_STORAGE_KEY);
                 } catch (error) {
+                        warnVippsCheckout('Could not read checkout handoff marker from sessionStorage.', error);
                         return null;
                 }
 
@@ -55,12 +83,18 @@ function createVippsCheckoutHandoff() {
                         const handoff = JSON.parse(raw);
 
                         if (!handoff.createdAt || Date.now() - handoff.createdAt >= maxAgeMs) {
+                                logVippsCheckout('Checkout handoff marker expired; clearing.', handoff);
                                 clear();
                                 return null;
                         }
 
+                        logVippsCheckout('Read checkout handoff marker.', handoff);
                         return handoff;
                 } catch (error) {
+                        warnVippsCheckout('Could not parse checkout handoff marker; clearing.', {
+                                raw,
+                                error
+                        });
                         clear();
                         return null;
                 }
@@ -75,7 +109,9 @@ function createVippsCheckoutHandoff() {
                                 paymentReference: data.paymentReference || null,
                                 refreshedPaths: []
                         }));
+                        logVippsCheckout('Marked checkout handoff.', data);
                 } catch (error) {
+                        warnVippsCheckout('Could not write checkout handoff marker to sessionStorage.', error);
                         // Checkout must still work when storage is unavailable.
                 }
         }
@@ -83,7 +119,9 @@ function createVippsCheckoutHandoff() {
         function clear() {
                 try {
                         window.sessionStorage.removeItem(CHECKOUT_HANDOFF_STORAGE_KEY);
+                        logVippsCheckout('Cleared checkout handoff marker.');
                 } catch (error) {
+                        warnVippsCheckout('Could not clear checkout handoff marker from sessionStorage.', error);
                         // Checkout must still work when storage is unavailable.
                 }
         }
@@ -100,6 +138,10 @@ function createVippsCheckoutHandoff() {
                         : [];
 
                 if (refreshedPaths.includes(window.location.pathname)) {
+                        logVippsCheckout('Checkout handoff stale-page reload already used for this path.', {
+                                path: window.location.pathname,
+                                handoff
+                        });
                         return;
                 }
 
@@ -109,9 +151,14 @@ function createVippsCheckoutHandoff() {
                                 refreshedPaths: [...refreshedPaths, window.location.pathname]
                         }));
                 } catch (error) {
+                        warnVippsCheckout('Could not update checkout handoff reload marker; clearing.', error);
                         clear();
                 }
 
+                logVippsCheckout('Reloading stale checkout page after handoff.', {
+                        path: window.location.pathname,
+                        handoff
+                });
                 window.location.reload();
         }
 
@@ -126,6 +173,12 @@ function createVippsCheckoutHandoff() {
                 if (!handoff) {
                         return;
                 }
+
+                logVippsCheckout('pageshow while checkout handoff marker exists.', {
+                        persisted: event.persisted,
+                        navigationType: window.performance?.getEntriesByType?.('navigation')?.[0]?.type,
+                        handoff
+                });
 
                 if (wasHistoryRestore(event)) {
                         reloadOnceForStalePage();
@@ -148,23 +201,95 @@ function createVippsCheckoutHandoff() {
 
 const checkoutHandoff = createVippsCheckoutHandoff();
 
+function normalizeVippsCheckoutPaymentDetails(details) {
+        if (!Array.isArray(details)) {
+                return details || {};
+        }
+
+        return details.reduce((normalized, item) => {
+                if (Array.isArray(item) && item.length >= 2) {
+                        normalized[item[0]] = item[1];
+                        return normalized;
+                }
+
+                if (item && typeof item === 'object') {
+                        const key = item.key || item.name;
+
+                        if (key) {
+                                normalized[key] = item.value;
+                        }
+                }
+
+                return normalized;
+        }, {});
+}
+
 function getVippsCheckoutPaymentDetails(data) {
-        return data?.paymentResult?.paymentDetails ||
+        const rawDetails = data?.paymentResult?.paymentDetails ||
+                data?.paymentResult?.payment_details ||
                 data?.payment_result?.payment_details ||
+                data?.payment_result?.paymentDetails ||
                 {};
+        const details = normalizeVippsCheckoutPaymentDetails(rawDetails);
+
+        logVippsCheckout('Extracted checkout payment details.', {
+                rawDetails,
+                details,
+                data
+        });
+
+        return details;
 }
 
 function getVippsCheckoutPaymentUrl(data) {
         const details = getVippsCheckoutPaymentDetails(data);
-        return details.vippsPaymentUrl ||
+        const paymentUrl = details.vippsPaymentUrl ||
                 details.vipps_payment_url ||
+                details.paymentUrl ||
+                details.payment_url ||
+                data?.redirectUrl ||
+                data?.redirect_url ||
                 '';
+
+        logVippsCheckout('Extracted checkout payment URL.', {
+                paymentUrl,
+                details,
+                data
+        });
+
+        return paymentUrl;
 }
 
 function getVippsCheckoutPaymentReference(data) {
         const details = getVippsCheckoutPaymentDetails(data);
+        const paymentReference = details.vippsPaymentReference ||
+                details.vipps_payment_reference ||
+                details.paymentReference ||
+                details.payment_reference ||
+                '';
+
+        logVippsCheckout('Extracted checkout payment reference.', {
+                paymentReference,
+                details,
+                data
+        });
+
+        return paymentReference;
+}
+
+function getVippsCheckoutPaymentUrlFromDetails(details) {
+        return details.vippsPaymentUrl ||
+                details.vipps_payment_url ||
+                details.paymentUrl ||
+                details.payment_url ||
+                '';
+}
+
+function getVippsCheckoutPaymentReferenceFromDetails(details) {
         return details.vippsPaymentReference ||
                 details.vipps_payment_reference ||
+                details.paymentReference ||
+                details.payment_reference ||
                 '';
 }
 
@@ -175,25 +300,46 @@ function createVippsCheckoutController(setBusy) {
 
         function getTrigger() {
                 if (trigger || !window.vipps?.trigger) {
+                        logVippsCheckout('Returning existing trigger or no SDK trigger available.', {
+                                hasTrigger: Boolean(trigger),
+                                hasVipps: Boolean(window.vipps),
+                                hasVippsTrigger: Boolean(window.vipps?.trigger)
+                        });
                         return trigger;
                 }
 
                 if (typeof window.ensureVippsWidgetHostStarted === 'function') {
+                        logVippsCheckout('Ensuring Widget SDK host through shared helper.');
                         window.ensureVippsWidgetHostStarted();
                 } else if (!window.__vippsWidgetHostStarted && window.vipps?.host) {
+                        logVippsCheckout('Starting Widget SDK host from checkout payment method script.');
                         window.vipps.host().start();
                         window.__vippsWidgetHostStarted = true;
                 }
 
+                logVippsCheckout('Creating Widget SDK trigger for Checkout Block.');
                 trigger = window.vipps
                         .trigger(async () => {
+                                logVippsCheckout('Widget SDK trigger resolver invoked.', {
+                                        hasAttempt: Boolean(currentAttempt),
+                                        attemptId: currentAttempt?.id
+                                });
+
                                 if (!currentAttempt) {
                                         throw new Error(getPaymentMethodMessage('checkout attempt is no longer active.'));
                                 }
 
-                                return currentAttempt.paymentUrlPromise;
+                                const paymentUrl = await currentAttempt.paymentUrlPromise;
+
+                                logVippsCheckout('Widget SDK trigger resolver returning payment URL.', {
+                                        attemptId: currentAttempt?.id,
+                                        paymentUrl
+                                });
+
+                                return paymentUrl;
                         })
                         .on('success', (close, redirectUrl) => {
+                                logVippsCheckout('Widget SDK success event.', { redirectUrl });
                                 clear();
                                 close();
 
@@ -204,6 +350,7 @@ function createVippsCheckoutController(setBusy) {
                                 }
                         })
                         .on('cancel', (close, redirectUrl) => {
+                                logVippsCheckout('Widget SDK cancel event.', { redirectUrl });
                                 clear();
                                 close();
 
@@ -214,10 +361,12 @@ function createVippsCheckoutController(setBusy) {
                                 }
                         })
                         .on('close', () => {
+                                logVippsCheckout('Widget SDK close event.');
                                 clear();
                                 checkoutHandoff.clear();
                         })
                         .on('error', (error) => {
+                                errorVippsCheckout('Widget SDK error event.', error);
                                 clear();
                                 checkoutHandoff.clear();
 
@@ -237,6 +386,7 @@ function createVippsCheckoutController(setBusy) {
 
         function begin() {
                 if (currentAttempt) {
+                        warnVippsCheckout('Checkout attempt already active; refusing to begin another.', currentAttempt);
                         return null;
                 }
 
@@ -254,6 +404,9 @@ function createVippsCheckoutController(setBusy) {
                         rejectPaymentUrl
                 };
 
+                logVippsCheckout('Began checkout attempt.', {
+                        attemptId: currentAttempt.id
+                });
                 setBusy(true);
                 return currentAttempt;
         }
@@ -262,20 +415,39 @@ function createVippsCheckoutController(setBusy) {
                 const vippsTrigger = getTrigger();
 
                 if (!vippsTrigger) {
+                        warnVippsCheckout('Widget SDK trigger is unavailable; cannot open trigger.');
                         return Promise.resolve(false);
                 }
 
+                logVippsCheckout('Opening Widget SDK trigger.', {
+                        attemptId: currentAttempt?.id
+                });
                 return vippsTrigger.open();
         }
 
         function resolve(data) {
                 if (!currentAttempt) {
+                        warnVippsCheckout('Received checkout success without active attempt.', data);
                         return false;
                 }
 
+                logVippsCheckout('Resolving checkout attempt from Store API success.', {
+                        attemptId: currentAttempt.id,
+                        data
+                });
+
+                const details = getVippsCheckoutPaymentDetails(data);
                 const paymentUrl = getVippsCheckoutPaymentUrl(data);
+                const detailsPaymentUrl = getVippsCheckoutPaymentUrlFromDetails(details);
 
                 if (!paymentUrl) {
+                        errorVippsCheckout('Missing checkout payment URL in Store API success payload.', {
+                                data,
+                                details,
+                                detailsPaymentUrl,
+                                redirectUrl: data?.redirectUrl,
+                                redirect_url: data?.redirect_url
+                        });
                         currentAttempt.rejectPaymentUrl(new Error(
                                 translate('missingPaymentUrl', getPaymentMethodMessage('did not return a payment URL.'))
                         ));
@@ -289,11 +461,20 @@ function createVippsCheckoutController(setBusy) {
                 });
 
                 if (!window.vipps?.trigger) {
+                        warnVippsCheckout('Widget SDK trigger disappeared; falling back to full-page redirect.', {
+                                paymentUrl
+                        });
                         clear();
                         window.location.assign(paymentUrl);
                         return true;
                 }
 
+                logVippsCheckout('Resolving Widget SDK trigger payment URL promise.', {
+                        attemptId: currentAttempt.id,
+                        paymentUrl,
+                        detailsPaymentUrl,
+                        paymentReference: getVippsCheckoutPaymentReferenceFromDetails(details)
+                });
                 currentAttempt.resolvePaymentUrl(paymentUrl);
                 currentAttempt = null;
                 setBusy(false);
@@ -301,6 +482,11 @@ function createVippsCheckoutController(setBusy) {
         }
 
         function reject(error) {
+                warnVippsCheckout('Rejecting checkout attempt.', {
+                        attemptId: currentAttempt?.id,
+                        error
+                });
+
                 if (currentAttempt) {
                         currentAttempt.rejectPaymentUrl(error || new Error(getPaymentMethodMessage('checkout failed.')));
                 }
@@ -309,6 +495,9 @@ function createVippsCheckoutController(setBusy) {
         }
 
         function clear() {
+                logVippsCheckout('Clearing checkout attempt.', {
+                        attemptId: currentAttempt?.id
+                });
                 currentAttempt = null;
                 setBusy(false);
         }
@@ -322,11 +511,14 @@ function createVippsCheckoutController(setBusy) {
 
 function getVippsCheckoutController(setBusy) {
         if (setBusy) {
+                logVippsCheckout('Registered checkout button busy setter.');
                 setVippsCheckoutBusy = setBusy;
         }
 
         if (!vippsCheckoutController) {
+                logVippsCheckout('Creating shared checkout controller.');
                 vippsCheckoutController = createVippsCheckoutController((busy) => {
+                        logVippsCheckout('Setting checkout button busy state.', { busy });
                         setVippsCheckoutBusy(busy);
                 });
         }
@@ -336,72 +528,97 @@ function getVippsCheckoutController(setBusy) {
 
 
 const Content = (props) => {
-        const { eventRegistration, emitResponse } = props;
-        const propsRef = useRef(props);
+	const { eventRegistration, emitResponse } = props;
+	const propsRef = useRef(props);
+	const emitResponseRef = useRef(emitResponse);
 
-        propsRef.current = props;
+	propsRef.current = props;
+	emitResponseRef.current = emitResponse;
 
-        useEffect(() => {
-                if (!eventRegistration) {
-                        return;
-                }
+	useEffect(() => {
+		if (!eventRegistration) {
+			return;
+		}
 
                 const unsubscribePaymentSetup = eventRegistration.onPaymentSetup
                         ? eventRegistration.onPaymentSetup(() => {
+                        logVippsCheckout('onPaymentSetup invoked.', {
+                                activePaymentMethod: propsRef.current.activePaymentMethod,
+                                responseTypes: emitResponse?.responseTypes
+                        });
+
                         if (
                                 propsRef.current.activePaymentMethod &&
                                 propsRef.current.activePaymentMethod !== 'vipps'
                         ) {
+                                logVippsCheckout('onPaymentSetup ignored because Vipps is not active.', {
+                                        activePaymentMethod: propsRef.current.activePaymentMethod
+                                });
                                 return true;
-                        }
+			}
 
-                        return {
-                                type: emitResponse.responseTypes.SUCCESS,
-                                meta: {
-                                        paymentMethodData: {
-                                                payment_method: 'vipps',
+			const response = {
+				type: emitResponseRef.current.responseTypes.SUCCESS,
+				meta: {
+					paymentMethodData: {
+						payment_method: 'vipps',
                                                 vipps_checkout_widget: '1'
                                         }
                                 }
                         };
+
+                        logVippsCheckout('onPaymentSetup returning response.', response);
+                        return response;
                 })
                         : () => {};
 
                 const unsubscribeCheckoutSuccess = eventRegistration.onCheckoutSuccess
                         ? eventRegistration.onCheckoutSuccess((data) => {
+                        logVippsCheckout('onCheckoutSuccess invoked.', data);
                         const controller = getVippsCheckoutController();
 
                         if (!controller?.hasAttempt()) {
+                                logVippsCheckout('onCheckoutSuccess passed through; no active checkout attempt.');
                                 return true;
                         }
 
-                        if (!controller.resolve(data)) {
-                                return {
-                                        type: emitResponse.responseTypes.ERROR,
-                                        message: translate('missingPaymentUrl', getPaymentMethodMessage('did not return a payment URL.')),
-                                        retry: true
-                                };
+			if (!controller.resolve(data)) {
+				const response = {
+					type: emitResponseRef.current.responseTypes.ERROR,
+					message: translate('missingPaymentUrl', getPaymentMethodMessage('did not return a payment URL.')),
+					retry: true
+				};
+
+                                errorVippsCheckout('onCheckoutSuccess returning error response.', {
+                                        response,
+                                        data
+                                });
+                                return response;
                         }
 
-                        return {
-                                type: emitResponse.responseTypes.SUCCESS
-                        };
+			const response = {
+				type: emitResponseRef.current.responseTypes.SUCCESS
+			};
+
+                        logVippsCheckout('onCheckoutSuccess returning success response.', response);
+                        return response;
                 })
                         : () => {};
 
                 const unsubscribeCheckoutFail = eventRegistration.onCheckoutFail
                         ? eventRegistration.onCheckoutFail(() => {
+                        warnVippsCheckout('onCheckoutFail invoked.');
                         getVippsCheckoutController().reject(new Error('Checkout failed'));
                         return true;
                 })
                         : () => {};
 
-                return () => {
-                        unsubscribePaymentSetup();
-                        unsubscribeCheckoutSuccess();
-                        unsubscribeCheckoutFail();
-                };
-        }, [eventRegistration, emitResponse]);
+		return () => {
+			unsubscribePaymentSetup();
+			unsubscribeCheckoutSuccess();
+			unsubscribeCheckoutFail();
+		};
+	}, [eventRegistration]);
 
         var content = createElement(
 		'div',
@@ -442,6 +659,10 @@ const VippsCheckoutPlaceOrderButton = (props) => {
         }
 
         if (isEditor || isPreview) {
+                logVippsCheckout('Rendering checkout button preview/editor placeholder.', {
+                        isEditor,
+                        isPreview
+                });
                 return createElement('button', {
                         type: 'button',
                         disabled: true
@@ -451,32 +672,57 @@ const VippsCheckoutPlaceOrderButton = (props) => {
         const isDisabled = disabled || waitingForProcessing || waitingForRedirect || busy;
 
         const handleClick = async (event) => {
+                logVippsCheckout('Checkout Widget button clicked.', {
+                        disabled,
+                        waitingForProcessing,
+                        waitingForRedirect,
+                        busy,
+                        isDisabled,
+                        hasAttempt: controllerRef.current.hasAttempt()
+                });
+
                 event.preventDefault();
 
                 if (isDisabled || controllerRef.current.hasAttempt()) {
+                        logVippsCheckout('Checkout Widget button click ignored.', {
+                                isDisabled,
+                                hasAttempt: controllerRef.current.hasAttempt()
+                        });
                         return;
                 }
 
+                logVippsCheckout('Validating Checkout Block before opening Widget SDK trigger.');
                 const validationResult = validate
                         ? await validate()
                         : { hasError: false };
 
+                logVippsCheckout('Checkout Block validation result.', validationResult);
+
                 if (validationResult?.hasError) {
+                        logVippsCheckout('Checkout validation failed; Widget SDK trigger will not open.');
                         return;
                 }
 
                 const attempt = controllerRef.current.begin();
 
                 if (!attempt) {
+                        warnVippsCheckout('Could not begin checkout attempt after validation.');
                         return;
                 }
 
+                logVippsCheckout('Opening Widget SDK trigger before Store API submit.', {
+                        attemptId: attempt.id
+                });
                 controllerRef.current.open().catch((error) => {
+                        errorVippsCheckout('Widget SDK trigger open promise rejected.', error);
                         controllerRef.current.reject(error);
                 });
 
                 if (onSubmit) {
+                        logVippsCheckout('Submitting Checkout Block Store API request.');
                         onSubmit();
+                } else {
+                        warnVippsCheckout('No onSubmit prop available on Vipps checkout button.');
                 }
         };
 
@@ -495,7 +741,7 @@ const VippsCheckoutPlaceOrderButton = (props) => {
                 onClick: handleClick
         };
 
-        return createElement('vipps-mobilepay-button', buttonProps);
+	return createElement('vipps-mobilepay-button', buttonProps);
 };
 
 const canMakeExpressPayment = (args) => {
@@ -532,6 +778,13 @@ const VippsExpressPaymentMethod = {
 
 registerPaymentMethod(VippsPaymentMethod);
 registerExpressPaymentMethod(VippsExpressPaymentMethod);
+
+logVippsCheckout('Registered Vipps payment methods.', {
+        settings,
+        hasVipps: Boolean(window.vipps),
+        hasVippsTrigger: Boolean(window.vipps?.trigger),
+        hasVippsHost: Boolean(window.vipps?.host)
+});
 
 
 }());

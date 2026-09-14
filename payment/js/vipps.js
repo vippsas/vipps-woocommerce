@@ -1,13 +1,28 @@
 (() => {
+    function logVippsWidgetHost(message, data) {
+        if (data === undefined) {
+            console.log("[Vipps Widget Host]", message);
+            return;
+        }
+
+        console.log("[Vipps Widget Host]", message, data);
+    }
+
     function ensureVippsWidgetHostStarted() {
         if (window.__vippsWidgetHostStarted) {
+            logVippsWidgetHost("Widget SDK host already started.");
             return;
         }
 
         if (!window.vipps?.host) {
+            logVippsWidgetHost("Widget SDK host unavailable.", {
+                hasVipps: Boolean(window.vipps),
+                hasHost: Boolean(window.vipps?.host)
+            });
             return;
         }
 
+        logVippsWidgetHost("Starting Widget SDK host.");
         window.vipps.host().start();
         window.__vippsWidgetHostStarted = true;
     }
@@ -225,6 +240,33 @@
     const dialogUi = window.createVippsMobilepayDialog();
     const checkout = createCheckoutController();
 
+    function logVippsExpress(message, data) {
+        if (data === undefined) {
+            console.log("[Vipps Express]", message);
+            return;
+        }
+
+        console.log("[Vipps Express]", message, data);
+    }
+
+    function warnVippsExpress(message, data) {
+        if (data === undefined) {
+            console.warn("[Vipps Express]", message);
+            return;
+        }
+
+        console.warn("[Vipps Express]", message, data);
+    }
+
+    function errorVippsExpress(message, data) {
+        if (data === undefined) {
+            console.error("[Vipps Express]", message);
+            return;
+        }
+
+        console.error("[Vipps Express]", message, data);
+    }
+
     function translate(key, fallback, ...values) {
         let message = locale[key] || fallback;
 
@@ -291,7 +333,12 @@
         }
 
         const trigger = vippsSdk.trigger(async () => {
+            logVippsExpress("Trigger resolver invoked.", {
+                currentAttempt
+            });
+
             if (!currentAttempt) {
+                warnVippsExpress("Trigger resolver has no active attempt; returning null.");
                 return null;
             }
 
@@ -303,7 +350,16 @@
                 currentAttempt.path
             );
 
+            logVippsExpress("Payment session response received.", {
+                attemptId,
+                result
+            });
+
             if (!currentAttempt || currentAttempt.id !== attemptId) {
+                warnVippsExpress("Ignoring stale express response.", {
+                    attemptId,
+                    currentAttempt
+                });
                 return null;
             }
 
@@ -311,6 +367,10 @@
 
             if (Number(result.ok) === 1) {
                 if (!result.url) {
+                    errorVippsExpress("Successful express checkout response has no payment URL.", {
+                        result,
+                        currentAttempt
+                    });
                     const button = currentAttempt.button;
                     const message = translate(
                         "missingPaymentUrl",
@@ -324,15 +384,25 @@
                 paymentHandoff?.mark(result);
                 clearAttempt();
                 paymentHandoff?.activate();
+                logVippsExpress("Returning payment URL to Widget SDK trigger.", {
+                    url: result.url,
+                    result
+                });
                 return result.url;
             }
 
             if (Number(result.ok) === 2) {
+                logVippsExpress("Express checkout requires additional action.", {
+                    result
+                });
                 showActionRequiredDialog(result.html || "");
                 return null;
             }
 
             if (Number(result.ok) === 0) {
+                errorVippsExpress("Express checkout endpoint returned failure.", {
+                    result
+                });
                 const button = currentAttempt.button;
                 clearAttempt();
                 showError(
@@ -354,6 +424,9 @@
                 "unexpectedCheckoutResponse",
                 "Unexpected express checkout response"
             );
+            errorVippsExpress("Unexpected express checkout response.", {
+                result
+            });
             clearAttempt();
             showError(message, button);
             throw new Error(message);
@@ -361,6 +434,7 @@
 
         trigger
             .on("success", (close, redirectUrl) => {
+                logVippsExpress("Widget SDK success event.", { redirectUrl });
                 clearAttempt();
                 close();
 
@@ -369,6 +443,7 @@
                 }
             })
             .on("cancel", (close, redirectUrl) => {
+                logVippsExpress("Widget SDK cancel event.", { redirectUrl });
                 clearAttempt();
                 close();
 
@@ -376,8 +451,12 @@
                     window.location.assign(redirectUrl);
                 }
             })
-            .on("close", clearAttempt)
+            .on("close", () => {
+                logVippsExpress("Widget SDK close event.");
+                clearAttempt();
+            })
             .on("error", (error) => {
+                errorVippsExpress("Widget SDK error event.", error);
                 if (
                     error instanceof vippsSdk.InvalidTriggerUrlError &&
                     error.url === null
@@ -398,6 +477,11 @@
 
         function begin(transaction, button, event, path) {
             if (locked) {
+                warnVippsExpress("Attempt already locked; refusing new attempt.", {
+                    transaction,
+                    button,
+                    path
+                });
                 return false;
             }
 
@@ -415,6 +499,7 @@
             emitVippsPurchaseEvent("vippsPurchaseStarted", {
                 wrapper: button
             });
+            logVippsExpress("Began express checkout attempt.", currentAttempt);
             return true;
         }
 
@@ -435,8 +520,12 @@
             }
 
             try {
+                logVippsExpress("Opening Widget SDK trigger.", {
+                    currentAttempt
+                });
                 await trigger.open();
             } catch (error) {
+                errorVippsExpress("Trigger open threw.", error);
                 if (
                     error instanceof vippsSdk.InvalidTriggerUrlError &&
                     error.url === null
@@ -458,6 +547,9 @@
 
         function clearAttempt() {
             const attempt = currentAttempt;
+            logVippsExpress("Clearing express checkout attempt.", {
+                attempt
+            });
             locked = false;
             currentAttempt = null;
             dialogBusy = false;
@@ -606,7 +698,12 @@
     }
 
     async function createPaymentSession(transaction, path) {
-        return wp.apiFetch({
+        logVippsExpress("Creating payment session.", {
+            path,
+            transaction
+        });
+
+        const result = await wp.apiFetch({
             path,
             method: "POST",
             headers: {
@@ -614,6 +711,13 @@
             },
             data: transaction
         });
+
+        logVippsExpress("Payment session API result.", {
+            path,
+            result
+        });
+
+        return result;
     }
 
     // Using the Vipps SDK, get a payment URL from the new REST endpoint and let
