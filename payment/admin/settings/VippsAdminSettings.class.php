@@ -203,6 +203,7 @@ class VippsAdminSettings
                 'kustom_sale_3' => __('Going forward, Kustom will be responsible for delivering and developing the Checkout solution. <b>Vipps MobilePay will remain available as a payment method in Kustom Checkout</b>, so your customers can continue to pay with Vipps MobilePay in the familiar way.', 'woo-vipps'),
                 'kustom_sale_4' => __('Please note that <b>accounts created after March 27, 2026 will not support Checkout in this plugin</b>.', 'woo-vipps'),
                 'kustom_sale_5' => __('If you have any questions about what the transition means for you, please see our <a href="https://vippsmobilepay.com/en-NO/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps'),
+                'kustom_sale_6' => sprintf(__('For help you can reach out to <a href="mailto:%1$s">%1$s</a> and <a href="tel:%2$s">%3$s</a>. You can also find the Kustom portal <a href="%4$s" target="_blank">here</a>.', 'woo-vipps'), 'support@kustom.co', '+4721564684', '+47 21 56 46 84', 'https://portal.kustom.co/'),
                 );
 
         /* We need to postprocess the settings for.. various reasons IOK 2024-06-04  */

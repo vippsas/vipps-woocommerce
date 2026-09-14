@@ -128,7 +128,8 @@ class VippsDismissibleAdminBanners {
                     <img src="<?php echo $logo; ?>" style="float:left; height: 3rem; margin-top: 0.2rem" alt="Vipps-logo">
                     <div>
                     <h2 style='color:white'><?php echo __('Checkout - Important Update', 'woo-vipps'); ?></h2>
-                    <p style="color:white;font-size:1rem"><?php echo sprintf(__("Vipps MobilePay has entered into an agreement to sell Checkout to Kustom. As part of this transition, <b>Vipps Mobilepay Checkout will become Kustom Checkout</b>. You can follow <a style='text-decoration:underline; font-weight:bold' target='_blank', href='%s'>this guide</a></b> to migrate over to Kustom Checkout.", 'woo-vipps'), esc_attr($kustomurl)); ?></p>
+                    <p style="color:white;font-size:1rem"><?php echo sprintf(__("Vipps MobilePay has entered into an agreement to sell Checkout to Kustom. As part of this transition, <b>Vipps Mobilepay Checkout will become Kustom Checkout</b>. You can follow <a style='font-weight:bold' target='_blank', href='%s'>this guide</a></b> to migrate over to Kustom Checkout.", 'woo-vipps'), esc_attr($kustomurl)); ?></p>
+                    <p style="color:white;font-size:1rem"><?php echo sprintf(__('For help you can reach out to <a href="mailto:%1$s">%1$s</a> and <a href="tel:%2$s">%3$s</a>. You can also find the Kustom portal <a href="%4$s" target="_blank">here</a>.', 'woo-vipps'), 'support@kustom.co', '+4721564684', '+47 21 56 46 84', 'https://portal.kustom.co/'); ?></p>
                     </div>
                     </div>
                     <?php
