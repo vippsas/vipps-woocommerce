@@ -1,4 +1,20 @@
 (() => {
+    function ensureVippsWidgetHostStarted() {
+        if (window.__vippsWidgetHostStarted) {
+            return;
+        }
+
+        if (!window.vipps?.host) {
+            return;
+        }
+
+        window.vipps.host().start();
+        window.__vippsWidgetHostStarted = true;
+    }
+
+    window.ensureVippsWidgetHostStarted = ensureVippsWidgetHostStarted;
+})();
+(() => {
     function createVippsMobilepayDialog() {
         const actionDialog = document.createElement("dialog");
         const actionForm = document.createElement("form");
@@ -268,7 +284,11 @@
         let nextAttemptId = 0;
         let dialogBusy = false;
 
-        vippsSdk.host().start();
+        if (typeof window.ensureVippsWidgetHostStarted === "function") {
+            window.ensureVippsWidgetHostStarted();
+        } else {
+            vippsSdk.host().start();
+        }
 
         const trigger = vippsSdk.trigger(async () => {
             if (!currentAttempt) {
