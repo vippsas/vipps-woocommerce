@@ -1841,6 +1841,8 @@ EOF;
 
     // Show express button option on checkout form. LP 2026-03-23
     public function checkout_before_customer_details_express () {
+        if (did_action('woo_vipps_checkout_before_customer_details_express')) return;
+        do_action('woo_vipps_checkout_before_customer_details_express');
         $gw = $this->gateway();
         if (!$gw->show_express_checkout()) return;
         $this->express_checkout_section_html();
