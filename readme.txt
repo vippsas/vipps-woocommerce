@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 6.1.10
-Stable tag: 6.1.10
+Version: 6.2.0
+Stable tag: 6.2.0
 Requires at least: 6.3
 Tested up to: 7.1.1
 Requires PHP: 8.0
@@ -117,6 +117,8 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 6.2.0
+Replaced the fake-page mechanism with a modern WooCommerce-managed page for these actions
 Version 6.1.10
 Don't set Vipps as default payment method if Kustom Checkout is installed
 Version 6.1.9
@@ -316,6 +318,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2026-09-15 version 6.2.0 =
+Replaced the fake-page mechanism with a modern WooCommerce-managed page for these actions
+
 = 2026-09-11 Version 6.1.10 =
 Don't set Vipps as default payment method if Kustom Checkout is installed
 
