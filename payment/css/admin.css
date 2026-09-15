@@ -25,7 +25,6 @@ table.webhook-table td.actions {
 }
 .notice.notice-vipps.notice-info.notice-vipps-neg a {
    color: white !important;
-   text-decoration: none;
 }
 .notice.notice-vipps.notice-info.notice-vipps-neg button.notice-dismiss {
    color: white;

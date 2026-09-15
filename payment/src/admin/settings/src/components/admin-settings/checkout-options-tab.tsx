@@ -35,6 +35,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
      <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_3"), paymentMethod)}></UnsafeHtmlText></p>
      <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_4"), paymentMethod)}></UnsafeHtmlText></p>
      <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_5"), paymentMethod)}></UnsafeHtmlText></p>
+     <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_6"), paymentMethod)}></UnsafeHtmlText></p>
     </div>
 
       {/* Renders a checkbox to enable the Alternative screen  */}
