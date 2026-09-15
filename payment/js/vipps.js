@@ -1,28 +1,66 @@
+/* Shared loading UI for express checkout and the Checkout Block. */
 (() => {
-    function logVippsWidgetHost(message, data) {
-        if (data === undefined) {
-            console.log("[Vipps Widget Host]", message);
-            return;
+    const busyOwners = new Set();
+
+    /** Reuse the existing overlay markup and CSS, including gateway branding. */
+    function ensureSpinner() {
+        let overlay = document.querySelector(".vippsoverlay");
+        if (overlay) {
+            return overlay;
         }
 
-        console.log("[Vipps Widget Host]", message, data);
+        const slug = String(window.VippsConfig?.paymentMethodSlug || "")
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9_-]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+        const spinner = document.createElement("div");
+        spinner.id = "floatingCirclesG";
+        spinner.className = `vippsspinner ${slug}`.trim();
+
+        for (let i = 1; i <= 8; i += 1) {
+            const circle = document.createElement("div");
+            circle.className = "f_circleG";
+            circle.id = `frotateG_${String(i).padStart(2, "0")}`;
+            spinner.append(circle);
+        }
+
+        overlay = document.createElement("div");
+        overlay.className = "vippsoverlay";
+        overlay.append(spinner);
+        document.body.append(overlay);
+        return overlay;
     }
 
+    /**
+     * CSS shows the overlay while body.processing is present. Track each flow
+     * separately so clearing one flow cannot hide another flow's loading UI.
+     */
+    window.setVippsPaymentBusy = (busy, owner) => {
+        if (busy) {
+            ensureSpinner();
+            busyOwners.add(owner);
+        } else {
+            busyOwners.delete(owner);
+        }
+        document.body.classList.toggle("processing", busyOwners.size > 0);
+    };
+})();
+(() => {
+    /**
+     * Share one desktop widget host between express checkout and the Blocks method.
+     * Leave the flag unset when the SDK is unavailable so a later caller can retry.
+     * Starting a host does not suppress WooCommerce's own checkout redirect.
+     */
     function ensureVippsWidgetHostStarted() {
         if (window.__vippsWidgetHostStarted) {
-            logVippsWidgetHost("Widget SDK host already started.");
             return;
         }
 
         if (!window.vipps?.host) {
-            logVippsWidgetHost("Widget SDK host unavailable.", {
-                hasVipps: Boolean(window.vipps),
-                hasHost: Boolean(window.vipps?.host)
-            });
             return;
         }
 
-        logVippsWidgetHost("Starting Widget SDK host.");
         window.vipps.host().start();
         window.__vippsWidgetHostStarted = true;
     }
@@ -240,15 +278,6 @@
     const dialogUi = window.createVippsMobilepayDialog();
     const checkout = createCheckoutController();
 
-    function logVippsExpress(message, data) {
-        if (data === undefined) {
-            console.log("[Vipps Express]", message);
-            return;
-        }
-
-        console.log("[Vipps Express]", message, data);
-    }
-
     function warnVippsExpress(message, data) {
         if (data === undefined) {
             console.warn("[Vipps Express]", message);
@@ -333,10 +362,6 @@
         }
 
         const trigger = vippsSdk.trigger(async () => {
-            logVippsExpress("Trigger resolver invoked.", {
-                currentAttempt
-            });
-
             if (!currentAttempt) {
                 warnVippsExpress("Trigger resolver has no active attempt; returning null.");
                 return null;
@@ -349,11 +374,6 @@
                 currentAttempt.transaction,
                 currentAttempt.path
             );
-
-            logVippsExpress("Payment session response received.", {
-                attemptId,
-                result
-            });
 
             if (!currentAttempt || currentAttempt.id !== attemptId) {
                 warnVippsExpress("Ignoring stale express response.", {
@@ -384,17 +404,10 @@
                 paymentHandoff?.mark(result);
                 clearAttempt();
                 paymentHandoff?.activate();
-                logVippsExpress("Returning payment URL to Widget SDK trigger.", {
-                    url: result.url,
-                    result
-                });
                 return result.url;
             }
 
             if (Number(result.ok) === 2) {
-                logVippsExpress("Express checkout requires additional action.", {
-                    result
-                });
                 showActionRequiredDialog(result.html || "");
                 return null;
             }
@@ -434,7 +447,6 @@
 
         trigger
             .on("success", (close, redirectUrl) => {
-                logVippsExpress("Widget SDK success event.", { redirectUrl });
                 clearAttempt();
                 close();
 
@@ -443,7 +455,6 @@
                 }
             })
             .on("cancel", (close, redirectUrl) => {
-                logVippsExpress("Widget SDK cancel event.", { redirectUrl });
                 clearAttempt();
                 close();
 
@@ -452,7 +463,6 @@
                 }
             })
             .on("close", () => {
-                logVippsExpress("Widget SDK close event.");
                 clearAttempt();
             })
             .on("error", (error) => {
@@ -499,7 +509,6 @@
             emitVippsPurchaseEvent("vippsPurchaseStarted", {
                 wrapper: button
             });
-            logVippsExpress("Began express checkout attempt.", currentAttempt);
             return true;
         }
 
@@ -520,9 +529,6 @@
             }
 
             try {
-                logVippsExpress("Opening Widget SDK trigger.", {
-                    currentAttempt
-                });
                 await trigger.open();
             } catch (error) {
                 errorVippsExpress("Trigger open threw.", error);
@@ -547,9 +553,6 @@
 
         function clearAttempt() {
             const attempt = currentAttempt;
-            logVippsExpress("Clearing express checkout attempt.", {
-                attempt
-            });
             locked = false;
             currentAttempt = null;
             dialogBusy = false;
@@ -698,11 +701,6 @@
     }
 
     async function createPaymentSession(transaction, path) {
-        logVippsExpress("Creating payment session.", {
-            path,
-            transaction
-        });
-
         const result = await wp.apiFetch({
             path,
             method: "POST",
@@ -710,11 +708,6 @@
                 "Accept-Language": `${config.vippslocale || "nb_NO"}, *`
             },
             data: transaction
-        });
-
-        logVippsExpress("Payment session API result.", {
-            path,
-            result
         });
 
         return result;
@@ -1077,46 +1070,7 @@
             }
         });
 
-        body.classList.toggle("processing", busy);
-        if (busy) {
-            ensureSpinner();
-        }
-    }
-
-    // The spinner used to be printed by PHP. Create the same markup on demand
-    // if it is not already present; CSS controls visibility using body.processing.
-    // IOK 2026-09-04
-    function ensureSpinner() {
-        let overlay = document.querySelector(".vippsoverlay");
-        if (overlay) {
-            return overlay;
-        }
-
-        const spinner = document.createElement("div");
-        spinner.id = "floatingCirclesG";
-        spinner.className = `vippsspinner ${sanitizeCssSlug(config.paymentMethodSlug || "")}`.trim();
-
-        for (let i = 1; i <= 8; i += 1) {
-            const circle = document.createElement("div");
-            circle.className = "f_circleG";
-            circle.id = `frotateG_${String(i).padStart(2, "0")}`;
-            spinner.append(circle);
-        }
-
-        overlay = document.createElement("div");
-        overlay.className = "vippsoverlay";
-        overlay.append(spinner);
-        document.body.append(overlay);
-
-        return overlay;
-    }
-
-    function sanitizeCssSlug(value) {
-        return String(value)
-            .toLowerCase()
-            .trim()
-            .replace(/[^a-z0-9_-]+/g, "-")
-            .replace(/^-+|-+$/g, "");
+        window.setVippsPaymentBusy(busy, "express");
     }
 
     function bindVariationEvents() {

@@ -1,7 +1,6 @@
 
 (function () { 
 
-
 // Imports
 const { __ } = wp.i18n;
 const { decodeEntities }  = wp.htmlEntities;
@@ -13,7 +12,6 @@ const { createElement, useEffect, useRef, useState } = wp.element;
 
 //( 'hookName', content, arg1, arg2, ... )
 
-
 // Data
 const settings = getSetting('vipps_data', {});
 const defaultLabel = VippsLocale['Vipps'];
@@ -23,15 +21,9 @@ const CHECKOUT_HANDOFF_STORAGE_KEY = 'vippsCheckoutPaymentHandoff';
 let vippsCheckoutController = null;
 let setVippsCheckoutBusy = () => {};
 
-function logVippsCheckout(message, data) {
-        if (data === undefined) {
-                console.log('[Vipps Checkout Block]', message);
-                return;
-        }
-
-        console.log('[Vipps Checkout Block]', message, data);
-}
-
+/**
+ * Report recoverable integration problems without logging routine checkout traffic.
+ */
 function warnVippsCheckout(message, data) {
         if (data === undefined) {
                 console.warn('[Vipps Checkout Block]', message);
@@ -41,6 +33,9 @@ function warnVippsCheckout(message, data) {
         console.warn('[Vipps Checkout Block]', message, data);
 }
 
+/**
+ * Report failures that prevent the SDK or Store API handoff from completing.
+ */
 function errorVippsCheckout(message, data) {
         if (data === undefined) {
                 console.error('[Vipps Checkout Block]', message);
@@ -50,21 +45,37 @@ function errorVippsCheckout(message, data) {
         console.error('[Vipps Checkout Block]', message, data);
 }
 
+/**
+ * Use the gateway localization dictionary, with a readable fallback for missing keys.
+ */
 function translate(key, fallback) {
         return VippsLocale?.[key] || fallback;
 }
 
+/**
+ * Use the configured brand/title in customer-facing errors.
+ */
 function getPaymentMethodName() {
         return decodeEntities(settings.title || defaultLabel || '');
 }
 
+/**
+ * Prefix fallback errors with the configured payment method name.
+ */
 function getPaymentMethodMessage(message) {
         return `${getPaymentMethodName()} ${message}`.trim();
 }
 
+/**
+ * Remember an order handoff across navigation. Refresh a restored checkout at most
+ * once per path so Back/app-return does not expose a stale cart or order form.
+ */
 function createVippsCheckoutHandoff() {
         const maxAgeMs = 30 * 60 * 1000;
 
+        /**
+         * Read a valid handoff marker; discard expired or malformed session data.
+         */
         function get() {
                 let raw;
 
@@ -83,12 +94,10 @@ function createVippsCheckoutHandoff() {
                         const handoff = JSON.parse(raw);
 
                         if (!handoff.createdAt || Date.now() - handoff.createdAt >= maxAgeMs) {
-                                logVippsCheckout('Checkout handoff marker expired; clearing.', handoff);
                                 clear();
                                 return null;
                         }
 
-                        logVippsCheckout('Read checkout handoff marker.', handoff);
                         return handoff;
                 } catch (error) {
                         warnVippsCheckout('Could not parse checkout handoff marker; clearing.', {
@@ -100,6 +109,9 @@ function createVippsCheckoutHandoff() {
                 }
         }
 
+        /**
+         * Record the handoff before giving the SDK a URL, since it may navigate immediately.
+         */
         function mark(data = {}) {
                 try {
                         window.sessionStorage.setItem(CHECKOUT_HANDOFF_STORAGE_KEY, JSON.stringify({
@@ -109,23 +121,27 @@ function createVippsCheckoutHandoff() {
                                 paymentReference: data.paymentReference || null,
                                 refreshedPaths: []
                         }));
-                        logVippsCheckout('Marked checkout handoff.', data);
                 } catch (error) {
                         warnVippsCheckout('Could not write checkout handoff marker to sessionStorage.', error);
                         // Checkout must still work when storage is unavailable.
                 }
         }
 
+        /**
+         * Release local state after completion, cancellation, or failure.
+         */
         function clear() {
                 try {
                         window.sessionStorage.removeItem(CHECKOUT_HANDOFF_STORAGE_KEY);
-                        logVippsCheckout('Cleared checkout handoff marker.');
                 } catch (error) {
                         warnVippsCheckout('Could not clear checkout handoff marker from sessionStorage.', error);
                         // Checkout must still work when storage is unavailable.
                 }
         }
 
+        /**
+         * Persist the per-path refresh guard before reloading to avoid a reload loop.
+         */
         function reloadOnceForStalePage() {
                 const handoff = get();
 
@@ -138,10 +154,6 @@ function createVippsCheckoutHandoff() {
                         : [];
 
                 if (refreshedPaths.includes(window.location.pathname)) {
-                        logVippsCheckout('Checkout handoff stale-page reload already used for this path.', {
-                                path: window.location.pathname,
-                                handoff
-                        });
                         return;
                 }
 
@@ -155,30 +167,26 @@ function createVippsCheckoutHandoff() {
                         clear();
                 }
 
-                logVippsCheckout('Reloading stale checkout page after handoff.', {
-                        path: window.location.pathname,
-                        handoff
-                });
                 window.location.reload();
         }
 
+        /**
+         * Recognize both back-forward cache restoration and history navigation.
+         */
         function wasHistoryRestore(event) {
                 const navigation = window.performance?.getEntriesByType?.('navigation')?.[0];
                 return event.persisted || navigation?.type === 'back_forward';
         }
 
+        /**
+         * Refresh history-restored checkout state; clear the marker on a fresh page load.
+         */
         function handlePageshow(event) {
                 const handoff = get();
 
                 if (!handoff) {
                         return;
                 }
-
-                logVippsCheckout('pageshow while checkout handoff marker exists.', {
-                        persisted: event.persisted,
-                        navigationType: window.performance?.getEntriesByType?.('navigation')?.[0]?.type,
-                        handoff
-                });
 
                 if (wasHistoryRestore(event)) {
                         reloadOnceForStalePage();
@@ -201,6 +209,9 @@ function createVippsCheckoutHandoff() {
 
 const checkoutHandoff = createVippsCheckoutHandoff();
 
+/**
+ * Accept object details and Store API key/value arrays from different response paths.
+ */
 function normalizeVippsCheckoutPaymentDetails(details) {
         if (!Array.isArray(details)) {
                 return details || {};
@@ -224,23 +235,27 @@ function normalizeVippsCheckoutPaymentDetails(details) {
         }, {});
 }
 
+/**
+ * Current Blocks events expose processingResponse.paymentDetails. Retain older
+ * paymentResult shapes and raw Store API shapes for compatibility.
+ */
 function getVippsCheckoutPaymentDetails(data) {
-        const rawDetails = data?.paymentResult?.paymentDetails ||
+        const rawDetails = data?.processingResponse?.paymentDetails ||
+                data?.processingResponse?.payment_details ||
+                data?.paymentResult?.paymentDetails ||
                 data?.paymentResult?.payment_details ||
                 data?.payment_result?.payment_details ||
                 data?.payment_result?.paymentDetails ||
                 {};
         const details = normalizeVippsCheckoutPaymentDetails(rawDetails);
 
-        logVippsCheckout('Extracted checkout payment details.', {
-                rawDetails,
-                details,
-                data
-        });
-
         return details;
 }
 
+/**
+ * Prefer widget-specific payment details; use the normal gateway redirect as a
+ * fallback when checkout was processed through the legacy Store API adapter.
+ */
 function getVippsCheckoutPaymentUrl(data) {
         const details = getVippsCheckoutPaymentDetails(data);
         const paymentUrl = details.vippsPaymentUrl ||
@@ -251,15 +266,12 @@ function getVippsCheckoutPaymentUrl(data) {
                 data?.redirect_url ||
                 '';
 
-        logVippsCheckout('Extracted checkout payment URL.', {
-                paymentUrl,
-                details,
-                data
-        });
-
         return paymentUrl;
 }
 
+/**
+ * Read optional reference metadata for the handoff marker; it is not needed to open the SDK.
+ */
 function getVippsCheckoutPaymentReference(data) {
         const details = getVippsCheckoutPaymentDetails(data);
         const paymentReference = details.vippsPaymentReference ||
@@ -268,62 +280,37 @@ function getVippsCheckoutPaymentReference(data) {
                 details.payment_reference ||
                 '';
 
-        logVippsCheckout('Extracted checkout payment reference.', {
-                paymentReference,
-                details,
-                data
-        });
-
         return paymentReference;
 }
 
-function getVippsCheckoutPaymentUrlFromDetails(details) {
-        return details.vippsPaymentUrl ||
-                details.vipps_payment_url ||
-                details.paymentUrl ||
-                details.payment_url ||
-                '';
-}
-
-function getVippsCheckoutPaymentReferenceFromDetails(details) {
-        return details.vippsPaymentReference ||
-                details.vipps_payment_reference ||
-                details.paymentReference ||
-                details.payment_reference ||
-                '';
-}
-
+/**
+ * Bridge the custom button and the checkout event subscriber with one pending URL
+ * promise. WooCommerce creates the order; the SDK waits for its payment URL.
+ * An attempt covers order submission and URL delivery, not the whole payment session.
+ */
 function createVippsCheckoutController(setBusy) {
         let currentAttempt = null;
         let nextAttemptId = 0;
         let trigger = null;
 
+        /**
+         * Reuse one trigger and start the shared host once. The resolver waits for Store API
+         * completion; SDK success/cancel callbacks own subsequent merchant-return navigation.
+         */
         function getTrigger() {
                 if (trigger || !window.vipps?.trigger) {
-                        logVippsCheckout('Returning existing trigger or no SDK trigger available.', {
-                                hasTrigger: Boolean(trigger),
-                                hasVipps: Boolean(window.vipps),
-                                hasVippsTrigger: Boolean(window.vipps?.trigger)
-                        });
                         return trigger;
                 }
 
                 if (typeof window.ensureVippsWidgetHostStarted === 'function') {
-                        logVippsCheckout('Ensuring Widget SDK host through shared helper.');
                         window.ensureVippsWidgetHostStarted();
                 } else if (!window.__vippsWidgetHostStarted && window.vipps?.host) {
-                        logVippsCheckout('Starting Widget SDK host from checkout payment method script.');
                         window.vipps.host().start();
                         window.__vippsWidgetHostStarted = true;
                 }
 
-                logVippsCheckout('Creating Widget SDK trigger for Checkout Block.');
                 trigger = window.vipps
                         .trigger(async () => {
-                                logVippsCheckout('Widget SDK trigger resolver invoked.', {
-                                        hasAttempt: Boolean(currentAttempt),
-                                        attemptId: currentAttempt?.id
-                                });
 
                                 if (!currentAttempt) {
                                         throw new Error(getPaymentMethodMessage('checkout attempt is no longer active.'));
@@ -331,15 +318,9 @@ function createVippsCheckoutController(setBusy) {
 
                                 const paymentUrl = await currentAttempt.paymentUrlPromise;
 
-                                logVippsCheckout('Widget SDK trigger resolver returning payment URL.', {
-                                        attemptId: currentAttempt?.id,
-                                        paymentUrl
-                                });
-
                                 return paymentUrl;
                         })
                         .on('success', (close, redirectUrl) => {
-                                logVippsCheckout('Widget SDK success event.', { redirectUrl });
                                 clear();
                                 close();
 
@@ -350,7 +331,6 @@ function createVippsCheckoutController(setBusy) {
                                 }
                         })
                         .on('cancel', (close, redirectUrl) => {
-                                logVippsCheckout('Widget SDK cancel event.', { redirectUrl });
                                 clear();
                                 close();
 
@@ -361,15 +341,14 @@ function createVippsCheckoutController(setBusy) {
                                 }
                         })
                         .on('close', () => {
-                                logVippsCheckout('Widget SDK close event.');
                                 clear();
                                 checkoutHandoff.clear();
                         })
                         .on('error', (error) => {
-                                errorVippsCheckout('Widget SDK error event.', error);
                                 clear();
                                 checkoutHandoff.clear();
 
+                                // A null resolver URL is the SDK's deliberate no-session signal.
                                 if (
                                         window.vipps?.InvalidTriggerUrlError &&
                                         error instanceof window.vipps.InvalidTriggerUrlError &&
@@ -378,12 +357,15 @@ function createVippsCheckoutController(setBusy) {
                                         return;
                                 }
 
-                                console.error(error);
+                                errorVippsCheckout('Widget SDK error event.', error);
                         });
 
                 return trigger;
         }
 
+        /**
+         * Create one pending URL promise and disable the button to prevent duplicate submissions.
+         */
         function begin() {
                 if (currentAttempt) {
                         warnVippsCheckout('Checkout attempt already active; refusing to begin another.', currentAttempt);
@@ -404,13 +386,13 @@ function createVippsCheckoutController(setBusy) {
                         rejectPaymentUrl
                 };
 
-                logVippsCheckout('Began checkout attempt.', {
-                        attemptId: currentAttempt.id
-                });
                 setBusy(true);
                 return currentAttempt;
         }
 
+        /**
+         * Start the SDK resolver before submitting checkout; do not await URL delivery here.
+         */
         function open() {
                 const vippsTrigger = getTrigger();
 
@@ -419,35 +401,23 @@ function createVippsCheckoutController(setBusy) {
                         return Promise.resolve(false);
                 }
 
-                logVippsCheckout('Opening Widget SDK trigger.', {
-                        attemptId: currentAttempt?.id
-                });
                 return vippsTrigger.open();
         }
 
+        /**
+         * Deliver the successful Store API payment URL to the SDK, or navigate directly if
+         * the SDK is unavailable. Return false for missing URLs so Blocks can display an error.
+         */
         function resolve(data) {
                 if (!currentAttempt) {
-                        warnVippsCheckout('Received checkout success without active attempt.', data);
+                        warnVippsCheckout('Received checkout success without active attempt.');
                         return false;
                 }
 
-                logVippsCheckout('Resolving checkout attempt from Store API success.', {
-                        attemptId: currentAttempt.id,
-                        data
-                });
-
-                const details = getVippsCheckoutPaymentDetails(data);
                 const paymentUrl = getVippsCheckoutPaymentUrl(data);
-                const detailsPaymentUrl = getVippsCheckoutPaymentUrlFromDetails(details);
 
                 if (!paymentUrl) {
-                        errorVippsCheckout('Missing checkout payment URL in Store API success payload.', {
-                                data,
-                                details,
-                                detailsPaymentUrl,
-                                redirectUrl: data?.redirectUrl,
-                                redirect_url: data?.redirect_url
-                        });
+                        errorVippsCheckout('Missing checkout payment URL in Store API success payload.');
                         currentAttempt.rejectPaymentUrl(new Error(
                                 translate('missingPaymentUrl', getPaymentMethodMessage('did not return a payment URL.'))
                         ));
@@ -461,26 +431,21 @@ function createVippsCheckoutController(setBusy) {
                 });
 
                 if (!window.vipps?.trigger) {
-                        warnVippsCheckout('Widget SDK trigger disappeared; falling back to full-page redirect.', {
-                                paymentUrl
-                        });
+                        warnVippsCheckout('Widget SDK trigger disappeared; falling back to full-page redirect.');
                         clear();
                         window.location.assign(paymentUrl);
                         return true;
                 }
 
-                logVippsCheckout('Resolving Widget SDK trigger payment URL promise.', {
-                        attemptId: currentAttempt.id,
-                        paymentUrl,
-                        detailsPaymentUrl,
-                        paymentReference: getVippsCheckoutPaymentReferenceFromDetails(details)
-                });
                 currentAttempt.resolvePaymentUrl(paymentUrl);
                 currentAttempt = null;
                 setBusy(false);
                 return true;
         }
 
+        /**
+         * Reject the waiting SDK resolver when WooCommerce fails, then release the attempt.
+         */
         function reject(error) {
                 warnVippsCheckout('Rejecting checkout attempt.', {
                         attemptId: currentAttempt?.id,
@@ -494,14 +459,17 @@ function createVippsCheckoutController(setBusy) {
                 clear();
         }
 
+        /**
+         * Release local state after completion, cancellation, or failure.
+         */
         function clear() {
-                logVippsCheckout('Clearing checkout attempt.', {
-                        attemptId: currentAttempt?.id
-                });
                 currentAttempt = null;
                 setBusy(false);
         }
 
+        /**
+         * Identify whether this controller owns a pending order submission.
+         */
         function hasAttempt() {
                 return Boolean(currentAttempt);
         }
@@ -509,16 +477,20 @@ function createVippsCheckoutController(setBusy) {
         return { begin, open, resolve, reject, clear, hasAttempt };
 }
 
+/**
+ * Share the controller between Content and the custom button, which Blocks mounts
+ * as separate components. Keep the button state setter available to event callbacks.
+ */
 function getVippsCheckoutController(setBusy) {
         if (setBusy) {
-                logVippsCheckout('Registered checkout button busy setter.');
                 setVippsCheckoutBusy = setBusy;
         }
 
         if (!vippsCheckoutController) {
-                logVippsCheckout('Creating shared checkout controller.');
                 vippsCheckoutController = createVippsCheckoutController((busy) => {
-                        logVippsCheckout('Setting checkout button busy state.', { busy });
+                        // Use the same overlay as express checkout while the Store API
+                        // creates the order. resolve/reject/clear release it for the SDK UI.
+                        window.setVippsPaymentBusy(busy, 'checkout-block');
                         setVippsCheckoutBusy(busy);
                 });
         }
@@ -526,7 +498,12 @@ function getVippsCheckoutController(setBusy) {
         return vippsCheckoutController;
 }
 
-
+/**
+ * Render the description and subscribe to Blocks checkout events. Payment setup
+ * supplies request metadata; checkout success hands off the URL and suppresses
+ * WooCommerce navigation only for an active widget attempt. Refs keep subscriptions
+ * using current props; effect cleanup removes observers when Blocks unmounts content.
+ */
 const Content = (props) => {
 	const { eventRegistration, emitResponse } = props;
 	const propsRef = useRef(props);
@@ -536,24 +513,18 @@ const Content = (props) => {
 	emitResponseRef.current = emitResponse;
 
 	useEffect(() => {
-		if (!eventRegistration) {
-			return;
-		}
+			if (!eventRegistration) {
+				return;
+			}
 
+                // SUCCESS here means payment data is ready, not that payment has been collected.
                 const unsubscribePaymentSetup = eventRegistration.onPaymentSetup
                         ? eventRegistration.onPaymentSetup(() => {
-                        logVippsCheckout('onPaymentSetup invoked.', {
-                                activePaymentMethod: propsRef.current.activePaymentMethod,
-                                responseTypes: emitResponse?.responseTypes
-                        });
 
                         if (
                                 propsRef.current.activePaymentMethod &&
                                 propsRef.current.activePaymentMethod !== 'vipps'
                         ) {
-                                logVippsCheckout('onPaymentSetup ignored because Vipps is not active.', {
-                                        activePaymentMethod: propsRef.current.activePaymentMethod
-                                });
                                 return true;
 			}
 
@@ -567,18 +538,15 @@ const Content = (props) => {
                                 }
                         };
 
-                        logVippsCheckout('onPaymentSetup returning response.', response);
                         return response;
                 })
                         : () => {};
 
                 const unsubscribeCheckoutSuccess = eventRegistration.onCheckoutSuccess
                         ? eventRegistration.onCheckoutSuccess((data) => {
-                        logVippsCheckout('onCheckoutSuccess invoked.', data);
                         const controller = getVippsCheckoutController();
 
                         if (!controller?.hasAttempt()) {
-                                logVippsCheckout('onCheckoutSuccess passed through; no active checkout attempt.');
                                 return true;
                         }
 
@@ -589,31 +557,32 @@ const Content = (props) => {
 					retry: true
 				};
 
-                                errorVippsCheckout('onCheckoutSuccess returning error response.', {
-                                        response,
-                                        data
-                                });
                                 return response;
                         }
 
 			const response = {
-				type: emitResponseRef.current.responseTypes.SUCCESS
+				type: emitResponseRef.current.responseTypes.SUCCESS,
+                                // WooCommerce completes checkout after this callback. An explicit
+                                // empty redirect clears its stored URL; the widget owns navigation.
+                                // SET_COMPLETE checks typeof redirectUrl === 'string', so omitting
+                                // this field (or returning true) would retain the gateway redirect.
+                                // See Payment/README.md for the WooCommerce source references.
+                                redirectUrl: ''
 			};
 
-                        logVippsCheckout('onCheckoutSuccess returning success response.', response);
                         return response;
                 })
                         : () => {};
 
+                // Let WooCommerce display its checkout error; release the waiting SDK resolver.
                 const unsubscribeCheckoutFail = eventRegistration.onCheckoutFail
                         ? eventRegistration.onCheckoutFail(() => {
-                        warnVippsCheckout('onCheckoutFail invoked.');
                         getVippsCheckoutController().reject(new Error('Checkout failed'));
                         return true;
                 })
                         : () => {};
 
-		return () => {
+			return () => {
 			unsubscribePaymentSetup();
 			unsubscribeCheckoutSuccess();
 			unsubscribeCheckoutFail();
@@ -628,6 +597,9 @@ const Content = (props) => {
        return applyFilters('woo_vipps_checkout_description', content, settings);
 };
 
+/**
+ * Render the configured method name and logo through WooCommerce styling and plugin filters.
+ */
 const Label = props => {
         const { PaymentMethodLabel } = props.components;
         let textlabel = createElement( 'span', null, decodeEntities(settings.title || ''));
@@ -636,11 +608,21 @@ const Label = props => {
         return applyFilters('woo_vipps_checkout_label', label, settings);
 };
 
+/**
+ * Render the server-generated express button markup. vipps.js handles its clicks
+ * and session creation independently of the standard Checkout Block submission.
+ */
 const ExpressCheckoutButton = props => {
  var expressbutton = createElement('div', {dangerouslySetInnerHTML: {__html: settings.expressbutton  },  className: 'vipps-express-container'}, null);
  return applyFilters('woo_vipps_checkout_block_express_button', expressbutton, settings);
 }
 
+/**
+ * Validate the Checkout Block, create a pending attempt, start the SDK, and then
+ * call WooCommerce onSubmit to create/process the order through the Store API.
+ * Awaiting trigger.open before onSubmit would deadlock the resolver waiting for that order.
+ * Editor/preview rendering must not start a payment.
+ */
 const VippsCheckoutPlaceOrderButton = (props) => {
         const {
                 validate,
@@ -654,15 +636,16 @@ const VippsCheckoutPlaceOrderButton = (props) => {
         const [busy, setBusy] = useState(false);
         const controllerRef = useRef(null);
 
+        useEffect(() => () => {
+                // Blocks can unmount the button when the selected method changes.
+                window.setVippsPaymentBusy(false, 'checkout-block');
+        }, []);
+
         if (!controllerRef.current) {
                 controllerRef.current = getVippsCheckoutController(setBusy);
         }
 
         if (isEditor || isPreview) {
-                logVippsCheckout('Rendering checkout button preview/editor placeholder.', {
-                        isEditor,
-                        isPreview
-                });
                 return createElement('button', {
                         type: 'button',
                         disabled: true
@@ -672,34 +655,18 @@ const VippsCheckoutPlaceOrderButton = (props) => {
         const isDisabled = disabled || waitingForProcessing || waitingForRedirect || busy;
 
         const handleClick = async (event) => {
-                logVippsCheckout('Checkout Widget button clicked.', {
-                        disabled,
-                        waitingForProcessing,
-                        waitingForRedirect,
-                        busy,
-                        isDisabled,
-                        hasAttempt: controllerRef.current.hasAttempt()
-                });
 
                 event.preventDefault();
 
                 if (isDisabled || controllerRef.current.hasAttempt()) {
-                        logVippsCheckout('Checkout Widget button click ignored.', {
-                                isDisabled,
-                                hasAttempt: controllerRef.current.hasAttempt()
-                        });
                         return;
                 }
 
-                logVippsCheckout('Validating Checkout Block before opening Widget SDK trigger.');
                 const validationResult = validate
                         ? await validate()
                         : { hasError: false };
 
-                logVippsCheckout('Checkout Block validation result.', validationResult);
-
                 if (validationResult?.hasError) {
-                        logVippsCheckout('Checkout validation failed; Widget SDK trigger will not open.');
                         return;
                 }
 
@@ -710,16 +677,12 @@ const VippsCheckoutPlaceOrderButton = (props) => {
                         return;
                 }
 
-                logVippsCheckout('Opening Widget SDK trigger before Store API submit.', {
-                        attemptId: attempt.id
-                });
                 controllerRef.current.open().catch((error) => {
                         errorVippsCheckout('Widget SDK trigger open promise rejected.', error);
                         controllerRef.current.reject(error);
                 });
 
                 if (onSubmit) {
-                        logVippsCheckout('Submitting Checkout Block Store API request.');
                         onSubmit();
                 } else {
                         warnVippsCheckout('No onSubmit prop available on Vipps checkout button.');
@@ -735,20 +698,27 @@ const VippsCheckoutPlaceOrderButton = (props) => {
                 branded: 'true',
                 rounded: 'true',
                 stretched: 'true',
-                className: 'vipps-checkout-widget-button',
+                className: `vipps-checkout-widget-button${busy ? ' loading' : ''}`,
                 disabled: isDisabled ? true : undefined,
                 'aria-disabled': isDisabled ? 'true' : 'false',
+                'aria-busy': busy ? 'true' : 'false',
                 onClick: handleClick
         };
 
 	return createElement('vipps-mobilepay-button', buttonProps);
 };
 
+/**
+ * Combine the server cart/settings eligibility with the existing express visibility filter.
+ */
 const canMakeExpressPayment = (args) => {
  var candoit = settings.show_express_checkout;
  return applyFilters('woo_vipps_checkout_block_show_express_checkout', candoit, settings);
 };
 
+/**
+ * Preserve the plugin visibility filter; server-side availability is supplied by the PHP integration.
+ */
 const canMakePayment = (args) => {
  var candoit = true;
  return applyFilters('woo_vipps_checkout_block_show_vipps', candoit, settings);
@@ -775,16 +745,8 @@ const VippsExpressPaymentMethod = {
       canMakePayment: canMakeExpressPayment,
 };
 
-
 registerPaymentMethod(VippsPaymentMethod);
 registerExpressPaymentMethod(VippsExpressPaymentMethod);
-
-logVippsCheckout('Registered Vipps payment methods.', {
-        settings,
-        hasVipps: Boolean(window.vipps),
-        hasVippsTrigger: Boolean(window.vipps?.trigger),
-        hasVippsHost: Boolean(window.vipps?.host)
-});
 
 
 }());
