@@ -1864,6 +1864,7 @@ EOF;
             }                                                                                                                                         
         }                                                                                                                                             
 
+        // This script uses jQuery because the classic checkout screen does too. IOK 2026-09-15
         $relative_path = 'js/vipps-classic-checkout.js';                                                                                      
         wp_enqueue_script(                                                                                                                            
                 'vipps-classic-checkout',                                                                                                                 

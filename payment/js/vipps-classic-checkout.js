@@ -2,6 +2,8 @@
 /**
  * SDK adapter for the classic checkout form, using its existing submit button.
  * Load after wc-checkout and vipps-gw. PHP enqueue instructions: Payment/README.md.
+ * jQuery is intentional: both classic checkout and pay-for-order use WooCommerce's
+ * legacy jQuery form/events, including pay-for-order pages reached from Blocks.
  * The order-pay branch uses WooCommerce's existing-order Store API route. Never
  * send an order-pay form to the cart checkout endpoint.
  */
