@@ -229,6 +229,7 @@ class Vipps {
         // needs these to be defined in the backend. IOK 2024-04-16
         add_action('wp_loaded', array($this, 'wp_register_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_classic_checkout_scripts'), 20);
 
         // Remove the possibility of restarting failed orders etc. This will be fixed in the future. IOK 2023-05-26
         add_filter('woocommerce_my_account_my_orders_actions', array($this,'woocommerce_my_account_my_orders_actions'), 10, 2);
@@ -1842,6 +1843,35 @@ EOF;
         wp_enqueue_script('vipps-gw');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
         wp_enqueue_script('vipps-button-webcomponent');
+    }
+
+    // These scripts should be loaded only on the checkout screen and is used only for the classic shortcode checkout and
+    // the pay-for-order screen. IOK 2026-09-15
+    public function enqueue_classic_checkout_scripts () {
+        if ( ! function_exists( 'is_checkout' ) || ! is_checkout() || is_order_received_page() ) {
+            return;
+        }
+        // Order-pay is rendered by the classic form even with a Blocks checkout page.
+        // It must bypass the check for the parent checkout page's block content.
+        if ( ! is_checkout_pay_page() ) {
+            $utils = '\\Automattic\\WooCommerce\\Blocks\\Utils\\CartCheckoutUtils';
+            $uses_checkout_block = is_callable( array( $utils, 'is_checkout_block_default' ) )
+                ? $utils::is_checkout_block_default()                                                                                                 
+                : has_block( 'woocommerce/checkout', wc_get_page_id( 'checkout' ) );                                                                  
+
+            if ( $uses_checkout_block ) {                                                                                                             
+                return;                                                                                                                               
+            }                                                                                                                                         
+        }                                                                                                                                             
+
+        $relative_path = 'js/vipps-classic-checkout.js';                                                                                      
+        wp_enqueue_script(                                                                                                                            
+                'vipps-classic-checkout',                                                                                                                 
+                plugins_url( $relative_path, __FILE__ ),                                                                                                  
+                array( 'jquery', 'wc-checkout', 'vipps-gw' ),                                                                                             
+                filemtime( plugin_dir_path( __FILE__ ) . $relative_path ),                                                                                
+                true                                                                                                                                      
+                );        
     }
 
 
