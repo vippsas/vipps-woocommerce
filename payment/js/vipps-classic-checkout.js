@@ -2,14 +2,177 @@
 /**
  * SDK adapter for the classic checkout form, using its existing submit button.
  * Load after wc-checkout and vipps-gw. PHP enqueue instructions: Payment/README.md.
- * Order-pay can load this file too, but retains native submission until its
- * existing-order transport is implemented. Never send that form to cart checkout.
+ * The order-pay branch uses WooCommerce's existing-order Store API route. Never
+ * send an order-pay form to the cart checkout endpoint.
  */
 jQuery(($) => {
     'use strict';
 
     if (document.body.classList.contains('woocommerce-order-pay')) {
+        initOrderPay($);
         return;
+    }
+
+    /**
+     * Pay an existing order through POST /wc/store/v1/checkout/{id}. PHP must
+     * localize VippsOrderPayConfig with an authorized order id, addresses, and
+     * a Store API nonce. The order key/email are sent for guest authorization.
+     */
+    function initOrderPay($) {
+        const config = window.VippsOrderPayConfig || {};
+        const $form = $('#order_review').first();
+        if (!$form.length || !config.orderId || !config.endpoint ||
+            !config.billingAddress || !config.shippingAddress ||
+            !window.vipps?.trigger || !window.vipps?.host ||
+            typeof window.ensureVippsWidgetHostStarted !== 'function' ||
+            typeof window.setVippsPaymentBusy !== 'function' ||
+            $form.data('vippsOrderPay')) {
+            return;
+        }
+        $form.data('vippsOrderPay', true);
+
+        const owner = 'order-pay';
+        let attempt = null;
+
+        function message(key, fallback) {
+            return window.VippsLocale?.[key] || fallback;
+        }
+
+        function notice(text) {
+            return $('<div>').addClass('woocommerce-error').text(text).prop('outerHTML');
+        }
+
+        function showError(text) {
+            const markup = notice(text);
+            $form.find('.woocommerce-NoticeGroup-checkout').remove();
+            $form.prepend($('<div>').addClass('woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout')
+                .attr({ role: 'alert', tabindex: '-1' }).html(markup));
+            $form.find('.woocommerce-NoticeGroup-checkout').trigger('focus');
+        }
+
+        function setBusy(busy) {
+            window.setVippsPaymentBusy(busy, owner);
+            $form.toggleClass('processing', busy).attr('aria-busy', busy ? 'true' : 'false');
+            $form.find(':input').prop('disabled', busy);
+        }
+
+        function urlFromResponse(response) {
+            const result = response?.payment_result || response?.paymentResult || {};
+            const details = result.payment_details || result.paymentDetails || [];
+            const normalized = Array.isArray(details)
+                ? details.reduce((out, item) => { if (item?.key) out[item.key] = item.value; return out; }, {})
+                : details;
+            return normalized.vippsPaymentUrl || normalized.vipps_payment_url ||
+                result.redirect_url || result.redirectUrl || response?.redirect || '';
+        }
+
+        function validUrl(value) {
+            try {
+                const url = new URL(value, window.location.href);
+                return ['https:', 'http:'].includes(url.protocol) ? url.href : '';
+            } catch {
+                return '';
+            }
+        }
+
+        function release() {
+            if (!attempt) return;
+            attempt = null;
+            setBusy(false);
+            $form.find(':input').prop('disabled', false);
+            $form.removeClass('processing').removeAttr('aria-busy');
+        }
+
+        function navigate(url) {
+            setBusy(false);
+            window.location.assign(url || window.location.href);
+        }
+
+        function requestPayment(current) {
+            const paymentData = current.paymentData;
+
+            return $.ajax({
+                type: 'POST',
+                url: config.endpoint,
+                data: JSON.stringify({
+                    key: config.orderKey || undefined,
+                    billing_email: config.billingEmail || undefined,
+                    billing_address: config.billingAddress,
+                    shipping_address: config.shippingAddress,
+                    payment_method: 'vipps',
+                    payment_data: paymentData
+                }),
+                contentType: 'application/json',
+                dataType: 'json',
+                headers: config.nonce ? { Nonce: config.nonce } : undefined
+            }).then((response) => {
+                if (attempt !== current) return null;
+                const url = validUrl(urlFromResponse(response));
+                if (!url) {
+                    release();
+                    showError(message('missingPaymentUrl', 'The order did not return a payment URL.'));
+                    return null;
+                }
+                current.phase = 'payment';
+                current.paymentUrl = url;
+                setBusy(false);
+                if (current.closed) {
+                    navigate('');
+                    return null;
+                }
+                return url;
+            }).catch(() => {
+                if (attempt !== current) return null;
+                release();
+                showError(message('orderPayFailed', 'Could not start payment for this order. Please try again.'));
+                return null;
+            });
+        }
+
+        function submit(event) {
+            event.preventDefault();
+            if (attempt) return false;
+            if ($form.find('[name="payment_method"]:checked').val() !== 'vipps') return true;
+
+            const paymentData = $form.serializeArray()
+                .filter(({ name }) => !['payment_method', 'woocommerce-pay-nonce', '_wpnonce'].includes(name))
+                .map(({ name, value }) => ({ key: name, value }));
+            paymentData.push({ key: 'vipps_checkout_widget', value: '1' });
+            attempt = { phase: 'submitting', closed: false, paymentUrl: '', paymentData };
+            const current = attempt;
+            setBusy(true);
+            try {
+                window.ensureVippsWidgetHostStarted();
+                current.trigger = window.vipps.trigger(() => requestPayment(current))
+                    .on('success', (close, url) => { close(); navigate(url || current.paymentUrl); })
+                    .on('cancel', (close, url) => { close(); navigate(url || window.location.href); })
+                    .on('close', () => {
+                        if (attempt !== current) return;
+                        if (current.phase === 'submitting') {
+                            current.closed = true;
+                        } else {
+                            navigate('');
+                        }
+                    })
+                    .on('error', () => {
+                        if (current.paymentUrl) navigate(current.paymentUrl);
+                        else if (current.phase === 'submitting') current.closed = true;
+                        else release();
+                    });
+                Promise.resolve(current.trigger.open()).catch(() => {
+                    if (attempt === current && !current.paymentUrl) {
+                        release();
+                        showError(message('widgetStartFailed', 'Could not start the payment. Please try again.'));
+                    }
+                });
+            } catch {
+                release();
+                showError(message('widgetStartFailed', 'Could not start the payment. Please try again.'));
+            }
+            return false;
+        }
+
+        $form.on('submit.vippsOrderPay', submit);
     }
 
     const params = window.wc_checkout_params;
@@ -311,5 +474,3 @@ jQuery(($) => {
         }
     });
 });
-
-console.log("Classic checkout scripts loaded");

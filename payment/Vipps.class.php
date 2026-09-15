@@ -1872,6 +1872,19 @@ EOF;
                 filemtime( plugin_dir_path( __FILE__ ) . $relative_path ),                                                                                
                 true                                                                                                                                      
                 );        
+
+        if ( is_checkout_pay_page() ) {
+            $order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+            wp_add_inline_script( 'vipps-classic-checkout', 'window.VippsOrderPayConfig = ' . wp_json_encode( array(
+                            'orderId'         => $order ? $order->get_id() : 0,
+                            'orderKey'        => $order ? $order->get_order_key() : '',
+                            'billingEmail'    => $order ? $order->get_billing_email() : '',
+                            'endpoint'        => $order ? rest_url( 'wc/store/v1/checkout/' . $order->get_id() ) : '',
+                            'nonce'           => wp_create_nonce( 'wc_store_api' ),
+                            'billingAddress'  => $order ? $order->get_address( 'billing' ) : array(),
+                            'shippingAddress' => $order ? $order->get_address( 'shipping' ) : array(),
+                            ) ) . ';', 'before' );
+        }
     }
 
 
