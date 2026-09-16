@@ -595,3 +595,16 @@ body.processing {
         padding: 3rem 1rem 1rem;
     }
 }
+
+/* This button will replace the normal pay for order and confirm order button in classic checkout scenarios */
+
+#vipps-classic-checkout-submit.vipps-submit-wrapper {
+    float:right;
+    border:0;padding:0;margin:0;background-color:transparent;
+}
+#vipps-classic-checkout-submit.vipps-submit-wrapper.hidden {
+    display:none;
+}
+#place_order.hidden {
+    display:none;
+}

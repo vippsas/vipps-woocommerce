@@ -10,6 +10,27 @@
 jQuery(($) => {
     'use strict';
 
+    /** Keep the native WooCommerce submit control as the non-Vipps fallback. */
+    function updateVippsButton($form) {
+        const isVipps = $form.find('input[name="payment_method"]:checked').val() === 'vipps';
+        const $vippsButton = $form.find('#vipps-classic-checkout-submit').first();
+        const $normalButton = $form.find('#place_order').first();
+        if (!$vippsButton.length || !$normalButton.length) return;
+        $vippsButton.toggleClass('hidden', !isVipps)
+            .prop('disabled', !isVipps)
+            .attr('aria-hidden', isVipps ? 'false' : 'true')
+            .attr('tabindex', isVipps ? '0' : '-1');
+        $normalButton.toggleClass('hidden', isVipps)
+            .attr('aria-hidden', isVipps ? 'true' : 'false');
+    }
+
+    function bindVippsButton($form) {
+        const refresh = () => updateVippsButton($form);
+        $form.on('change.vippsButtons', 'input[name="payment_method"]', refresh);
+        $(document.body).on('payment_method_selected.vippsButtons updated_checkout.vippsButtons', refresh);
+        refresh();
+    }
+
     if (document.body.classList.contains('woocommerce-order-pay')) {
         initOrderPay($);
         return;
@@ -32,6 +53,7 @@ jQuery(($) => {
             return;
         }
         $form.data('vippsOrderPay', true);
+        bindVippsButton($form);
 
         const owner = 'order-pay';
         let attempt = null;
@@ -136,6 +158,14 @@ jQuery(($) => {
             if (attempt) return false;
             if ($form.find('[name="payment_method"]:checked').val() !== 'vipps') return true;
 
+            const $terms = $form.find('#terms, input[name="terms"]').filter(':checkbox').first();
+            if ($terms.length && !$terms.prop('checked')) {
+                release();
+                showError(message('termsRequired', 'Please read and accept the terms and conditions to proceed.'));
+                $terms.trigger('focus');
+                return false;
+            }
+
             const paymentData = $form.serializeArray()
                 .filter(({ name }) => !['payment_method', 'woocommerce-pay-nonce', '_wpnonce'].includes(name))
                 .map(({ name, value }) => ({ key: name, value }));
@@ -186,6 +216,7 @@ jQuery(($) => {
         return;
     }
     $form.data('vippsClassicCheckout', true);
+    bindVippsButton($form);
 
     const owner = 'classic-checkout';
     let activeAttempt = null;

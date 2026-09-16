@@ -1967,7 +1967,7 @@ EOF;
     // on the classic checkout and pay-for-order pages. It gets swapped in when the user selects vipps, and swapped out otherwise.
     public function add_checkout_button_for_classic () {
 	$button = $this->get_html_button_for_context('checkout');
-        $submit = "<button class='vipps-submit-wrapper' type='submit' style='display:none;border:0;padding:0;margin:0;background-color:transparent'>$button</button>";
+        $submit = "<button id='vipps-classic-checkout-submit' class='hidden vipps-submit-wrapper' type='submit'>$button</button>";
         echo $submit;
     }
 
