@@ -1962,6 +1962,15 @@ EOF;
         }
     }
 
+
+    // This is for the Vipps SDK button used instead of the normal "pay for order" and "confirm order" buttons
+    // on the classic checkout and pay-for-order pages. It gets swapped in when the user selects vipps, and swapped out otherwise.
+    public function add_checkout_button_for_classic () {
+	$button = $this->get_html_button_for_context('checkout');
+        $submit = "<button class='vipps-submit-wrapper' type='submit' style='display:none;border:0;padding:0;margin:0;background-color:transparent'>$button</button>";
+        echo $submit;
+    }
+
     public function cart_express_checkout_button_html($minicart = false) {
         $context = $minicart ? 'minicart' : 'cart';
         $button = apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context($context));
@@ -2850,6 +2859,10 @@ else:
         add_action('woocommerce_after_add_to_cart_button', array($this, 'single_product_buy_now_button'));
         add_action('woocommerce_after_shop_loop_item', array($this, 'loop_single_product_buy_now_button'), 20);
 
+        // For the classic checkout page and pay-for-order page, use a custom submit button when payment method 
+        // is Vipps
+        add_action('woocommerce_review_order_after_submit', array($this, 'add_checkout_button_for_classic'));
+        add_action('woocommerce_pay_order_after_submit', array($this, 'add_checkout_button_for_classic'));
 
         // Special pages and callbacks handled by template_redirect. IOK 2023-02-22
         add_action('template_redirect', array($this,'template_redirect'),1);
