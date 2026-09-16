@@ -597,14 +597,20 @@ body.processing {
 }
 
 /* This button will replace the normal pay for order and confirm order button in classic checkout scenarios */
-
-#vipps-classic-checkout-submit.vipps-submit-wrapper {
+/* Try to make it look ok for most themes IOK 2026-09-16 */
+.woocommerce-order-pay #vipps-classic-checkout-submit.vipps-submit-wrapper {
     float:right;
+}
+#vipps-classic-checkout-submit.vipps-submit-wrapper {
     border:0;padding:0;margin:0;background-color:transparent;
 }
 #vipps-classic-checkout-submit.vipps-submit-wrapper.hidden {
-    display:none;
+    display:none !important;
 }
 #place_order.hidden {
-    display:none;
+    display:none !important;
+}
+.vipps-classic-checkout-container {
+    width:100%;
+    text-align: center;
 }
