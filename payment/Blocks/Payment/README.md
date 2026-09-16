@@ -87,26 +87,79 @@ directly to the SDK. Although registration maps `paymentMethodId` to `vipps`,
 this express flow does not use the standard button's pending Store API promise.
 Its confirmation dialog and handoff recovery remain in the shared script.
 
-## Card (`vipps_card`)
+## Classic shortcode checkout
 
-`VippsCard.class.php` supplies settings and registers the card component.
-`js/wc-payment-method-vipps-card.js` renders the description, title, card logos,
-and customized place-order button label. Visibility remains filterable.
+`vipps-classic-checkout.js` uses the existing WooCommerce form and the optional
+branded `#vipps-classic-checkout-submit` submit button. It handles
+`checkout_place_order_vipps` synchronously, suppresses core's default AJAX request,
+and submits the full checkout form to `wc_checkout_params.checkout_url` from the
+SDK resolver. WooCommerce still performs validation, creates/resumes the order,
+and invokes the gateway. This adapter owns the response, so core does not also
+redirect to the payment URL. It does not emit the classic success hook, whose
+normal consumer would redirect or enter its generic error branch.
 
-The card method uses WooCommerce's standard submit button and legacy Store API
-gateway processing. WooCommerce follows the gateway's redirect to begin payment.
-It has no widget controller or success observer, so the Vipps widget's empty
-redirect override must not be copied into this method.
+The script reuses the shared host and spinner. Form fields are serialized before
+being disabled; their prior disabled states are restored on a known checkout
+failure. The form stays locked after URL delivery until the dialog exits, so
+another payment cannot be submitted behind the dialog. A close/cancel without a
+return URL reloads checkout; a close during submission waits for the request to
+finish first. Restoring an old attempt from the back-forward cache also reloads.
 
-## Diagnostics and verification
+Server checkout errors remain visible through WooCommerce's error presenter when
+available, with a notice fallback for versions that do not pass the checkout
+controller into the hook. Refresh/reload responses are honored. An unconfirmed
+network result or unusable success response offers a reload link and blocks a
+second POST; it never automatically retries a possibly successful payment request.
+If the SDK fails after submission, a valid returned payment URL can be followed
+directly without creating another payment.
 
-Routine console traces, checkout-store subscriptions, page-exit diagnostics, and
-PHP response-dump hooks have been removed. JavaScript warnings/errors remain for
-integration failures. PHP validation still throws exceptions for WooCommerce to
-surface as checkout errors.
+The branded button is selected by the checked `payment_method` radio. For Vipps,
+the script removes its `hidden` class and hides `#place_order`; for every other
+gateway it restores the normal button. The switch is delegated so it survives
+WooCommerce replacing the payment section after `updated_checkout`. The native
+button remains the fallback when the branded button or JavaScript is unavailable.
+The button uses the same form-submit path, so it does not bypass WooCommerce
+validation or create a second payment request.
 
-When changing the handoff, verify that widget and legacy-redirect payloads both
-deliver the URL, that an active widget success returns an empty redirect, that
-success without an active attempt passes through, and that a missing URL returns
-a retryable error. On a live site, also verify desktop widget completion/cancel,
-mobile navigation, stale-page recovery, and the card method's normal redirect.
+On `woocommerce-order-pay` pages it uses the existing-order Store API route rather
+than cart checkout AJAX. It localizes `VippsOrderPayConfig` before this script runs:
+
+```js
+window.VippsOrderPayConfig = {
+    orderId: 123,
+    orderKey: 'wc_order_key_for_guest_links',
+    billingEmail: 'customer@example.com',
+    endpoint: '/wp-json/wc/store/v1/checkout/123',
+    nonce: 'store-api-nonce',
+    billingAddress: { first_name: '', last_name: '', address_1: '', city: '', state: '', postcode: '', country: '', email: '' },
+    shippingAddress: { first_name: '', last_name: '', address_1: '', city: '', state: '', postcode: '', country: '' }
+};
+```
+The adapter sends the selected Vipps method and form fields as
+`payment_data`, then reads the URL from `payment_result.payment_details` or its
+redirect fallback. It never sends the pay form to cart checkout AJAX.
+
+Before sending a Vipps request, it checks the same `terms-field` marker and
+`terms` checkbox used by WooCommerce's native pay-for-order handler. Missing
+terms are displayed using standard WooCommerce error-notice markup, and the page
+scrolls to the notice. Store API failures, missing payment URLs, and SDK startup
+failures use the same notice path. The notice container is refreshed and focused
+so the customer can correct the form and retry.
+
+The order-pay form remains native when this configuration or the SDK is missing.
+Its existing submit handler is prevented only for an active Vipps SDK attempt.
+Success hands the URL to the SDK; cancellation/close reloads the same authorized
+pay URL, and failures restore the form for retry. The adapter never automatically
+reposts an uncertain request.
+Blocks and non-Vipps methods retain their existing handlers. If the main plugin
+already attaches a Vipps-specific classic submit handler, consolidate that handler
+with this one so it cannot initiate a second payment independently.
+
+### Loading and dependencies
+
+Load `vipps-classic-checkout.js` only on the classic checkout and
+`woocommerce-order-pay` pages. Order-pay must remain enabled when the configured
+checkout page uses Blocks, because WooCommerce renders the pay form through the
+classic shortcode template in that case. The script depends on `jquery`,
+`wc-checkout`, and `vipps-gw`; the latter must load `vipps.js` and the SDK before
+the customer submits. Do not load this adapter on the Checkout Block itself.
