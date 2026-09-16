@@ -62,21 +62,33 @@ jQuery(($) => {
             return window.VippsLocale?.[key] || fallback;
         }
 
-        function notice(text) {
-            return $('<div>').addClass('woocommerce-error').text(text).prop('outerHTML');
+        function showWooNotice(text) {
+            const $wrapper = $form.closest('.woocommerce').find('.woocommerce-notices-wrapper').first();
+            const $notice = $('<ul>').addClass('woocommerce-error').attr('role', 'alert')
+                .append($('<li>').text(text));
+            $form.find('.woocommerce-NoticeGroup-checkout, .vipps-order-pay-notice').remove();
+            const $group = $('<div>').addClass('woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout vipps-order-pay-notice')
+                .append($notice);
+            ($wrapper.length ? $wrapper : $form).first().prepend($group);
+            $group.trigger('focus');
+            if (typeof $.scroll_to_notices === 'function') {
+                $.scroll_to_notices($group);
+            } else if ($group.offset()) {
+                $('html, body').stop(true).animate({ scrollTop: $group.offset().top - 100 }, 400);
+            }
         }
 
-        function showError(text) {
-            const markup = notice(text);
-            $form.find('.woocommerce-NoticeGroup-checkout').remove();
-            $form.prepend($('<div>').addClass('woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout')
-                .attr({ role: 'alert', tabindex: '-1' }).html(markup));
-            $form.find('.woocommerce-NoticeGroup-checkout').trigger('focus');
+        function responseMessage(xhr, fallback) {
+            const response = xhr?.responseJSON || xhr?.response || xhr;
+            return response?.message || response?.data?.message || response?.messages || fallback;
         }
 
         function setBusy(busy) {
             window.setVippsPaymentBusy(busy, owner);
             $form.toggleClass('processing', busy).attr('aria-busy', busy ? 'true' : 'false');
+            if (!busy && typeof $form.unblock === 'function') {
+                $form.unblock();
+            }
             $form.find(':input').prop('disabled', busy);
         }
 
@@ -134,7 +146,7 @@ jQuery(($) => {
                 const url = validUrl(urlFromResponse(response));
                 if (!url) {
                     release();
-                    showError(message('missingPaymentUrl', 'The order did not return a payment URL.'));
+                    showWooNotice(message('missingPaymentUrl', 'The order did not return a payment URL.'));
                     return null;
                 }
                 current.phase = 'payment';
@@ -145,24 +157,24 @@ jQuery(($) => {
                     return null;
                 }
                 return url;
-            }).catch(() => {
+            }).catch((xhr) => {
                 if (attempt !== current) return null;
                 release();
-                showError(message('orderPayFailed', 'Could not start payment for this order. Please try again.'));
+                showWooNotice(responseMessage(xhr, message('orderPayFailed', 'Could not start payment for this order. Please try again.')));
                 return null;
             });
         }
 
         function submit(event) {
-            event.preventDefault();
             if (attempt) return false;
             if ($form.find('[name="payment_method"]:checked').val() !== 'vipps') return true;
+            event.preventDefault();
 
-            const $terms = $form.find('#terms, input[name="terms"]').filter(':checkbox').first();
-            if ($terms.length && !$terms.prop('checked')) {
-                release();
-                showError(message('termsRequired', 'Please read and accept the terms and conditions to proceed.'));
-                $terms.trigger('focus');
+            if ($form.find('[name="terms-field"]').length && !$form.find('[name="terms"]:checked').length) {
+                setBusy(false);
+                $form.removeClass('processing').removeAttr('aria-busy');
+                showWooNotice(message('termsRequired', 'Please read and accept the terms and conditions to proceed with your order.'));
+                $form.find('[name="terms"]').first().trigger('focus');
                 return false;
             }
 
@@ -194,12 +206,12 @@ jQuery(($) => {
                 Promise.resolve(current.trigger.open()).catch(() => {
                     if (attempt === current && !current.paymentUrl) {
                         release();
-                        showError(message('widgetStartFailed', 'Could not start the payment. Please try again.'));
+                        showWooNotice(message('widgetStartFailed', 'Could not start the payment. Please try again.'));
                     }
                 });
             } catch {
                 release();
-                showError(message('widgetStartFailed', 'Could not start the payment. Please try again.'));
+                showWooNotice(message('widgetStartFailed', 'Could not start the payment. Please try again.'));
             }
             return false;
         }
