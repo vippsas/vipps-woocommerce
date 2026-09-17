@@ -4801,6 +4801,8 @@ else:
             if ($hash == $current_hash && (time() <= $cutoff )) {
                 $order = wc_get_order($orderid);
                 $status = $order ? $order->get_status() : false;
+                // IOK TODO/FIXME actually, if the order is pending/failed/cancelled and *identical* to our current productinfo, we could plausibly do a restart here. Would probably require careful checking though, and 
+                // a different flow. IOK 2026-09-17
                 if (in_array($status, ['on-hold', 'processing', 'completed'])) {
                     $header = __("Are you sure?",'woo-vipps');
                     $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
