@@ -4796,13 +4796,17 @@ else:
         // First, let's check if we need to confirm the purchase.
         $last_express_purchase_hash = WC()->session->get('woo_vipps_last_express');
         if ($last_express_purchase_hash) {
-            list($hash, $stamp) = explode(":", $last_express_purchase_hash);
+            list($hash, $orderid,  $stamp) = explode(":", $last_express_purchase_hash);
             $cutoff = $stamp + apply_filters('woo_vipps_recent_order_cutoff', (3*60));
             if ($hash == $current_hash && (time() <= $cutoff )) {
-                $header = __("Are you sure?",'woo-vipps');
-                $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
-                $elements['possible_duplicate'] = "<h1>$header</h1><p>$body</p>";
-                $this->log(__("It seems a customer is trying to re-order product(s) recently bought in the same session, asking user for confirmation", 'woo-vipps'), 'info');
+                $order = wc_get_order($orderid);
+                $status = $order ? $order->get_status() : false;
+                if (in_array($status, ['on-hold', 'processing', 'completed'])) {
+                    $header = __("Are you sure?",'woo-vipps');
+                    $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
+                    $elements['possible_duplicate'] = "<h1>$header</h1><p>$body</p>";
+                    $this->log(__("It seems a customer is trying to re-order product(s) recently bought in the same session, asking user for confirmation", 'woo-vipps'), 'info');
+                }
             }
         }
 
@@ -4915,7 +4919,8 @@ else:
 
         $result = $this->create_and_process_express_order();
         if ($result['ok'] == 1) {
-            WC()->session->set('woo_vipps_last_express', "$current_hash:" . time());
+            $orderid = $result['orderid'];
+            WC()->session->set('woo_vipps_last_express', "$current_hash:$orderid:" . time());
             WC()->session->save_data();
         }
         return $result;
@@ -5003,7 +5008,8 @@ else:
         // And if we're going to express now so let's note the order. IOK 2026-08-27. Now this assumes success, but *basically* I think this is ok.
         // We'll reset it on order failure I think. IOK 2026-08-20 FIXME
         if ($result['ok'] == 1) {
-            WC()->session->set('woo_vipps_last_express', "$current_hash:" . time());
+            $orderid = $result['orderid'];
+            WC()->session->set('woo_vipps_last_express', "$current_hash:$orderid:" . time());
             WC()->session->save_data();
         }
 
