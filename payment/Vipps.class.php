@@ -5302,8 +5302,10 @@ else:
         if (is_admin()) return;
         if (wp_doing_ajax()) return;
         if (defined('REST_REQUEST') && REST_REQUEST) return;
+        if (did_filter('woo_vipps_special_page_html')) return; // User has somehow added two shortcodes. IOK 2026-09-18
 
         $action = $_GET['action'] ?? '';
+        $html = "";
         switch ($action) {
             case 'wait_for_payment':
                 $html = $this->vipps_wait_for_payment();
@@ -5317,6 +5319,8 @@ else:
             default:
                 $html = '';
         }
+        // This is mostly to avoid this shortcode evaluating twice IOK 2026-09-18
+        $html = apply_filters('woo_vipps_special_page_html', $html, $action);
 
         // Remember, this is a shortcode, so the html must be returned, not echoed IOK 2026-09-11
         return $html;
@@ -5327,6 +5331,9 @@ else:
     // The argument passed must be a shareable link created for a given product - so this in effect acts as a landing page for 
     // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
+
+error_log(print_r(debug_backtrace(~DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS), true));
+
         add_filter('body_class', function ($classes) {
             $classes[] = 'vipps-express-checkout';
             $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
