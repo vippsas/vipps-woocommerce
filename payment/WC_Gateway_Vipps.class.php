@@ -3191,7 +3191,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                     if (is_array($shipping_table) && isset($shipping_table[$key])) {
                         $decoded = $is_base64 ? @base64_decode($shipping_table[$key]) : $shipping_table[$key];
-                        $shipping_rate = $decoded ? @unserialize($decoded) : null;
+
+                        // Ensure no shop manager has injected an evil object (that they would have had to add as a plugin) here. IOK 2026-09-18
+                        $shipping_rate = $decoded ? @unserialize($decoded, ['allowed_classes' => [WC_Shipping_Rate::class]]) : null;
+                        $shipping_rate = is_a($shipping_rate,'WC_Shipping_Rate') ? $shipping_rate : null;
+
                         if (!$shipping_rate) {
                             $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
                             $this->log(sprintf(__("Serialized data was %1\$s", 'woo-vipps'), $decoded),  'error');
