@@ -228,7 +228,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
                 $is_vipps_express = (bool) $order->get_meta( '_vipps_express_checkout' );
                 $has_billing_email = (bool) $order->get_billing_email();
-                if ( $is_vipps_express && ! $has_billing_email ) {
+                if ( $is_vipps_express) {
                     return false;
                 }
                 return $enabled;
