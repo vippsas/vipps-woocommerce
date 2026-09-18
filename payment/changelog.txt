@@ -1,4 +1,8 @@
 == Changelog ==
+= 2026-09-18 version 6.2.1 =
+Security fix for possible shop-manager level exploit
+Ensure certain events only happens once
+
 = 2026-09-15 version 6.2.0 =
 Replaced the fake-page mechanism with a modern WooCommerce-managed page for these actions
 

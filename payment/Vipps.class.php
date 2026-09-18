@@ -5483,8 +5483,10 @@ else:
         if (is_admin()) return;
         if (wp_doing_ajax()) return;
         if (defined('REST_REQUEST') && REST_REQUEST) return;
+        if (did_filter('woo_vipps_special_page_html')) return; // User has somehow added two shortcodes. IOK 2026-09-18
 
         $action = $_GET['action'] ?? '';
+        $html = "";
         switch ($action) {
             case 'wait_for_payment':
                 $html = $this->vipps_wait_for_payment();
@@ -5498,6 +5500,8 @@ else:
             default:
                 $html = '';
         }
+        // This is mostly to avoid this shortcode evaluating twice IOK 2026-09-18
+        $html = apply_filters('woo_vipps_special_page_html', $html, $action);
 
         // Remember, this is a shortcode, so the html must be returned, not echoed IOK 2026-09-11
         return $html;
