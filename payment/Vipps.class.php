@@ -5332,8 +5332,6 @@ else:
     // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
 
-error_log(print_r(debug_backtrace(~DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS), true));
-
         add_filter('body_class', function ($classes) {
             $classes[] = 'vipps-express-checkout';
             $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
