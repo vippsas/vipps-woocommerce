@@ -305,30 +305,12 @@ class Vipps {
 
        // We want this special page to have a certain title and maybe special scripts and so on, 
        // this gets run in template redirect for these pages.
-       add_action('woo_vipps_before_handling_special_page', function ($action) {
-            // Change title dynamically depending on action. LP 2026-09-02
-            add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
-
-            // If we are handling the 'wait for payment' action, we need to poll the order status before
-            // we start producing content IOK 2026-09-21
-            if ($action == 'wait_for_payment') {
-                $this->handle_payment_poll_and_redirect();
-            }
-
-            if (in_array($action, ['buy_product','do_express_checkout'])) {
-            wp_enqueue_script('vipps-purchase', plugins_url('js/vipps-purchase.js',__FILE__), ['vipps-gw'],  
-                    filemtime(dirname(__FILE__) . "/js/vipps-purchase.js"),
-                    ['in_footer'=>true]
-                    );
-            } 
-
-
-       });
+        add_action('woo_vipps_before_handling_special_page', array($this, 'pre_special_page_actions'));
 
        // Add an admin interface for this page as well IOK 2026-09-11
        add_action('woocommerce_settings_pages', array($this, 'woocommerce_settings_pages'));
-
     }
+
 
     public function rest_api_init ()  {
 
@@ -2722,6 +2704,31 @@ else:
             // Do the custom pre-load actions for these pages IOK 2026-09-11
             do_action('woo_vipps_before_handling_special_page', ($_GET['action'] ?? ""));
         }
+    }
+
+    // Ran in template redirect for the special page. IOK 2026-09-2
+    public function pre_special_page_actions ($action) {
+        // Change title dynamically depending on action. LP 2026-09-02
+        add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
+
+        // If we are handling the 'wait for payment' action, we need to poll the order status before
+        // we start producing content IOK 2026-09-21
+        if ($action == 'wait_for_payment') {
+            $this->handle_payment_poll_and_redirect();
+        }
+
+        // Some validation is required for this action
+        if ($action == 'do_express_checkout') {
+            $this->vipps_express_checkout_consistency_check();
+        }
+
+        // These two actions require an extra script
+        if (in_array($action, ['buy_product','do_express_checkout'])) {
+            wp_enqueue_script('vipps-purchase', plugins_url('js/vipps-purchase.js',__FILE__), ['vipps-gw'],  
+                    filemtime(dirname(__FILE__) . "/js/vipps-purchase.js"),
+                    ['in_footer'=>true]
+                    );
+        } 
     }
 
     // Dynamic special page title depending on endpoint/action, only frontend. LP 2026-09-02
@@ -5601,9 +5608,7 @@ else:
         return $content;
     }
 
-    //  This is a landing page for the express checkout of the normal cart - it is done like this because this could take time on slower hosts.
-    // IOK 2026-09-09 - nowadays this is only used for compatibility mode. It will automatically start express checkout of the current cart when reached.
-    public function vipps_express_checkout() {
+    public function vipps_express_checkout_consistency_check() {
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
         $ok = isset($_REQUEST['sec']) && wp_verify_nonce($_REQUEST['sec'],'express');
@@ -5623,6 +5628,18 @@ else:
             exit();
         }
 
+       add_filter('woo_vipps_express_checkout_consistent', '__return_true');
+    }
+
+    //  This is a landing page for the express checkout of the normal cart - it is done like this because this could take time on slower hosts.
+    // IOK 2026-09-09 - nowadays this is only used for compatibility mode. It will automatically start express checkout of the current cart when reached.
+    public function vipps_express_checkout() {
+        // Some checks are made in template_redirect, we check here if they are ok IOK 2026-09-21
+        if (!apply_filters('woo_vipps_express_checkout_consistent', false)) {
+             $content = __('Link expired, please try again', 'woo-vipps');
+             return $content;
+        }
+         
         do_action('woo_vipps_express_checkout_page');
 
         $sec = esc_attr($_REQUEST['sec']);
@@ -5649,8 +5666,6 @@ else:
       </a>
   </div>
 ';
-        $content .= '<script id="vipps-purchase-js" src="' . plugins_url('js/vipps-purchase.js',__FILE__) . '"></script>';
-
 
         return $content;
     }
