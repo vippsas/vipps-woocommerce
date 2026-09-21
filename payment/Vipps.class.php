@@ -315,6 +315,14 @@ class Vipps {
                 $this->handle_payment_poll_and_redirect();
             }
 
+            if (in_array($action, ['buy_product','do_express_checkout'])) {
+            wp_enqueue_script('vipps-purchase', plugins_url('js/vipps-purchase.js',__FILE__), ['vipps-gw'],  
+                    filemtime(dirname(__FILE__) . "/js/vipps-purchase.js"),
+                    ['in_footer'=>true]
+                    );
+            } 
+
+
        });
 
        // Add an admin interface for this page as well IOK 2026-09-11
@@ -1776,7 +1784,7 @@ EOF;
     public function wp_register_scripts () {
         //  We are going to use the 'hooks' library introduced by WP 5.1, but we still support WP 4.7. So if this isn't enqueues 
         //  (which it only is if Gutenberg is active) or not provided at all, add it now.
-        wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks', 'wp-api-fetch','vipps-widget-sdk'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+        wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks', 'wp-api-fetch','vipps-widget-sdk'),filemtime(dirname(__FILE__) . "/js/vipps.js"), true);
 
         // Badges - web components provided by Vipps MobilePay to display payment options in-store.
         wp_register_script('vipps-onsite-messageing',
@@ -5587,7 +5595,6 @@ else:
           </vipps-mobilepay-button>
       </a>
   </div>";
-        $content .= '<script id="vipps-purchase-js" src="' . plugins_url('js/vipps-purchase.js',__FILE__) . '"></script>';
 
         return $content;
     }
