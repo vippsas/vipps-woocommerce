@@ -4261,7 +4261,9 @@ else:
             return $url;
         }
         $url = $this->express_checkout_url();
-        $url = wp_nonce_url($url,'express','sec');
+        // At this point, there is always a query argument here. IOK 2026-09-21
+        $nonce = wp_create_nonce('express');
+        $url = $url . "&sec=$nonce";
 
         return $url;
     }
