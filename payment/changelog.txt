@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-09-21 version 6.2.2 =
+Fix for the wait-for-payment page for certain themes
+
 = 2026-09-18 version 6.2.1 =
 Security fix for possible shop-manager level exploit
 Ensure certain events only happens once
