@@ -311,17 +311,7 @@ class Vipps {
 
        // We want this special page to have a certain title and maybe special scripts and so on, 
        // this gets run in template redirect for these pages.
-       add_action('woo_vipps_before_handling_special_page', function ($action) {
-            // Change title dynamically depending on action. LP 2026-09-02
-            add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
-
-            // If we are handling the 'wait for payment' action, we need to poll the order status before
-            // we start producing content IOK 2026-09-21
-            if ($action == 'wait_for_payment') {
-                $this->handle_payment_poll_and_redirect();
-            }
-
-       });
+        add_action('woo_vipps_before_handling_special_page', array($this, 'pre_special_page_actions'));
 
        // Add an admin interface for this page as well IOK 2026-09-11
        add_action('woocommerce_settings_pages', array($this, 'woocommerce_settings_pages'));
@@ -2660,6 +2650,24 @@ else:
             do_action('woo_vipps_before_handling_special_page', ($_GET['action'] ?? ""));
         }
     }
+
+    // Ran in template redirect for the special page. IOK 2026-09-2
+    public function pre_special_page_actions ($action) {
+        // Change title dynamically depending on action. LP 2026-09-02
+        add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
+
+        // If we are handling the 'wait for payment' action, we need to poll the order status before
+        // we start producing content IOK 2026-09-21
+        if ($action == 'wait_for_payment') {
+            $this->handle_payment_poll_and_redirect();
+        }
+
+        // Some validation is required for this action
+        if ($action == 'do_express_checkout') {
+            $this->vipps_express_checkout_consistency_check();
+        }
+    }
+
 
     // Dynamic special page title depending on endpoint/action, only frontend. LP 2026-09-02
     public function vipps_special_page_endpoint_title($title, $postid = 0) {
@@ -5397,12 +5405,10 @@ else:
         return $this->express_checkout_page_html(true,'do_single_product_express_checkout',$args);
     }
 
-    //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.
-    public function vipps_express_checkout() {
+    public function vipps_express_checkout_consistency_check() {
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
         $ok = isset($_REQUEST['sec']) && wp_verify_nonce($_REQUEST['sec'],'express');
-
 
         $backurl = wp_validate_redirect(@$_SERVER['HTTP_REFERER']);
         if (!$backurl) $backurl = home_url();
@@ -5417,6 +5423,17 @@ else:
             wc_add_notice(__('Your shopping cart is empty','woo-vipps'),'error');
             wp_redirect($backurl);
             exit();
+        }
+
+       add_filter('woo_vipps_express_checkout_consistent', '__return_true');
+    }
+
+    //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.
+    public function vipps_express_checkout() {
+        // Some checks are made in template_redirect, we check here if they are ok IOK 2026-09-21
+        if (!apply_filters('woo_vipps_express_checkout_consistent', false)) {
+             $content = __('Link expired, please try again', 'woo-vipps');
+             return $content;
         }
 
         add_filter('body_class', function ($classes) {
