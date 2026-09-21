@@ -68,6 +68,7 @@
     window.ensureVippsWidgetHostStarted = ensureVippsWidgetHostStarted;
 })();
 (() => {
+    /** Build the reusable WooCommerce confirmation dialog before any checkout starts. */
     function createVippsMobilepayDialog() {
         const actionDialog = document.createElement("dialog");
         const actionForm = document.createElement("form");
@@ -129,20 +130,22 @@
  * script tags rather than JavaScript modules.
  */
 (() => {
+    /** Track a payment handoff so a page revisited after an app switch is refreshed. */
     function createVippsPaymentHandoff(options = {}) {
         const storageKey = options.storageKey || "vippsPaymentHandoff";
         const maxAgeMs = options.maxAgeMs || 30 * 60 * 1000;
         const disabledSelector = options.disabledSelector ||
             "[data-checkout-button], [data-cart-button]";
+        const disabledButtonStates = new Map();
 
+        /** Read only a valid, recent marker; stale or malformed state is discarded. */
         function get() {
-            const raw = sessionStorage.getItem(storageKey);
-
-            if (!raw) {
-                return null;
-            }
-
             try {
+                const raw = sessionStorage.getItem(storageKey);
+                if (!raw) {
+                    return null;
+                }
+
                 const handoff = JSON.parse(raw);
 
                 if (!handoff.createdAt || Date.now() - handoff.createdAt >= maxAgeMs) {
@@ -157,40 +160,80 @@
             }
         }
 
+        /** Record that an order has a payment URL and may outlive this page view. */
         function mark(result = {}) {
-            sessionStorage.setItem(storageKey, JSON.stringify({
-                createdAt: Date.now(),
-                path: location.pathname,
-                paymentReference: result.paymentReference || result.reference || null,
-                refreshedPaths: []
-            }));
+            try {
+                sessionStorage.setItem(storageKey, JSON.stringify({
+                    createdAt: Date.now(),
+                    path: location.pathname,
+                    paymentReference: result.paymentReference || result.reference || null,
+                    refreshedPaths: []
+                }));
+            } catch {
+                // Storage is optional; the payment URL must still reach the SDK.
+            }
         }
 
+        /** Remove the marker when the local attempt ends, including after cancellation. */
         function clear() {
-            sessionStorage.removeItem(storageKey);
+            try {
+                sessionStorage.removeItem(storageKey);
+            } catch {
+                // There is no persisted handoff to clear when storage is blocked.
+            }
         }
 
-        function setDisabled(disabled) {
+        /** Prevent competing cart or checkout actions while payment is active. */
+        function activate() {
+            if (document.documentElement.classList.contains("payment-handoff-active")) {
+                return;
+            }
+
+            document.documentElement.classList.add("payment-handoff-active");
             document.querySelectorAll(disabledSelector).forEach((button) => {
+                disabledButtonStates.set(button, {
+                    disabled: "disabled" in button ? button.disabled : undefined,
+                    disabledAttribute: button.getAttribute("disabled"),
+                    ariaDisabled: button.getAttribute("aria-disabled")
+                });
+
                 if ("disabled" in button) {
-                    button.disabled = disabled;
+                    button.disabled = true;
                 }
 
-                if (disabled) {
-                    button.setAttribute("disabled", "");
-                    button.setAttribute("aria-disabled", "true");
-                } else {
-                    button.removeAttribute("disabled");
-                    button.removeAttribute("aria-disabled");
-                }
+                button.setAttribute("disabled", "");
+                button.setAttribute("aria-disabled", "true");
             });
         }
 
-        function activate() {
-            document.documentElement.classList.add("payment-handoff-active");
-            setDisabled(true);
+        /** Restore exactly the button states that existed before the handoff. */
+        function deactivate() {
+            if (!document.documentElement.classList.contains("payment-handoff-active")) {
+                return;
+            }
+
+            document.documentElement.classList.remove("payment-handoff-active");
+            disabledButtonStates.forEach((state, button) => {
+                if (state.disabled !== undefined) {
+                    button.disabled = state.disabled;
+                }
+
+                if (state.disabledAttribute === null) {
+                    button.removeAttribute("disabled");
+                } else {
+                    button.setAttribute("disabled", state.disabledAttribute);
+                }
+
+                if (state.ariaDisabled === null) {
+                    button.removeAttribute("aria-disabled");
+                } else {
+                    button.setAttribute("aria-disabled", state.ariaDisabled);
+                }
+            });
+            disabledButtonStates.clear();
         }
 
+        /** Refresh a revisited page once per path to obtain current order state. */
         function reloadOnceForStalePage() {
             const handoff = get();
 
@@ -206,19 +249,26 @@
                 return;
             }
 
-            sessionStorage.setItem(storageKey, JSON.stringify({
-                ...handoff,
-                refreshedPaths: [...refreshedPaths, location.pathname]
-            }));
+            try {
+                sessionStorage.setItem(storageKey, JSON.stringify({
+                    ...handoff,
+                    refreshedPaths: [...refreshedPaths, location.pathname]
+                }));
+            } catch {
+                // Reload only when the marker can prevent a reload loop.
+                return;
+            }
 
             location.reload();
         }
 
+        /** Identify back navigation and bfcache restores that can show stale HTML. */
         function wasHistoryRestore(event) {
             const navigation = performance.getEntriesByType("navigation")[0];
             return event.persisted || navigation?.type === "back_forward";
         }
 
+        /** Refresh restored pages; discard a marker on an ordinary fresh load. */
         function handlePageshow(event) {
             const handoff = get();
 
@@ -247,6 +297,7 @@
             get,
             clear,
             activate,
+            deactivate,
             reloadOnceForStalePage
         };
     }
@@ -278,6 +329,7 @@
     const dialogUi = window.createVippsMobilepayDialog();
     const checkout = createCheckoutController();
 
+    /** Prefix diagnostic warnings so checkout failures are easy to find. */
     function warnVippsExpress(message, data) {
         if (data === undefined) {
             console.warn("[Vipps Express]", message);
@@ -287,6 +339,7 @@
         console.warn("[Vipps Express]", message, data);
     }
 
+    /** Prefix diagnostic errors while retaining optional response details. */
     function errorVippsExpress(message, data) {
         if (data === undefined) {
             console.error("[Vipps Express]", message);
@@ -296,6 +349,7 @@
         console.error("[Vipps Express]", message, data);
     }
 
+    /** Resolve localized text and substitute the plugin's positional values. */
     function translate(key, fallback, ...values) {
         let message = locale[key] || fallback;
 
@@ -306,6 +360,7 @@
         return message;
     }
 
+    /** Notify the automatic-purchase page about an attempt's UI state. */
     function emitVippsPurchaseEvent(name, detail = {}) {
         document.dispatchEvent(new CustomEvent(name, { detail }));
     }
@@ -328,6 +383,7 @@
     subscribeToCartChanges();
     body.dispatchEvent(new Event("vippsInit"));
 
+    /** Run initialization once when both native and jQuery listeners see an event. */
     function handleVippsInit(event) {
         const eventObject = event?.originalEvent || event;
 
@@ -339,6 +395,7 @@
         vippsInit();
     }
 
+    /** Mark current buttons ready and notify integrations registered with WP hooks. */
     function vippsInit() {
         document.querySelectorAll(
             ".button.single-product.vipps-buy-now, .vipps-express-checkout"
@@ -349,11 +406,14 @@
         wp.hooks.doAction("vippsInit");
     }
 
+    /** Own one express attempt from order creation through SDK handoff or retry. */
     function createCheckoutController() {
         let locked = false;
         let currentAttempt = null;
         let nextAttemptId = 0;
         let dialogBusy = false;
+        let dialogConfirmed = false;
+        let paymentSucceeded = false;
 
         if (typeof window.ensureVippsWidgetHostStarted === "function") {
             window.ensureVippsWidgetHostStarted();
@@ -361,6 +421,8 @@
             vippsSdk.host().start();
         }
 
+        // Resolve a fresh URL for each SDK opening, including a retry after
+        // the confirmation form adds fields to the same transaction.
         const trigger = vippsSdk.trigger(async () => {
             if (!currentAttempt) {
                 warnVippsExpress("Trigger resolver has no active attempt; returning null.");
@@ -370,6 +432,8 @@
             const attemptId = currentAttempt.id;
             let result;
 
+            // The attempt is locked while WooCommerce creates the order and
+            // requests a payment session; no payment URL exists yet.
             result = await createPaymentSession(
                 currentAttempt.transaction,
                 currentAttempt.path
@@ -387,6 +451,7 @@
 
             if (Number(result.ok) === 1) {
                 if (!result.url) {
+                    // Order creation reported success, but payment cannot start.
                     errorVippsExpress("Successful express checkout response has no payment URL.", {
                         result,
                         currentAttempt
@@ -401,13 +466,20 @@
                     throw new Error(message);
                 }
 
+                // The order has a payment URL, but payment is still in progress.
+                // Keep the attempt locked and the purchase button hidden beneath
+                // the desktop modal (or while the customer switches apps).
                 paymentHandoff?.mark(result);
-                clearAttempt();
+                // The SDK is taking over, so the order creation spinner can stop.
+                // Do not emit vippsPurchaseFinished at this handoff.
+                setPurchaseButtonsBusy(false);
                 paymentHandoff?.activate();
                 return result.url;
             }
 
             if (Number(result.ok) === 2) {
+                // WooCommerce needs more input before it can return a payment URL.
+                // Keep this attempt so confirmation can retry the request.
                 showActionRequiredDialog(result.html || "");
                 return null;
             }
@@ -447,7 +519,9 @@
 
         trigger
             .on("success", (close, redirectUrl) => {
-                clearAttempt();
+                // Payment succeeded. Keep the purchase hidden while the SDK
+                // closes its modal and the return URL takes over.
+                paymentSucceeded = true;
                 close();
 
                 if (redirectUrl) {
@@ -455,6 +529,8 @@
                 }
             })
             .on("cancel", (close, redirectUrl) => {
+                // Payment was canceled; the local attempt can end and retry can
+                // become available if the customer stays on this page.
                 clearAttempt();
                 close();
 
@@ -463,7 +539,11 @@
                 }
             })
             .on("close", () => {
-                clearAttempt();
+                // A close without success ends the local attempt. Closing after
+                // success must not reveal the purchase button again.
+                if (!paymentSucceeded) {
+                    clearAttempt();
+                }
             })
             .on("error", (error) => {
                 errorVippsExpress("Widget SDK error event.", error);
@@ -476,6 +556,8 @@
 
                 const button = currentAttempt?.button;
                 if (button) {
+                    // The SDK could not complete the handoff. End the attempt
+                    // and show the error so the customer can retry.
                     clearAttempt();
                     showError(
                         error.message || translate("vippsCheckoutFailed", "Vipps checkout failed"),
@@ -485,6 +567,7 @@
                 console.error(error);
             });
 
+        /** Lock a new attempt and show loading state before requesting an order. */
         function begin(transaction, button, event, path) {
             if (locked) {
                 warnVippsExpress("Attempt already locked; refusing new attempt.", {
@@ -495,7 +578,10 @@
                 return false;
             }
 
+            // A new attempt starts before the order request; prevent duplicate
+            // clicks through the payment handoff until this attempt ends.
             locked = true;
+            paymentSucceeded = false;
             currentAttempt = {
                 id: ++nextAttemptId,
                 transaction,
@@ -512,6 +598,7 @@
             return true;
         }
 
+        /** Carry confirmed form fields into the next order request. */
         function addPostData(extraPostData) {
             if (!currentAttempt) {
                 throw new Error("No active checkout attempt");
@@ -523,6 +610,7 @@
             };
         }
 
+        /** Let the SDK request a URL and open payment, handling launch failures. */
         async function start() {
             if (!currentAttempt) {
                 throw new Error("No active checkout attempt");
@@ -551,11 +639,14 @@
             }
         }
 
+        /** Release local state and announce that the page can offer a retry. */
         function clearAttempt() {
             const attempt = currentAttempt;
             locked = false;
             currentAttempt = null;
             dialogBusy = false;
+            paymentHandoff?.clear();
+            paymentHandoff?.deactivate();
             setPurchaseButtonsBusy(false);
             dialogUi.confirm.disabled = false;
             dialogUi.confirm.removeAttribute("aria-disabled");
@@ -568,24 +659,32 @@
             }
         }
 
+        /** Present server-requested fields while keeping the order attempt active. */
         function showActionRequiredDialog(html) {
             dialogUi.html.innerHTML = html;
             clearDialogValidation();
             dialogUi.confirm.disabled = false;
             dialogUi.confirm.removeAttribute("aria-disabled");
             dialogBusy = false;
+            dialogConfirmed = false;
             dialogUi.dialog.showModal();
         }
 
+        /** Close the form; its close listener performs common cancellation cleanup. */
         function cancelActionRequired() {
             if (dialogUi.dialog.open) {
                 dialogUi.dialog.close();
             }
-
-            clearAttempt();
         }
 
         dialogUi.cancel.addEventListener("click", cancelActionRequired);
+        dialogUi.dialog.addEventListener("close", () => {
+            // Escape, the cancel button, and programmatic closes all arrive here.
+            // Only confirmation continues the current order request.
+            if (!dialogConfirmed) {
+                clearAttempt();
+            }
+        });
         dialogUi.confirm.addEventListener("click", async () => {
             if (dialogBusy || !currentAttempt) {
                 return;
@@ -604,6 +703,7 @@
                 confirmed: 1
             });
 
+            dialogConfirmed = true;
             dialogUi.dialog.close();
             await start();
         });
@@ -613,6 +713,7 @@
 
         return { begin, addPostData, start };
 
+        /** Combine browser, terms, and integration validation before resubmitting. */
         function validateConfirmationForm() {
             clearDialogValidation();
 
@@ -648,6 +749,7 @@
             return Boolean(validation);
         }
 
+        /** Require acceptance when WooCommerce included a terms checkbox. */
         function validateTermsAndConditions(form) {
             const termsBoxes = Array.from(
                 form.querySelectorAll('.input-checkbox[name="terms"], input[name="terms"]')
@@ -680,6 +782,7 @@
             return accepted;
         }
 
+        /** Remove previous validation feedback before another confirmation attempt. */
         function clearDialogValidation() {
             dialogUi.message.textContent = "";
             dialogUi.message.hidden = true;
@@ -694,12 +797,14 @@
                 });
         }
 
+        /** Show a single accessible explanation for invalid confirmation input. */
         function setDialogValidationMessage(message) {
             dialogUi.message.textContent = message;
             dialogUi.message.hidden = false;
         }
     }
 
+    /** Send the normalized express transaction to the plugin's REST endpoint. */
     async function createPaymentSession(transaction, path) {
         const result = await wp.apiFetch({
             path,
@@ -715,6 +820,7 @@
 
     // Using the Vipps SDK, get a payment URL from the new REST endpoint and let
     // the SDK start the express checkout session. IOK 2026-09-04
+    /** Route clicks from supported express buttons to the correct order flow. */
     async function handlePurchaseClick(event) {
         const wrapper = event.target.closest?.(
             ".button.single-product.vipps-buy-now.initialized, " +
@@ -739,6 +845,7 @@
         await handleSingleProductPurchase(wrapper, event);
     }
 
+    /** Start checkout for the current cart after legacy extension hooks run. */
     async function handleCartPurchase(wrapper, event) {
         if (wrapper.classList.contains("disabled") || wrapper.hasAttribute("disabled")) {
             showError(translate(
@@ -772,6 +879,7 @@
         await checkout.start();
     }
 
+    /** Build a one-product order, preserving compatibility hooks and fallbacks. */
     async function handleSingleProductPurchase(wrapper, event) {
         if (wrapper.classList.contains("disabled") || wrapper.hasAttribute("disabled")) {
             showVariationMessage(wrapper);
@@ -828,6 +936,7 @@
         await checkout.start();
     }
 
+    /** Reject one-product requests that cannot identify a WooCommerce product. */
     function hasProductIdentifier(transaction) {
         return Boolean(
             transaction?.product_id ||
@@ -836,6 +945,7 @@
         );
     }
 
+    /** Gather product and form data in the shape expected by older filters. */
     function buildTransaction(wrapper) {
         // Older buttons may carry product data directly on the button. Preserve
         // both jQuery-style underscore attributes and modern dataset names.
@@ -879,6 +989,7 @@
         return { legacyData };
     }
 
+    /** Normalize HTML data attributes from current and older button markup. */
     function getElementData(element) {
         if (!element) {
             return {};
@@ -903,6 +1014,7 @@
         };
     }
 
+    /** Move filtered legacy fields into the REST endpoint's transaction shape. */
     function transactionFromLegacyData(data) {
         const source = data || {};
         const post = { ...(source.post || {}) };
@@ -935,6 +1047,7 @@
         };
     }
 
+    /** Attach browser context shared by cart and single-product requests. */
     function transactionFromPostData(post) {
         return {
             cookies: getCookies(),
@@ -942,6 +1055,7 @@
         };
     }
 
+    /** Pass eligible browser cookies to the express endpoint for session context. */
     function getCookies() {
         const cookies = {};
 
@@ -960,6 +1074,7 @@
         return cookies;
     }
 
+    /** Decode a cookie component without failing on malformed percent escapes. */
     function decodeCookieValue(value) {
         try {
             return decodeURIComponent(value);
@@ -968,6 +1083,7 @@
         }
     }
 
+    /** Include WooCommerce attribution fields when the merchant enabled them. */
     function addOrderAttributionData(post) {
         // order attribution can be turned on or off in the settings because of some sites having issues with it in the past. IOK 2026-09-10
         if (config.expressOrderAttribution  != "yes") {
@@ -998,6 +1114,7 @@
         return post;
     }
 
+    /** Delegate buying to the normal add-to-cart button for compatible plugins. */
     function runCompatibilityAction(wrapper, event) {
         const form = wrapper.closest("form");
         const addToCartButton = form?.querySelector(".single_add_to_cart_button");
@@ -1036,6 +1153,7 @@
         action();
     }
 
+    /** Convert confirmation fields to post data, excluding add-to-cart controls. */
     function serializeForm(form) {
         const data = {};
 
@@ -1048,6 +1166,7 @@
         return data;
     }
 
+    /** Synchronize button loading state with the shared page overlay. */
     function setPurchaseButtonsBusy(busy) {
         document.querySelectorAll(".vipps-buy-now, .vipps-express-checkout").forEach((wrapper) => {
             wrapper.classList.toggle("loading", busy);
@@ -1073,6 +1192,7 @@
         window.setVippsPaymentBusy(busy, "express");
     }
 
+    /** Follow WooCommerce variation and bundle availability on product pages. */
     function bindVariationEvents() {
         const $ = window.jQuery;
         if (!$) return;
@@ -1118,6 +1238,7 @@
         });
     }
 
+    /** Keep wrapper styling and its disabled attribute in agreement. */
     function setPurchaseButtonDisabled(wrapper, disabled) {
         wrapper.classList.toggle("disabled", disabled);
 
@@ -1128,6 +1249,7 @@
         }
     }
 
+    /** Update the mini-cart checkout link when the Store API supplies a new URL. */
     function subscribeToCartChanges() {
         if (!wp.data) return;
 
@@ -1147,6 +1269,7 @@
         });
     }
 
+    /** Explain whether a variation is unselected or unavailable. */
     function showVariationMessage(wrapper) {
         const params = window.wc_add_to_cart_variation_params;
         const message = wrapper.classList.contains("variation-found")
@@ -1161,6 +1284,7 @@
         showError(message, wrapper);
     }
 
+    /** Remove prior Vipps errors before a new attempt or error is shown. */
     function removeErrorMessages() {
         document.querySelectorAll(".woocommerce-error.vipps-error").forEach((element) => {
             element.remove();
@@ -1171,6 +1295,7 @@
         wp.hooks.doAction("vippsRemoveErrorMessages");
     }
 
+    /** Publish an error to the purchase page, integrations, and modal UI. */
     function showError(message, wrapper) {
         removeErrorMessages();
 
@@ -1188,6 +1313,7 @@
         showErrorDialog(markup);
     }
 
+    /** Present checkout errors where cart and mini-cart layouts can show them. */
     function showErrorDialog(markup) {
         const dialog = ensureErrorDialog();
         dialog.content.innerHTML = markup;
@@ -1196,6 +1322,7 @@
 
     // Cart and minicart layouts often render awkwardly with inline WooCommerce
     // errors, so show checkout errors in a small dialog instead. IOK 2026-09-04
+    /** Reuse one modal error container across repeated purchase attempts. */
     function ensureErrorDialog() {
         let dialog = document.querySelector("#vipps-error-dialog");
         if (dialog) {
@@ -1226,6 +1353,7 @@
         return { dialog, content };
     }
 
+    /** Notify integrations through both native and jQuery event systems. */
     function emitDocumentEvent(name, args = []) {
         document.dispatchEvent(new CustomEvent(name, { detail: args }));
 
@@ -1234,6 +1362,7 @@
         }
     }
 
+    /** Treat server and validation messages as text before building error HTML. */
     function escapeHtml(value) {
         const element = document.createElement("div");
         element.textContent = String(value || "");
