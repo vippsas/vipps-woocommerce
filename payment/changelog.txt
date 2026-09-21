@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-09-21 version 6.2.3 =
+Fix for compatibility mode
+
 = 2026-09-21 version 6.2.2 =
 Fix for the wait-for-payment page for certain themes
 

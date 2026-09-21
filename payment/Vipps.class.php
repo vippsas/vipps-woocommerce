@@ -2721,7 +2721,6 @@ else:
         if ($action == 'do_express_checkout') {
             $this->vipps_express_checkout_consistency_check();
         }
-
         // These two actions require an extra script
         if (in_array($action, ['buy_product','do_express_checkout'])) {
             wp_enqueue_script('vipps-purchase', plugins_url('js/vipps-purchase.js',__FILE__), ['vipps-gw'],  
