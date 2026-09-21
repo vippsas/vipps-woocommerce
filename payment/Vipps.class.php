@@ -314,6 +314,13 @@ class Vipps {
        add_action('woo_vipps_before_handling_special_page', function ($action) {
             // Change title dynamically depending on action. LP 2026-09-02
             add_filter('the_title', [$this, 'vipps_special_page_endpoint_title'], 10, 2);
+
+            // If we are handling the 'wait for payment' action, we need to poll the order status before
+            // we start producing content IOK 2026-09-21
+            if ($action == 'wait_for_payment') {
+                $this->handle_payment_poll_and_redirect();
+            }
+
        });
 
        // Add an admin interface for this page as well IOK 2026-09-11
@@ -2650,7 +2657,7 @@ else:
             // dont cache special page. LP 2026-08-25
             $this->nocache();
             // Do the custom pre-load actions for these pages IOK 2026-09-11
-            do_action('woo_vipps_before_handling_special_page', $_GET['action']);
+            do_action('woo_vipps_before_handling_special_page', ($_GET['action'] ?? ""));
         }
     }
 
@@ -5617,10 +5624,9 @@ else:
     }
 
 
-
-    public function vipps_wait_for_payment() {
+    // Called in template_redirect before we get to the wait-for-payment page IOK 2026-09-21
+    private function handle_payment_poll_and_redirect () {
         $orderid = WC()->session->get('_vipps_pending_order');
-
         $order = null;
         $gw = $this->gateway();
 
@@ -5634,7 +5640,7 @@ else:
         // simulating the session with that.
         // IOK 2019-11-19, changed to using GET 2023-01-23
         if ($no_session && $limited_session) {
-            $orderid = intval(@$_GET['id']);
+            $orderid = intval($_GET['id'] ?? false);
         }
         if ($orderid) {
             clean_post_cache($orderid);
@@ -5654,8 +5660,6 @@ else:
                 $session->set('_vipps_pending_order', $orderid);
             }
         }
-
-        do_action('woo_vipps_wait_for_payment_page',$order);
 
         $deleted_order=0;
         if ($orderid && !$order) {
@@ -5683,7 +5687,7 @@ else:
                 $order = wc_get_order($orderid); // Reload order object
             }
         } else {
-                // No need to do anyting here. IOK 2020-01-26
+            // No need to do anyting here. IOK 2020-01-26
         }
 
         $payment = 'notchecked';
@@ -5701,7 +5705,6 @@ else:
         }
 
         // We are done, but in failure. Don't poll.
-        $content = "";
         $failure_redirect = apply_filters('woo_vipps_order_failed_redirect', '', $orderid);
 
         // Status is failed; still send to return url (as of now /order-recieved), the text there will depend on the status.
@@ -5711,12 +5714,42 @@ else:
             wp_redirect($failure_redirect);
             exit();
         }
+
         if ($status == 'cancelled' || $payment == 'cancelled') {
             $this->maybe_restore_cart($orderid,'failed');
             if ($failure_redirect){
                 wp_redirect($failure_redirect);
                 exit();
             }
+        } else {
+            // If not, enqueue the status checker IOK 2026-09-21
+            wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
+        }
+
+        // Communicate this to the shortcode IOK 2026-09-21
+        add_filter('woo_vipps_wait_for_payment_status', function () use($orderid, $status, $payment) {
+            return ['orderid'=>$orderid, 'status'=>$status, 'payment'=>$payment];
+        });
+
+    }
+
+    public function vipps_wait_for_payment() {
+
+        // This will have been computed in template_redirect, but the status will be either still pending or failed. IOK 2026-09-21
+        $data = apply_filters('woo_vipps_wait_for_payment_status', []);
+
+        $orderid = $data['orderid'] ?? 0;
+        $status = $data['status'] ?? "";
+        $payment = $data['payment'] ?? "";
+
+        $order = wc_get_order($orderid);
+        if (!$order) wp_die(__('Unknown order', 'woo-vipps'));
+
+        do_action('woo_vipps_wait_for_payment_page',$order);
+        $gw = $this->gateway();
+
+        $content = "";
+        if ($status == 'cancelled' || $payment == 'cancelled') {
             $content .= "<div id=failure><p>". __('Order cancelled','woo-vipps') . '</p>';
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
             $content .= "</div>";
@@ -5724,10 +5757,7 @@ else:
         }
 
         // Still pending and order is supposed to exist, so wait for Vipps. This happens all the time, so logging is removed. IOK 2018-09-27
-
         // Otherwise, go to a page waiting/polling for the callback. IOK 2018-05-16
-        wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
-
         $signal = $this->callbackSignal($order);
         $content = "";
         $content .= "<div id='waiting'><p>" . sprintf(__('Waiting for confirmation of purchase from %1$s','woo-vipps'), $this->get_payment_method_name());
@@ -5737,13 +5767,14 @@ else:
 
         $content .= "</p></div>";
 
-        // We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
-        $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
-        $content .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
+        $failure_redirect = apply_filters('woo_vipps_order_failed_redirect', '', $orderid);
+
+        // Carry the order status to the checking script IOK 2026-09-21 
+        $content .= "<form id='vippsdata'>"; 
         $content .= "<input type='hidden' id='fkey' name='fkey' value='".htmlspecialchars($signalurl)."'>";
         $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
         $content .= "<input type='hidden' name='action' value='check_order_status'>";
-        $content .= wp_nonce_field('vippsstatus','sec',1,false); 
+        $content .= wp_nonce_field('vippsstatus','sec',1,false);
         $content .= "</form>";
 
 
