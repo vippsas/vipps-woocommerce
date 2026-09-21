@@ -4308,7 +4308,9 @@ else:
             return $url;
         }
         $url = $this->express_checkout_url();
-        $url = wp_nonce_url($url,'express','sec');
+        // At this point, there is always a query argument here. IOK 2026-09-21
+        $nonce = wp_create_nonce('express');
+        $url = $url . "&sec=$nonce";
 
         return $url;
     }
@@ -5605,7 +5607,6 @@ else:
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
         $ok = isset($_REQUEST['sec']) && wp_verify_nonce($_REQUEST['sec'],'express');
-
 
         $backurl = wp_validate_redirect(@$_SERVER['HTTP_REFERER']);
         if (!$backurl) $backurl = home_url();
