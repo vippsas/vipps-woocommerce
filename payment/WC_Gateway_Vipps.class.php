@@ -3872,7 +3872,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $contents = WC()->cart->get_cart_contents();
         $contents = apply_filters('woo_vipps_create_express_checkout_cart_contents',$contents);
         try {
-            $cart_hash = md5(json_encode(wc_clean($contents)) . WC()->cart->total);
+            $cart_hash = WC()->cart->get_cart_hash();
             $order = new WC_Order();
             $order->set_status('pending');
             $order->set_payment_method($this);
