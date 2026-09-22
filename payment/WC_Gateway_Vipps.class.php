@@ -3872,7 +3872,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $contents = WC()->cart->get_cart_contents();
         $contents = apply_filters('woo_vipps_create_express_checkout_cart_contents',$contents);
         try {
-            $cart_hash = md5(json_encode(wc_clean($contents)) . WC()->cart->total);
+            $cart_hash = WC()->cart->get_cart_hash();
             $order = new WC_Order();
             $order->set_status('pending');
             $order->set_payment_method($this);
@@ -3885,6 +3885,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // We use 'checkout' as the created_via key as per requests, but allow merchants to use their own. IOK 2022-09-15
             $created_via = apply_filters('woo_vipps_express_checkout_created_via', 'checkout', $order, $ischeckout);
             $order->set_created_via($created_via);
+            $order->set_cart_hash($cart_hash);
 
             $dummy = sprintf(__('Vipps Express Checkout', 'woo-vipps')); //  this is so gettext will find this string.
             $dummy = sprintf(__('Vipps Checkout', 'woo-vipps')); //  this is so gettext will find this string.
