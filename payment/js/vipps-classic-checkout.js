@@ -139,8 +139,14 @@ jQuery(($) => {
             $form.removeClass('processing').removeAttr('aria-busy');
         }
 
-        function navigate(url) {
-            setBusy(false);
+        function navigate(url, successful = false) {
+            if (successful && url) {
+                // The widget is about to close, but this page remains visible until navigation.
+                window.showVippsSuccessRedirectOverlay('order-pay-redirect');
+                window.setVippsPaymentBusy(false, owner);
+            } else {
+                setBusy(false);
+            }
             window.location.assign(url || window.location.href);
         }
 
@@ -208,10 +214,15 @@ jQuery(($) => {
             try {
                 window.ensureVippsWidgetHostStarted();
                 current.trigger = window.vipps.trigger(() => requestPayment(current))
-                    .on('success', (close, url) => { close(); navigate(url || current.paymentUrl); })
+                    .on('success', (close, url) => {
+                        current.phase = 'leaving';
+                        navigate(url || current.paymentUrl, Boolean(url));
+                        close();
+                    })
                     .on('cancel', (close, url) => { close(); navigate(url || window.location.href); })
                     .on('close', () => {
                         if (attempt !== current) return;
+                        if (current.phase === 'leaving') return;
                         if (current.phase === 'submitting') {
                             current.closed = true;
                         } else {
@@ -237,6 +248,13 @@ jQuery(($) => {
         }
 
         $form.on('submit.vippsOrderPay', submit);
+        // Returning through browser history restores the covered page and its
+        // disabled controls; reload to reconcile the order's current status.
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted && attempt?.phase === 'leaving') {
+                window.location.reload();
+            }
+        });
     }
 
     const params = window.wc_checkout_params;
@@ -338,12 +356,16 @@ jQuery(($) => {
     }
 
     /** Navigate once, retaining locked state until the page has actually left. */
-    function navigate(attempt, url) {
+    function navigate(attempt, url, successful = false) {
         if (activeAttempt !== attempt || attempt.phase === 'leaving') {
             return;
         }
         attempt.phase = 'leaving';
         handedOff = true;
+        if (successful && url) {
+            // Closing the widget exposes this page while the completed order loads.
+            window.showVippsSuccessRedirectOverlay('classic-redirect');
+        }
         stopSpinner();
         if (url) {
             window.location.assign(url);
@@ -353,7 +375,7 @@ jQuery(($) => {
     }
 
     /** A close during submission waits for the outstanding request, not another POST. */
-    function finishWidget(attempt, close, redirectUrl) {
+    function finishWidget(attempt, close, redirectUrl, successful = false) {
         if (activeAttempt !== attempt || ['uncertain', 'leaving'].includes(attempt.phase)) {
             return;
         }
@@ -365,7 +387,7 @@ jQuery(($) => {
             return;
         }
         // Set the phase before close(), which may emit a nested close event.
-        navigate(attempt, redirectUrl);
+        navigate(attempt, redirectUrl, successful);
         if (close) {
             close();
         }
@@ -507,7 +529,7 @@ jQuery(($) => {
             window.setVippsPaymentBusy(true, owner);
             window.ensureVippsWidgetHostStarted();
             attempt.trigger = window.vipps.trigger(() => createSession(attempt))
-                .on('success', (close, url) => finishWidget(attempt, close, url))
+                .on('success', (close, url) => finishWidget(attempt, close, url, true))
                 .on('cancel', (close, url) => finishWidget(attempt, close, url))
                 .on('close', () => finishWidget(attempt))
                 .on('error', () => sdkError(attempt));

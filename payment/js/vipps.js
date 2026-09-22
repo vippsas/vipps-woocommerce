@@ -45,6 +45,29 @@
         }
         document.body.classList.toggle("processing", busyOwners.size > 0);
     };
+
+    /** Keep the completed-payment page covered while its return URL loads. */
+    window.showVippsSuccessRedirectOverlay = (owner) => {
+        window.setVippsPaymentBusy(true, owner);
+        const overlay = ensureSpinner();
+        overlay.style.position = "fixed";
+        overlay.style.inset = "0";
+        overlay.style.zIndex = "2147483647";
+        overlay.style.pointerEvents = "auto";
+        overlay.style.background = "rgba(255, 255, 255, 0.88)";
+        overlay.classList.add("vipps-redirecting");
+
+        let status = overlay.querySelector(".vipps-redirect-status");
+        if (!status) {
+            status = document.createElement("p");
+            status.className = "vipps-redirect-status";
+            status.setAttribute("role", "status");
+            status.setAttribute("aria-live", "polite");
+            overlay.insertBefore(status, overlay.querySelector(".vippsspinner"));
+        }
+        status.textContent = window.VippsLocale?.paymentSuccessfulRedirecting ||
+            "Payment successful. Redirecting…";
+    };
 })();
 (() => {
     /**
@@ -523,7 +546,7 @@
                 // closes its modal and the return URL takes over.
                 paymentSucceeded = true;
                 if (redirectUrl) {
-                    showSuccessRedirectOverlay();
+                    window.showVippsSuccessRedirectOverlay("express-redirect");
                 }
                 close();
 
@@ -577,33 +600,6 @@
                 window.location.reload();
             }
         });
-
-        /** Cover the old page while navigation to the completed order is pending. */
-        function showSuccessRedirectOverlay() {
-            window.setVippsPaymentBusy(true, "express-redirect");
-
-            const overlay = document.querySelector(".vippsoverlay");
-            overlay.style.position = "fixed";
-            overlay.style.inset = "0";
-            overlay.style.zIndex = "2147483647";
-            overlay.style.pointerEvents = "auto";
-            overlay.style.background = "rgba(255, 255, 255, 0.88)";
-            overlay.classList.add("vipps-redirecting");
-
-            let status = overlay.querySelector(".vipps-redirect-status");
-            if (!status) {
-                status = document.createElement("p");
-                status.className = "vipps-redirect-status";
-                status.setAttribute("role", "status");
-                status.setAttribute("aria-live", "polite");
-                overlay.insertBefore(status, overlay.querySelector(".vippsspinner"));
-            }
-
-            status.textContent = translate(
-                "paymentSuccessfulRedirecting",
-                "Payment successful. Redirecting…"
-            );
-        }
 
         /** Lock a new attempt and show loading state before requesting an order. */
         function begin(transaction, button, event, path) {
