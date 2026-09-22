@@ -522,6 +522,9 @@
                 // Payment succeeded. Keep the purchase hidden while the SDK
                 // closes its modal and the return URL takes over.
                 paymentSucceeded = true;
+                if (redirectUrl) {
+                    showSuccessRedirectOverlay();
+                }
                 close();
 
                 if (redirectUrl) {
@@ -566,6 +569,41 @@
                 }
                 console.error(error);
             });
+
+        // A history restore can bring back this document with its redirect
+        // overlay intact, even when sessionStorage is unavailable.
+        window.addEventListener("pageshow", (event) => {
+            if (event.persisted && paymentSucceeded && !paymentHandoff?.get()) {
+                window.location.reload();
+            }
+        });
+
+        /** Cover the old page while navigation to the completed order is pending. */
+        function showSuccessRedirectOverlay() {
+            window.setVippsPaymentBusy(true, "express-redirect");
+
+            const overlay = document.querySelector(".vippsoverlay");
+            overlay.style.position = "fixed";
+            overlay.style.inset = "0";
+            overlay.style.zIndex = "2147483647";
+            overlay.style.pointerEvents = "auto";
+            overlay.style.background = "rgba(255, 255, 255, 0.88)";
+            overlay.classList.add("vipps-redirecting");
+
+            let status = overlay.querySelector(".vipps-redirect-status");
+            if (!status) {
+                status = document.createElement("p");
+                status.className = "vipps-redirect-status";
+                status.setAttribute("role", "status");
+                status.setAttribute("aria-live", "polite");
+                overlay.insertBefore(status, overlay.querySelector(".vippsspinner"));
+            }
+
+            status.textContent = translate(
+                "paymentSuccessfulRedirecting",
+                "Payment successful. Redirecting…"
+            );
+        }
 
         /** Lock a new attempt and show loading state before requesting an order. */
         function begin(transaction, button, event, path) {

@@ -1826,6 +1826,7 @@ EOF;
                 'cartCheckoutUnavailable'=> __("Cannot start express checkout: cart checkout is unavailable", 'woo-vipps'),
                 'productIdentifiersMissing'=> __("Cannot buy product: product id, variation id and sku are missing", 'woo-vipps'),
                 'productFormNotFound'=> __("Cannot buy product: product form not found", 'woo-vipps'),
+                'paymentSuccessfulRedirecting' => __("Payment successful. Redirecting…", 'woo-vipps'),
                 );
         wp_localize_script($handle, 'VippsLocale', $strings);
     }
