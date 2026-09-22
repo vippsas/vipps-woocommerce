@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 6.2.3
-Stable tag: 6.2.3
+Version: 6.2.4
+Stable tag: 6.2.4
 Requires at least: 6.3
 Tested up to: 7.1.1
 Requires PHP: 8.0
@@ -117,6 +117,8 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 6.2.4
+Fix cart clearance for Woo 11.1
 Version 6.2.3
 Fix for compatibility mode
 Version 6.2.2
@@ -126,33 +128,6 @@ Security fix for possible shop-manager level exploit
 Ensure certain events only happens once
 Version 6.2.0
 Replaced the fake-page mechanism with a modern WooCommerce-managed page for these actions
-Version 6.1.10
-Don't set Vipps as default payment method if Kustom Checkout is installed
-Version 6.1.9
-Minor textual changes
-Version 6.1.8
-Minor textual changes
-Fix: Restrict permissions on capturing recurring orders.
-Version 6.1.7
-Compatibility fix for Login With Vipps
-Version 6.1.6
-Fix performance issue with order notes with certain configurations of NGINX Helper
-Fix issue where Checkout orders were cancelled early
-Version 6.1.5
-Fix crash in certain situations when checking order status
-Version 6.1.4
-Settings wizard now promotes Express.
-Fix danish and swedish language for badge preview in badge settings
-Version 6.1.3
-Fix language issue with danish buttons and badges
-Version 6.1.2
-Fix buttons not working in cart and checkout
-Version 6.1.1
-Fix warning
-Version 6.1.0
-Removed support for beta block-based product editor
-Changed express checkout buttons to use web components
-Changed callback/webhook handler to use Async Queue to avoid race conditions
 
 == Frequently Asked Questions ==
 
@@ -325,6 +300,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2026-09-22 version 6.2.4 =
+Fix for cart clearance issue in WooCommerce 11.1 with express checkout
+
 = 2026-09-21 version 6.2.3 =
 Fix for compatibility mode
 
