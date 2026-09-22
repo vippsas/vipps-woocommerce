@@ -4698,7 +4698,8 @@ else:
         if (!$o) return;
         if (!$o->get_meta('_vipps_single_product_express')) return;
         if ($failed && !apply_filters('woo_vipps_restore_cart_on_express_checkout_failure', true, $o)) return;
-        if ($failed) WC()->cart->empty_cart();
+        // Restoring cart! But clear it first so we dont add this single product to the restored cart. LP 2026-09-22
+        WC()->cart->empty_cart();
         $this->restore_cart($o);
     }
 
