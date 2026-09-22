@@ -9,6 +9,7 @@
  */
 jQuery(($) => {
     'use strict';
+    const boundSubmitButtons = new WeakSet();
 
     /** Keep the native WooCommerce submit control as the non-Vipps fallback. */
     function updateVippsButton($form) {
@@ -25,7 +26,26 @@ jQuery(($) => {
     }
 
     function bindVippsButton($form) {
-        const refresh = () => updateVippsButton($form);
+        const refresh = () => {
+            updateVippsButton($form);
+            const button = $form.find('#vipps-classic-checkout-submit').first()[0];
+            if (!button || boundSubmitButtons.has(button)) return;
+
+            // A click inside the nested web component may not activate the
+            // outer native submit button in every browser. Capture that click
+            // and use one explicit form submission instead of its default action.
+            button.addEventListener('click', (event) => {
+                if (button.disabled) return;
+                event.preventDefault();
+                const form = button.form || $form[0];
+                if (typeof form.requestSubmit === 'function') {
+                    form.requestSubmit(button.form === form ? button : undefined);
+                } else {
+                    $form.trigger('submit');
+                }
+            }, true);
+            boundSubmitButtons.add(button);
+        };
         $form.on('change.vippsButtons', 'input[name="payment_method"]', refresh);
         $(document.body).on('payment_method_selected.vippsButtons updated_checkout.vippsButtons', refresh);
         refresh();
