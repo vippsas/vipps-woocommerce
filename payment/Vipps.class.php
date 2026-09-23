@@ -1956,10 +1956,9 @@ EOF;
         $gw = $this->gateway();
 
         if ($gw->show_express_checkout()){
-            return $this->cart_express_checkout_button_html(true);
+            return $this->cart_express_checkout_button_html('minicart');
         }
     }
-
 
     // This is for the Vipps SDK button used instead of the normal "pay for order" and "confirm order" buttons
     // on the classic checkout and pay-for-order pages. It gets swapped in when the user selects vipps, and swapped out otherwise.
@@ -1969,8 +1968,7 @@ EOF;
         echo $submit;
     }
 
-    public function cart_express_checkout_button_html($minicart = false) {
-        $context = $minicart ? 'minicart' : 'cart';
+    public function cart_express_checkout_button_html($context= 'cart') {
         $button = apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context($context));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
@@ -2028,7 +2026,7 @@ EOF;
         $gw = $this->gateway();
         if (!$gw->cart_supports_express_checkout()) return;
         ob_start();
-        $this->cart_express_checkout_button_html('shortcode');
+        $this->cart_express_checkout_button_html('cart');
         return ob_get_clean();
     }
 

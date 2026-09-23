@@ -86,10 +86,16 @@ final class Vipps extends AbstractPaymentMethodType {
 	/**
 	 * Reuse the gateway shortcode so express checkout retains its existing markup and data attributes.
 	 */
-	public function get_express_checkout_button() {
-		$button = \Vipps::instance()->express_checkout_button_shortcode();
-		return $button;
-	}
+        public function get_express_checkout_button () {
+            $context = 'checkout';
+            if (is_cart()) {
+                $context='cart';
+            }
+            ob_start();
+            \Vipps::instance()->cart_express_checkout_button_html($context);
+            $button = ob_get_clean();
+            return $button;
+        }
 
 	/**
 	 * Check cart support before exposing the merchant's express-checkout setting.
