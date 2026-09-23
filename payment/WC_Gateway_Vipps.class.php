@@ -3763,7 +3763,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             do_action('woo_vipps_payment_complete_at_shutdown', $order, $this);
         } catch (Exception $e) {
             // This is/should be non-critical so just log it.
-            $this->log(sprintf(__("Could not do all payment-complete actions on %1\$s order %2\$d: %3\$s ", 'woo-vipps'), Vipps::CompanyName(), $orderid,  $e->etMessage()), "error");
+            $this->log(sprintf(__("Could not do all payment-complete actions on %1\$s order %2\$d: %3\$s ", 'woo-vipps'), Vipps::CompanyName(), $orderid,  $e->getMessage()), "error");
         }
     }
 
