@@ -1272,7 +1272,7 @@ class VippsApi {
     }
     public function delete_merchant_redirect_qr ($id) {
         $action = "DELETE";
-        return $this->call_qr_merchant_redirect($action, $id, $url);
+        return $this->call_qr_merchant_redirect($action, $id);
     }
     private function call_qr_merchant_redirect($action, $id, $url=null, $accept='image/svg+xml') {
         $command = 'qr/v1/merchant-redirect/';
