@@ -5579,32 +5579,15 @@ else:
 
         $payment_method = $this->get_payment_method_name();
         $btitle = esc_attr(sprintf(__('Buy now with %1$s', 'woo-vipps'), $payment_method));
+        $bclass = esc_attr($payment_method);
 
         $content = "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "...</p>";
-        $content .= "<div class='vipps-qr-purchase' style='visibility:hidden'>
-      <a
-          href='javascript:void(0)'
-          class='single-product button vipps-buy-now Vipps'
-          data-vipps-autostart='true'
-          data-vipps-purchase='single'
-          data-product_id='{$args['product_id']}'
-          data-variation_id='{$args['variation_id']}'
-          data-product_sku='{$args['sku']}'
-          data-quantity='{$args['quantity']}'
-          title='{$btitle}';
-      >
-          <vipps-mobilepay-button
-              type='button'
-              brand='vipps'
-              language='no'
-              variant='primary'
-              rounded='true'
-              verb='continue'
-              stretched='false'
-              compact='false'>
-          </vipps-mobilepay-button>
-      </a>
-  </div>";
+        $content .= "<div class='vipps-qr-purchase' style='visibility:hidden'>";
+        $content .= "<a href='javascript:void(0)' class='single-product button vipps-buy-now $bclass' data-vipps-autostart='true' data-vipps-purchase='single' data-product_id='{$args['product_id']}' data-variation_id='{$args['variation_id']}' data-product_sku='{$args['sku']}' data-quantity='{$args['quantity']}' title='{$btitle}';
+      >";
+        $content .= $this->get_html_button_for_context('checkout');
+        $content .= "</a>";
+        $content .= "</div>";
 
         return $content;
     }
@@ -5643,30 +5626,17 @@ else:
          
         do_action('woo_vipps_express_checkout_page');
 
+        $payment_method = $this->get_payment_method_name();
+        $btitle = esc_attr(sprintf(__('Buy now with %1$s', 'woo-vipps'), $payment_method));
+        $bclass = esc_attr($payment_method);
         $sec = esc_attr($_REQUEST['sec']);
         $content = "";
         $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "...</p>";
-        $content .= '<div class="vipps-cart-purchase" style="visibility:hidden">
-      <a
-          href="javascript:void(0)"
-          class="vipps-express-checkout short Vipps"
-          data-vipps-autostart="true"
-          data-sec="' . $sec . '"
-          title="Kjøp nå med Vipps"
-      >
-          <vipps-mobilepay-button
-              type="button"
-              brand="vipps"
-              language="no"
-              variant="primary"
-              rounded="true"
-              verb="continue"
-              stretched="false"
-              compact="false">
-          </vipps-mobilepay-button>
-      </a>
-  </div>
-';
+        $content .= '<div class="vipps-cart-purchase" style="visibility:hidden">"';
+        $content .= "<a href='javascript:void(0)' class='vipps-express-checkout short $bclass' data-vipps-autostart='true' data-sec='$sec' title='$btitle'>";
+        $content .= $this->get_html_button_for_context('checkout');
+        $content .="</a>";
+        $content .="</div>";
 
         return $content;
     }
