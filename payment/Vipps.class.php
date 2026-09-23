@@ -1912,14 +1912,13 @@ EOF;
         $gw = $this->gateway();
 
         if ($gw->show_express_checkout()){
-            return $this->cart_express_checkout_button_html(true);
+            return $this->cart_express_checkout_button_html('minicart');
         }
     }
 
-    public function cart_express_checkout_button_html($minicart = false) {
+    public function cart_express_checkout_button_html($context= 'cart') {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
-        $context = $minicart ? 'minicart' : 'cart';
         $button= apply_filters('woo_vipps_express_checkout_button', $this->get_html_button_for_context($context));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
@@ -1964,7 +1963,7 @@ EOF;
         $gw = $this->gateway();
         if (!$gw->cart_supports_express_checkout()) return;
         ob_start();
-        $this->cart_express_checkout_button_html('shortcode');
+        $this->cart_express_checkout_button_html('cart');
         return ob_get_clean();
     }
     // Show a banner normally shown for non-logged-in-users at the checkout page.  It does not need to check if we are to show the button, obviously, but needs to see if the cart works
