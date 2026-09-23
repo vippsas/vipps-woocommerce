@@ -646,3 +646,12 @@ body.processing .vippsoverlay.vipps-redirecting #floatingCirclesG {
       margin: 0;
       transform: none;
 }
+
+/* Sometimes Vipps adds a space in the buttons */
+div.vipps-cart-purchase a.vipps-express-checkout  {
+    text-decoration: none !important;
+}
+div.vipps-qr-purchase a.single-product.vipps-buy-now {
+    text-decoration: none !important;
+}
+
