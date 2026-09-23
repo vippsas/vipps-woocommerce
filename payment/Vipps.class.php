@@ -5583,7 +5583,7 @@ else:
         $content .= "<div class='vipps-qr-purchase' style='visibility:hidden'>";
         $content .= "<a href='javascript:void(0)' class='single-product button vipps-buy-now $bclass' data-vipps-autostart='true' data-vipps-purchase='single' data-product_id='{$args['product_id']}' data-variation_id='{$args['variation_id']}' data-product_sku='{$args['sku']}' data-quantity='{$args['quantity']}' title='{$btitle}';
       >";
-        $content .= $this->get_html_button_for_context('checkout');
+        $content .= $this->get_html_button_for_context('global');
         $content .= "</a>";
         $content .= "</div>";
 
@@ -5632,7 +5632,7 @@ else:
         $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "...</p>";
         $content .= '<div class="vipps-cart-purchase" style="visibility:hidden">"';
         $content .= "<a href='javascript:void(0)' class='vipps-express-checkout short $bclass' data-vipps-autostart='true' data-sec='$sec' title='$btitle'>";
-        $content .= $this->get_html_button_for_context('checkout');
+        $content .= $this->get_html_button_for_context('global');
         $content .="</a>";
         $content .="</div>";
 
