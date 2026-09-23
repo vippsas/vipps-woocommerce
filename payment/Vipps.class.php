@@ -1044,9 +1044,27 @@ jQuery('a.webhook-adder').click(function (e) {
     public function get_html_button_attrs_for_context($context = 'global') {
         $options = get_option('vipps_button_options2', []);
         if (!is_string($context)) $context = 'global';
+  
+        // Gutenberg express checkout buttons really want to be stretched, so we'll treat them somewhat differently.
+        $gutenberg = false;
+        if ($context == 'checkout_gutenberg') {
+            $context = 'checkout';
+            $gutenberg = true;
+        }
+        if ($context == 'cart_gutenberg') {
+            $context = 'checkout';
+            $gutenberg = true;
+        }
+
         $config = $options['express']['configs'][$context] ?? [];
-        if (!$config || ($config['use-global-config'] ?? false)) {
+        $not_set = !$config || ($config['use-global-config'] ?? false);
+        if ($not_set) {
             $config = $options['express']['configs']['global'] ?? $this->get_html_button_default_attrs();
+        }
+
+        // see above.
+        if ($gutenberg) {
+            $config['stretched']='true';
         }
         return $config;
     }
@@ -1136,6 +1154,8 @@ EOF;
         $options = get_option('vipps_button_options2', []);
         $express = $options['express'] ?? [];
         $configs = $express['configs'] ?? [];
+
+
         $contexts = [
             'global' => __('Global', 'woo-vipps'),
             'product' => __('Product', 'woo-vipps'),
@@ -1310,6 +1330,7 @@ EOF;
                 // Swap to new context: set all input fields to the stored values if exists. LP 2026-06-25
                 const newContext = jQuery("#context").val();
                 const newConfig = contextConfigs[newContext];
+
                 setInputsFromConfig(newContext, newConfig);
                 currentContext = newContext;
             }
