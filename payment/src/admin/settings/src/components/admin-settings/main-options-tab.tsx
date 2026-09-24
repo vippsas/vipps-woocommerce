@@ -17,6 +17,9 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
       {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
       <CheckboxFormField name="enabled" titleKey="enabled.title" labelKey="enabled.label" />
 
+      {/* Renders a checkbox that specifies whether or not Vipps is the default payment method */}
+      <CheckboxFormField name="vippsdefault" titleKey="vippsdefault.title" labelKey="vippsdefault.label" />
+
       {/* Renders a select field that specifies the country */}
       <SelectFormField
         name="country"
@@ -67,6 +70,10 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
         required
       />
 
+
+      {/* Renders a textarea field for the description */}
+      <TextareaFormField name="description" titleKey="description.title" descriptionKey="description.description" rows={5} />
+
       {/* Renders an input field for the merchant serial number */}
       <InputFormField
         asterisk
@@ -110,12 +117,6 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
           { label: gettext('status_on_fail.options.cancelled'), value: 'cancelled' }
         ]}
       />
-
-      {/* Renders a textarea field for the description */}
-      <TextareaFormField name="description" titleKey="description.title" descriptionKey="description.description" rows={5} />
-
-      {/* Renders a checkbox that specifies whether or not Vipps is the default payment method */}
-      <CheckboxFormField name="vippsdefault" titleKey="vippsdefault.title" labelKey="vippsdefault.label" />
     </div>
   );
 }

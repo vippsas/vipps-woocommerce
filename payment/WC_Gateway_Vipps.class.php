@@ -1394,14 +1394,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             ),
 
             'result_status' => array(
-                'title'       => sprintf(__('Order status on return from %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                'title'       => __('Order status on payment reservation', 'woo-vipps'),
                 'label'       => __('Choose default order status for reserved (not captured) orders', 'woo-vipps'),
                 'type'        => 'select',
                 'options' => array(
+                    /* translators: woocommerce order status name */
                     'processing' => __('Processing', 'woo-vipps'),
+                    /* translators: woocommerce order status name */
                     'on-hold' => __('On hold','woo-vipps'),
                 ), 
-                'description' => __('By default, orders that are <b>reserved</b> but not <b>yet captured</b> will now have the order status \'Processing\'. You can capture the sum manually, or by changing the status to \'Complete\'. You should ensure that your workflow is such that the order is not shipped until after this capture.<br><br> The status \'On hold\' can be chosen instead for stores using a workflow where orders are shipped when the status is \'Processing\'. In this case, \'On hold\' will mean "order is reserved but not yet captured".  This is a slightly safer solution, and ensures that the order status will reflect the payment status. <br><br>However, in many stores \'On hold\' has the additional meaning "there is a problem with the order"; and an email is often sent to the customer about this problem. The default is \'Processing\' because of this, and because many plugins and integrations expect orders to be \'Processing\' when the customer has completed payment.', 'woo-vipps'),
+                /* translators: placeholders are options for this setting */
+                'description' => sprintf(
+                    __('The order status when the customer\'s payment is reserved (these are <b>not yet captured</b>).<br>Select %1$s if you capture payment before shipping, either manually or by marking the order as %3$s.<br>Select %2$s if %1$s triggers shipping in your store.<br>Note that %2$s may send customers an email suggesting there is a problem with their order.', 'woo-vipps'),
+                    __('Processing', 'woo-vipps'),
+                    __('On hold','woo-vipps'),
+                    __('Complete','woo-vipps'),
+                ),
                 'default'     => 'processing',
             ),
 
@@ -1410,37 +1418,35 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'label'       => __('Choose default order status for failed payments', 'woo-vipps'),
                 'type'        => 'select',
                 'options' => array(
-                    /* translators: woocommerce status name */
+                    /* translators: woocommerce order status name */
                     'failed' => __('Failed', 'woo-vipps'),
-                    /* translators: woocommerce status name */
+                    /* translators: woocommerce order status name */
                     'cancelled' => __('Cancelled','woo-vipps'),
                 ), 
-                /* translators: company name. cancelled and failed are woocommerce status names! */
-                'description' => sprintf(__('By default, orders where payment is started but not completed at %1$s will be set to failed if they can be restarted. This setting changes this behaviour, but does <strong>not</strong> affect orders that cannot be restarted as these will always be set to cancelled.<br><br>Cancelled orders will keep the customer\'s shopping cart intact.<br>Failed orders can be restarted, possibly with another payment method.', 'woo-vipps'), Vipps::CompanyName()),
+                /* translators: the first placeholder is company name, the rest are woocommerce order statuses */
+                'description' => sprintf(
+                    __('The order status when payment fails, this will only affect orders that truly can be restarted at %1s.<br>%2$s orders will keep the customer\'s shopping cart intact.<br>%3$s orders can be restarted, possibly with another payment method.', 'woo-vipps'),
+                    Vipps::CompanyName(),
+                    /* translators: woocommerce order status name */
+                    __('Failed', 'woo-vipps'),
+                    /* translators: woocommerce order status name */
+                    __('Cancelled','woo-vipps'),
+                ),
                 'default'     => $default_status_on_fail,
             ),
 
-/*
-            'title' => array(
-                'title' => __('Title', 'woocommerce'),
-                'type' => 'text',
-                'description' => __('This controls the title which the user sees during checkout.', 'woocommerce'),
-                'default' => sprintf(__('%1$s','woo-vipps'), $payment_method_name),
-            ),
-*/
-
             'description' => array(
-                'title' => __('Description', 'woocommerce'),
+                'title' => __('Checkout description', 'woo-vipps'),
                 'type' => 'textarea',
-                'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
+                'description' => __('The payment method description the customer sees during checkout', 'woo-vipps'),
                 'default' => __("Pay safely and easily. No fees, no matter the amount.", 'woo-vipps'),
             ),
 
             'vippsdefault' => array(
-                'title'       => sprintf(__('Use %1$s as default payment method on checkout page', 'woo-vipps'), $payment_method_name),
-                'label'       => sprintf(__('%1$s is default payment method', 'woo-vipps'), $payment_method_name),
+                'title'       => __('Set as the default payment method', 'woo-vipps'),
+                'label'       => sprintf(__('Set %s as the default payment method', 'woo-vipps'), $this->get_payment_method_name()),
                 'type'        => 'checkbox',
-                'description' => sprintf(__('Enable this to use %1$s as the default payment method on the checkout page, regardless of order.', 'woo-vipps'), $payment_method_name),
+                'description' => sprintf(__('Use %1$s as the default payment method on the checkout page.', 'woo-vipps'), $payment_method_name),
                 'default'     => 'yes',
             ),
 
