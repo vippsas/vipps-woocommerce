@@ -1361,38 +1361,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'description' => __('An alphanumeric textstring to use as a prefix on orders from your shop, to avoid duplicate order-ids','woo-vipps'),
                 'default'     => $orderprefix
             ),
-            'merchantSerialNumber' => array(
-                'title' => __('Merchant Serial Number', 'woo-vipps'),
-                'label'       => __('Merchant Serial Number', 'woo-vipps'),
-                'type'        => 'number',
-                'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
-                'default'     => '',
-            ),
-            'clientId' => array(
-                'title' => __('Client Id', 'woo-vipps'),
-                'class' => 'vippspw',
-                'label'       => __('Client Id', 'woo-vipps'),
-                'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
-                'default'     => '',
-            ),
-            'secret' => array(
-                'title' => __('Client Secret', 'woo-vipps'),
-                'label'       => __('Client Secret', 'woo-vipps'),
-                'class' => 'vippspw',
-                'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
-                'default'     => '',
-            ),
-            'Ocp_Apim_Key_eCommerce' => array(
-                'title' => __('Subscription Key', 'woo-vipps'),
-                'label'       => __('Subscription Key', 'woo-vipps'),
-                'class' => 'vippspw',
-                'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
-                'default'     => '',
-            ),
-
             'result_status' => array(
                 'title'       => __('Order status on payment reservation', 'woo-vipps'),
                 'label'       => __('Choose default order status for reserved (not captured) orders', 'woo-vipps'),
@@ -1463,6 +1431,46 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'default'     => 'none',
             ),
         );
+
+        $keysfields = [
+            'keys_options'             => array(
+                'title' => __('Keys', 'woo-vipps'),
+                'type'  => 'title',
+                'class' => 'tab',
+            ),
+            'merchantSerialNumber' => array(
+                'title' => __('Merchant Serial Number', 'woo-vipps'),
+                'label'       => __('Merchant Serial Number', 'woo-vipps'),
+                'type'        => 'number',
+                'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
+                'default'     => '',
+            ),
+            'clientId' => array(
+                'title' => __('Client Id', 'woo-vipps'),
+                'class' => 'vippspw',
+                'label'       => __('Client Id', 'woo-vipps'),
+                'type'        => 'password',
+                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+                'default'     => '',
+            ),
+            'secret' => array(
+                'title' => __('Client Secret', 'woo-vipps'),
+                'label'       => __('Client Secret', 'woo-vipps'),
+                'class' => 'vippspw',
+                'type'        => 'password',
+                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+                'default'     => '',
+            ),
+            'Ocp_Apim_Key_eCommerce' => array(
+                'title' => __('Subscription Key', 'woo-vipps'),
+                'label'       => __('Subscription Key', 'woo-vipps'),
+                'class' => 'vippspw',
+                'type'        => 'password',
+                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
+                'default'     => '',
+            ),
+
+        ];
 
          $expressfields = array(
                 'express_options' => array(
@@ -1709,6 +1717,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         
        // Add all the standard fields
        foreach($mainfields as $key=>$field) {
+          $this->form_fields[$key] = $field;
+       }
+       foreach($keysfields as $key=>$field) {
           $this->form_fields[$key] = $field;
        }
        foreach($expressfields as $key=>$field) {

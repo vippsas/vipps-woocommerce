@@ -5,6 +5,7 @@ import { AdminSettingsCCOptionsTab } from './cc-options-tab.tsx';
 import { AdminSettingsExpressOptionsTab } from './express-options-tab';
 import { AdminSettingsCheckoutOptionsTab } from './checkout-options-tab';
 import { AdminSettingsAdvancedOptionsTab } from './advanced-options-tab';
+import { AdminSettingsKeysOptionsTab } from './keys-options-tab.tsx';
 import { useHash } from '../../hooks/use-hash';
 import { AdminSettingsDeveloperOptionsTab } from './developer-options-tab';
 import { truthToBool, WPButton, WPForm } from '../form-elements';
@@ -37,6 +38,7 @@ export function AdminSettings(): JSX.Element {
   const EXPRESS_TAB_ID = gettext('express_options.title');
   const CC_TAB_ID =  gettext('cc_options.title');
   const CHECKOUT_TAB_ID = gettext('checkout_options.title');
+  const KEYS_TAB_ID = gettext('keys_options.title');
   const DEVELOPER_TAB_ID = gettext('developertitle.title');
   const ADVANCED_TAB_ID = gettext('advanced_options.title');
 
@@ -45,14 +47,15 @@ export function AdminSettings(): JSX.Element {
     MAIN_TAB_ID, EXPRESS_TAB_ID, CC_TAB_ID
   ];
 
-  
-
   // Only show checkout options if known to be active (option woo_vipps_checkout_activated is true, or the vipps_checkout_enabled option is yes IOK 2026-04-30
   const checkoutActive = +(getMetadata('vipps_checkout_activated') ?? 0) || getOption('vipps_checkout_enabled') == 'yes';
   if (checkoutActive) {
     TAB_IDS.push(CHECKOUT_TAB_ID);
   }
+  TAB_IDS.push(KEYS_TAB_ID);
   TAB_IDS.push(ADVANCED_TAB_ID);
+
+
   // If the developer mode is enabled, the developer options tab is shown.
   const canShowDeveloperOptions = getOption('developermode') === 'yes';
   if (canShowDeveloperOptions) {
@@ -175,6 +178,9 @@ export function AdminSettings(): JSX.Element {
 
             {/* Renders the checkout options form fields */}
             {checkoutActive && isVisible(CHECKOUT_TAB_ID) && <AdminSettingsCheckoutOptionsTab />}
+
+            {/* Renders the keys options form fields  */}
+            {isVisible(KEYS_TAB_ID) && <AdminSettingsKeysOptionsTab />}
 
             {/* Renders the advanced options form fields */}
             {isVisible(ADVANCED_TAB_ID) && <AdminSettingsAdvancedOptionsTab />}
