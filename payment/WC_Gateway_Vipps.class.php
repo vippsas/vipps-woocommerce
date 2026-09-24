@@ -1467,41 +1467,42 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
                 'cartexpress' => array(
-                        'title'       => __('Enable Express Checkout in cart', 'woo-vipps'),
-                        'label'       => __('Enable Express Checkout in cart', 'woo-vipps'),
+                        'title'       => __('Express Checkout in cart', 'woo-vipps'),
+                        'label'       => __('Express Checkout in cart', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Enable this to allow customers to shop using %1$s directly from the cart with no login or address input needed', 'woo-vipps'), Vipps::ExpressCheckoutName()) . '.<br>' .
-                        sprintf(__('Please note that for Express Checkout, shipping must be calculated in a callback from the %1$s app, without any knowledge of the customer. This means that Express Checkout may not be compatible with all Shipping plugins or setup. You should test that your setup works if you intend to provide this feature.', 'woo-vipps'), Vipps::CompanyName()),
+                        'description' => __('Let customers buy directly from the cart without loggin in or entering an address.', 'woo-vipps'),
                         'default'     => 'yes',
                         ),
 
                 'express_show_in_checkout' => array(
-                        'title'       => __('Enable Express Checkout in checkout', 'woo-vipps'),
-                        'label'       => __('Enable Express Checkout in checkout', 'woo-vipps'),
+                        'title'       => __('Express Checkout in checkout', 'woo-vipps'),
+                        'label'       => __('Express Checkout in checkout', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Enable this to allow customers to shop using %1$s directly from the checkout page with no login or address input needed', 'woo-vipps'), Vipps::ExpressCheckoutName()) . '.<br>' .
-                        sprintf(__('Please note that for Express Checkout, shipping must be calculated in a callback from the %1$s app, without any knowledge of the customer. This means that Express Checkout may not be compatible with all Shipping plugins or setup. You should test that your setup works if you intend to provide this feature.', 'woo-vipps'), Vipps::CompanyName()),
+                        'description' => __('Let customers buy directly from the cart without loggin in or entering an address.', 'woo-vipps'),
                         'default'     => $default_express_show_in_checkout,
                         ),
 
+                'singleproductexpressarchives' => array(
+                        'title'       => __('Express Checkout on catalog pages', 'woo-vipps'),
+                        'label'       => __('Express Checkout on catalog pages', 'woo-vipps'),
+                        'type'        => 'checkbox',
+                        'description' => __('Adds Express Checkout to supported products', 'woo-vipps')
+                            . '<br>'
+                            . __('Let customers buy directly from the cart without loggin in or entering an address.', 'woo-vipps'),
+                        'default'     => 'no',
+                        ),
                 'singleproductexpress' => array(
-                        'title'       => __('Enable Express Checkout for single products', 'woo-vipps'),
-                        'label'       => __('Enable Express Checkout for single products', 'woo-vipps'),
+                        'title'       => __('Express Checkout supported products'),
+                        'label'       => __('Express Checkout supported products', 'woo-vipps'),
                         'type'        => 'select',
                         'options' => array(
                             'none' => __('No products','woo-vipps'),
-                            'some' => __('Some products', 'woo-vipps'),
+                            'some' => __('Selected products', 'woo-vipps'),
                             'all' => __('All products','woo-vipps')
                             ), 
-                        'description' => sprintf(__('Enable this to allow customers to buy a product using %1$s directly from the product page. If you choose \'some\', you must enable this on the relevant products', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                        /* translators: %s is an option for this setting */
+                        'description' => sprintf(__('Which products are purchasable with Express Checkout. If you choose %s, enable it individually for the products you want to support.', 'woo-vipps'), __('Selected products', 'woo-vipps')),
                         'default'     => 'none',
-                        ),
-                'singleproductexpressarchives' => array(
-                        'title'       => __('Add \'Buy now\' button on catalog pages too', 'woo-vipps'),
-                        'label'       => __('Add the button for all relevant products on catalog pages', 'woo-vipps'),
-                        'type'        => 'checkbox',
-                        'description' => sprintf(__('If %1$s is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                        'default'     => 'no',
                         ),
                 'expresscheckout_termscheckbox' => array(
                         'title'       => sprintf(__('Add terms and conditions checkbox on %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
