@@ -38,6 +38,20 @@ vipps-mobilepay-button:focus-visible {
     outline: none;
 }
 
+/* Make the express button in checkout match other buttons; aiming for 48px IOK 2026-09-24
+* (https://developer.woocommerce.com/docs/features/payments/ux-guidelines/payment-button-size/?utm_source=chatgpt.com#layout-and-spacing) */
+.wc-block-components-express-payment--checkout #express-payment-method-vippsexpress div.vipps-express-container {
+  scale: calc(48 / 44);
+  transform-origin: top left;
+  width: calc(100%*44/48);
+}
+/* And in the cart. */
+.wc-block-components-express-payment--cart #express-payment-method-vippsexpress div.vipps-express-container {
+  scale: calc(48 / 44);
+  transform-origin: top left;
+  width: calc(100%*44/48);
+}
+
 /* Vipps Checkout Widgets */
 .vipps_checkout_widget_wrapper {
     width: 100%;
