@@ -1062,9 +1062,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            }
         }
 
-        // We will only show the Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
-        $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
-
         // This is used for new options,to set reasonable defaults based on older settings. We can't use WC_Settings->get_option for this unfortunately.
         $current = get_option('woocommerce_vipps_settings');
         // New defaults based on old defaults
