@@ -1067,7 +1067,7 @@ jQuery('a.webhook-adder').click(function (e) {
             $gutenberg = true;
         }
         if ($context == 'cart_gutenberg') {
-            $context = 'checkout';
+            $context = 'cart';
             $gutenberg = true;
         }
 
