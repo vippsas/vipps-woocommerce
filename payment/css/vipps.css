@@ -38,6 +38,19 @@ vipps-mobilepay-button:focus-visible {
     outline: none;
 }
 
+/* Make the express button on checkout responsive to match other buttons IOK 2026-09-24  */
+.wc-block-components-express-payment--checkout  #express-payment-method-vippsexpress {
+  container-type: inline-size;
+  container-name: vipps-payment;
+}
+@container vipps-payment (width < 300px) {
+  .wc-block-components-express-payment--checkout #express-payment-method-vippsexpress div.vipps-express-container {
+    scale: 0.8;
+    width: 125%;
+    transform-origin: top left;
+  }
+}
+
 /* Vipps Checkout Widgets */
 .vipps_checkout_widget_wrapper {
     width: 100%;
