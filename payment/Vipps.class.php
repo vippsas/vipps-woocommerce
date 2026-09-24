@@ -1072,8 +1072,8 @@ jQuery('a.webhook-adder').click(function (e) {
         }
 
         $config = $options['express']['configs'][$context] ?? [];
-        $not_set = !$config || ($config['use-global-config'] ?? false);
-        if ($not_set) {
+        $use_global = !$config || ($config['use-global-config'] ?? false);
+        if ($use_global) {
             $config = $options['express']['configs']['global'] ?? $this->get_html_button_default_attrs();
         }
 
