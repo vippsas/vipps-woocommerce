@@ -1460,40 +1460,39 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
          $expressfields = array(
                 'express_options' => array(
-                        'title' => sprintf(__('Express Checkout', 'woo-vipps')),
+                        'title' => sprintf(Vipps::ExpressName()),
                         'type'  => 'title',
                         'class' => 'tab',
-                        'description' => sprintf(__("%1\$s allows you to buy products by a single click from the cart, checkout, or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately.", 'woo-vipps'), Vipps::ExpressCheckoutName())
+                        'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds", 'woo-vipps'), Vipps::ExpressName())
                         ),
 
                 'cartexpress' => array(
-                        'title'       => __('Express Checkout in cart', 'woo-vipps'),
-                        'label'       => __('Express Checkout in cart', 'woo-vipps'),
+                        'title'       => __('Enable in cart', 'woo-vipps'),
+                        'label'       => __('Enable in cart', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('Let customers buy directly from the cart without loggin in or entering an address.', 'woo-vipps'),
+                        'description' => __('Let customers buy directly from the cart without logging in or entering an address.', 'woo-vipps'),
                         'default'     => 'yes',
                         ),
 
                 'express_show_in_checkout' => array(
-                        'title'       => __('Express Checkout in checkout', 'woo-vipps'),
-                        'label'       => __('Express Checkout in checkout', 'woo-vipps'),
+                        'title'       => __('Enable in checkout', 'woo-vipps'),
+                        'label'       => __('Enable in checkout', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('Let customers buy directly from the cart without loggin in or entering an address.', 'woo-vipps'),
+                        'description' => __('Let customers buy directly from the checkout without logging in or entering an address.', 'woo-vipps'),
                         'default'     => $default_express_show_in_checkout,
                         ),
 
+                // LP TODO: in the redesign, make this a custom dropdown "Specify supported products". LP 2026-09-24
                 'singleproductexpressarchives' => array(
-                        'title'       => __('Express Checkout on catalog pages', 'woo-vipps'),
-                        'label'       => __('Express Checkout on catalog pages', 'woo-vipps'),
+                        'title'       => __('Enable on catalog pages', 'woo-vipps'),
+                        'label'       => __('Enable on catalog pages', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('Adds Express Checkout to supported products', 'woo-vipps')
-                            . '<br>'
-                            . __('Let customers buy directly from the cart without loggin in or entering an address.', 'woo-vipps'),
+                        'description' => sprintf(__('Enables %s on product catalog pages for supported products (see the below setting).<br>Let customers buy directly from product catalog pages without logging in or entering an address.', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => 'no',
                         ),
                 'singleproductexpress' => array(
-                        'title'       => __('Express Checkout supported products'),
-                        'label'       => __('Express Checkout supported products', 'woo-vipps'),
+                        'title'       => __('Specify supported products'),
+                        'label'       => __('Specify supported products', 'woo-vipps'),
                         'type'        => 'select',
                         'options' => array(
                             'none' => __('No products','woo-vipps'),
@@ -1501,55 +1500,57 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             'all' => __('All products','woo-vipps')
                             ), 
                         /* translators: %s is an option for this setting */
-                        'description' => sprintf(__('Which products are purchasable with Express Checkout. If you choose %s, enable it individually for the products you want to support.', 'woo-vipps'), __('Selected products', 'woo-vipps')),
+                        'description' => sprintf(__('Products purchasable with %s. If you choose %s, enable it individually for the products you want to support.', 'woo-vipps'), __('Selected products', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => 'none',
                         ),
                 'expresscheckout_termscheckbox' => array(
-                        'title'       => sprintf(__('Add terms and conditions checkbox on %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                        'label'       => sprintf(__('Always ask for confirmation on %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                        'title'       => __('Require terms and conditions confirmation', 'woo-vipps'),
+                        'label'       => __('Require terms and conditions confirmation', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('When using %1$s, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                        'description' => __('Ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'),
                         'default'     => 'no',
                         ),
 
                 'expresscheckout_always_address' => array(
-                        'title'       => __('Always ask for address, even if products don\'t need shipping', 'woo-vipps'),
-                        'label'       => __('Always ask the user for their address, even if you don\'t need it for shipping', 'woo-vipps'),
+                        'title'       => __('Always ask for address', 'woo-vipps'),
+                        'label'       => __('Always ask for address', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('If the order contains only "virtual" products that do not need shipping, we do not normally ask the user for their address - but check this box to do so anyway.', 'woo-vipps'),
+                        'description' => __('Always ask customers for their address even when the order only contains products that don\'t require shipping (e.g "virtual" products)', 'woo-vipps'),
                         'default'     => $default_ask_address_for_express,
                 ),
 
                 'enablestaticshipping' => array(
-                        'title'       => __('Enable static shipping for Express Checkout', 'woo-vipps'),
-                        'label'       => __('Enable static shipping', 'woo-vipps'),
+                        'title'       => __('Static shipping', 'woo-vipps'),
+                        'label'       => __('Static shipping', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('If your shipping options do not depend on the customers address, you can enable \'Static shipping\', which will precompute the shipping options when using Express Checkout so that this will be much faster. If you do this and the customer isn\'t logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually \'static\', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too.', 'woo-vipps'),
+                        'description' => sprintf(__('If your shipping options do not depend on the customers address, you can enable this.<br><br>Speed up %s by calculating shipping options in advance. Guest orders use your store’s base location; logged-in customers use their saved address. Enable this only when those locations produce accurate shipping options, such as with flat-rate or free shipping.', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => 'no',
                         ),
 
 
                 'expresscreateuser' => array (
-                        'title'       => __('Create new customers on Express Checkout', 'woo-vipps'),
-                        'label'       => __('Create new customers on Express Checkout', 'woo-vipps'),
+                        'title'       => __('Create new customers for guest checkouts', 'woo-vipps'),
+                        'label'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts. If you have "Login with Vipps" installed, this will be the default (unless you have turned off user creation in WooCommerce itself)', 'woo-vipps'), Vipps::CompanyName()),
+                        'description' => sprintf(__('Create and log in new customers during %s checkout. When disabled, orders are placed as guest checkouts.<br>If you have %s installed, customer creation is enabled by default unless disabled in WooCommerce', 'woo-vipps'), Vipps::ExpressName(), Vipps::LoginName()),
                         'default'     => $expresscreateuserdefault,
                         ),
+
                 'singleproductbuynowcompatmode' => array(
-                        'title'       => __('"Buy now" compatibility mode', 'woo-vipps'),
-                        'label'       => __('Activate compatibility mode for all "Buy now" buttons', 'woo-vipps'),
+                        'title'       => __('Compatibility mode', 'woo-vipps'),
+                        'label'       => __('Compatibility mode', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('Choosing this will use a different method of handling the "Buy now" button on a single product, which will work for more product types and more plugins - while being <i>slightly</i> less smooth. Use this if your product needs more configuration than simple or standard variable products', 'woo-vipps'),
+                        /* translators: this is a description for the %s setting */
+                        'description' => sprintf(__('Use an alternative %s flow for better compatibility with complex product types and plugins.', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => 'no',
                         ),
 
 
                 'deletefailedexpressorders' => array(
-                        'title'       => __('Delete failed Express Checkout Orders', 'woo-vipps'),
-                        'label'       => __('Delete failed Express Checkout Orders', 'woo-vipps'),
+                        'title'       => __('Delete failed orders', 'woo-vipps'),
+                        'label'       => __('Delete failed orders', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('As Express Checkout orders are anonymous, failed orders will end up as "cancelled" orders with no information in them. Enable this to delete these automatically when cancelled - but test to make sure no other plugin needs them for anything.', 'woo-vipps'),
+                        'description' => sprintf(__('Automatically delete cancelled %s orders that contain no customer or order information. Make sure to test if other plugins needs these orders intact.', 'woo-vipps'), Vipps::ExpressName(), strtolower($mainfields['main_options']['title'])),
                         'default'     => 'no',
                         )
         );

@@ -27,6 +27,14 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         descriptionKey="express_show_in_checkout.description"
       />
 
+      {/* Renders a checkbox to enable Express Checkout button on catalog pages */}
+      <CheckboxFormField
+        name="singleproductexpressarchives"
+        titleKey="singleproductexpressarchives.title"
+        labelKey="singleproductexpressarchives.label"
+        descriptionKey="singleproductexpressarchives.description"
+      />
+
       {/* Renders a select field that allows an admin to specify which products should have the "express checkout" option enabled  */}
       <SelectFormField
         name="singleproductexpress"
@@ -39,13 +47,6 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         ]}
       />
 
-      {/* Renders a checkbox to enable the 'Buy now' button on catalog pages */}
-      <CheckboxFormField
-        name="singleproductexpressarchives"
-        titleKey="singleproductexpressarchives.title"
-        labelKey="singleproductexpressarchives.label"
-        descriptionKey="singleproductexpressarchives.description"
-      />
 
       {/* Renders a checkbox to enable whether or not users should be asked if they've read the store's terms and conditions */}
       <CheckboxFormField
