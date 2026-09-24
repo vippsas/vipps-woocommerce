@@ -184,20 +184,24 @@ jQuery(document).ready(function () {
     # Called in admin-post and will finalize a Vipps Checkout order + send the customer to the payment page.
     public function choose_other_gw () {
         $orderid = intval($_GET['o']);
+
+
         $gw = trim(sanitize_title($_GET['gw']));
         if ($gw == 'any') $gw = "";
         $nonce = $_GET['cb'];
-        $ok = wp_verify_nonce($nonce, 'vipps_gw');
+        $ok = wp_verify_nonce($nonce, 'vipps_gw_' . $orderid);
         if (!$ok) {
             $this->abandonVippsCheckoutOrder(false);
             $this->log(sprintf(__("Orderid %1\$s: Wrong nonce when trying to switch payment methods.", 'woo-vipps'), $orderid), 'error');
             wp_redirect(home_url());
+            exit();
         }
         $order = wc_get_order($orderid);
         if (!$order || $order->get_status() != 'pending') {
             $this->abandonVippsCheckoutOrder(false);
             $this->log(sprintf(__("Orderid %1\$s is not pending when choosing another payment method from Vipps Checkout", 'woo-vipps'), $orderid), 'error');
             wp_redirect(home_url());
+            exit();
         }
 
         try {
@@ -208,6 +212,17 @@ jQuery(document).ready(function () {
                 if (! WC()->session->has_session()) {
                     WC()->session->set_customer_session_cookie( true );
                 }
+
+                // Check to see if we actually are paying for an order in session IOK 2026-09-24
+                $current_pending =  WC()->session->get('vipps_checkout_current_pending');
+
+                if ($orderid != $current_pending) {
+                    $this->abandonVippsCheckoutOrder(false);
+                    $this->log(sprintf(__("Orderid %1\$s: Wrong current pending order when trying to switch payment methods.", 'woo-vipps'), $orderid), 'error');
+                    wp_redirect(home_url());
+                    exit();
+                }
+
                 // There is actually a bug here for KCO which will redirect to the normal checkout page with an error message. 
                 // Try to stop that.. IOK 2024-05-15
                 if ($gw != 'kco') {
