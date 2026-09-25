@@ -48,27 +48,16 @@ export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, in
   const paymentMethod = getOption("payment_method_name");
 
   return (
-    <WPFormField>
-      <WPLabel htmlFor={name}>{fixCheckoutName(gettext(titleKey), paymentMethod)}</WPLabel>
-      <div className="vipps-mobilepay-react-col">
-        <div className="vipps-mobilepay-react-row-center">
-          <WPCheckbox
-            disabled={disabled}
-            id={name}
-            name={name}
-            checked={inverted ? invertTruth(getOption(name)) : getOption(name)}
-            onChange={(value) =>
-              inverted
-                ? setOption(name, invertTruth(value))
-                : setOption(name, value)
-            }
-          />
-          {labelKey && (
-            <label htmlFor={name}>
-              <UnsafeHtmlText htmlString={fixCheckoutName(gettext(labelKey), paymentMethod)} />
-            </label>
-          )}
-        </div>
+    <WPFormField className="vipps-mobilepay-react-switch-field">
+      <WPCheckbox
+        disabled={disabled}
+        id={name}
+        name={name}
+        checked={inverted ? invertTruth(getOption(name)) : getOption(name)}
+        onChange={(value) => setOption(name, inverted ? invertTruth(value) : value)}
+      />
+      <div className="vipps-mobilepay-react-switch-copy">
+        <WPLabel htmlFor={name}>{fixCheckoutName(gettext(titleKey), paymentMethod)}</WPLabel>
         {descriptionKey && (
           <UnsafeHtmlText
             className="vipps-mobilepay-react-field-description"

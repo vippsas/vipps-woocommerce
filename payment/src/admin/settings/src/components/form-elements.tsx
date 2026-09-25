@@ -1,4 +1,4 @@
-import { ComponentProps, PropsWithChildren } from 'react';
+import { ComponentProps } from 'react';
 import { LoadingSpinner } from './loading-spinner';
 
 /**
@@ -8,7 +8,7 @@ import { LoadingSpinner } from './loading-spinner';
  */
 export function WPInput(props: ComponentProps<'input'>): JSX.Element {
   return (
-    <input {...props} className={['input-text regular-input', props.className ?? ''].join(' ')} style={{ height: 30 }}>
+    <input {...props} className={['vipps-mobilepay-react-control input-text regular-input', props.className ?? ''].join(' ')}>
       {props.children}
     </input>
   );
@@ -58,11 +58,11 @@ interface WPButton extends ComponentProps<'button'> {
  */
 export function WPButton({ variant, isLoading, disabled, ...restProps }: WPButton): JSX.Element {
   return (
-    <button {...restProps} disabled={isLoading || disabled} className={[`button-${variant}`, restProps.className ?? ''].join(' ')}>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+    <button {...restProps} disabled={isLoading || disabled} className={['vipps-mobilepay-react-button', `button-${variant ?? 'secondary'}`, restProps.className ?? ''].join(' ')}>
+      <span className="vipps-mobilepay-react-button-content">
         {isLoading && <LoadingSpinner />}
         <span>{restProps.children}</span>
-      </div>
+      </span>
     </button>
   );
 }
@@ -100,19 +100,17 @@ interface WPCheckboxProps {
  * Renders a checkbox input component.
  * @returns The rendered checkbox element.
  */
-export function WPCheckbox({ id, name, onChange, checked, children, className, disabled = false}: PropsWithChildren<WPCheckboxProps>): JSX.Element {
+export function WPCheckbox({ id, name, onChange, checked, className, disabled = false}: WPCheckboxProps): JSX.Element {
   return (
     <input
       id={id}
       name={name}
-      checked={checked ? truthToBool(checked) : undefined}
+      checked={truthToBool(checked ?? null)}
       onChange={(e) => onChange(boolToTruth(e.target.checked))}
       type="checkbox"
-      className={[className ?? ''].join(' ')}
+      className={['vipps-mobilepay-react-switch', className ?? ''].join(' ')}
       disabled={disabled}
-    >
-      {children}
-    </input>
+    />
   );
 }
 
@@ -127,7 +125,7 @@ interface WPSelectProps extends ComponentProps<'select'> {
 export function WPSelect({ error, ...props }: WPSelectProps): JSX.Element {
   return (
     <div>
-      <select {...props} className={['', props.className ?? '', error ? 'has-error' : ''].join(' ')}>
+      <select {...props} aria-invalid={!!error} className={['vipps-mobilepay-react-control', props.className ?? '', error ? 'has-error' : ''].join(' ')}>
         {props.children}
       </select>
       {error && (
@@ -159,7 +157,7 @@ export function WPOption(props: ComponentProps<'option'>) {
  */
 export function WPTextarea(props: ComponentProps<'textarea'>) {
   return (
-    <textarea {...props} className={[props.className ?? ''].join(' ')}>
+    <textarea {...props} className={['vipps-mobilepay-react-control', props.className ?? ''].join(' ')}>
       {props.children}
     </textarea>
   );
