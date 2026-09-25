@@ -1100,61 +1100,62 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'title' => "Checkout", // Vipps::CheckoutName(), // Don't translate this, but save some space IOK 2024-12-06
                     'type'  => 'title',
                     'class' => 'tab',
-                    'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
+                    'description' => sprintf(__("%1\$s is a service from %2\$s which replaces the usual WooCommerce checkout page with a custom, simplified checkout screen providing payment with %2\$s, card, and some external payment methods.<br>Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
                     ),
 
 
                 'vipps_checkout_enabled' => array(
-                    'title'       => sprintf(__('Activate Alternative %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                    'label'       => sprintf(__('Enable Alternative %1$s screen, replacing the standard checkout page', 'woo-vipps'), Vipps::CheckoutName()),
+                    'title'       => __('Enable/Disable', 'woocommerce'),
+                    'label'       => sprintf(__('Enable %s'), Vipps::CheckoutName()),
                     'type'        => 'checkbox',
-                    'description' => sprintf(__('If activated, this will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy checkout using %1$s or credit card, with no need to type in addresses.', 'woo-vipps'), Vipps::CheckoutName()),
+                    'description' => sprintf(__('This will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy with %2$s, card, and external payment methods - no need to manually type in addresses!', 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
                     'default'     => 'no',
                     ),
 
                 'checkoutcreateuser' => array (
-                        'title'       => sprintf(__('Create new customers on %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                        'label'       => sprintf(__('Create new customers on %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'title'       => __('Create new customers for guest checkouts', 'woo-vipps'),
+                        'label'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Enable this to create and login customers when using %1$s. Otherwise these will all be guest checkouts. If using, you may want to install Login with Vipps too.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => sprintf(__('Create and log in new customers during %s. When disabled, orders are placed as guest checkouts.', 'woo-vipps'), Vipps::ExpressName(), Vipps::LoginName()),
                         'default'     => $vippscreateuserdefault,
                         ),
 
-            'enablestaticshipping_checkout' => array(
-                        'title'       => sprintf(__('Enable static shipping for %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                        'label'       => __('Enable static shipping', 'woo-vipps'),
+                'enablestaticshipping_checkout' => array(
+                        'title'       => __('Static shipping', 'woo-vipps'),
+                        'label'       => __('Static shipping', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('If your shipping options do not depend on the customers address, you can enable \'Static shipping\', which will precompute the shipping options when using %1$s so that this will be much faster. If you do this and the customer isn\'t logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually \'static\', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => sprintf(__('If your shipping options do not depend on the customers address, you can enable this.<br><br>Speed up %s by precalculating shipping options in advance. Guest orders use your store’s base location; logged-in customers use their saved address. Enable this only when those locations produce accurate shipping options, such as with flat-rate or free shipping.', 'woo-vipps'), 'Checkout'),
                         'default'     => $default_static_shipping_for_checkout
                         ),
 
-
                 'requireUserInfo_checkout' => array(
-                        'title'       => __('Ask the user to consent to share user information', 'woo-vipps'),
-                        'label'       => __('Ask the user to consent to share user information', 'woo-vipps'),
+                        'title'       => __('Ask customer to share information', 'woo-vipps'),
+                        'label'       => __('Ask customer to share information', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('If using %1$s, ask for the users consent to share user information with the store. This will allow better integration between Login With %1$s but will add another step to first-time buyers.', 'woo-vipps'), Vipps::CompanyName()),
+                        'description' => sprintf(__('Ask for the customer\'s consent to share information with the store. This will allow better integration between %s but will add another step to first-time buyers.', 'woo-vipps'), Vipps::LoginName()),
                         'default'     => 'no'
                         ),
 
+                // Checkout Advanced section
+                'checkout_advanced_section' => [
+                    'title' => __('Advanced settings', 'woo-vipps'),
+                    'type' => 'title',
+                ],
                 'noAddressFields' => array(
-                        'title'       => __('Drop the address fields on the Checkout screen', 'woo-vipps'),
-                        'label'       => __('Don\'t require the address fields', 'woo-vipps'),
+                        'title'       => __('Don\'t require address fields', 'woo-vipps'),
+                        'label'       => __('Don\'t require address fields', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('If your products <i>don\'t require shipping</i>, either because they are digital downloads, immaterial products or delivering the products directly on purchase, you can check this box. The user will then not be required to provide an address, which should speed things up a bit. If your products require shipping, this will have no effect. NB: If you have plugins that require shipping information, then this is not going to work very well.','woo-vipps'),
+                        'description' => sprintf(__('Hides the address fields in %1$s, which speeds up the %2$s process if your products <b>don\'t</b> require shipping (e.g virtual products)<br>NB: If you have plugins that require shipping information, then this is not going to work very well.','woo-vipps'), Vipps::CheckoutName(), 'Checkout'),
                         'default'     => 'no'
-                    ),
-
+                        ),
                 'noContactFields' => array(
-                        'title'       => __('Drop the contact fields on the Checkout screen', 'woo-vipps'),
-                        'label'       => __('Don\'t require the contact fields', 'woo-vipps'),
+                        'title'       => __('Don\'t require contact fields', 'woo-vipps'),
+                        'label'       => __('Don\'t require contact fields', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('If your products <i>don\'t require shipping</i> as above, and you also don\'t care about the customers name or contact information, you can drop this too! The customer fields will then be filled with a placeholder. NB: If you have plugins that require contact information, then this is not going to work very well. Also, for this to work you have to check the \'no addresses\' box as well.','woo-vipps'),
+                        'description' => sprintf(__('Only works with \'%3$s\' (see the above option).<br><br>Hides the contact fields in %1$s, which speeds up the %2$s process if you <br>don\'t</b> care about customer/contact information. These will instead be filled with a placeholder.<br>NB: If you have plugins that require contact information, then this is not going to work very well.','woo-vipps'), Vipps::CheckoutName(), 'Checkout', __('Don\'t require address fields', 'woo-vipps')),
                         'default'     => 'no'
-                    ),
-
-      
-                );
+                        ),
+        );
 
         $vipps_checkout_shipping_fields = array(
 
@@ -1590,7 +1591,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Static shipping', 'woo-vipps'),
                         'label'       => __('Static shipping', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('If your shipping options do not depend on the customers address, you can enable this.<br><br>Speed up %s by calculating shipping options in advance. Guest orders use your store’s base location; logged-in customers use their saved address. Enable this only when those locations produce accurate shipping options, such as with flat-rate or free shipping.', 'woo-vipps'), Vipps::ExpressName()),
+                        'description' => sprintf(__('If your shipping options do not depend on the customers address, you can enable this.<br><br>Speed up %s by precalculating shipping options in advance. Guest orders use your store’s base location; logged-in customers use their saved address. Enable this only when those locations produce accurate shipping options, such as with flat-rate or free shipping.', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => 'no',
                         ),
 

@@ -33,6 +33,9 @@ interface Props {
    * Whether to invert the option toggle. Meaning, the checkbox will instead be checked when the option is false, and vice versa. LP 03.01.2025
    */
   inverted?: boolean;
+
+  /* Whether the checkbox is disabled */
+  disabled?: boolean;
 }
 
 /**
@@ -40,7 +43,7 @@ interface Props {
  *
  * Reads and updates the WP data available in the WPOptionsProvider.
  */
-export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, inverted = false }: Props) {
+export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, inverted = false, disabled = false }: Props) {
   const { getOption, setOption } = useWP();
   const paymentMethod = getOption("payment_method_name");
 
@@ -50,6 +53,7 @@ export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, in
       <div className="vipps-mobilepay-react-col">
         <div className="vipps-mobilepay-react-row-center">
           <WPCheckbox
+            disabled={disabled}
             id={name}
             name={name}
             checked={inverted ? invertTruth(getOption(name)) : getOption(name)}

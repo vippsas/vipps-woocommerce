@@ -92,13 +92,15 @@ interface WPCheckboxProps {
    * The CSS class name for the checkbox.
    */
   className?: string;
+  /* Whether the checkbox is disabled */
+  disabled?: boolean;
 }
 
 /**
  * Renders a checkbox input component.
  * @returns The rendered checkbox element.
  */
-export function WPCheckbox({ id, name, onChange, checked, children, className }: PropsWithChildren<WPCheckboxProps>): JSX.Element {
+export function WPCheckbox({ id, name, onChange, checked, children, className, disabled = false}: PropsWithChildren<WPCheckboxProps>): JSX.Element {
   return (
     <input
       id={id}
@@ -107,6 +109,7 @@ export function WPCheckbox({ id, name, onChange, checked, children, className }:
       onChange={(e) => onChange(boolToTruth(e.target.checked))}
       type="checkbox"
       className={[className ?? ''].join(' ')}
+      disabled={disabled}
     >
       {children}
     </input>
