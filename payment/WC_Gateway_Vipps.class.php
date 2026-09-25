@@ -1318,15 +1318,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'class' => 'tab',
             ),
             'enabled' => array(
-                'title'       => __('Enable', 'woocommerce'),
-                'label'       => __('Enable', 'woocommerce'),
-                'description'       => sprintf(__('Enable %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                'title'       => sprintf(__('Enable %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                'label' => '',
+                'description' => '',
                 'type'        => 'checkbox',
                 'default'     => 'no',
             ),
             'country' => array(
                 'title' => __('Country', 'woo-vipps'),
-                'label' => __('Country', 'woo-vipps'),
+                'label' => '',
                 'type' => 'select',
                 'options' => array(
                     'NO' => __('Norway', 'woo-vipps'),
@@ -1409,9 +1409,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             'vippsdefault' => array(
                 'title'       => __('Default payment method', 'woo-vipps'),
-                'label'       => sprintf(__('Set %s as the default payment method', 'woo-vipps'), $this->get_payment_method_name()),
+                'label'       => '',
                 'type'        => 'checkbox',
-                'description' => sprintf(__('Use %1$s as the default payment method on the checkout page.', 'woo-vipps'), $payment_method_name),
+                'description' => sprintf(__('Use %1$s as the default payment method on the checkout page', 'woo-vipps'), $payment_method_name),
                 'default'     => 'yes',
             ),
 

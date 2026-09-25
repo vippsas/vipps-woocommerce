@@ -29,12 +29,18 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
       {/* Don't show the rest of the options if the above gw main option is disabled. LP 2026-09-25 */}
       {gwEnabled && (<>
         {/* Renders a checkbox that specifies whether or not Vipps is the default payment method */}
-        <SwitchFormField name="vippsdefault" titleKey="vippsdefault.title" descriptionKey='vippsdefault.description' labelKey="vippsdefault.label" />
+        <SwitchFormField
+          name="vippsdefault"
+          titleKey="vippsdefault.title"
+          descriptionKey='vippsdefault.description'
+          labelKey="vippsdefault.label"
+        />
 
         {/* Renders a select field that specifies the country */}
         <SelectFormField
           name="country"
           titleKey="country.title"
+          labelKey="country.label"
           descriptionKey="country.description"
           includeEmptyOption={false}
           required

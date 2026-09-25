@@ -43,7 +43,7 @@ interface Props {
  *
  * Reads and updates the WP data available in the WPOptionsProvider.
  */
-export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, inverted = false, disabled = false }: Props) {
+export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, inverted = false }: Props) {
   const { getOption, setOption } = useWP();
   const paymentMethod = getOption("payment_method_name");
 
@@ -53,7 +53,6 @@ export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, in
       <div className="vipps-mobilepay-react-col">
         <div className="vipps-mobilepay-react-row-center">
           <WPCheckbox
-            disabled={disabled}
             id={name}
             name={name}
             checked={inverted ? invertTruth(getOption(name)) : getOption(name)}
@@ -96,7 +95,7 @@ export function SwitchFormField({ name, titleKey, labelKey, descriptionKey, inve
         checked={inverted ? invertTruth(getOption(name)) : getOption(name)}
         onChange={(value) => setOption(name, inverted ? invertTruth(value) : value)}
       />
-      <div className="vipps-mobilepay-react-switch-copy">
+      <div className="vipps-mobilepay-react-switch-info">
         <WPLabel htmlFor={name}>{title}</WPLabel>
         {label && label !== title && (
           <UnsafeHtmlText className="vipps-mobilepay-react-field-label" htmlString={label} />
