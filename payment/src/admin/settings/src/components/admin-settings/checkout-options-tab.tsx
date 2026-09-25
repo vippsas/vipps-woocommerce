@@ -24,6 +24,14 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
   return (
     <div>
 
+      <div className="vipps-settings-callout">
+        <h3>{fixCheckoutName(gettext("kustom_sale_1"), paymentMethod)}</h3>
+        <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_2"), paymentMethod)}></UnsafeHtmlText></p>
+        <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_3"), paymentMethod)}></UnsafeHtmlText></p>
+        <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_4"), paymentMethod)}></UnsafeHtmlText></p>
+        <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_5"), paymentMethod)}></UnsafeHtmlText></p>
+        <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_6"), paymentMethod)}></UnsafeHtmlText></p>
+      </div>
 
 
       <p className="vipps-mobilepay-react-tab-description">
@@ -31,15 +39,6 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           htmlString={fixCheckoutName(gettext("checkout_options.description"), paymentMethod)}
         />
       </p>
-
-    <div className="vipps-settings-callout">
-     <h3>{fixCheckoutName(gettext("kustom_sale_1"), paymentMethod)}</h3>
-     <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_2"), paymentMethod)}></UnsafeHtmlText></p>
-     <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_3"), paymentMethod)}></UnsafeHtmlText></p>
-     <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_4"), paymentMethod)}></UnsafeHtmlText></p>
-     <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_5"), paymentMethod)}></UnsafeHtmlText></p>
-     <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_6"), paymentMethod)}></UnsafeHtmlText></p>
-    </div>
 
       {/* Renders a checkbox to enable Checkout */}
       <SwitchFormField

@@ -15,15 +15,15 @@ export function AdminSettingsCCOptionsTab(): JSX.Element {
 
   return (
     <div>
-      <p className="vipps-mobilepay-react-tab-description">{gettext('cc_options.description')}</p>
-
       {/* Warning about possible unavailability in test environment if test mode is enabled. LP 2026-05-28 */}
       {truthToBool(getOption('testmode')) && (
         <div className="vipps-settings-callout"><UnsafeHtmlText htmlString={gettext("cc_options.test_mode_warning")}></UnsafeHtmlText></div>
       )}
 
-        {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
-        <SwitchFormField name="cc_enabled" titleKey="cc_enabled.title" labelKey="cc_enabled.label" />
+      <p className="vipps-mobilepay-react-tab-description">{gettext('cc_options.description')}</p>
+
+      {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
+      <SwitchFormField name="cc_enabled" titleKey="cc_enabled.title" labelKey="cc_enabled.label" />
 
       {/* Only show the rest if cc is enabled (above option). LP 2026-09-25 */}
       {ccEnabled && (<>
