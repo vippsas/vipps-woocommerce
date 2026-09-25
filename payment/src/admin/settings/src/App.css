@@ -188,6 +188,10 @@
   font-size: 0.92rem;
 }
 
+.vipps-mobilepay-react-secondary-label {
+  font-weight: normal;
+}
+
 .vipps-mobilepay-react-form-field {
   padding: .7rem 0;
   border-bottom: 1px solid #eef0f5;
