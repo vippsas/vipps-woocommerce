@@ -3,7 +3,7 @@ import { useWP } from '../../wp-options-provider';
 import { getMetadata, gettext } from '../../lib/wp-data';
 import { CheckboxFormField, InputFormField, SelectFormField, TextareaFormField } from '../options-form-fields';
 import { truthToBool } from '../form-elements';
-import { Accordion } from '../accordion';
+import { Collapsible } from '../collapsible';
 
 /**
  * A React component that renders the main options tab for the admin settings page.
@@ -80,7 +80,8 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
         {/* Renders a textarea field for the description */}
         <TextareaFormField name="description" titleKey="description.title" descriptionKey="description.description" rows={5} />
 
-        <Accordion title={gettext('order_status_section.title')}>
+        {/* Order status section */ }
+        <Collapsible title={gettext('order_status_section.title')}>
           {/* Renders a select field for the result status (On-Hold or Processing) */}
           <SelectFormField
             name="result_status"
@@ -102,7 +103,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
               { label: gettext('status_on_fail.options.cancelled'), value: 'cancelled' }
             ]}
           />
-        </Accordion>
+        </Collapsible>
       </>)}
     </div>
   );

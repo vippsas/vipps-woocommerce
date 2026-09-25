@@ -5,8 +5,8 @@ interface AccordionProps {
   defaultOpen?: boolean;
 }
 
-/** A collapsible section that keeps its form fields mounted while closed. */
-export function Accordion({ title, defaultOpen = false, children }: PropsWithChildren<AccordionProps>): JSX.Element {
+/** A collapsible accordion-style section. LP 2026-09-25 */
+export function Collapsible({ title, defaultOpen = false, children }: PropsWithChildren<AccordionProps>): JSX.Element {
   return (
     <details className="vipps-mobilepay-react-accordion" open={defaultOpen}>
       <summary className="vipps-mobilepay-react-accordion-title">{title}</summary>

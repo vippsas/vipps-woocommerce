@@ -1445,10 +1445,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'class' => 'tab',
                     ),
 
-            // prod keys
-            'production_keys' => [
+            // prod keys options
+            'production_keys_section' => [
                 'title' => __('Production environment', 'woo-vipps'),
-            'type'  => 'title',
+                'type'  => 'title',
             ],
             'merchantSerialNumber' => array(
                     'title' => __('Merchant Serial Number', 'woo-vipps'),
@@ -1482,10 +1482,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => '',
                     ),
 
-            // test keys
-            'test_keys' => [
+            // test keys options
+            'test_keys_section' => [
                 'title' => __('Test environment', 'woo-vipps'),
-            'type'  => 'title',
+                'type'  => 'title',
             ],
             'merchantSerialNumber_test' => array(
                     'title' => __('Merchant Serial Number', 'woo-vipps'),
@@ -1566,6 +1566,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => sprintf(__('Products purchasable with %s. If you choose %s, enable it individually for the products you want to support.', 'woo-vipps'), __('Selected products', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => 'none',
                         ),
+
+                // Express shipping options
+                'express_shipping_section' => [
+                    'title' => __('Shipping', 'woo-vipps'),
+                    'type'  => 'title',
+                ],
                 'expresscheckout_termscheckbox' => array(
                         'title'       => __('Require terms and conditions confirmation', 'woo-vipps'),
                         'label'       => __('Require terms and conditions confirmation', 'woo-vipps'),
@@ -1573,7 +1579,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => __('Ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'),
                         'default'     => 'no',
                         ),
-
                 'expresscheckout_always_address' => array(
                         'title'       => __('Always ask for address', 'woo-vipps'),
                         'label'       => __('Always ask for address', 'woo-vipps'),
@@ -1581,7 +1586,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => __('Always ask customers for their address even when the order only contains products that don\'t require shipping (e.g "virtual" products)', 'woo-vipps'),
                         'default'     => $default_ask_address_for_express,
                 ),
-
                 'enablestaticshipping' => array(
                         'title'       => __('Static shipping', 'woo-vipps'),
                         'label'       => __('Static shipping', 'woo-vipps'),
@@ -1590,7 +1594,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no',
                         ),
 
-
+                // Express advanced options
+                'express_advanced_section' => [
+                    'title' => __('Advanced settings', 'woo-vipps'),
+                    'type'  => 'title',
+                ],
                 'expresscreateuser' => array (
                         'title'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'label'       => __('Create new customers for guest checkouts', 'woo-vipps'),
@@ -1598,7 +1606,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => sprintf(__('Create and log in new customers during %s checkout. When disabled, orders are placed as guest checkouts.<br>If you have %s installed, customer creation is enabled by default unless disabled in WooCommerce', 'woo-vipps'), Vipps::ExpressName(), Vipps::LoginName()),
                         'default'     => $expresscreateuserdefault,
                         ),
-
                 'singleproductbuynowcompatmode' => array(
                         'title'       => __('Compatibility mode', 'woo-vipps'),
                         'label'       => __('Compatibility mode', 'woo-vipps'),
@@ -1607,8 +1614,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => sprintf(__('Use an alternative %s flow for better compatibility with complex product types and plugins.', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => 'no',
                         ),
-
-
                 'deletefailedexpressorders' => array(
                         'title'       => __('Delete failed orders', 'woo-vipps'),
                         'label'       => __('Delete failed orders', 'woo-vipps'),

@@ -1,5 +1,5 @@
 import { gettext } from "../../lib/wp-data";
-import { Accordion } from "../accordion";
+import { Collapsible } from "../collapsible";
 import {
   InputFormField,
 } from "../options-form-fields";
@@ -13,7 +13,7 @@ export function AdminSettingsKeysOptionsTab(): JSX.Element {
   return (
     <div>
       {/* Prod keys section */}
-      <Accordion defaultOpen title={gettext("production_keys.title")}>
+      <Collapsible defaultOpen title={gettext("production_keys_section.title")}>
         <p className="vipps-mobilepay-react-tab-description"></p>
 
         {/* Renders an input field for the merchant serial number */}
@@ -47,10 +47,10 @@ export function AdminSettingsKeysOptionsTab(): JSX.Element {
           titleKey="Ocp_Apim_Key_eCommerce.title"
           descriptionKey="Ocp_Apim_Key_eCommerce.description"
         />
-      </Accordion>
+      </Collapsible>
 
       {/* Test keys section */}
-      <Accordion title={gettext("test_keys.title")}>
+      <Collapsible title={gettext("test_keys_section.title")}>
         <p className="vipps-mobilepay-react-tab-description"></p>
 
         {/* Renders an input field for the TEST merchant serial number */}
@@ -84,7 +84,7 @@ export function AdminSettingsKeysOptionsTab(): JSX.Element {
           titleKey="Ocp_Apim_Key_eCommerce_test.title"
           descriptionKey="Ocp_Apim_Key_eCommerce_test.description"
         />
-      </Accordion>
+      </Collapsible>
     </div>
   );
 }
