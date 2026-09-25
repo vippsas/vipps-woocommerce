@@ -1334,7 +1334,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'FI' => __('Finland', 'woo-vipps'),
                     'DK' => __('Denmark', 'woo-vipps'),
                 ),
-                'description' => __('Select the country for this merchant serial number. This will determine the appropriate payment method (Vipps or MobilePay).', 'woo-vipps'),
+                'description' => __('The country of your merchant serial number. This will determine the appropriate payment method below.', 'woo-vipps'),
                 'default' => $country_code,
             ),
 
