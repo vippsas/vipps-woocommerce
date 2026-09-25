@@ -122,7 +122,7 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
                 'description' => array(
                     'title' => __('Description', 'woocommerce'),
                     'type' => 'textarea',
-                    'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
+                    'description' => __('The description for card payments the customer sees during checkout', 'woo-vipps'),
                     /* translators: company name */
                     'default' => sprintf(__('Pay with credit or debit card through %1$s', 'woo-vipps'), Vipps::CompanyName()),
                     ),

@@ -11,6 +11,7 @@ import { truthToBool } from '../form-elements';
  */
 export function AdminSettingsCCOptionsTab(): JSX.Element {
   const { getOption } = useWP();
+  const ccEnabled = truthToBool(getOption('cc_enabled'));
 
   return (
     <div>
@@ -23,12 +24,14 @@ export function AdminSettingsCCOptionsTab(): JSX.Element {
         </div>
       )}
 
-      {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
-      <CheckboxFormField name="cc_enabled" titleKey="cc_enabled.title" labelKey="cc_enabled.label" />
+        {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
+        <CheckboxFormField name="cc_enabled" titleKey="cc_enabled.title" labelKey="cc_enabled.label" />
 
-      {/* Renders a textarea field for the description */}
-      <TextareaFormField name="cc_description" titleKey="cc_description.title" descriptionKey="cc_description.description" rows={5} />
-
+      {/* Only show the rest if cc is enabled (above option). LP 2026-09-25 */}
+      {ccEnabled && (<>
+        {/* Renders a textarea field for the description */}
+        <TextareaFormField name="cc_description" titleKey="cc_description.title" descriptionKey="cc_description.description" rows={5} />
+      </>)}
     </div>
   );
 }
