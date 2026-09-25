@@ -114,7 +114,7 @@ export function WPCheckbox({ id, name, onChange, checked, className, disabled = 
   );
 }
 
-/** Renders a switch styled native checkbox while keeping WPCheckbox available separately. */
+/** Renders a switch styled native checkbox */
 export function WPSwitchToggle(props: WPCheckboxProps): JSX.Element {
   return <WPCheckbox {...props} className={['vipps-mobilepay-react-switch', props.className ?? ''].join(' ')} />;
 }

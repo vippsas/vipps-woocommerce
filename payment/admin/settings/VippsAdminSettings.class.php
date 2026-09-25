@@ -163,7 +163,7 @@ class VippsAdminSettings
 
         // We must first generate the root element for the React UI before we load the React app itself, otherwise React will fail to load.
         ?>
-        <div class="wp-header-end"></div>
+        <div class="wp-header-end"></div> <?php // this makes the wp admin notices render here instead of inside the settings panel. LP 2026-09-25 ?>
         <div id="vipps-mobilepay-react-ui"></div>
         <?php
 
