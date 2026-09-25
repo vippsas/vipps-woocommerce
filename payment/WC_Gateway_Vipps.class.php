@@ -1511,16 +1511,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
                 'cartexpress' => array(
-                        'title'       => __('Enable in cart', 'woo-vipps'),
-                        'label'       => __('Enable in cart', 'woo-vipps'),
+                        'title'       => sprintf(__('Enable %s in cart', 'woo-vipps'), Vipps::ExpressName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
                         'description' => __('Let customers buy directly from the cart without logging in or entering an address.', 'woo-vipps'),
                         'default'     => 'yes',
                         ),
 
                 'express_show_in_checkout' => array(
-                        'title'       => __('Enable in checkout', 'woo-vipps'),
-                        'label'       => __('Enable in checkout', 'woo-vipps'),
+                        'title'       => sprintf(__('Enable %s in checkout', 'woo-vipps'), Vipps::ExpressName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
                         'description' => __('Let customers buy directly from the checkout without logging in or entering an address.', 'woo-vipps'),
                         'default'     => $default_express_show_in_checkout,
@@ -1528,15 +1528,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                 // LP TODO: in the redesign, make this a custom dropdown "Specify supported products". LP 2026-09-24
                 'singleproductexpressarchives' => array(
-                        'title'       => __('Enable on catalog pages', 'woo-vipps'),
-                        'label'       => __('Enable on catalog pages', 'woo-vipps'),
+                        'title'       => sprintf(__('Enable %s on catalog pages', 'woo-vipps'), Vipps::ExpressName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
                         'description' => sprintf(__('Enables %s on product catalog pages for supported products (see the below setting).<br>Let customers buy directly from product catalog pages without logging in or entering an address.', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => 'no',
                         ),
                 'singleproductexpress' => array(
-                        'title'       => __('Specify supported products'),
-                        'label'       => __('Specify supported products', 'woo-vipps'),
+                        'title'       => sprintf(__('Specify %s supported products'), Vipps::ExpressName()),
+                        'label'       => '',
                         'type'        => 'select',
                         'options' => array(
                             'none' => __('No products','woo-vipps'),
