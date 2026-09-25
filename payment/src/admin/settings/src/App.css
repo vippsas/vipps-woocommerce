@@ -55,7 +55,7 @@
 }
 
 .vipps-settings-panel {
-  padding: clamp(1.5rem, 3vw, 2.5rem);
+  padding: 1.25rem;
   border: 1px solid var(--vipps-settings-line);
   border-radius: 14px;
   background: #fff;
@@ -385,7 +385,7 @@
 }
 
 .vipps-mobilepay-react-collapsible-content {
-  padding: 1.15rem 1.25rem 0.2rem;
+  padding: 0.2rem 1.25rem;
   border-top: 1px solid var(--vipps-settings-line);
   background: #fff;
   border-radius: 0 0 11px 11px;
