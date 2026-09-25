@@ -1355,12 +1355,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             ),
 
             'orderprefix' => array(
-                'title' => __('Order-id Prefix', 'woo-vipps'),
-                'label'       => __('Order-id Prefix', 'woo-vipps'),
+                'title' => __('Order ID prefix', 'woo-vipps'),
+                'label'       => __('Order ID prefix', 'woo-vipps'),
                 'type'        => 'string',
                 'description' => __('An alphanumeric textstring to use as a prefix on orders from your shop, to avoid duplicate order-ids','woo-vipps'),
                 'default'     => $orderprefix
             ),
+
+            // Order status options
+            'order_status_section' => [
+                'title' => __('Order status', 'woo-vipps'),
+                'type'  => 'title',
+            ],
             'result_status' => array(
                 'title'       => __('Order status on payment reservation', 'woo-vipps'),
                 'label'       => __('Choose default order status for reserved (not captured) orders', 'woo-vipps'),
@@ -1411,7 +1417,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             ),
 
             'vippsdefault' => array(
-                'title'       => __('Set as the default payment method', 'woo-vipps'),
+                'title'       => __('Default payment method', 'woo-vipps'),
                 'label'       => sprintf(__('Set %s as the default payment method', 'woo-vipps'), $this->get_payment_method_name()),
                 'type'        => 'checkbox',
                 'description' => sprintf(__('Use %1$s as the default payment method on the checkout page.', 'woo-vipps'), $payment_method_name),

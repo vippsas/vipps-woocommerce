@@ -3,6 +3,7 @@ import { useWP } from '../../wp-options-provider';
 import { getMetadata, gettext } from '../../lib/wp-data';
 import { CheckboxFormField, InputFormField, SelectFormField, TextareaFormField } from '../options-form-fields';
 import { truthToBool } from '../form-elements';
+import { Accordion } from '../accordion';
 
 /**
  * A React component that renders the main options tab for the admin settings page.
@@ -79,27 +80,29 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
         {/* Renders a textarea field for the description */}
         <TextareaFormField name="description" titleKey="description.title" descriptionKey="description.description" rows={5} />
 
-        {/* Renders a select field for the result status (On-Hold or Processing) */}
-        <SelectFormField
-          name="result_status"
-          titleKey="result_status.title"
-          descriptionKey="result_status.description"
-          options={[
-            { label: gettext('result_status.options.on-hold'), value: 'on-hold' },
-            { label: gettext('result_status.options.processing'), value: 'processing' }
-          ]}
-        />
+        <Accordion title={gettext('order_status_section.title')}>
+          {/* Renders a select field for the result status (On-Hold or Processing) */}
+          <SelectFormField
+            name="result_status"
+            titleKey="result_status.title"
+            descriptionKey="result_status.description"
+            options={[
+              { label: gettext('result_status.options.on-hold'), value: 'on-hold' },
+              { label: gettext('result_status.options.processing'), value: 'processing' }
+            ]}
+          />
 
-        {/* Renders a select field for the order status on failed payment. LP 2026-03-26 */}
-        <SelectFormField
-          name="status_on_fail"
-          titleKey="status_on_fail.title"
-          descriptionKey="status_on_fail.description"
-          options={[
-            { label: gettext('status_on_fail.options.failed'), value: 'failed' },
-            { label: gettext('status_on_fail.options.cancelled'), value: 'cancelled' }
-          ]}
-        />
+          {/* Renders a select field for the order status on failed payment. LP 2026-03-26 */}
+          <SelectFormField
+            name="status_on_fail"
+            titleKey="status_on_fail.title"
+            descriptionKey="status_on_fail.description"
+            options={[
+              { label: gettext('status_on_fail.options.failed'), value: 'failed' },
+              { label: gettext('status_on_fail.options.cancelled'), value: 'cancelled' }
+            ]}
+          />
+        </Accordion>
       </>)}
     </div>
   );
