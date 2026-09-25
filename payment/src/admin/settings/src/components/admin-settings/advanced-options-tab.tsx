@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useWPImageUpload } from '../../hooks/use-wp-image-upload';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
-import { CheckboxFormField, SelectFormField } from '../options-form-fields';
+import { SwitchFormField, SelectFormField } from '../options-form-fields';
 import { WPButton, WPFormField, WPLabel } from '../form-elements';
 import { NotificationBanner } from '../notification-banner';
 
@@ -56,10 +56,10 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
       <p className="vipps-mobilepay-react-tab-description">{gettext('advanced_options.description')}</p>
 
       {/* Renders a checkbox to enable test mode */}
-      <CheckboxFormField name="testmode" titleKey="testmode.title" descriptionKey="testmode.description" labelKey="testmode.label" />
+      <SwitchFormField name="testmode" titleKey="testmode.title" descriptionKey="testmode.description" labelKey="testmode.label" />
 
       {/* Renders a checkbox to enable the sending of receipts */}
-      <CheckboxFormField
+      <SwitchFormField
         name="sendreceipts"
         titleKey="sendreceipts.title"
         labelKey="sendreceipts.label"
@@ -78,7 +78,7 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         ]}
       />
 
-      <CheckboxFormField
+      <SwitchFormField
         labelKey="vippsorderattribution.label"
         name="vippsorderattribution"
         titleKey="vippsorderattribution.title"
@@ -136,10 +136,10 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
       </WPFormField>
 
       {/* Renders a checkbox to enable the use of flock() */}
-      <CheckboxFormField name="use_flock" titleKey="use_flock.title" descriptionKey="use_flock.description" labelKey="use_flock.label" />
+      <SwitchFormField name="use_flock" titleKey="use_flock.title" descriptionKey="use_flock.description" labelKey="use_flock.label" />
 
       {/* Renders a checkbox to delete (reset) plugin settings on plugin deactivation. LP 2025-10-06 */}
-      <CheckboxFormField
+      <SwitchFormField
         name="delete_settings_on_deactivation"
         titleKey="delete_settings_on_deactivation.title"
         descriptionKey="delete_settings_on_deactivation.description"

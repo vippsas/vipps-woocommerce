@@ -1,4 +1,4 @@
-import { CheckboxFormField,  TextareaFormField } from '../options-form-fields';
+import { SwitchFormField,  TextareaFormField } from '../options-form-fields';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
 import { UnsafeHtmlText } from '../unsafe-html-text';
@@ -25,7 +25,7 @@ export function AdminSettingsCCOptionsTab(): JSX.Element {
       )}
 
         {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
-        <CheckboxFormField name="cc_enabled" titleKey="cc_enabled.title" labelKey="cc_enabled.label" />
+        <SwitchFormField name="cc_enabled" titleKey="cc_enabled.title" labelKey="cc_enabled.label" />
 
       {/* Only show the rest if cc is enabled (above option). LP 2026-09-25 */}
       {ccEnabled && (<>

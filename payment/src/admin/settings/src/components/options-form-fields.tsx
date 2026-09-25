@@ -2,7 +2,7 @@ import { useState } from 'react';
 import fixCheckoutName from '../lib/fix-checkout-name';
 import { gettext } from '../lib/wp-data';
 import { useWP } from '../wp-options-provider';
-import { invertTruth, WPCheckbox, WPFormField, WPInput, WPLabel, WPOption, WPSelect, WPTextarea } from './form-elements';
+import { invertTruth, WPCheckbox, WPSwitchToggle, WPFormField, WPInput, WPLabel, WPOption, WPSelect, WPTextarea } from './form-elements';
 import { UnsafeHtmlText } from './unsafe-html-text';
 
 /**
@@ -48,8 +48,46 @@ export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, in
   const paymentMethod = getOption("payment_method_name");
 
   return (
+    <WPFormField>
+      <WPLabel htmlFor={name}>{fixCheckoutName(gettext(titleKey), paymentMethod)}</WPLabel>
+      <div className="vipps-mobilepay-react-col">
+        <div className="vipps-mobilepay-react-row-center">
+          <WPCheckbox
+            disabled={disabled}
+            id={name}
+            name={name}
+            checked={inverted ? invertTruth(getOption(name)) : getOption(name)}
+            onChange={(value) =>
+              inverted
+                ? setOption(name, invertTruth(value))
+                : setOption(name, value)
+            }
+          />
+          {labelKey && (
+            <label htmlFor={name}>
+              <UnsafeHtmlText htmlString={fixCheckoutName(gettext(labelKey), paymentMethod)} />
+            </label>
+          )}
+        </div>
+        {descriptionKey && (
+          <UnsafeHtmlText
+            className="vipps-mobilepay-react-field-description"
+            htmlString={fixCheckoutName(gettext(descriptionKey), paymentMethod)}
+          />
+        )}
+      </div>
+    </WPFormField>
+  );
+}
+
+/** A settings field that presents a yes/no option as a switch. */
+export function SwitchFormField({ name, titleKey, descriptionKey, inverted = false, disabled = false }: Props) {
+  const { getOption, setOption } = useWP();
+  const paymentMethod = getOption("payment_method_name");
+
+  return (
     <WPFormField className="vipps-mobilepay-react-switch-field">
-      <WPCheckbox
+      <WPSwitchToggle
         disabled={disabled}
         id={name}
         name={name}

@@ -4,7 +4,7 @@ import { detectPaymentMethodName } from '../../lib/payment-method';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
 import { WPButton, WPFormField, WPLabel, truthToBool } from '../form-elements';
-import { CheckboxFormField, InputFormField, SelectFormField } from '../options-form-fields';
+import { SwitchFormField, InputFormField, SelectFormField } from '../options-form-fields';
 import { UnsafeHtmlText } from '../unsafe-html-text';
 
 /**
@@ -171,7 +171,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             <p>{fixCheckoutName(gettext("checkout_options_wizard.description"), paymentMethod)}</p>
 
             {/* Renders a checkbox to enable the creation of new customers on Checkout */}
-            <CheckboxFormField
+            <SwitchFormField
               name="checkoutcreateuser"
               titleKey={"checkoutcreateuser_wizard.title"}
               labelKey={"checkoutcreateuser_wizard.label"}
@@ -179,7 +179,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             />
 
             {/* Renders a checkbox to enable dynamic shipping (inverted checkbox from static shipping details) */}
-            <CheckboxFormField
+            <SwitchFormField
               name="enablestaticshipping_checkout"
               titleKey="enablestaticshipping_checkout_wizard.title"
               labelKey="enablestaticshipping_checkout_wizard.label"
@@ -188,7 +188,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             />
 
             {/* Renders a checkbox to enable address fields (inverted checkbox from dropping address fields) */}
-            <CheckboxFormField
+            <SwitchFormField
               name="noAddressFields"
               titleKey="noAddressFields_wizard.title"
               labelKey="noAddressFields_wizard.label"
@@ -202,7 +202,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             <p>{fixCheckoutName(gettext("checkout_shipping_wizard.description"), paymentMethod)}</p>
 
             {/* Renders a checkbox to enable Posten Norge  */}
-            <CheckboxFormField
+            <SwitchFormField
               name="vcs_posten"
               titleKey="vcs_posten_wizard.title"
               labelKey="vcs_posten_wizard.label"
@@ -210,7 +210,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             />
 
             {/* Renders a checkbox to enable Posten Nord */}
-            <CheckboxFormField
+            <SwitchFormField
               name="vcs_postnord"
               titleKey="vcs_postnord_wizard.title"
               labelKey="vcs_postnord_wizard.label"
@@ -218,7 +218,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             />
 
             {/* Render a checkbox to enable Porterbuddy */}
-            <CheckboxFormField
+            <SwitchFormField
               name="vcs_porterbuddy"
               titleKey="vcs_porterbuddy_wizard.title"
               labelKey="vcs_porterbuddy_wizard.label"
@@ -254,7 +254,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             )}
 
             {/* Renders a checkbox to enable Helthjem */}
-            <CheckboxFormField
+            <SwitchFormField
               name="vcs_helthjem"
               titleKey="vcs_helthjem_wizard.title"
               labelKey="vcs_helthjem_wizard.label"
@@ -297,7 +297,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 </h3>
                 <p>{fixCheckoutName(gettext("checkout_external_payment_title.description"), paymentMethod)}</p>
                 {showExternalKlarna && (
-                  <CheckboxFormField
+                  <SwitchFormField
                     name="checkout_external_payments_klarna"
                     titleKey="checkout_external_payments_klarna.title"
                     labelKey="checkout_external_payments_klarna.label"
@@ -334,13 +334,13 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             <p><a href="https://vippsmobilepay.com/nb-NO/express">{gettext("express_options_wizard.readmore")}</a></p>
 
             {/* Checkbox to enable express in cart. LP 2026-08-13 */}
-            <CheckboxFormField
+            <SwitchFormField
               name="cartexpress"
               titleKey={"cartexpress.title"}
               labelKey={"cartexpress.label"}
             />
             {/* Checkbox to enable express in checkout. LP 2026-08-13 */}
-            <CheckboxFormField
+            <SwitchFormField
               name="express_show_in_checkout"
               titleKey={"express_show_in_checkout.title"}
               labelKey={"express_show_in_checkout.label"}
@@ -359,7 +359,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               }
               />
             {/* Checkbox to enable express on catalog pages. LP 2026-08-13 */}
-            <CheckboxFormField
+            <SwitchFormField
               name="singleproductexpressarchives"
               titleKey={"singleproductexpressarchives_wizard.title"}
               labelKey={"singleproductexpressarchives_wizard.label"}

@@ -1,7 +1,7 @@
 import fixCheckoutName from '../../lib/fix-checkout-name';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
-import { CheckboxFormField, InputFormField } from '../options-form-fields';
+import { SwitchFormField, InputFormField } from '../options-form-fields';
 import { UnsafeHtmlText } from '../unsafe-html-text';
 import { Collapsible } from '../collapsible';
 import { truthToBool } from '../form-elements';
@@ -42,7 +42,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
     </div>
 
       {/* Renders a checkbox to enable Checkout */}
-      <CheckboxFormField
+      <SwitchFormField
         name="vipps_checkout_enabled"
         titleKey="vipps_checkout_enabled.title"
         labelKey="vipps_checkout_enabled.label" 
@@ -52,7 +52,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
       {/* Dont show the rest of the options if checkout is disabled (the above option). LP 2026-09-25 */}
       {checkoutEnabled && (<>
         {/* Renders a checkbox to enable static shipping */}
-        <CheckboxFormField
+        <SwitchFormField
           name="enablestaticshipping_checkout"
           titleKey="enablestaticshipping_checkout.title"
           labelKey="enablestaticshipping_checkout.label"
@@ -60,7 +60,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
         />
 
         {/* Renders a checkbox to enable the creation of new customers on Checkout */}
-        <CheckboxFormField
+        <SwitchFormField
           name="checkoutcreateuser"
           titleKey="checkoutcreateuser.title"
           labelKey="checkoutcreateuser.label"
@@ -68,7 +68,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
         />
 
         {/* Renders a checkbox to enable the sharing of user information */}
-        <CheckboxFormField
+        <SwitchFormField
           name="requireUserInfo_checkout"
           titleKey="requireUserInfo_checkout.title"
           labelKey="requireUserInfo_checkout.label"
@@ -80,7 +80,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           <p>{fixCheckoutName(gettext("checkout_shipping.description"), paymentMethod)}</p>
 
           {/* Renders a checkbox to enable Posten Norge  */}
-          <CheckboxFormField
+          <SwitchFormField
             name="vcs_posten"
             titleKey="vcs_posten.title"
             descriptionKey="vcs_posten.description"
@@ -88,7 +88,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           />
 
           {/* Renders a checkbox to enable Posten Nord */}
-          <CheckboxFormField
+          <SwitchFormField
             name="vcs_postnord"
             titleKey="vcs_postnord.title"
             descriptionKey="vcs_postnord.description"
@@ -96,7 +96,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           />
 
           {/* Render a checkbox to enable Porterbuddy */}
-          <CheckboxFormField
+          <SwitchFormField
             name="vcs_porterbuddy"
             titleKey="vcs_porterbuddy.title"
             descriptionKey="vcs_porterbuddy.description"
@@ -132,7 +132,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           )}
 
           {/* Renders a checkbox to enable Helthjem */}
-          <CheckboxFormField
+          <SwitchFormField
             name="vcs_helthjem"
             titleKey="vcs_helthjem.title"
             descriptionKey="vcs_helthjem.description"
@@ -175,7 +175,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           {/* Coupon code widget checkbox. LP 2025-05-12 */}
           {/* Will only be present if coupons are activated for woo IOK 2025-05-19 */}
           {gettext("checkout_widget_coupon.title") != "checkout_widget_coupon.title" &&
-            <CheckboxFormField
+            <SwitchFormField
               name="checkout_widget_coupon"
               titleKey="checkout_widget_coupon.title"
               descriptionKey="checkout_widget_coupon.description"
@@ -184,7 +184,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           }
 
           {/* Order notes widget checkbox. LP 2025-05-12 */}
-          <CheckboxFormField
+          <SwitchFormField
             name="checkout_widget_ordernotes"
             titleKey="checkout_widget_ordernotes.title"
             descriptionKey="checkout_widget_ordernotes.description"
@@ -197,7 +197,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           <Collapsible title={fixCheckoutName(gettext("checkout_external_payment_title.title"), paymentMethod)}>
             <p>{fixCheckoutName(gettext("checkout_external_payment_title.description"), paymentMethod)}</p>
             {showExternalKlarna && (
-              <CheckboxFormField
+              <SwitchFormField
                 name="checkout_external_payments_klarna"
                 titleKey="checkout_external_payments_klarna.title"
                 labelKey="checkout_external_payments_klarna.label"
@@ -210,7 +210,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
         {/* Advanced section */ }
         <Collapsible title={gettext('checkout_advanced_section')}>
           {/* Renders a checkbox to enable the dropping of address fields */}
-          <CheckboxFormField
+          <SwitchFormField
             name="noAddressFields"
             titleKey="noAddressFields.title"
             labelKey="noAddressFields.label"
@@ -218,7 +218,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           />
 
           {/* Renders a checkbox to enable the dropping of contact fields */}
-          <CheckboxFormField
+          <SwitchFormField
             disabled={!truthToBool(getOption('noAddressFields'))} // Requires this option!
             name="noContactFields"
             titleKey="noContactFields.title"

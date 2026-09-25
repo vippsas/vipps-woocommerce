@@ -108,10 +108,15 @@ export function WPCheckbox({ id, name, onChange, checked, className, disabled = 
       checked={truthToBool(checked ?? null)}
       onChange={(e) => onChange(boolToTruth(e.target.checked))}
       type="checkbox"
-      className={['vipps-mobilepay-react-switch', className ?? ''].join(' ')}
+      className={className}
       disabled={disabled}
     />
   );
+}
+
+/** Renders a switch styled native checkbox while keeping WPCheckbox available separately. */
+export function WPSwitchToggle(props: WPCheckboxProps): JSX.Element {
+  return <WPCheckbox {...props} className={['vipps-mobilepay-react-switch', props.className ?? ''].join(' ')} />;
 }
 
 /**

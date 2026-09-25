@@ -1,7 +1,7 @@
 import { detectPaymentMethodName, getPaymentMethodSupportedCurrencies, isPaymentMethodCurrencySupported } from '../../lib/payment-method';
 import { useWP } from '../../wp-options-provider';
 import { getMetadata, gettext } from '../../lib/wp-data';
-import { CheckboxFormField, InputFormField, SelectFormField, TextareaFormField } from '../options-form-fields';
+import { SwitchFormField, InputFormField, SelectFormField, TextareaFormField } from '../options-form-fields';
 import { truthToBool } from '../form-elements';
 import { Collapsible } from '../collapsible';
 
@@ -19,12 +19,12 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
       <p className="vipps-mobilepay-react-tab-description"></p>
 
       {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
-      <CheckboxFormField name="enabled" titleKey="enabled.title" labelKey="enabled.label" />
+      <SwitchFormField name="enabled" titleKey="enabled.title" labelKey="enabled.label" />
 
       {/* Don't show the rest of the options if the above gw main option is disabled. LP 2026-09-25 */}
       {gwEnabled && (<>
         {/* Renders a checkbox that specifies whether or not Vipps is the default payment method */}
-        <CheckboxFormField name="vippsdefault" titleKey="vippsdefault.title" labelKey="vippsdefault.label" />
+        <SwitchFormField name="vippsdefault" titleKey="vippsdefault.title" labelKey="vippsdefault.label" />
 
         {/* Renders a select field that specifies the country */}
         <SelectFormField

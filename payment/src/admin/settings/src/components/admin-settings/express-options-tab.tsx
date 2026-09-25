@@ -2,7 +2,7 @@ import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
 import { Collapsible } from '../collapsible';
 import { truthToBool } from '../form-elements';
-import { CheckboxFormField, SelectFormField } from '../options-form-fields';
+import { SwitchFormField, SelectFormField } from '../options-form-fields';
 
 /**
  * A React component that renders the express options tab for the admin settings page.
@@ -22,7 +22,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
 
       {/* LP TODO: collect these four different express-enable-toggles in another way and above the options below. LP 2026-09-25 */ }
       {/* Renders a checkbox to enable Express Checkout in cart */}
-      <CheckboxFormField
+      <SwitchFormField
         name="cartexpress"
         titleKey="cartexpress.title"
         labelKey="cartexpress.title"
@@ -30,7 +30,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
       />
 
       {/* Renders a checkbox to enable Express Checkout in checkout */}
-      <CheckboxFormField
+      <SwitchFormField
         name="express_show_in_checkout"
         titleKey="express_show_in_checkout.title"
         labelKey="express_show_in_checkout.title"
@@ -38,7 +38,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
       />
 
       {/* Renders a checkbox to enable Express Checkout button on catalog pages */}
-      <CheckboxFormField
+      <SwitchFormField
         name="singleproductexpressarchives"
         titleKey="singleproductexpressarchives.title"
         labelKey="singleproductexpressarchives.label"
@@ -58,7 +58,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
       />
 
       {/* Renders a checkbox to enable whether or not users should be asked if they've read the store's terms and conditions */}
-      <CheckboxFormField
+      <SwitchFormField
         name="expresscheckout_termscheckbox"
         titleKey="expresscheckout_termscheckbox.title"
         labelKey="expresscheckout_termscheckbox.label"
@@ -66,7 +66,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
       />
 
       {/* Renders a checkbox to enable whether or not new users should be created when using Express Checkout */}
-      <CheckboxFormField
+      <SwitchFormField
         name="expresscreateuser"
         titleKey="expresscreateuser.title"
         labelKey="expresscreateuser.label"
@@ -74,7 +74,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
       />
 
       {/* Renders a checkbox to enable whether or not failed Express Checkout orders should be deleted */}
-      <CheckboxFormField
+      <SwitchFormField
         name="deletefailedexpressorders"
         titleKey="deletefailedexpressorders.title"
         labelKey="deletefailedexpressorders.label"
@@ -87,7 +87,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         {/* Shipping section */ }
         <Collapsible title={gettext('express_shipping_section')}>
           {/* Renders a checkbox to enable whether or not the users should always be asked for an address */}
-          <CheckboxFormField
+          <SwitchFormField
             name="expresscheckout_always_address"
             titleKey="expresscheckout_always_address.title"
             labelKey="expresscheckout_always_address.label"
@@ -95,7 +95,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
           />
 
           {/* Renders a checkbox to enable static shipping for Express Checkout */}
-          <CheckboxFormField
+          <SwitchFormField
             name="enablestaticshipping"
             titleKey="enablestaticshipping.title"
             labelKey="enablestaticshipping.label"
@@ -106,7 +106,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         {/* Advanced section */ }
         <Collapsible title={gettext('express_advanced_section')}>
           {/* Renders a checkbox to enable compatibility mode for the "Buy now" button */}
-          <CheckboxFormField
+          <SwitchFormField
             name="singleproductbuynowcompatmode"
             titleKey="singleproductbuynowcompatmode.title"
             labelKey="singleproductbuynowcompatmode.label"
