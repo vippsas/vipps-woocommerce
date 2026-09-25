@@ -72,7 +72,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
           name="orderprefix"
           titleKey="orderprefix.title"
           descriptionKey="orderprefix.description"
-          pattern="[a-zA-Z0-9-]+"
+          pattern="[a-zA-Z0-9]+"
           required
         />
 
