@@ -83,6 +83,34 @@
   margin-bottom: 1rem;
 }
 
+.vipps-mobilepay-react-accordion {
+  margin-bottom: 1rem;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.vipps-mobilepay-react-accordion-title {
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.vipps-mobilepay-react-accordion-title:focus-visible {
+  outline: 2px solid #2271b1;
+  outline-offset: 2px;
+}
+
+.vipps-mobilepay-react-accordion-content {
+  padding: 1rem;
+  border-top: 1px solid #c3c4c7;
+}
+
+.vipps-mobilepay-react-accordion-content > p:first-child {
+  margin-top: 0;
+}
+
 /* General */
 .vipps-mobilepay-react-field-description {
   color: #666;
