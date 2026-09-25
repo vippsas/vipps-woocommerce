@@ -353,8 +353,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               required
               includeEmptyOption={false}
               options={
-                /* @ts-ignore */
-                Object.entries(gettext('singleproductexpress')?.options ?? {})
+                Object.entries((gettext('singleproductexpress') as unknown as { options?: Record<string, string> }).options ?? {})
                 .map(([k, v]) => ({value: k, label: v as string}))
               }
               />

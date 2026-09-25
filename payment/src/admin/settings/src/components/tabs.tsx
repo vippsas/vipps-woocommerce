@@ -14,9 +14,11 @@ export function Tabs({ tabs, onTabChange, activeTab }: Props): JSX.Element {
     let nextIndex: number;
     switch (event.key) {
       case 'ArrowRight':
+      case 'ArrowDown':
         nextIndex = (index + 1) % tabs.length;
         break;
       case 'ArrowLeft':
+      case 'ArrowUp':
         nextIndex = (index - 1 + tabs.length) % tabs.length;
         break;
       case 'Home':
@@ -34,14 +36,16 @@ export function Tabs({ tabs, onTabChange, activeTab }: Props): JSX.Element {
   }
 
   return (
-    <div className="vippstabholder" role="tablist">
+    <div className="vippstabholder" role="tablist" aria-orientation="vertical">
       {tabs.map((tab, index) => (
         <button
           key={tab}
+          id={`vipps-settings-tab-${index}`}
           ref={(element) => { tabRefs.current[index] = element; }}
           type="button"
           role="tab"
           aria-selected={tab === activeTab}
+          aria-controls="vipps-settings-tab-panel"
           tabIndex={tab === activeTab ? 0 : -1}
           className={`vipps-mobilepay-react-tab ${tab === activeTab ? 'active' : ''}`}
           onClick={() => onTabChange(tab)}

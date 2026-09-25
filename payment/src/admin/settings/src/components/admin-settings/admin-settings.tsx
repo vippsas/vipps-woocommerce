@@ -69,7 +69,7 @@ export function AdminSettings(): JSX.Element {
 
   // Function to determine if a tab is visible.
   function isVisible(tab: string): boolean {
-    return tab === activeTab;
+    return tab === selectedTab;
   }
 
   // Function to handle the save settings event.
@@ -146,60 +146,75 @@ export function AdminSettings(): JSX.Element {
   const [showWizardScreen, setShowWizardScreen] = useState(() => force_wizard_screen || showWizardp());
 
   const gwEnabled = truthToBool(getOption('enabled'));
+  const visibleTabs = gwEnabled ? getOrderedTabIds() : [MAIN_TAB_ID];
+  const selectedTab = visibleTabs.includes(activeTab) ? activeTab : MAIN_TAB_ID;
 
   return (
-    <>
-      {banner && <NotificationBanner variant={banner.variant} text={banner.text} />}
+    <div className="vipps-settings-shell">
+      <header className="vipps-settings-header">
+        <div className="vipps-settings-brand" aria-hidden="true">
+          <span className="vipps-settings-brand-mark" />
+          Vipps MobilePay
+        </div>
+        <h1>{showWizardScreen ? gettext('wizard_header.title') : selectedTab}</h1>
+      </header>
 
-      {showCurrencyWarning && (
-        <NotificationBanner 
-          variant="error" 
-          text={`${paymentMethod} does not support your store currency (${currency}). Supported currencies: ${getPaymentMethodSupportedCurrencies(paymentMethod).join(', ')}`} 
-        />
+      {(banner || showCurrencyWarning) && (
+        <div className="vipps-settings-notices" role="status">
+          {banner && <NotificationBanner variant={banner.variant} text={banner.text} />}
+          {showCurrencyWarning && (
+            <NotificationBanner
+              variant="error"
+              text={`${paymentMethod} does not support your store currency (${currency}). Supported currencies: ${getPaymentMethodSupportedCurrencies(paymentMethod).join(', ')}`}
+            />
+          )}
+        </div>
       )}
 
       <WPForm onSubmit={handleSaveSettings} className="vippsAdminSettings">
         {showWizardScreen ? (
           // If the important settings are not set, show the wizard screen.
-          <AdminSettingsWizardScreenOptions isLoading={isLoading} />
+          <div className="vipps-settings-panel vipps-settings-panel-wizard">
+            <AdminSettingsWizardScreenOptions isLoading={isLoading} />
+          </div>
         ) : (
           // If the important settings are set, show the normal settings screen.
-          <>
-            {/* If the main gw option is disabled: only show main tab. LP 2026-09-25 */}
-            <Tabs tabs={gwEnabled ? getOrderedTabIds() : [MAIN_TAB_ID]} onTabChange={setActiveTab} activeTab={activeTab} />
+          <div className="vipps-settings-layout">
+            <nav className="vipps-settings-navigation" aria-label={gettext('main_options.title')}>
+              <Tabs tabs={visibleTabs} onTabChange={setActiveTab} activeTab={selectedTab} />
+            </nav>
 
-            {/* Renders the main options form fields  */}
-            {isVisible(MAIN_TAB_ID) && <AdminSettingsMainOptionsTab />}
+            <div className="vipps-settings-content">
+              <section
+                className="vipps-settings-panel"
+                id="vipps-settings-tab-panel"
+                role="tabpanel"
+                aria-labelledby={`vipps-settings-tab-${visibleTabs.indexOf(selectedTab)}`}
+                tabIndex={0}
+              >
+                {isVisible(MAIN_TAB_ID) && <AdminSettingsMainOptionsTab />}
+                {isVisible(EXPRESS_TAB_ID) && <AdminSettingsExpressOptionsTab />}
+                {isVisible(CC_TAB_ID) && <AdminSettingsCCOptionsTab />}
+                {checkoutActive && isVisible(CHECKOUT_TAB_ID) && <AdminSettingsCheckoutOptionsTab />}
+                {isVisible(KEYS_TAB_ID) && <AdminSettingsKeysOptionsTab />}
+                {isVisible(ADVANCED_TAB_ID) && <AdminSettingsAdvancedOptionsTab />}
+              </section>
 
-            {/* Renders the express options form fields */}
-            {isVisible(EXPRESS_TAB_ID) && <AdminSettingsExpressOptionsTab />}
-
-            {/* Renders the card payments options form fields */}
-            {isVisible(CC_TAB_ID) && <AdminSettingsCCOptionsTab />}
-
-            {/* Renders the checkout options form fields */}
-            {checkoutActive && isVisible(CHECKOUT_TAB_ID) && <AdminSettingsCheckoutOptionsTab />}
-
-            {/* Renders the keys options form fields  */}
-            {isVisible(KEYS_TAB_ID) && <AdminSettingsKeysOptionsTab />}
-
-            {/* Renders the advanced options form fields */}
-            {isVisible(ADVANCED_TAB_ID) && <AdminSettingsAdvancedOptionsTab />}
-
-            <div className="vipps-mobilepay-react-save-section">
-              <WPButton variant="primary" isLoading={isLoading}>
-                {gettext('save_changes')}
-              </WPButton>
-              {saveConfirmation && (
-                <span className="vipps-mobilepay-react-save-confirmation">
-                  <span className="dashicons dashicons-yes"></span>
-                  {gettext('settings_saved')}
-                </span>
-              )}
+              <div className="vipps-mobilepay-react-save-section">
+                {saveConfirmation && (
+                  <span className="vipps-mobilepay-react-save-confirmation" role="status">
+                    <span className="dashicons dashicons-yes" aria-hidden="true"></span>
+                    {gettext('settings_saved')}
+                  </span>
+                )}
+                <WPButton variant="primary" isLoading={isLoading}>
+                  {gettext('save_changes')}
+                </WPButton>
+              </div>
             </div>
-          </>
+          </div>
         )}
       </WPForm>
-    </>
+    </div>
   );
 }
