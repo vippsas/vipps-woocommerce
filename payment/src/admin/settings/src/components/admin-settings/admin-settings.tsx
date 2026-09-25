@@ -146,8 +146,10 @@ export function AdminSettings(): JSX.Element {
   // When the important settings have been set, the user is shown the normal settings screen.
   const [showWizardScreen, setShowWizardScreen] = useState(() => force_wizard_screen || showWizardp());
 
+  // If main gw is disabled, only show keys tab. LP 2026-09-25
   const gwEnabled = truthToBool(getOption('enabled'));
-  const visibleTabs = gwEnabled ? getOrderedTabIds() : [MAIN_TAB_ID];
+  const visibleTabs = gwEnabled ? getOrderedTabIds() : [MAIN_TAB_ID, KEYS_TAB_ID];
+
   const selectedTab = visibleTabs.includes(activeTab) ? activeTab : MAIN_TAB_ID;
 
   return (
