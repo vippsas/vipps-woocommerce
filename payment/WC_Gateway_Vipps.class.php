@@ -1116,7 +1116,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'label'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Create and log in new customers during %s. When disabled, orders are placed as guest checkouts.', 'woo-vipps'), Vipps::ExpressName(), Vipps::LoginName()),
+                        'description' => sprintf(__('Create and log in new customers during %s. When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %s to provide easier login for customers.', 'woo-vipps'), 'Checkout', Vipps::LoginName()),
                         'default'     => $vippscreateuserdefault,
                         ),
 
@@ -1380,7 +1380,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 ), 
                 /* translators: placeholders are options for this setting */
                 'description' => sprintf(
-                    __('The order status when the customer\'s payment is reserved (these are <b>not yet captured</b>).<br>Select %1$s if you capture payment before shipping, either manually or by marking the order as %3$s.<br>Select %2$s if %1$s triggers shipping in your store.<br>Note that %2$s may send customers an email suggesting there is a problem with their order.', 'woo-vipps'),
+                    __('The order status when the customer\'s payment is reserved (these are <b>not yet captured</b>).<br>Select %1$s if you capture payment before shipping, either manually or by marking the order as %3$s.<br>Select %2$s if %1$s triggers shipping in your store.<br>&#9;&gt; Note that %2$s may send customers an email suggesting there is a problem with their order.', 'woo-vipps'),
                     __('Processing', 'woo-vipps'),
                     __('On hold','woo-vipps'),
                     __('Complete','woo-vipps'),
@@ -1604,7 +1604,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'label'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Create and log in new customers during %s checkout. When disabled, orders are placed as guest checkouts.<br>If you have %s installed, customer creation is enabled by default unless disabled in WooCommerce', 'woo-vipps'), Vipps::ExpressName(), Vipps::LoginName()),
+                        'description' => sprintf(__('Create and log in new customers during %1$s checkout. When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %2$s to provide easier login for customers.<br>If you have %2$s installed, customer creation is enabled by default unless disabled in WooCommerce.', 'woo-vipps'), Vipps::ExpressName(), Vipps::LoginName()),
                         'default'     => $expresscreateuserdefault,
                         ),
                 'singleproductbuynowcompatmode' => array(

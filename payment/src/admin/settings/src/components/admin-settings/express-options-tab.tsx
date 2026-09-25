@@ -20,6 +20,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
     <div>
       <p className="vipps-mobilepay-react-tab-description">{gettext('express_options.description')}</p>
 
+      {/* LP TODO: collect these four different express-enable-toggles in another way and above the options below. LP 2026-09-25 */ }
       {/* Renders a checkbox to enable Express Checkout in cart */}
       <CheckboxFormField
         name="cartexpress"
@@ -56,6 +57,31 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         ]}
       />
 
+      {/* Renders a checkbox to enable whether or not users should be asked if they've read the store's terms and conditions */}
+      <CheckboxFormField
+        name="expresscheckout_termscheckbox"
+        titleKey="expresscheckout_termscheckbox.title"
+        labelKey="expresscheckout_termscheckbox.label"
+        descriptionKey="expresscheckout_termscheckbox.description"
+      />
+
+      {/* Renders a checkbox to enable whether or not new users should be created when using Express Checkout */}
+      <CheckboxFormField
+        name="expresscreateuser"
+        titleKey="expresscreateuser.title"
+        labelKey="expresscreateuser.label"
+        descriptionKey="expresscreateuser.description"
+      />
+
+      {/* Renders a checkbox to enable whether or not failed Express Checkout orders should be deleted */}
+      <CheckboxFormField
+        name="deletefailedexpressorders"
+        titleKey="deletefailedexpressorders.title"
+        labelKey="deletefailedexpressorders.label"
+        descriptionKey="deletefailedexpressorders.description"
+      />
+
+
       {/* Only show the rest of the options if express is actually enabled (the options above). LP 2026-09-25 */}
       {expressEnabled && (<>
         {/* Shipping section */ }
@@ -79,30 +105,6 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
 
         {/* Advanced section */ }
         <Collapsible title={gettext('express_advanced_section.title')}>
-          {/* Renders a checkbox to enable whether or not users should be asked if they've read the store's terms and conditions */}
-          <CheckboxFormField
-            name="expresscheckout_termscheckbox"
-            titleKey="expresscheckout_termscheckbox.title"
-            labelKey="expresscheckout_termscheckbox.label"
-            descriptionKey="expresscheckout_termscheckbox.description"
-          />
-
-          {/* Renders a checkbox to enable whether or not new users should be created when using Express Checkout */}
-          <CheckboxFormField
-            name="expresscreateuser"
-            titleKey="expresscreateuser.title"
-            labelKey="expresscreateuser.label"
-            descriptionKey="expresscreateuser.description"
-          />
-
-          {/* Renders a checkbox to enable whether or not failed Express Checkout orders should be deleted */}
-          <CheckboxFormField
-            name="deletefailedexpressorders"
-            titleKey="deletefailedexpressorders.title"
-            labelKey="deletefailedexpressorders.label"
-            descriptionKey="deletefailedexpressorders.description"
-          />
-
           {/* Renders a checkbox to enable compatibility mode for the "Buy now" button */}
           <CheckboxFormField
             name="singleproductbuynowcompatmode"
