@@ -55,6 +55,9 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
     <div>
       <p className="vipps-mobilepay-react-tab-description">{gettext('advanced_options.description')}</p>
 
+      {/* Renders a checkbox to enable test mode */}
+      <CheckboxFormField name="testmode" titleKey="testmode.title" descriptionKey="testmode.description" labelKey="testmode.label" />
+
       {/* Renders a select field for phone number transformations for checkout + express. LP 2025-12-29 */}
       <SelectFormField
         name="checkout_phone_transformation"
@@ -142,9 +145,6 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         descriptionKey="delete_settings_on_deactivation.description"
         labelKey="delete_settings_on_deactivation.label"
       />
-
-      {/* Renders a checkbox to enable test mode */}
-      <CheckboxFormField name="testmode" titleKey="testmode.title" descriptionKey="testmode.description" labelKey="testmode.label" />
     </div>
   );
 }

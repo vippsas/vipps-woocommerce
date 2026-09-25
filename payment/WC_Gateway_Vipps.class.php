@@ -1710,10 +1710,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             'testmode' => array(
                 'title' => __('Test mode', 'woo-vipps'),
-                'label' => __('Enable test mode', 'woo-vipps'),
+                'label' => __('Test mode', 'woo-vipps'),
                 'type'  => 'checkbox',
-                'description' => sprintf(__('If you enable this, transactions will be made towards the %1$s Test API instead of the live one. No real transactions will be performed. You will need to fill out your test
-                    accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular %1$s app). Contact %1$s\'s technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'), Vipps::CompanyName()),
+                'description' => sprintf(__('Use the %1$s test environment instead of live production environment. No real transactions will be performed.<br><br>You will need to fill out your test environment keys in the <a href="#%2$s">%2$s</a> tab and install a separate app on your phone for the, see <a href="%3$s">%1$s docs</a> for more info.<br>The constant VIPPS_TEST_MODE in your wp-config file will override this option. ', 'woo-vipps'), Vipps::CompanyName(), __('Keys', 'woo-vipps'), 'https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/'),
                 'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
                 ),
        );

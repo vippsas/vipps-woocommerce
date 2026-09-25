@@ -13,7 +13,7 @@ export function AdminSettingsKeysOptionsTab(): JSX.Element {
   return (
     <div>
       {/* Prod keys section */}
-      <Collapsible defaultOpen title={gettext("production_keys_section.title")}>
+      <Collapsible title={gettext("production_keys_section.title")}>
         <p className="vipps-mobilepay-react-tab-description"></p>
 
         {/* Renders an input field for the merchant serial number */}
