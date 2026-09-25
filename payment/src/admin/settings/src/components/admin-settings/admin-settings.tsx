@@ -40,19 +40,25 @@ export function AdminSettings(): JSX.Element {
   const KEYS_TAB_ID = gettext('keys_options.title');
   const ADVANCED_TAB_ID = gettext('advanced_options.title');
 
+  // Maps tab id to tab priority
+  // Priority is how we order the tabs, lower means first (from the left). LP 2026-09-25
+  const TAB_PRIORITIES: Record<string, number> = {
+    [MAIN_TAB_ID]: 0,
+    [EXPRESS_TAB_ID]: 1,
+    [CC_TAB_ID]: 2,
+    [KEYS_TAB_ID]: 4,
+    [ADVANCED_TAB_ID]: 5,
+  };
 
-  const TAB_IDS = [
-    MAIN_TAB_ID, EXPRESS_TAB_ID, CC_TAB_ID
-  ];
+  // Returns tabs from lowest to highest prio. LP 2026-09-25
+  const getOrderedTabIds = (): string[] =>
+    Object.keys(TAB_PRIORITIES).sort((a, b) => TAB_PRIORITIES[a] - TAB_PRIORITIES[b]);
 
   // Only show checkout options if known to be active (option woo_vipps_checkout_activated is true, or the vipps_checkout_enabled option is yes IOK 2026-04-30
   const checkoutActive = +(getMetadata('vipps_checkout_activated') ?? 0) || getOption('vipps_checkout_enabled') == 'yes';
   if (checkoutActive) {
-    TAB_IDS.push(CHECKOUT_TAB_ID);
+    TAB_PRIORITIES[CHECKOUT_TAB_ID] = 3;
   }
-  TAB_IDS.push(KEYS_TAB_ID);
-  TAB_IDS.push(ADVANCED_TAB_ID);
-
 
   // For debugging: show wizard screen if option is set in wp-config. IOK 2025-10-20
   const force_override = getMetadata('__dev_force_wizard_screen') || "";
@@ -139,6 +145,8 @@ export function AdminSettings(): JSX.Element {
   // When the important settings have been set, the user is shown the normal settings screen.
   const [showWizardScreen, setShowWizardScreen] = useState(() => force_wizard_screen || showWizardp());
 
+  const gwEnabled = truthToBool(getOption('enabled'));
+
   return (
     <>
       {banner && <NotificationBanner variant={banner.variant} text={banner.text} />}
@@ -157,7 +165,9 @@ export function AdminSettings(): JSX.Element {
         ) : (
           // If the important settings are set, show the normal settings screen.
           <>
-            <Tabs tabs={TAB_IDS} onTabChange={setActiveTab} activeTab={activeTab} /> 
+              {/* If the main gw option is disabled: only show main tab */}
+            <Tabs tabs={gwEnabled ? getOrderedTabIds() : [MAIN_TAB_ID]} onTabChange={setActiveTab} activeTab={activeTab} />
+
             {/* Renders the main options form fields  */}
             {isVisible(MAIN_TAB_ID) && <AdminSettingsMainOptionsTab />}
 
