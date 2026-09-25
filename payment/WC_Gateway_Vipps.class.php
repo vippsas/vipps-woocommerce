@@ -1105,8 +1105,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
                 'vipps_checkout_enabled' => array(
-                    'title'       => __('Enable/Disable', 'woocommerce'),
-                    'label'       => sprintf(__('Enable %s'), Vipps::CheckoutName()),
+                    'title'       => sprintf(__('Enable %s'), Vipps::CheckoutName()),
+                    'label' => '',
                     'type'        => 'checkbox',
                     'description' => sprintf(__('This will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy with %2$s, card, and external payment methods - no need to manually type in addresses!', 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
                     'default'     => 'no',
@@ -1157,16 +1157,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'checkout_shipping' => array(
                     'title' => __('Shipping Methods', 'woo-vipps'),
                     'type'  => 'title',
-                    'description' => sprintf(__("When using %1\$s, you have the option to use %1\$s specific shipping methods with extended features for certain carriers. These will add an apropriate logo as well as extended delivery options for certain methods. For some of these, you need to add integration data from the carriers below. You can then add these shipping methods to your shipping zones the normal way, but they will only appear in the %1\$s screen.", 'woo-vipps'), Vipps::CheckoutName())
+                    'description' => '',
                     ),
 
                 'vcs_posten' => array(
                         'title'       => __('Posten Norge', 'woo-vipps'),
                         'class'       => 'vcs_posten vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posten'),
-                        'label'       => sprintf(__('Support Posten Norge as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Activate this for Posten Norge as a %1$s Shipping method.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => '',
                         'default'     => 'yes'
                     ),
 
@@ -1174,9 +1174,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Posti', 'woo-vipps'),
                         'class'       => 'vcs_posti vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posti'),
-                        'label'       => sprintf(__('Support Posti as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Activate this for Posti as a %1$s Shipping method.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => '',
                         'default'     => 'yes'
                     ),
 
@@ -1184,9 +1184,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('PostNord', 'woo-vipps'),
                         'class'       => 'vcs_postnord vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_postnord'),
-                        'label'       => sprintf(__('Support PostenNord as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Activate this for PostNord as a %1$s Shipping method.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => '',
                         'default'     => 'yes'
                     ),
 
@@ -1194,9 +1194,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Porterbuddy', 'woo-vipps'),
                         'class'       => 'vcs_porterbuddy vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_porterbuddy'),
-                        'label'       => sprintf(__('Support Porterbuddy as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Activate this for Porterbuddy as a %1$s Shipping method. Your store address will be used as the pick-up point and your admin email will be used for booking information from Porterbuddy.' ,'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => '',
                         'default'     => 'no'
                     ),
 
@@ -1225,11 +1225,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 // Vipps checkout *shipping options* - extra shipping options that only work with Checkout
                 'vcs_helthjem' => array(
                         'title'       => __('Helthjem', 'woo-vipps'),
-                        'label'       => sprintf(__('Support Helthjem as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
                         'class' => 'vcs_helthjem vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_helthjem'),
-                        'description' => sprintf(__('Activate this for Helthjem as a %1$s Shipping method.' ,'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => '',
                         'default'     => 'no'
                     ),
 
@@ -1622,7 +1622,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                  'vippsorderattribution' => array(
                      'title'       => sprintf(__( 'Support %s API for %s and %s', 'woo-vipps'), 'WooCommerces Order Attribution', 'Checkout', Vipps::ExpressName()),
-                     'label'       => __( 'Add support for Order Attribution', 'woo-vipps' ),
+                     'label'       => '',
                      'type'        => 'checkbox',
                      'default'=> 'no',
                      'description' => sprintf(__('Turn this on to add support for Woos Order Attribution API for %s and %s. Some stores have reported problems when using this API together with %s, so be sure to test this if you turn it on.', 'woo-vipps'), 'Checkout', Vipps::ExpressName(), Vipps::CompanyName()),

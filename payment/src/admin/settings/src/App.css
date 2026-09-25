@@ -203,7 +203,7 @@
 }
 .vipps-mobilepay-react-form-field.vipps-mobilepay-react-switch-field {
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   max-width: none;
   min-height: 66px;
@@ -341,7 +341,7 @@
   display: none;
 }
 
-.vipps-mobilepay-react-accordion {
+.vipps-mobilepay-react-collapsible {
   max-width: 720px;
   margin: 1.25rem 0;
   border: 1px solid var(--vipps-settings-line);
@@ -349,7 +349,7 @@
   background: #fafbfe;
 }
 
-.vipps-mobilepay-react-accordion-title {
+.vipps-mobilepay-react-collapsible-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -360,11 +360,11 @@
   font-weight: 600;
 }
 
-.vipps-mobilepay-react-accordion-title::-webkit-details-marker {
+.vipps-mobilepay-react-collapsible-title::-webkit-details-marker {
   display: none;
 }
 
-.vipps-mobilepay-react-accordion-title::after {
+.vipps-mobilepay-react-collapsible-title::after {
   content: '';
   width: 8px;
   height: 8px;
@@ -375,23 +375,23 @@
   transition: transform 0.15s ease;
 }
 
-.vipps-mobilepay-react-accordion[open] .vipps-mobilepay-react-accordion-title::after {
+.vipps-mobilepay-react-collapsible[open] .vipps-mobilepay-react-collapsible-title::after {
   transform: rotate(225deg);
 }
 
-.vipps-mobilepay-react-accordion-title:focus-visible {
+.vipps-mobilepay-react-collapsible-title:focus-visible {
   outline: 2px solid var(--vipps-settings-blue);
   outline-offset: 2px;
 }
 
-.vipps-mobilepay-react-accordion-content {
+.vipps-mobilepay-react-collapsible-content {
   padding: 1.15rem 1.25rem 0.2rem;
   border-top: 1px solid var(--vipps-settings-line);
   background: #fff;
   border-radius: 0 0 11px 11px;
 }
 
-.vipps-mobilepay-react-accordion-content > p:first-child {
+.vipps-mobilepay-react-collapsible-content > p:first-child {
   margin-top: 0;
 }
 

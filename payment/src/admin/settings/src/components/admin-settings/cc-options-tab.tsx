@@ -19,9 +19,7 @@ export function AdminSettingsCCOptionsTab(): JSX.Element {
 
       {/* Warning about possible unavailability in test environment if test mode is enabled. LP 2026-05-28 */}
       {truthToBool(getOption('testmode')) && (
-        <div style={{border: "2px solid red", padding:".5rem", "marginBottom": "2rem"}}>
-          <p><UnsafeHtmlText htmlString={gettext("cc_options.test_mode_warning")}></UnsafeHtmlText></p>
-        </div>
+        <div className="vipps-settings-callout"><UnsafeHtmlText htmlString={gettext("cc_options.test_mode_warning")}></UnsafeHtmlText></div>
       )}
 
         {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
