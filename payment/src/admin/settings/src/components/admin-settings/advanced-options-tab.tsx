@@ -143,13 +143,8 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         labelKey="delete_settings_on_deactivation.label"
       />
 
-      {/* Renders a checkbox to enable developer mode */}
-      <CheckboxFormField
-        name="developermode"
-        titleKey="developermode.title"
-        descriptionKey="developermode.description"
-        labelKey="developermode.label"
-      />
+      {/* Renders a checkbox to enable test mode */}
+      <CheckboxFormField name="testmode" titleKey="testmode.title" descriptionKey="testmode.description" labelKey="testmode.label" />
     </div>
   );
 }

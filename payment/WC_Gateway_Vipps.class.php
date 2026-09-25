@@ -378,7 +378,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // True iff this gateway is currently in test mode. IOK 2019-08-30
     public function is_test_mode() {
        if (VIPPS_TEST_MODE) return true;
-       if ($this->get_option('developermode') == 'yes' && $this->get_option('testmode') == 'yes') return true;
+       if ($this->get_option('testmode') == 'yes') return true;
        return false;
     }
     // These abstraction gets the correct client id and so forth based on whether or not test mode is on
@@ -1159,7 +1159,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vipps_checkout_shipping_fields = array(
 
                 'checkout_shipping' => array(
-                    'title' => sprintf(__('%1$s Shipping Methods', 'woo-vipps'), Vipps::CheckoutName()),
+                    'title' => __('Shipping Methods', 'woo-vipps'),
                     'type'  => 'title',
                     'description' => sprintf(__("When using %1\$s, you have the option to use %1\$s specific shipping methods with extended features for certain carriers. These will add an apropriate logo as well as extended delivery options for certain methods. For some of these, you need to add integration data from the carriers below. You can then add these shipping methods to your shipping zones the normal way, but they will only appear in the %1\$s screen.", 'woo-vipps'), Vipps::CheckoutName())
                     ),
@@ -1292,7 +1292,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
        $vipps_checkout_widgets_fields = [
            'checkout_widgets' => [
-               'title' => sprintf(__('%1$s widgets', 'woo-vipps'), Vipps::CheckoutName()),
+               'title' => __('Widgets', 'woo-vipps'),
                'type'  => 'title',
                'description' => sprintf(__('Widgets are elements shown above the %1$s frame with extra functionality.', 'woo-vipps'), Vipps::CheckoutName()),
            ],
@@ -1419,56 +1419,99 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             ),
 
             'checkout_phone_transformation' => array(
-                'title'       => sprintf(__('Phone number transformation for %1$s and Express Checkout', 'woo-vipps'), 'Checkout'),
-                'label'       => sprintf(__('Choose a transformation to apply to phone numbers for %1$s and Express Checkout', 'woo-vipps'), 'Checkout'),
+                'title'       => sprintf(__('Phone number transformation for %1$s and %2$s', 'woo-vipps'), 'Checkout', Vipps::ExpressName()),
+                'label'       => sprintf(__('Choose a transformation to apply to phone numbers for %1$s and %2$s', 'woo-vipps'), 'Checkout', Vipps::ExpressName()),
                 'type'        => 'select',
                 'options' => array(
                     'none' => __('None', 'woo-vipps'),
                     'ensure_plus' => __('Prepend \'+\'','woo-vipps'),
                     'strip_country_code' => __('Strip country code','woo-vipps'),
                 ), 
-                'description' => __('Phone numbers from Express or Checkout are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'),
+                'description' => sprintf(__('Phone numbers from %1$s or %2$s are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'), 'Checkout', Vipps::ExpressName()),
                 'default'     => 'none',
             ),
         );
 
         $keysfields = [
             'keys_options'             => array(
-                'title' => __('Keys', 'woo-vipps'),
-                'type'  => 'title',
-                'class' => 'tab',
-            ),
+                    'title' => __('Keys', 'woo-vipps'),
+                    'type'  => 'title',
+                    'class' => 'tab',
+                    ),
+
+            // prod keys
+            'production_keys' => [
+                'title' => __('Production environment', 'woo-vipps'),
+            'type'  => 'title',
+            ],
             'merchantSerialNumber' => array(
-                'title' => __('Merchant Serial Number', 'woo-vipps'),
-                'label'       => __('Merchant Serial Number', 'woo-vipps'),
-                'type'        => 'number',
-                'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
-                'default'     => '',
-            ),
+                    'title' => __('Merchant Serial Number', 'woo-vipps'),
+                    'label'       => __('Merchant Serial Number', 'woo-vipps'),
+                    'type'        => 'number',
+                    'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
+                    'default'     => '',
+                    ),
             'clientId' => array(
-                'title' => __('Client Id', 'woo-vipps'),
-                'class' => 'vippspw',
-                'label'       => __('Client Id', 'woo-vipps'),
-                'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
-                'default'     => '',
-            ),
+                    'title' => __('Client Id', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'label'       => __('Client Id', 'woo-vipps'),
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+                    'default'     => '',
+                    ),
             'secret' => array(
-                'title' => __('Client Secret', 'woo-vipps'),
-                'label'       => __('Client Secret', 'woo-vipps'),
-                'class' => 'vippspw',
-                'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
-                'default'     => '',
-            ),
+                    'title' => __('Client Secret', 'woo-vipps'),
+                    'label'       => __('Client Secret', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+                    'default'     => '',
+                    ),
             'Ocp_Apim_Key_eCommerce' => array(
-                'title' => __('Subscription Key', 'woo-vipps'),
-                'label'       => __('Subscription Key', 'woo-vipps'),
-                'class' => 'vippspw',
-                'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
-                'default'     => '',
-            ),
+                    'title' => __('Subscription Key', 'woo-vipps'),
+                    'label'       => __('Subscription Key', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Ocp-Apim-Subscription-Key"','woo-vipps'),
+                    'default'     => '',
+                    ),
+
+            // test keys
+            'test_keys' => [
+                'title' => __('Test environment', 'woo-vipps'),
+            'type'  => 'title',
+            ],
+            'merchantSerialNumber_test' => array(
+                    'title' => __('Merchant Serial Number', 'woo-vipps'),
+                    'label'       => __('Merchant Serial Number', 'woo-vipps'),
+                    'type'        => 'number',
+                    'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
+                    'default'     => '',
+                    ),
+            'clientId_test' => array(
+                    'title' => __('Client Id', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'label'       => __('Client Id', 'woo-vipps'),
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+                    'default'     => '',
+                    ),
+            'secret_test' => array(
+                    'title' => __('Client Secret', 'woo-vipps'),
+                    'label'       => __('Client Secret', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+                    'default'     => '',
+                    ),
+            'Ocp_Apim_Key_eCommerce_test' => array(
+                    'title' => __('Subscription Key', 'woo-vipps'),
+                    'label'       => __('Subscription Key', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Ocp-Apim-Subscription-Key"','woo-vipps'),
+                    'default'     => '',
+                    ),
 
         ];
 
@@ -1654,25 +1697,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             'default'     => 'no',
                             ),
 
-                 'developermode' => array ( // DEVELOPERS! DEVELOPERS! DEVELOPERS! DEVE
-                     'title'       => __('Enable developer mode', 'woo-vipps'),
-                     'label'       => __('Enable developer mode', 'woo-vipps'),
-                     'type'        => 'checkbox',
-                     'description' => __('Enable this to enter developer mode. This gives you access to the test-api and sometimes other tools not yet ready for general consumption', 'woo-vipps'),
-                     'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
-                     ) 
-
-
-       );
-
-       $developerfields = array(
-            'developertitle' => array(
-                'title' => __('Developer mode', 'woo-vipps'),
-                'type'  => 'title',
-                'class' => 'tab',
-                'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
-                ),
-
             'testmode' => array(
                 'title' => __('Test mode', 'woo-vipps'),
                 'label' => __('Enable test mode', 'woo-vipps'),
@@ -1681,40 +1705,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular %1$s app). Contact %1$s\'s technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'), Vipps::CompanyName()),
                 'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
                 ),
-            'merchantSerialNumber_test' => array(
-                'title' => __('Merchant Serial Number', 'woo-vipps'),
-                'class' => 'vippspw',
-                'label'       => __('Merchant Serial Number', 'woo-vipps'),
-                'type'        => 'number',
-                'description' => __('Your test account "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
-                'default'     => '',
-                ),
-            'clientId_test' => array(
-                    'title' => __('Client Id', 'woo-vipps'),
-                    'label'       => __('Client Id', 'woo-vipps'),
-                    'type'        => 'password',
-                    'class' => 'vippspw',
-                    'description' => __('Find your test account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
-                    'default'     => '',
-                    ),
-            'secret_test' => array(
-                    'title' => __('Client Secret', 'woo-vipps'),
-                    'label'       => __('Client Secret', 'woo-vipps'),
-                    'type'        => 'password',
-                    'class' => 'vippspw',
-                    'description' => __('Find your test account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
-                    'default'     => '',
-                    ),
-            'Ocp_Apim_Key_eCommerce_test' => array(
-                    'title' => __('Subscription Key', 'woo-vipps'),
-                    'label'       => __('Subscription Key', 'woo-vipps'),
-                    'type'        => 'password',
-                    'class' => 'vippspw',
-                    'description' => __('Find your test account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
-                    'default'     => '',
-                    ),
-            );
-        
+       );
+
        // Add all the standard fields
        foreach($mainfields as $key=>$field) {
           $this->form_fields[$key] = $field;
@@ -1744,20 +1736,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
        foreach($advancedfields as $key=>$field) {
           $this->form_fields[$key] = $field;
        }
-
-       // The react UI decides whether or not to show the developer fields, however we always have to send this data to the client
-       // because otherwise the react UI will not be able to show the correct translations, since they would be missing.
-       foreach($developerfields as $key=>$field) {
-          $this->form_fields[$key] = $field;
-       }
-       // Developer mode settings: Only shown when active. IOK 2019-08-30
-       if ($this->get_option('developermode') == 'yes' || VIPPS_TEST_MODE) {
-           if (VIPPS_TEST_MODE) {
-               $this->form_fields['developermode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced', 'woo-vipps') . "</b>";
-               $this->form_fields['testmode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - test mode is forced', 'woo-vipps') . "</b>";
-           }
-       }
-
 
     }
 
@@ -4086,8 +4064,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
     function validate_checkbox_field($key,$value) {
         if ($key == 'testmode' && VIPPS_TEST_MODE) {
-              return "yes";    
-        } else if ($key == 'developermode' && VIPPS_TEST_MODE) {
               return "yes";    
         } else if ($key == 'enabled') { 
               if ($value && $this->can_be_activated()) return 'yes';

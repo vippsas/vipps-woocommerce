@@ -7,7 +7,6 @@ import { AdminSettingsCheckoutOptionsTab } from './checkout-options-tab';
 import { AdminSettingsAdvancedOptionsTab } from './advanced-options-tab';
 import { AdminSettingsKeysOptionsTab } from './keys-options-tab.tsx';
 import { useHash } from '../../hooks/use-hash';
-import { AdminSettingsDeveloperOptionsTab } from './developer-options-tab';
 import { truthToBool, WPButton, WPForm } from '../form-elements';
 import { useWP } from '../../wp-options-provider';
 import { useState } from 'react';
@@ -39,7 +38,6 @@ export function AdminSettings(): JSX.Element {
   const CC_TAB_ID =  gettext('cc_options.title');
   const CHECKOUT_TAB_ID = gettext('checkout_options.title');
   const KEYS_TAB_ID = gettext('keys_options.title');
-  const DEVELOPER_TAB_ID = gettext('developertitle.title');
   const ADVANCED_TAB_ID = gettext('advanced_options.title');
 
 
@@ -56,13 +54,6 @@ export function AdminSettings(): JSX.Element {
   TAB_IDS.push(ADVANCED_TAB_ID);
 
 
-  // If the developer mode is enabled, the developer options tab is shown.
-  const canShowDeveloperOptions = getOption('developermode') === 'yes';
-  if (canShowDeveloperOptions) {
-    TAB_IDS.push(DEVELOPER_TAB_ID);
-  }
-
-  
   // For debugging: show wizard screen if option is set in wp-config. IOK 2025-10-20
   const force_override = getMetadata('__dev_force_wizard_screen') || "";
   const force_wizard_screen =  __DEV_FORCE_WIZARD_SCREEN || ["1", "yes", "true", "TRUE"].includes(force_override);
@@ -185,9 +176,6 @@ export function AdminSettings(): JSX.Element {
             {/* Renders the advanced options form fields */}
             {isVisible(ADVANCED_TAB_ID) && <AdminSettingsAdvancedOptionsTab />}
 
-            {/* Renders the developer options form fields */}
-            {canShowDeveloperOptions && isVisible(DEVELOPER_TAB_ID) && <AdminSettingsDeveloperOptionsTab />}
-            
             <div className="vipps-mobilepay-react-save-section">
               <WPButton variant="primary" isLoading={isLoading}>
                 {gettext('save_changes')}
