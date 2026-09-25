@@ -81,9 +81,11 @@ export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, in
 }
 
 /** A settings field that presents a yes/no option as a switch. */
-export function SwitchFormField({ name, titleKey, descriptionKey, inverted = false, disabled = false }: Props) {
+export function SwitchFormField({ name, titleKey, labelKey, descriptionKey, inverted = false, disabled = false }: Props) {
   const { getOption, setOption } = useWP();
   const paymentMethod = getOption("payment_method_name");
+  const title = fixCheckoutName(gettext(titleKey), paymentMethod);
+  const label = labelKey ? fixCheckoutName(gettext(labelKey), paymentMethod) : null;
 
   return (
     <WPFormField className="vipps-mobilepay-react-switch-field">
@@ -95,7 +97,10 @@ export function SwitchFormField({ name, titleKey, descriptionKey, inverted = fal
         onChange={(value) => setOption(name, inverted ? invertTruth(value) : value)}
       />
       <div className="vipps-mobilepay-react-switch-copy">
-        <WPLabel htmlFor={name}>{fixCheckoutName(gettext(titleKey), paymentMethod)}</WPLabel>
+        <WPLabel htmlFor={name}>{title}</WPLabel>
+        {label && label !== title && (
+          <UnsafeHtmlText className="vipps-mobilepay-react-field-label" htmlString={label} />
+        )}
         {descriptionKey && (
           <UnsafeHtmlText
             className="vipps-mobilepay-react-field-description"

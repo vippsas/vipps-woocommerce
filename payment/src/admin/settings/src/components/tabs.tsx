@@ -1,55 +1,41 @@
-import { useRef } from 'react';
-
+/**
+ * Props for the Tabs component.
+ */
 interface Props {
+  /**
+   * An array of tab names.
+   */
   tabs: string[];
+
+  /**
+   * A callback function that is called when the active tab is changed.
+   * @param tab - The name of the new active tab.
+   */
   onTabChange: (tab: string) => void;
+
+  /**
+   * The name of the currently active tab.
+   */
   activeTab: string;
 }
 
-/** A tab list with arrow, Home, and End key navigation. */
+/**
+ * Renders a set of tabs, with the ability to switch between them.
+ * @returns The rendered set of tabs.
+ */
 export function Tabs({ tabs, onTabChange, activeTab }: Props): JSX.Element {
-  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-
-  function handleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
-    let nextIndex: number;
-    switch (event.key) {
-      case 'ArrowRight':
-      case 'ArrowDown':
-        nextIndex = (index + 1) % tabs.length;
-        break;
-      case 'ArrowLeft':
-      case 'ArrowUp':
-        nextIndex = (index - 1 + tabs.length) % tabs.length;
-        break;
-      case 'Home':
-        nextIndex = 0;
-        break;
-      case 'End':
-        nextIndex = tabs.length - 1;
-        break;
-      default:
-        return;
-    }
-    event.preventDefault();
-    onTabChange(tabs[nextIndex]);
-    tabRefs.current[nextIndex]?.focus();
-  }
-
   return (
-    <div className="vippstabholder" role="tablist" aria-orientation="vertical">
+    <div className="vippstabholder" role="tablist">
       {tabs.map((tab, index) => (
         <button
           key={tab}
           id={`vipps-settings-tab-${index}`}
-          ref={(element) => { tabRefs.current[index] = element; }}
           type="button"
           role="tab"
           aria-selected={tab === activeTab}
           aria-controls="vipps-settings-tab-panel"
-          tabIndex={tab === activeTab ? 0 : -1}
           className={`vipps-mobilepay-react-tab ${tab === activeTab ? 'active' : ''}`}
           onClick={() => onTabChange(tab)}
-          onKeyDown={(event) => handleKeyDown(event, index)}
         >
           {tab}
         </button>

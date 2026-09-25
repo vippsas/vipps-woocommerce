@@ -1318,10 +1318,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'class' => 'tab',
             ),
             'enabled' => array(
-                'title'       => __('Enable/Disable', 'woocommerce'),
-                'label'       => sprintf(__('Enable %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                'title'       => __('Enable', 'woocommerce'),
+                'label'       => __('Enable', 'woocommerce'),
+                'description'       => sprintf(__('Enable %1$s', 'woo-vipps'), Vipps::CompanyName()),
                 'type'        => 'checkbox',
-                'description' => '',
                 'default'     => 'no',
             ),
             'country' => array(
@@ -4349,4 +4349,3 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
 }
-
