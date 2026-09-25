@@ -57,28 +57,12 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         ]}
       />
 
-      {/* Renders a checkbox to enable whether or not users should be asked if they've read the store's terms and conditions */}
-      <SwitchFormField
-        name="expresscheckout_termscheckbox"
-        titleKey="expresscheckout_termscheckbox.title"
-        labelKey="expresscheckout_termscheckbox.label"
-        descriptionKey="expresscheckout_termscheckbox.description"
-      />
-
       {/* Renders a checkbox to enable whether or not new users should be created when using Express Checkout */}
       <SwitchFormField
         name="expresscreateuser"
         titleKey="expresscreateuser.title"
         labelKey="expresscreateuser.label"
         descriptionKey="expresscreateuser.description"
-      />
-
-      {/* Renders a checkbox to enable whether or not failed Express Checkout orders should be deleted */}
-      <SwitchFormField
-        name="deletefailedexpressorders"
-        titleKey="deletefailedexpressorders.title"
-        labelKey="deletefailedexpressorders.label"
-        descriptionKey="deletefailedexpressorders.description"
       />
 
 
@@ -105,6 +89,22 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
 
         {/* Advanced section */ }
         <Collapsible title={gettext('express_advanced_section')}>
+          {/* Renders a checkbox to enable whether or not users should be asked if they've read the store's terms and conditions */}
+          <SwitchFormField
+            name="expresscheckout_termscheckbox"
+            titleKey="expresscheckout_termscheckbox.title"
+            labelKey="expresscheckout_termscheckbox.label"
+            descriptionKey="expresscheckout_termscheckbox.description"
+          />
+
+          {/* Renders a checkbox to enable whether or not failed Express Checkout orders should be deleted */}
+          <SwitchFormField
+            name="deletefailedexpressorders"
+            titleKey="deletefailedexpressorders.title"
+            labelKey="deletefailedexpressorders.label"
+            descriptionKey="deletefailedexpressorders.description"
+          />
+
           {/* Renders a checkbox to enable compatibility mode for the "Buy now" button */}
           <SwitchFormField
             name="singleproductbuynowcompatmode"
