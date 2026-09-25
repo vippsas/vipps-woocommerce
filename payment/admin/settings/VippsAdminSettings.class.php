@@ -188,6 +188,12 @@ class VippsAdminSettings
 
         // Add some extra common translations only used by the React UI
         $commonTranslations = array(
+                'express_shipping_section' => __('Shipping', 'woo-vipps'),
+                'test_keys_section' => __('Test environment', 'woo-vipps'),
+                'production_keys_section' => __('Production environment', 'woo-vipps'),
+                'order_status_section' => __('Order status', 'woo-vipps'),
+                'checkout_advanced_section' => __('Advanced settings', 'woo-vipps'),
+                'express_advanced_section' => __('Advanced settings', 'woo-vipps'),
                 'save_changes' => __('Save changes', 'woo-vipps'),
                 'initial_settings' => __('Initial settings', 'woo-vipps'),
                 'upload_image' => __('Upload image', 'woo-vipps'),

@@ -81,7 +81,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
         <TextareaFormField name="description" titleKey="description.title" descriptionKey="description.description" rows={5} />
 
         {/* Order status section */ }
-        <Collapsible title={gettext('order_status_section.title')}>
+        <Collapsible title={gettext('order_status_section')}>
           {/* Renders a select field for the result status (On-Hold or Processing) */}
           <SelectFormField
             name="result_status"

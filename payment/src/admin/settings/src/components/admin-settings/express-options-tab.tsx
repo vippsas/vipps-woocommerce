@@ -85,7 +85,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
       {/* Only show the rest of the options if express is actually enabled (the options above). LP 2026-09-25 */}
       {expressEnabled && (<>
         {/* Shipping section */ }
-        <Collapsible title={gettext('express_shipping_section.title')}>
+        <Collapsible title={gettext('express_shipping_section')}>
           {/* Renders a checkbox to enable whether or not the users should always be asked for an address */}
           <CheckboxFormField
             name="expresscheckout_always_address"
@@ -104,7 +104,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         </Collapsible>
 
         {/* Advanced section */ }
-        <Collapsible title={gettext('express_advanced_section.title')}>
+        <Collapsible title={gettext('express_advanced_section')}>
           {/* Renders a checkbox to enable compatibility mode for the "Buy now" button */}
           <CheckboxFormField
             name="singleproductbuynowcompatmode"

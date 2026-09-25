@@ -1136,11 +1136,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no'
                         ),
 
-                // Checkout Advanced section
-                'checkout_advanced_section' => [
-                    'title' => __('Advanced settings', 'woo-vipps'),
-                    'type' => 'title',
-                ],
                 'noAddressFields' => array(
                         'title'       => __('Don\'t require address fields', 'woo-vipps'),
                         'label'       => __('Don\'t require address fields', 'woo-vipps'),
@@ -1363,11 +1358,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'default'     => $orderprefix
             ),
 
-            // Order status options
-            'order_status_section' => [
-                'title' => __('Order status', 'woo-vipps'),
-                'type'  => 'title',
-            ],
             'result_status' => array(
                 'title'       => __('Order status on payment reservation', 'woo-vipps'),
                 'label'       => __('Choose default order status for reserved (not captured) orders', 'woo-vipps'),
@@ -1446,11 +1436,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'class' => 'tab',
                     ),
 
-            // prod keys options
-            'production_keys_section' => [
-                'title' => __('Production environment', 'woo-vipps'),
-                'type'  => 'title',
-            ],
             'merchantSerialNumber' => array(
                     'title' => __('Merchant Serial Number', 'woo-vipps'),
                     'label'       => __('Merchant Serial Number', 'woo-vipps'),
@@ -1483,11 +1468,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => '',
                     ),
 
-            // test keys options
-            'test_keys_section' => [
-                'title' => __('Test environment', 'woo-vipps'),
-                'type'  => 'title',
-            ],
             'merchantSerialNumber_test' => array(
                     'title' => __('Merchant Serial Number', 'woo-vipps'),
                     'label'       => __('Merchant Serial Number', 'woo-vipps'),
@@ -1568,11 +1548,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'none',
                         ),
 
-                // Express shipping options
-                'express_shipping_section' => [
-                    'title' => __('Shipping', 'woo-vipps'),
-                    'type'  => 'title',
-                ],
                 'expresscheckout_termscheckbox' => array(
                         'title'       => __('Require terms and conditions confirmation', 'woo-vipps'),
                         'label'       => __('Require terms and conditions confirmation', 'woo-vipps'),
@@ -1595,11 +1570,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no',
                         ),
 
-                // Express advanced options
-                'express_advanced_section' => [
-                    'title' => __('Advanced settings', 'woo-vipps'),
-                    'type'  => 'title',
-                ],
                 'expresscreateuser' => array (
                         'title'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'label'       => __('Create new customers for guest checkouts', 'woo-vipps'),
@@ -1651,11 +1621,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                    ),
 
                  'vippsorderattribution' => array(
-                     'title'       => __( 'Support WooCommerces Order Attribution API for Checkout and Express Checkout', 'woo-vipps' ),
+                     'title'       => sprintf(__( 'Support %s API for %s and %s', 'woo-vipps'), 'WooCommerces Order Attribution', 'Checkout', Vipps::ExpressName()),
                      'label'       => __( 'Add support for Order Attribution', 'woo-vipps' ),
                      'type'        => 'checkbox',
                      'default'=> 'no',
-                     'description' => __('Turn this on to add support for Woos Order Attribution API for Checkout and Express Checkout. Some stores have reported problems when using this API together with Vipps, so be sure to test this if you turn it on.', 'woo-vipps'),
+                     'description' => sprintf(__('Turn this on to add support for Woos Order Attribution API for %s and %s. Some stores have reported problems when using this API together with %s, so be sure to test this if you turn it on.', 'woo-vipps'), 'Checkout', Vipps::ExpressName(), Vipps::CompanyName()),
 ),
 
                  'vippsspecialpagetemplate' => array(
@@ -1677,27 +1647,27 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                  ),
 
                 'sendreceipts' => array(
-                     'title' => __("Send receipts and order confirmation info to the customers' app on completed purchases.", 'woo-vipps'),
-                      'label' => sprintf(__("Send receipts to the customers %1\$s app", 'woo-vipps'), Vipps::CompanyName()),
+                     'title' => __("Send receipt to app", 'woo-vipps'),
+                     'label' => __("Send receipt to app", 'woo-vipps'),
                       'type'        => 'checkbox',
-                      'description' => sprintf(__("If this is checked, a receipt will be sent to %1\$s which will be viewable in the users' app, specifying the order items, shipping et cetera", 'woo-vipps'), Vipps::CompanyName()),
+                      'description' => sprintf(__("Sends a receipt to the customer's %1\$s app, specifying the order items, shipping etc.", 'woo-vipps'), Vipps::CompanyName()),
                       'default' => 'yes'
                 ),
 
                 'receiptimage' => array (
-                        'title'       => sprintf(__('Use this image for the order confirmation link uploaded to the customers\' %1$s app', 'woo-vipps'), Vipps::CompanyName()),
-                        'label'       => sprintf(__('Profile image used in the %1$s App', 'woo-vipps'), Vipps::CompanyName()),
+                        'title'       => sprintf(__('Store image', 'woo-vipps'), Vipps::CompanyName()),
+                        'label'       => sprintf(__('Store image', 'woo-vipps'), Vipps::CompanyName()),
                         'type'        => 'woo_vipps_image',
-                        'description' => sprintf(__('If set, this image will be uploaded to %1$s and used to profile your store in the %1$s app for links to the order confirmation etc', 'woo-vipps'), Vipps::CompanyName()),
+                        'description' => sprintf(__('If set, this image will be used to profile your store in the %1$s app, on certain places like link to the order confirmation.', 'woo-vipps'), Vipps::CompanyName()),
                         'default'     => 0,
                         ),
 
-
+                // TODO: remove this option, we don't need it anymore because of callback running in action scheduler. LP 2026-09-25
                 'use_flock' => array (
-                            'title'       => __('Use flock() to lock orders for Express Checkout', 'woo-vipps'),
-                            'label'       => __('Use flock() to lock orders for Express Checkout', 'woo-vipps'),
+                            'title'       => __('Use flock() to lock orders', 'woo-vipps'),
+                            'label'       => __('Use flock() to lock orders', 'woo-vipps'),
                             'type'        => 'checkbox',
-                            'description' => __('Use the flock() system call to ensure orders are only finalized once. You can use this for normal setups, but probably not on Windows with IIS, and possibly not on distributed filesystems like NFS. If you don\t know what it is, probably do not use it. If you get duplicated shipping lines on some express orders, you may try using this', 'woo-vipps'),
+                            'description' => sprintf(__('Use the flock() system call to ensure orders are only finalized once. You can use this for normal setups, but probably not on Windows with IIS, and possibly not on distributed filesystems like NFS. If you don\'t know what it is, probably do not use it.<br>If you get duplicated shipping lines on some %s orders, you may try using this', 'woo-vipps'), Vipps::ExpressName()),
                             'default'     => 'no',
                             ),
 

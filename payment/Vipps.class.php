@@ -71,7 +71,7 @@ class Vipps {
         return "Vipps MobilePay Checkout"; // Do not translate
     }
     // Seems Vipps is now testing branding it as just Express, Ekpress in norwegian etc. LP 2026-09-24
-    public static function ExpressName($order=null) {
+    public static function ExpressName() {
         return __("Express", 'woo-vipps');
     }
     public static function ExpressCheckoutName($order=null) {

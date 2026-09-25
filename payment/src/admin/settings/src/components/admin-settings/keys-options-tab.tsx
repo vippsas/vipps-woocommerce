@@ -13,7 +13,7 @@ export function AdminSettingsKeysOptionsTab(): JSX.Element {
   return (
     <div>
       {/* Prod keys section */}
-      <Collapsible title={gettext("production_keys_section.title")}>
+      <Collapsible title={gettext("production_keys_section")}>
         <p className="vipps-mobilepay-react-tab-description"></p>
 
         {/* Renders an input field for the merchant serial number */}
@@ -50,7 +50,7 @@ export function AdminSettingsKeysOptionsTab(): JSX.Element {
       </Collapsible>
 
       {/* Test keys section */}
-      <Collapsible title={gettext("test_keys_section.title")}>
+      <Collapsible title={gettext("test_keys_section")}>
         <p className="vipps-mobilepay-react-tab-description"></p>
 
         {/* Renders an input field for the TEST merchant serial number */}

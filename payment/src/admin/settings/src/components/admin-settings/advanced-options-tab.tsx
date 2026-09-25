@@ -58,6 +58,14 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
       {/* Renders a checkbox to enable test mode */}
       <CheckboxFormField name="testmode" titleKey="testmode.title" descriptionKey="testmode.description" labelKey="testmode.label" />
 
+      {/* Renders a checkbox to enable the sending of receipts */}
+      <CheckboxFormField
+        name="sendreceipts"
+        titleKey="sendreceipts.title"
+        labelKey="sendreceipts.label"
+        descriptionKey="sendreceipts.description"
+      />
+
       {/* Renders a select field for phone number transformations for checkout + express. LP 2025-12-29 */}
       <SelectFormField
         name="checkout_phone_transformation"
@@ -91,14 +99,6 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
           }))}
         />
       }
-
-      {/* Renders a checkbox to enable the sending of receipts */}
-      <CheckboxFormField
-        name="sendreceipts"
-        titleKey="sendreceipts.title"
-        labelKey="sendreceipts.label"
-        descriptionKey="sendreceipts.description"
-      />
 
       {/* Renders an image upload field to upload the receipt image */}
       {error && <NotificationBanner variant="error" text={error} />}

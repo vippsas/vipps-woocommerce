@@ -208,7 +208,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
         )}
 
         {/* Advanced section */ }
-        <Collapsible title={gettext('checkout_advanced_section.title')}>
+        <Collapsible title={gettext('checkout_advanced_section')}>
           {/* Renders a checkbox to enable the dropping of address fields */}
           <CheckboxFormField
             name="noAddressFields"
