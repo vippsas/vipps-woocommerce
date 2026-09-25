@@ -165,7 +165,7 @@ export function AdminSettings(): JSX.Element {
         ) : (
           // If the important settings are set, show the normal settings screen.
           <>
-              {/* If the main gw option is disabled: only show main tab */}
+            {/* If the main gw option is disabled: only show main tab. LP 2026-09-25 */}
             <Tabs tabs={gwEnabled ? getOrderedTabIds() : [MAIN_TAB_ID]} onTabChange={setActiveTab} activeTab={activeTab} />
 
             {/* Renders the main options form fields  */}
