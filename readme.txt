@@ -305,7 +305,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2026-09-2x version 6.2.6 =
+= 2026-09-28 version 6.2.6 =
 Fix crashes with some Express Checkout shipping methods
 
 = 2026-09-24 version 6.2.5 =
