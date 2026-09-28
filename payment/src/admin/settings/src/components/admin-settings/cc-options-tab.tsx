@@ -22,7 +22,7 @@ export function AdminSettingsCCOptionsTab(): JSX.Element {
 
       <p className="vipps-mobilepay-react-tab-description">{gettext('cc_options.description')}</p>
 
-      {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
+      {/* Toggle for whether or not the plugin is enabled  */}
       <SwitchFormField name="cc_enabled" titleKey="cc_enabled.title" labelKey="cc_enabled.label" />
 
       {/* Only show the rest if cc is enabled (above option). LP 2026-09-25 */}

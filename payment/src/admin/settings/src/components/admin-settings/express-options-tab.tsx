@@ -21,7 +21,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
       <p className="vipps-mobilepay-react-tab-description">{gettext('express_options.description')}</p>
 
       {/* LP TODO: collect these four different express-enable-toggles in another way and above the options below. LP 2026-09-25 */ }
-      {/* Renders a checkbox to enable Express Checkout in cart */}
+      {/* Renders a toggle to enable Express Checkout in cart */}
       <SwitchFormField
         name="cartexpress"
         titleKey="cartexpress.title"
@@ -29,7 +29,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         descriptionKey="cartexpress.description"
       />
 
-      {/* Renders a checkbox to enable Express Checkout in checkout */}
+      {/* Toggle for Express Checkout in checkout */}
       <SwitchFormField
         name="express_show_in_checkout"
         titleKey="express_show_in_checkout.title"
@@ -37,7 +37,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         descriptionKey="express_show_in_checkout.description"
       />
 
-      {/* Renders a checkbox to enable Express Checkout button on catalog pages */}
+      {/* Toggle for Express Checkout button on catalog pages */}
       <SwitchFormField
         name="singleproductexpressarchives"
         titleKey="singleproductexpressarchives.title"
@@ -57,7 +57,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         ]}
       />
 
-      {/* Renders a checkbox to enable whether or not new users should be created when using Express Checkout */}
+      {/* Toggle for whether or not new users should be created when using Express Checkout */}
       <SwitchFormField
         name="expresscreateuser"
         titleKey="expresscreateuser.title"
@@ -70,7 +70,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
       {expressEnabled && (<>
         {/* Shipping section */ }
         <Collapsible title={gettext('express_shipping_section')}>
-          {/* Renders a checkbox to enable whether or not the users should always be asked for an address */}
+          {/* Toggle for whether or not the users should always be asked for an address */}
           <SwitchFormField
             name="expresscheckout_always_address"
             titleKey="expresscheckout_always_address.title"
@@ -78,7 +78,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
             descriptionKey="expresscheckout_always_address.description"
           />
 
-          {/* Renders a checkbox to enable static shipping for Express Checkout */}
+          {/* Toggle for static shipping for Express Checkout */}
           <SwitchFormField
             name="enablestaticshipping"
             titleKey="enablestaticshipping.title"
@@ -89,7 +89,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
 
         {/* Advanced section */ }
         <Collapsible title={gettext('express_advanced_section')}>
-          {/* Renders a checkbox to enable whether or not users should be asked if they've read the store's terms and conditions */}
+          {/* Toggle for whether or not users should be asked if they've read the store's terms and conditions */}
           <SwitchFormField
             name="expresscheckout_termscheckbox"
             titleKey="expresscheckout_termscheckbox.title"
@@ -97,7 +97,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
             descriptionKey="expresscheckout_termscheckbox.description"
           />
 
-          {/* Renders a checkbox to enable whether or not failed Express Checkout orders should be deleted */}
+          {/* Toggle for whether or not failed Express Checkout orders should be deleted */}
           <SwitchFormField
             name="deletefailedexpressorders"
             titleKey="deletefailedexpressorders.title"
@@ -105,7 +105,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
             descriptionKey="deletefailedexpressorders.description"
           />
 
-          {/* Renders a checkbox to enable compatibility mode for the "Buy now" button */}
+          {/* Toggle for compatibility mode for the "Buy now" button */}
           <SwitchFormField
             name="singleproductbuynowcompatmode"
             titleKey="singleproductbuynowcompatmode.title"

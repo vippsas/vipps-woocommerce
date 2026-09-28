@@ -55,10 +55,10 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
     <div>
       <p className="vipps-mobilepay-react-tab-description">{gettext('advanced_options.description')}</p>
 
-      {/* Renders a checkbox to enable test mode */}
+      {/* Toggle for test mode */}
       <SwitchFormField name="testmode" titleKey="testmode.title" descriptionKey="testmode.description" labelKey="testmode.label" />
 
-      {/* Renders a checkbox to enable the sending of receipts */}
+      {/* Toggle for the sending of receipts */}
       <SwitchFormField
         name="sendreceipts"
         titleKey="sendreceipts.title"
@@ -85,7 +85,7 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         descriptionKey="vippsorderattribution.description"
       />
 
-      {/*  Renders a checkbox to override the page template used for the special Vipps pages.
+      {/*  Select template for special page.
       From now (2026-08-27) on the special page is now a real page, so hide this setting if its unset/default. But if changed, still show it so users can change it. LP 2026-08-27
       */}
       {showSpecialPageTemplates &&
@@ -135,10 +135,10 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         </div>
       </WPFormField>
 
-      {/* Renders a checkbox to enable the use of flock() */}
+      {/* Toggle for the use of flock() */}
       <SwitchFormField name="use_flock" titleKey="use_flock.title" descriptionKey="use_flock.description" labelKey="use_flock.label" />
 
-      {/* Renders a checkbox to delete (reset) plugin settings on plugin deactivation. LP 2025-10-06 */}
+      {/* Toggle for resetting plugin settings on plugin deactivation. LP 2025-10-06 */}
       <SwitchFormField
         name="delete_settings_on_deactivation"
         titleKey="delete_settings_on_deactivation.title"

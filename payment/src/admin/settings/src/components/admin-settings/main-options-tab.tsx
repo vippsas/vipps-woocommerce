@@ -18,7 +18,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
     <div>
       <p className="vipps-mobilepay-react-tab-description"></p>
 
-      {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
+      {/* Toggle for whether or not the plugin is enabled  */}
       <SwitchFormField
         name="enabled"
         titleKey="enabled.title"
@@ -28,7 +28,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
 
       {/* Don't show the rest of the options if the above gw main option is disabled. LP 2026-09-25 */}
       {gwEnabled && (<>
-        {/* Renders a checkbox that specifies whether or not Vipps is the default payment method */}
+        {/* Toggle for whether or not Vipps is the default payment method */}
         <SwitchFormField
           name="vippsdefault"
           titleKey="vippsdefault.title"

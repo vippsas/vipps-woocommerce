@@ -170,7 +170,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             </h1>
             <p>{fixCheckoutName(gettext("checkout_options_wizard.description"), paymentMethod)}</p>
 
-            {/* Renders a checkbox to enable the creation of new customers on Checkout */}
+            {/* Toggle for the creation of new customers on Checkout */}
             <SwitchFormField
               name="checkoutcreateuser"
               titleKey={"checkoutcreateuser_wizard.title"}
@@ -178,7 +178,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               descriptionKey={"checkoutcreateuser_wizard.description"}
             />
 
-            {/* Renders a checkbox to enable dynamic shipping (inverted checkbox from static shipping details) */}
+            {/* Toggle for dynamic shipping (inverted checkbox from static shipping details) */}
             <SwitchFormField
               name="enablestaticshipping_checkout"
               titleKey="enablestaticshipping_checkout_wizard.title"
@@ -187,7 +187,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               inverted
             />
 
-            {/* Renders a checkbox to enable address fields (inverted checkbox from dropping address fields) */}
+            {/* Toggle for address fields (inverted checkbox from dropping address fields) */}
             <SwitchFormField
               name="noAddressFields"
               titleKey="noAddressFields_wizard.title"
@@ -201,7 +201,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             </h3>
             <p>{fixCheckoutName(gettext("checkout_shipping_wizard.description"), paymentMethod)}</p>
 
-            {/* Renders a checkbox to enable Posten Norge  */}
+            {/* Toggle for Posten Norge  */}
             <SwitchFormField
               name="vcs_posten"
               titleKey="vcs_posten_wizard.title"
@@ -209,7 +209,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               descriptionKey="vcs_posten_wizard.description"
             />
 
-            {/* Renders a checkbox to enable Posten Nord */}
+            {/* Toggle for Posten Nord */}
             <SwitchFormField
               name="vcs_postnord"
               titleKey="vcs_postnord_wizard.title"
@@ -253,7 +253,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               </>
             )}
 
-            {/* Renders a checkbox to enable Helthjem */}
+            {/* Toggle for Helthjem */}
             <SwitchFormField
               name="vcs_helthjem"
               titleKey="vcs_helthjem_wizard.title"
