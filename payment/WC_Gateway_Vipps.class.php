@@ -1519,7 +1519,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 ],
 
                 'cartexpress' => array(
-                        'title'       => sprintf(__('Enable %s in cart', 'woo-vipps'), Vipps::ExpressName()),
+                        'title'       => sprintf(__('Cart', 'woo-vipps'), Vipps::ExpressName()),
                         'label'       => '',
                         'type'        => 'checkbox',
                         'description' => '',
@@ -1527,7 +1527,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
                 'express_show_in_checkout' => array(
-                        'title'       => sprintf(__('Enable %s in checkout', 'woo-vipps'), Vipps::ExpressName()),
+                        'title'       => sprintf(__('Checkout', 'woo-vipps'), Vipps::ExpressName()),
                         'label'       => '',
                         'type'        => 'checkbox',
                         'description' => '',
@@ -1535,7 +1535,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
                 'singleproductexpressarchives' => array(
-                        'title'       => sprintf(__('Enable %s on catalog pages', 'woo-vipps'), Vipps::ExpressName()),
+                        'title'       => sprintf(__('Catalog pages', 'woo-vipps'), Vipps::ExpressName()),
                         'label'       => '',
                         'type'        => 'checkbox',
                         'description' => sprintf(__('Only shown for %s supported products', 'woo-vipps'), Vipps::ExpressName()),
@@ -1544,7 +1544,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                 // Whether to show express on single product pages. LP 2026-09-28
                 'express_singleproduct_enabled' => [
-                        'title'       => sprintf(__('Enable %s on product pages', 'woo-vipps'), Vipps::ExpressName()),
+                        'title'       => sprintf(__('Product pages', 'woo-vipps'), Vipps::ExpressName()),
                         'label'       => '',
                         'type'        => 'checkbox',
                         'description' => sprintf(__('Only shown for %s supported products', 'woo-vipps'), Vipps::ExpressName()),
@@ -1552,7 +1552,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 ],
                 // Which products can be purchasable by Express. LP 2026-09-28
                 'singleproductexpress' => array(
-                        'title'       => __('Which products', 'woo-vipps'),
+                        'title'       => sprintf(__('%s supported products', 'woo-vipps'), Vipps::ExpressName()),
                         'label'       => '',
                         'type'        => 'select',
                         'options' => array(

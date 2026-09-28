@@ -8,7 +8,7 @@ import { UnsafeHtmlText } from './unsafe-html-text';
 /**
  * Represents the props for the options form fields component.
  */
-interface Props {
+interface CheckboxFormFieldProps {
   /**
    * The name of the field.
    */
@@ -36,9 +36,6 @@ interface Props {
 
   /* Whether the checkbox is disabled */
   disabled?: boolean;
-
-  /** Optional control displayed at the right edge of a switch field. */
-  trailingAction?: ReactNode;
 }
 
 /**
@@ -46,7 +43,7 @@ interface Props {
  *
  * Reads and updates the WP data available in the WPOptionsProvider.
  */
-export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, inverted = false }: Props) {
+export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, inverted = false }: CheckboxFormFieldProps) {
   const { getOption, setOption } = useWP();
   const paymentMethod = getOption("payment_method_name");
 
@@ -84,8 +81,44 @@ export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, in
   );
 }
 
+interface SwitchFormFieldProps {
+  /**
+   * The n
+   * ame of the field.
+   */
+  name: string;
+
+  /**
+   * The key for the title of the field.
+   */
+  titleKey: string;
+
+  /**
+   * The key for the label of the field.
+   */
+  labelKey?: string;
+
+  /**
+   * The optional key for the description of the field.
+   */
+  descriptionKey?: string;
+
+  /**
+   * Whether to invert the option toggle. Meaning, the checkbox will instead be checked when the option is false, and vice versa. LP 03.01.2025
+   */
+  inverted?: boolean;
+
+  /* Whether the checkbox is disabled */
+  disabled?: boolean;
+
+  /** Optional control displayed at the right edge of a switch field. */
+  trailingAction?: ReactNode;
+
+  /** Optional callback after a switch changes. */
+  onChange?: (value: string) => void;
+}
 /** A settings field that presents a yes/no option as a switch. */
-export function SwitchFormField({ name, titleKey, labelKey, descriptionKey, inverted = false, disabled = false, trailingAction }: Props) {
+export function SwitchFormField({ name, titleKey, labelKey, descriptionKey, inverted = false, disabled = false, trailingAction, onChange }: SwitchFormFieldProps) {
   const { getOption, setOption } = useWP();
   const paymentMethod = getOption("payment_method_name");
   const title = fixCheckoutName(gettext(titleKey), paymentMethod);
@@ -98,7 +131,11 @@ export function SwitchFormField({ name, titleKey, labelKey, descriptionKey, inve
         id={name}
         name={name}
         checked={inverted ? invertTruth(getOption(name)) : getOption(name)}
-        onChange={(value) => setOption(name, inverted ? invertTruth(value) : value)}
+        onChange={(value) => {
+          const optionValue = inverted ? invertTruth(value) : value;
+          setOption(name, optionValue);
+          onChange?.(optionValue);
+        }}
       />
       <div className="vipps-mobilepay-react-switch-info">
         <WPLabel htmlFor={name}>{title}</WPLabel>
