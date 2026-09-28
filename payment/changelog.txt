@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-09-28 version 6.2.6 =
+Fix crashes with some Express Checkout shipping methods
+
 = 2026-09-24 version 6.2.5 =
 Fix style of express checkout buttons in Gutenberg Checkout and cart
 Security fix for info leakage in "choose other payment method" in Vipps Checkout
