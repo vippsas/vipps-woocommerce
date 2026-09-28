@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
 import { Collapsible } from '../collapsible';
@@ -16,34 +17,71 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
     || truthToBool(getOption('singleproductexpressarchives'))
     || getOption('singleproductexpress') !== 'none';
 
+  const [expressEnableShowMore, setExpressEnableShowMore] = useState(false);
+
   return (
     <div>
       <p className="vipps-mobilepay-react-tab-description">{gettext('express_options.description')}</p>
 
-      {/* LP TODO: collect these four different express-enable-toggles in another way and above the options below. LP 2026-09-25 */ }
-      {/* Renders a toggle to enable Express Checkout in cart */}
+      {/* Master toggle for express on/off. LP 2026-09-28 */}
       <SwitchFormField
-        name="cartexpress"
-        titleKey="cartexpress.title"
-        labelKey="cartexpress.title"
-        descriptionKey="cartexpress.description"
+        name="express_enabled"
+        titleKey="express_enabled.title"
+        labelKey="express_enabled.label"
+        descriptionKey="express_enabled.description"
+        trailingAction={
+          <button
+            type="button"
+            className="vipps-mobilepay-react-overrides-toggle"
+            aria-label={gettext('express_advanced_placement')}
+            title={gettext('express_advanced_placement')}
+            aria-expanded={expressEnableShowMore}
+            aria-controls="vipps-mobilepay-react-express-overrides"
+            onClick={() => setExpressEnableShowMore(showMore => !showMore)}
+          >
+            <span className="vipps-mobilepay-react-overrides-chevron" aria-hidden="true" />
+          </button>
+        }
       />
 
-      {/* Toggle for Express Checkout in checkout */}
-      <SwitchFormField
-        name="express_show_in_checkout"
-        titleKey="express_show_in_checkout.title"
-        labelKey="express_show_in_checkout.title"
-        descriptionKey="express_show_in_checkout.description"
-      />
+      {/* Context/page specific overrides for express. LP 2026-09-28 */}
+      <div id="vipps-mobilepay-react-express-overrides" className="vipps-mobilepay-react-express-overrides" hidden={!expressEnableShowMore}>
+        <div className="vipps-mobilepay-react-express-overrides-heading">{gettext('express_advanced_placement')}</div>
+        {/* Renders a toggle to enable Express Checkout in cart */}
+        <SwitchFormField
+          name="cartexpress"
+          titleKey="cartexpress.title"
+          labelKey="cartexpress.label"
+          descriptionKey="cartexpress.description"
+        />
 
-      {/* Toggle for Express Checkout button on catalog pages */}
-      <SwitchFormField
-        name="singleproductexpressarchives"
-        titleKey="singleproductexpressarchives.title"
-        labelKey="singleproductexpressarchives.label"
-        descriptionKey="singleproductexpressarchives.description"
-      />
+        {/* Toggle for Express Checkout in checkout */}
+        <SwitchFormField
+          name="express_show_in_checkout"
+          titleKey="express_show_in_checkout.title"
+          labelKey="express_show_in_checkout.label"
+          descriptionKey="express_show_in_checkout.description"
+        />
+
+        {/* Toggle for Express Checkout button on catalog pages */}
+        <SwitchFormField
+          name="singleproductexpressarchives"
+          titleKey="singleproductexpressarchives.title"
+          labelKey="singleproductexpressarchives.label"
+          descriptionKey="singleproductexpressarchives.description"
+        />
+
+        {/* Toggle for Express Checkout button on single product contexts */}
+        <SwitchFormField
+          name="express_singleproduct_enabled"
+          titleKey="express_singleproduct_enabled.title"
+          labelKey="express_singleproduct_enabled.label"
+          descriptionKey="express_singleproduct_enabled.description"
+        />
+      </div>
+
+
+      {/* Dont show the rest of the options unless express is on. LP 2026-09-28 */ }
 
       {/* Renders a select field that allows an admin to specify which products should have the "express checkout" option enabled  */}
       <SelectFormField

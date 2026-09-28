@@ -196,6 +196,7 @@ class VippsAdminSettings
                 'order_status_section' => __('Order status', 'woo-vipps'),
                 'checkout_advanced_section' => __('Advanced settings', 'woo-vipps'),
                 'express_advanced_section' => __('Advanced settings', 'woo-vipps'),
+                'express_advanced_placement' => __('Advanced placement settings', 'woo-vipps'),
                 'save_changes' => __('Save changes', 'woo-vipps'),
                 'initial_settings' => __('Initial settings', 'woo-vipps'),
                 'upload_image' => __('Upload image', 'woo-vipps'),

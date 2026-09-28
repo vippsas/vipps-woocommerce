@@ -320,6 +320,25 @@ class Vipps {
        // Add an admin interface for this page as well IOK 2026-09-11
        add_action('woocommerce_settings_pages', array($this, 'woocommerce_settings_pages'));
 
+       // If express was somehow toggled on for any context, or off for every context, make sure to correct the master toggler.
+       // Thought this should be handled in the ui. LP 2026-09-28
+       $gw = $this->gateway();
+       if ('yes' === $gw->get_option('express_enabled') && (
+                   'no' === $gw->get_option('cartexpress') &&
+                   'no' === $gw->get_option('express_show_in_checkout') &&
+                   'no' === $gw->get_option('singleproductexpressarchives') &&
+                   'no' === $gw->get_option('express_singleproduct_enabled')
+                   )) {
+           $gw->update_option('express_enabled', 'off');
+       } else if ('no' === $gw->get_option('express_enabled') && (
+                   'yes' === $gw->get_option('cartexpress') ||
+                   'yes' === $gw->get_option('express_show_in_checkout') ||
+                   'yes' === $gw->get_option('singleproductexpressarchives') ||
+                   'yes' === $gw->get_option('express_singleproduct_enabled')
+                   )) {
+           $gw->update_option('express_enabled', 'yes');
+       }
+
     }
 
     public function admin_init () {

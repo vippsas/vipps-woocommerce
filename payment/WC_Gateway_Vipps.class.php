@@ -1081,7 +1081,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // New setting 'express_show_in_checkout', previously 'cartexpress' affected both cart and checkout.
             // Therefore, set new one equal to 'cartexpress' IF it isn't set yet, so that the functionality stays the same for users. LP 2026-07-02
-            $default_express_show_in_checkout = 'yes';
             if (!isset($current['express_show_in_checkout']) && isset($current['cartexpress'])) {
                 $default_express_show_in_checkout = $current['cartexpress'];
             }
@@ -1507,14 +1506,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title' => sprintf(Vipps::ExpressName()),
                         'type'  => 'title',
                         'class' => 'tab',
-                        'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds", 'woo-vipps'), Vipps::ExpressName())
+                        'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressName())
                         ),
+
+                // New master toggle for express. See the specific overrides 'cartexpress', 'express_show_in_checkout', 'singleproductexpress' below. LP 2026-09-28
+                'express_enabled' => [
+                        'title'       => sprintf(__('Enable %s', 'woo-vipps'), Vipps::ExpressName()),
+                        'label'       => '',
+                        'type'        => 'checkbox',
+                        'description' => '',
+                        'default'     => 'yes',
+                ],
 
                 'cartexpress' => array(
                         'title'       => sprintf(__('Enable %s in cart', 'woo-vipps'), Vipps::ExpressName()),
                         'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => __('Let customers buy directly from the cart without logging in or entering an address.', 'woo-vipps'),
+                        'description' => '',
                         'default'     => 'yes',
                         ),
 
@@ -1522,20 +1530,29 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => sprintf(__('Enable %s in checkout', 'woo-vipps'), Vipps::ExpressName()),
                         'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => __('Let customers buy directly from the checkout without logging in or entering an address.', 'woo-vipps'),
+                        'description' => '',
                         'default'     => $default_express_show_in_checkout,
                         ),
 
-                // LP TODO: in the redesign, make this a custom dropdown "Specify supported products". LP 2026-09-24
                 'singleproductexpressarchives' => array(
                         'title'       => sprintf(__('Enable %s on catalog pages', 'woo-vipps'), Vipps::ExpressName()),
                         'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Enables %s on product catalog pages for supported products (see the below setting).<br>Let customers buy directly from product catalog pages without logging in or entering an address.', 'woo-vipps'), Vipps::ExpressName()),
-                        'default'     => 'no',
+                        'description' => sprintf(__('Only shown for %s supported products', 'woo-vipps'), Vipps::ExpressName()),
+                        'default'     => 'yes',
                         ),
+
+                // Whether to show express on single product pages. LP 2026-09-28
+                'express_singleproduct_enabled' => [
+                        'title'       => sprintf(__('Enable %s on product pages', 'woo-vipps'), Vipps::ExpressName()),
+                        'label'       => '',
+                        'type'        => 'checkbox',
+                        'description' => sprintf(__('Only shown for %s supported products', 'woo-vipps'), Vipps::ExpressName()),
+                        'default'     => 'yes',
+                ],
+                // Which products can be purchasable by Express. LP 2026-09-28
                 'singleproductexpress' => array(
-                        'title'       => sprintf(__('Specify %s supported products'), Vipps::ExpressName()),
+                        'title'       => __('Which products', 'woo-vipps'),
                         'label'       => '',
                         'type'        => 'select',
                         'options' => array(
@@ -1544,9 +1561,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             'all' => __('All products','woo-vipps')
                             ), 
                         /* translators: %s is an option for this setting */
-                        'description' => sprintf(__('Products purchasable with %s. If you choose %s, enable it individually for the products you want to support.', 'woo-vipps'), __('Selected products', 'woo-vipps'), Vipps::ExpressName()),
-                        'default'     => 'none',
-                        ),
+                        'description' => sprintf(__('Products to be supported for purchase by %2$s. If you choose %1$s, enable it individually for the products you want to support.', 'woo-vipps'), __('Selected products', 'woo-vipps'), Vipps::ExpressName()),
+                        'default'     => 'all',
+                ),
 
                 'expresscheckout_termscheckbox' => array(
                         'title'       => __('Require terms and conditions confirmation', 'woo-vipps'),
@@ -1717,7 +1734,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
        foreach($advancedfields as $key=>$field) {
           $this->form_fields[$key] = $field;
        }
-
     }
 
 

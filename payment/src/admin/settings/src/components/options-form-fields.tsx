@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import fixCheckoutName from '../lib/fix-checkout-name';
 import { gettext } from '../lib/wp-data';
 import { useWP } from '../wp-options-provider';
@@ -36,6 +36,9 @@ interface Props {
 
   /* Whether the checkbox is disabled */
   disabled?: boolean;
+
+  /** Optional control displayed at the right edge of a switch field. */
+  trailingAction?: ReactNode;
 }
 
 /**
@@ -82,7 +85,7 @@ export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, in
 }
 
 /** A settings field that presents a yes/no option as a switch. */
-export function SwitchFormField({ name, titleKey, labelKey, descriptionKey, inverted = false, disabled = false }: Props) {
+export function SwitchFormField({ name, titleKey, labelKey, descriptionKey, inverted = false, disabled = false, trailingAction }: Props) {
   const { getOption, setOption } = useWP();
   const paymentMethod = getOption("payment_method_name");
   const title = fixCheckoutName(gettext(titleKey), paymentMethod);
@@ -113,6 +116,7 @@ export function SwitchFormField({ name, titleKey, labelKey, descriptionKey, inve
           </WPLabel>
         )}
       </div>
+      {trailingAction}
     </WPFormField>
   );
 }
