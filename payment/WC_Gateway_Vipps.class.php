@@ -3193,7 +3193,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         $decoded = $is_base64 ? @base64_decode($shipping_table[$key]) : $shipping_table[$key];
 
                         // Ensure no shop manager has injected an evil object (that they would have had to add as a plugin) here. IOK 2026-09-18
-                        $shipping_rate = $decoded ? @unserialize($decoded, ['allowed_classes' => [WC_Shipping_Rate::class]]) : null;
+                        $allowed_classes = apply_filters('woo_vipps_express_checkout_allowed_shipping_classes', [WC_Shipping_Rate::class, \stdClass::class]);
+                        $shipping_rate = $decoded ? @unserialize($decoded, ['allowed_classes' => $allowed_classes]) : null;
                         $shipping_rate = is_a($shipping_rate,'WC_Shipping_Rate') ? $shipping_rate : null;
 
                         if (!$shipping_rate) {
