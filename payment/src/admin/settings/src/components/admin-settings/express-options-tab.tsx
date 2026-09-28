@@ -36,41 +36,43 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
     <div>
       <p className="vipps-mobilepay-react-tab-description">{gettext('express_options.description')}</p>
 
-      {/* Master toggle for express on/off. LP 2026-09-28 */}
-      <SwitchFormField
-        name="express_enabled"
-        titleKey="express_enabled.title"
-        labelKey="express_enabled.label"
-        descriptionKey="express_enabled.description"
-        onChange={(value) => expressOverrides.forEach(option => setOption(option, value))}
-        trailingAction={
-          <button
-            type="button"
-            className="vipps-mobilepay-react-overrides-toggle"
-            aria-label={gettext('express_advanced_placement')}
-            title={gettext('express_advanced_placement')}
-            aria-expanded={expressEnableShowMore}
-            aria-controls="vipps-mobilepay-react-express-overrides"
-            onClick={() => setExpressEnableShowMore((showMore) => !showMore)}
-          >
-            <span className="vipps-mobilepay-react-overrides-chevron" aria-hidden="true" />
-          </button>
-        }
-      />
+      <div className="vipps-mobilepay-react-express-group">
+        {/* Master toggle for express on/off. LP 2026-09-28 */}
+        <SwitchFormField
+          name="express_enabled"
+          titleKey="express_enabled.title"
+          labelKey="express_enabled.label"
+          descriptionKey="express_enabled.description"
+          onChange={(value) => expressOverrides.forEach(option => setOption(option, value))}
+          trailingAction={
+            <button
+              type="button"
+              className="vipps-mobilepay-react-overrides-toggle"
+              aria-label={gettext('express_advanced_placement')}
+              title={gettext('express_advanced_placement')}
+              aria-expanded={expressEnableShowMore}
+              aria-controls="vipps-mobilepay-react-express-overrides"
+              onClick={() => setExpressEnableShowMore((showMore) => !showMore)}
+            >
+              <span className="vipps-mobilepay-react-overrides-chevron" aria-hidden="true" />
+            </button>
+          }
+        />
 
-      {/* Context/page specific overrides for express. LP 2026-09-28 */}
-      <div id="vipps-mobilepay-react-express-overrides" className="vipps-mobilepay-react-express-overrides" hidden={!expressEnableShowMore}>
-        <div className="vipps-mobilepay-react-express-overrides-heading">{gettext('express_advanced_placement')}</div>
-        {expressOverrides.map(option => (
-          <SwitchFormField
-            key={option}
-            name={option}
-            titleKey={`${option}.title`}
-            labelKey={`${option}.label`}
-            descriptionKey={`${option}.description`}
-            onChange={(value) => updateMasterFromOverride(option, value)}
-          />
-        ))}
+        {/* Context/page specific overrides for express. LP 2026-09-28 */}
+        <div id="vipps-mobilepay-react-express-overrides" className="vipps-mobilepay-react-express-overrides" hidden={!expressEnableShowMore}>
+          <div className="vipps-mobilepay-react-express-overrides-heading">{gettext('express_advanced_placement')}</div>
+          {expressOverrides.map(option => (
+            <SwitchFormField
+              key={option}
+              name={option}
+              titleKey={`${option}.title`}
+              labelKey={`${option}.label`}
+              descriptionKey={`${option}.description`}
+              onChange={(value) => updateMasterFromOverride(option, value)}
+            />
+          ))}
+        </div>
       </div>
 
 
