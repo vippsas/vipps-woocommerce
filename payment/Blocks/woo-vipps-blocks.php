@@ -149,8 +149,8 @@ add_action('enqueue_block_editor_assets', function () {
 
         // Buy now block for the minicart only. LP 2026-02-09
         $buy_now_cart_config = [
-            'vippsbuynowdescription' => sprintf(__( 'Add a %1$s Buy Now-button to the mini-cart', 'woo-vipps'), $vipps->get_payment_method_name()),
-            'vippsbuynowbutton' => $buy_now_config['vippsbuynowbutton'],
+            'vippsbuynowdescription' =>  sprintf(__( 'Add a %s %s button to the mini-cart', 'woo-vipps'), $this->get_payment_method_name(), Vipps::ExpressName()),
+            'vippsbuynowbutton' => $buy_now_config['vippsbuynowbutton'] . ' (' . __('Cart', 'woocommerce') . ')',
             'vippssmileurl' => $buy_now_config['vippssmileurl'],
             'BuyNowWithVipps' => $buy_now_config['BuyNowWithVipps'],
             'buttonHtml' => $vipps->get_html_button_for_context('minicart'),

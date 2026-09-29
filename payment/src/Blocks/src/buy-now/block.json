@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "woo-vipps/buy-now",
 	"version": "4.0.0",
-	"title": "Vipps MobilePay Buy Now",
+	"title": "Vipps MobilePay Express",
 	"attributes": {
 		"hasProductContext": {
 			"type": "boolean",
