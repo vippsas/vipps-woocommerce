@@ -1583,7 +1583,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Static shipping', 'woo-vipps'),
                         'label'       => __('Static shipping', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('If your shipping options do not depend on the customers address, you can enable this.<br><br>Speed up %s by precalculating shipping options in advance. Guest orders use your store’s base location; logged-in customers use their saved address. Enable this only when those locations produce accurate shipping options, such as with flat-rate or free shipping.', 'woo-vipps'), Vipps::ExpressName()),
+                        'description' => sprintf(__('Speed up %s by precalculating shipping options in advance. Should only be used if your shipping options do not depend on the customer\'s address.', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => 'no',
                         ),
 
@@ -1591,7 +1591,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'label'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Create and log in new customers during %1$s checkout. When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %2$s to provide easier login for customers.<br>If you have %2$s installed, customer creation is enabled by default unless disabled in WooCommerce.', 'woo-vipps'), Vipps::ExpressName(), Vipps::LoginName()),
+                        'description' => sprintf(__('Create and log in new customers during %1$s checkout.', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => $expresscreateuserdefault,
                         ),
                 'singleproductbuynowcompatmode' => array(

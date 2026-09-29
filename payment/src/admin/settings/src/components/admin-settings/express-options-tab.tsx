@@ -4,6 +4,7 @@ import { useWP } from '../../wp-options-provider';
 import { Collapsible } from '../collapsible';
 import { truthToBool } from '../form-elements';
 import { SwitchFormField, SelectFormField } from '../options-form-fields';
+import { InfoTooltip } from '../info-tooltip';
 
 /**
  * A React component that renders the express options tab for the admin settings page.
@@ -48,7 +49,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
             <button
               type="button"
               className="vipps-mobilepay-react-overrides-toggle"
-              aria-label={gettext('express_advanced_placement')}
+              aria-label={gettext('express_placement')}
               title={gettext('express_advanced_placement')}
               aria-expanded={expressEnableShowMore}
               aria-controls="vipps-mobilepay-react-express-overrides"
@@ -96,6 +97,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         titleKey="expresscreateuser.title"
         labelKey="expresscreateuser.label"
         descriptionKey="expresscreateuser.description"
+        trailingAction={<InfoTooltip html={gettext('expresscreateuser_extra')}/>}
       />
 
 
@@ -117,6 +119,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
             titleKey="enablestaticshipping.title"
             labelKey="enablestaticshipping.label"
             descriptionKey="enablestaticshipping.description"
+        trailingAction={<InfoTooltip html={gettext('enablestaticshipping_extra')}/>}
           />
         </Collapsible>
 
