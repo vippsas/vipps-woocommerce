@@ -198,7 +198,7 @@ class VippsAdminSettings
                 'express_advanced_section' => __('Advanced settings', 'woo-vipps'),
                 'express_placement' => __('Configure placement', 'woo-vipps'),
                 'save_changes' => __('Save changes', 'woo-vipps'),
-                'initial_settings' => __('Initial settings', 'woo-vipps'),
+                'initial_settings' => __('Initial settings wizard', 'woo-vipps'),
                 'upload_image' => __('Upload image', 'woo-vipps'),
                 'remove_image' => __('Remove image', 'woo-vipps'),
                 'next_step' => __('Next step', 'woo-vipps'),
@@ -256,6 +256,9 @@ class VippsAdminSettings
                 'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressName()),
                 'readmore' => __('Read more', 'woo-vipps'),
             ),
+            'testmode_wizard' => [
+                'description' => sprintf(__('Use the %1$s test environment instead of live production environment. No real transactions will be performed.', 'woo-vipps'), Vipps::CompanyName()),
+            ],
         ];
 
         if (!empty($settings['receiptimage'])) {

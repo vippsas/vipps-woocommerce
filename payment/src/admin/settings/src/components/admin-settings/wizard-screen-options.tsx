@@ -24,7 +24,6 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
   
   const [step, setStep] = useState<Steps>('ESSENTIAL');
   const [prevStep, setPrevStep] = useState<Steps>('ESSENTIAL');
-  const paymentMethod = getOption("payment_method_name");
 
   const expressOverrides = [
     'cartexpress',
@@ -32,6 +31,11 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
     'singleproductexpressarchives',
     'express_singleproduct_enabled'
   ];
+
+  var testSuffix = '';
+  if (truthToBool(getOption('testmode'))) {
+    testSuffix = '_test';
+  }
 
   return (
     <>
@@ -41,6 +45,13 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
           <p>{gettext('wizard_header.description')}</p>
           <div className="vipps-mobilepay-form-container">
             <div className="vipps-mobilepay-form-col">
+              {/* Toggle test mode */}
+              <SwitchFormField 
+                name="testmode"
+                titleKey="testmode.title"
+                descriptionKey="testmode_wizard.description"
+              />
+
               <SelectFormField
                 name="country"
                 titleKey="country.title"
@@ -60,6 +71,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 ]}
               />
 
+              {/* Inputs for keys. Uses test keys if testmode is switched on above. LP 2026-09-29 */}
               {/* Renders a select field that specifies the payment method name (Vipps or MobilePay) */}
               <SelectFormField
                 name="payment_method_name"
@@ -78,28 +90,39 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                   }
                 ]}
               />
-
               {/* Renders an input field for the merchant serial number */}
               <InputFormField
                 asterisk
-                name="merchantSerialNumber"
-                titleKey="merchantSerialNumber.title"
-                descriptionKey="merchantSerialNumber.description"
+                name={`merchantSerialNumber${testSuffix}`}
+                titleKey={`merchantSerialNumber${testSuffix}.title`}
+                descriptionKey={`merchantSerialNumber${testSuffix}.description`}
                 required
               />
 
               {/* Renders an input field for the VippsMobilePay client ID */}
-              <InputFormField asterisk name="clientId" titleKey="clientId.title" descriptionKey="clientId.description" required />
+              <InputFormField
+                asterisk
+                name={`clientId${testSuffix}`}
+                titleKey={`clientId${testSuffix}.title`}
+                descriptionKey={`clientId${testSuffix}.description`}
+                required
+              />
 
               {/* Renders an input field for the VippsMobilePay secret */}
-              <InputFormField asterisk name="secret" titleKey="secret.title" descriptionKey="secret.description" required />
+              <InputFormField
+                asterisk
+                name={`secret${testSuffix}`}
+                titleKey={`secret${testSuffix}.title`}
+                descriptionKey={`secret${testSuffix}.description`}
+                required
+              />
 
               {/* Renders an input field for the VippsMobilePay Ocp_Apim_Key_eCommerce */}
               <InputFormField
                 asterisk
-                name="Ocp_Apim_Key_eCommerce"
-                titleKey="Ocp_Apim_Key_eCommerce.title"
-                descriptionKey="Ocp_Apim_Key_eCommerce.description"
+                name={"Ocp_Apim_Key_eCommerce" + testSuffix}
+                titleKey={`Ocp_Apim_Key_eCommerce${testSuffix}.title`}
+                descriptionKey={`Ocp_Apim_Key_eCommerce${testSuffix}.description`}
                 required
               />
 
@@ -119,7 +142,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                       ) as HTMLFormElement | null;
                       if (!form) {
                           throw new Error("Form not found");
-                      } 
+                      }
 
                       // Trigger validation and proceed to the next step if valid
                       if (form.reportValidity()) {
@@ -131,7 +154,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                     }}
                   >
                     {/* no next step at this point if no checkout */}
-                    {truthToBool(getOption('vipps_checkout_enabled')) ? gettext("next_step") : fixCheckoutName(gettext('save_changes'), paymentMethod)}
+                    {gettext('save_changes')}
                   </WPButton>
                 </div>
               </WPFormField>

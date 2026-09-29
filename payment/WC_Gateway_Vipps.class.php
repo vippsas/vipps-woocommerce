@@ -1466,14 +1466,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     ),
 
             'merchantSerialNumber_test' => array(
-                    'title' => __('Merchant Serial Number', 'woo-vipps'),
+                    'title' => __('Test merchant Serial Number', 'woo-vipps'),
                     'label'       => __('Merchant Serial Number', 'woo-vipps'),
                     'type'        => 'number',
                     'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
                     'default'     => '',
                     ),
             'clientId_test' => array(
-                    'title' => __('Client Id', 'woo-vipps'),
+                    'title' => __('Test client Id', 'woo-vipps'),
                     'class' => 'vippspw',
                     'label'       => __('Client Id', 'woo-vipps'),
                     'type'        => 'password',
@@ -1481,7 +1481,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => '',
                     ),
             'secret_test' => array(
-                    'title' => __('Client Secret', 'woo-vipps'),
+                    'title' => __('Test client Secret', 'woo-vipps'),
                     'label'       => __('Client Secret', 'woo-vipps'),
                     'class' => 'vippspw',
                     'type'        => 'password',
@@ -1489,7 +1489,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => '',
                     ),
             'Ocp_Apim_Key_eCommerce_test' => array(
-                    'title' => __('Subscription Key', 'woo-vipps'),
+                    'title' => __('Test subscription Key', 'woo-vipps'),
                     'label'       => __('Subscription Key', 'woo-vipps'),
                     'class' => 'vippspw',
                     'type'        => 'password',
