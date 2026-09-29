@@ -1069,6 +1069,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $default_ask_address_for_express = 'no';
         $default_status_on_fail = 'failed';
         $default_express_show_in_checkout = 'yes';
+        $default_express_singleproduct_enabled = 'yes';
         if ($current) {
             $default_static_shipping_for_checkout = (isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
             $default_ask_address_for_express = (isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
@@ -1083,6 +1084,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Therefore, set new one equal to 'cartexpress' IF it isn't set yet, so that the functionality stays the same for users. LP 2026-07-02
             if (!isset($current['express_show_in_checkout']) && isset($current['cartexpress'])) {
                 $default_express_show_in_checkout = $current['cartexpress'];
+            }
+
+            // Migrate removed alternative 'none' for option 'singleproductexpress' to the new option 'express_singleproduct_enabled'.
+            // 'singleproductexpress' now specifies which products that support express generally, and  'express_singleproduct_enabled'
+            // is whether to show Express button on single product page/context specifically. LP 2026-09-29
+            if ('none' === ($current['singleproductexpress'] ?? null)) {
+                $default_express_singleproduct_enabled = 'no';
+                $current['singleproductexpress'] = 'all';
+                $this->update_option('singleproductexpress', 'all');
             }
         }
 
@@ -1530,21 +1540,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'yes',
                         ),
 
-                // Whether to show express on single product pages. LP 2026-09-28
+                // New: Whether to show express on single product pages. LP 2026-09-28
                 'express_singleproduct_enabled' => [
                         'title'       => sprintf(__('Product pages', 'woo-vipps'), Vipps::ExpressName()),
                         'label'       => '',
                         'type'        => 'checkbox',
                         'description' => sprintf(__('Only shown for %s supported products', 'woo-vipps'), Vipps::ExpressName()),
-                        'default'     => 'yes',
+                        'default'     => $default_express_singleproduct_enabled,
                 ],
-                // Which products can be purchasable by Express. LP 2026-09-28
+                // Changed option: Which products to support for Express (as long as they are purchasable by Express too). LP 2026-09-28
                 'singleproductexpress' => array(
-                        'title'       => sprintf(__('%s supported products', 'woo-vipps'), Vipps::ExpressName()),
+                        'title'       => __('Supported products', 'woo-vipps'),
                         'label'       => '',
                         'type'        => 'select',
                         'options' => array(
-                            'none' => __('No products','woo-vipps'),
                             'some' => __('Selected products', 'woo-vipps'),
                             'all' => __('All products','woo-vipps')
                             ), 
@@ -1800,7 +1809,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // True if the express checkout feature should be available 
     public function express_checkout_available() {
        if (! $this->is_available()) return false;
-       $ok = true;
+       $ok = 'yes' === $this->get_option('express_enabled');
        $ok = apply_filters('woo_vipps_express_checkout_available', $ok, $this);
        return $ok;
     }

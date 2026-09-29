@@ -320,27 +320,7 @@ class Vipps {
        // Add an admin interface for this page as well IOK 2026-09-11
        add_action('woocommerce_settings_pages', array($this, 'woocommerce_settings_pages'));
 
-       // Correct Express master toggle from the suboptions/overrides (Though this should be handled in the ui). LP 2026-09-28
-       $gw = $this->gateway();
-       // All overrides was turned off
-       if ('yes' === $gw->get_option('express_enabled') && (
-                   'no' === $gw->get_option('cartexpress') &&
-                   'no' === $gw->get_option('express_show_in_checkout') &&
-                   'no' === $gw->get_option('singleproductexpressarchives') &&
-                   'no' === $gw->get_option('express_singleproduct_enabled')
-                   )) {
-           $gw->update_option('express_enabled', 'off');
-       } 
-       // Any of the overrides was turned on
-       else if ('no' === $gw->get_option('express_enabled') && (
-                   'yes' === $gw->get_option('cartexpress') ||
-                   'yes' === $gw->get_option('express_show_in_checkout') ||
-                   'yes' === $gw->get_option('singleproductexpressarchives') ||
-                   'yes' === $gw->get_option('express_singleproduct_enabled')
-                   )) {
-           $gw->update_option('express_enabled', 'yes');
-       }
-
+       $this->correct_express_enabled_option();
     }
 
     public function admin_init () {
@@ -462,6 +442,28 @@ class Vipps {
         }
     }
 
+    // Correct Express master toggle from the suboptions/overrides (Though this should be handled in the ui). LP 2026-09-28
+    private function correct_express_enabled_option() {
+        $gw = $this->gateway();
+        // All overrides was turned off
+        if ('yes' === $gw->get_option('express_enabled') && (
+                    'no' === $gw->get_option('cartexpress') &&
+                    'no' === $gw->get_option('express_show_in_checkout') &&
+                    'no' === $gw->get_option('singleproductexpressarchives') &&
+                    'no' === $gw->get_option('express_singleproduct_enabled')
+                    )) {
+            $gw->update_option('express_enabled', 'off');
+        } 
+        // Any of the overrides was turned on
+        else if ('no' === $gw->get_option('express_enabled') && (
+                    'yes' === $gw->get_option('cartexpress') ||
+                    'yes' === $gw->get_option('express_show_in_checkout') ||
+                    'yes' === $gw->get_option('singleproductexpressarchives') ||
+                    'yes' === $gw->get_option('express_singleproduct_enabled')
+                    )) {
+            $gw->update_option('express_enabled', 'yes');
+        }
+    }
     
     /** Ensure we have a special page for payment flows
      *
@@ -2064,21 +2066,24 @@ EOF;
     public function product_options_vipps() {
         $gw = $this->gateway();
         $choice = $gw->get_option('singleproductexpress');
+        $express_for_products = 'yes' === $gw->get_option('express_enabled') &&
+            ('yes' === $gw->get_option('express_singleproduct_enabled')) ||
+            ('yes' === $gw->get_option('singleproductexpressarchives'));
         echo '<div class="options_group">';
         echo "<div class='blurb' style='margin-left:13px'><h4>";
-        echo __("Buy-now button", 'woo-vipps') ;
+        echo self::ExpressName();
         echo "<h4></div>";
-        if ($choice == 'some') {
+        if ($express_for_products && $choice == 'some') {
             $button = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_buy_now_button', true));
             echo "<input type='hidden' name='woo_vipps_add_buy_now_button' value='no' />";
             woocommerce_wp_checkbox( array(
                         'id'      => 'woo_vipps_add_buy_now_button',
                         'value'   => $button,
-                        'label'   => sprintf(__('Add  \'Buy now with %1$s\' button', 'woo-vipps'), $this->get_payment_method_name()),
+                        'label'   => sprintf(__('Support %s', 'woo-vipps'), Vipps::ExpressName()),
                         'desc_tip' => true,
-                        'description' => sprintf(__('Add a \'Buy now with %1$s\'-button to this product','woo-vipps'), $this->get_payment_method_name())
+                        'description' => sprintf(__('Add a %s button to this product','woo-vipps'), Vipps::ExpressName())
                         ) ); 
-        } else if ($choice == "all") {
+        } else if ($express_for_products && $choice == "all") {
           $prod = wc_get_product(get_the_ID());
           $canbebought = false;
           if (is_a($prod, 'WC_Product')) {
@@ -2086,18 +2091,17 @@ EOF;
           }
 
           echo "<p>";
-          echo sprintf(__("The %1\$s settings are currently set up so all products that can be bought with Express Checkout will have a Buy Now button.", 'woo-vipps'), Vipps::CompanyName()); 
+          echo sprintf(__("The %1\$s settings are currently set up so all products that can be bought with %2\$s are supported.", 'woo-vipps'), Vipps::CompanyName(), Vipps::ExpressName()); 
           echo " ";
           if ($canbebought) {
-            echo __("This product supports express checkout, and so will have a Buy Now button." , 'woo-vipps');
+            echo sprintf(__("This product supports %1\$s and will have an %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
           } else {
-            echo __("This product does <b>not</b> support express checkout, and so will <b>not</b> have a Buy Now button." , 'woo-vipps');
+            echo sprintf(__("This product does <b>not</b> support %1\$s, and so will <b>not</b> %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
           } 
           echo "</p>";
-        } else {
-         $settings = esc_attr(admin_url('/admin.php?page=vipps_settings_menu'));
+        } else { // Express for products disabled. LP 2026-09-29
           echo "<p>";
-          echo sprintf(__("The %1\$s settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), Vipps::CompanyName());
+          echo sprintf(__('%s is currently disabled for all products in the %s settings.', 'woo-vipps'), Vipps::ExpressName(), Vipps::CompanyName());
           echo "</p>";
         }
         echo '</div>';
@@ -4435,7 +4439,6 @@ else:
                 delete_option('woocommerce_vipps_special_page_page_id');
             }
         }
-
     }
 
     // We have added some hooks to wp-cron; remove these. IOK 2020-04-01
@@ -5233,6 +5236,8 @@ else:
     // Display a 'buy now with express checkout' button on the product page IOK 2018-09-27
     public function single_product_buy_now_button () {
         $gw = $this->gateway();
+        $enabled = 'yes' === $gw->get_option('express_singleproduct_enabled');
+        if (!$enabled) return false;
         $how = $gw->get_option('singleproductexpress');
         if ($how == 'none') return;
         if (!$gw->express_checkout_available()) return;
@@ -5257,9 +5262,9 @@ else:
         if (!$showit) return;
 
         $classes = array();
-        $disabled="";
+        // $disabled="";
         if ($product->is_type('variable')) {
-            $disabled="disabled";
+            // $disabled="disabled";
             $classes[] = 'variable-product';
         }
 
