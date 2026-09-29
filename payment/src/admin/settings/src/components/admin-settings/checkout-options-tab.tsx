@@ -41,7 +41,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
         />
       </p>
 
-      {/* Toggle for Checkout */}
+      {/* Toggle Checkout */}
       <SwitchFormField
         name="vipps_checkout_enabled"
         titleKey="vipps_checkout_enabled.title"
@@ -51,7 +51,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
 
       {/* Dont show the rest of the options if checkout is disabled (the above option). LP 2026-09-25 */}
       {checkoutEnabled && (<>
-        {/* Toggle for static shipping */}
+        {/* Toggle static shipping */}
         <SwitchFormField
           name="enablestaticshipping_checkout"
           titleKey="enablestaticshipping_checkout.title"
@@ -60,7 +60,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           trailingAction={<InfoTooltip html={gettext('enablestaticshipping_extra')}/>}
         />
 
-        {/* Toggle for the creation of new customers on Checkout */}
+        {/* Toggle the creation of new customers on Checkout */}
         <SwitchFormField
           name="checkoutcreateuser"
           titleKey="checkoutcreateuser.title"
@@ -69,7 +69,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           trailingAction={<InfoTooltip html={gettext('checkoutcreateuser_extra')}/>}
         />
 
-        {/* Toggle for the sharing of user information */}
+        {/* Toggle the sharing of user information */}
         <SwitchFormField
           name="requireUserInfo_checkout"
           titleKey="requireUserInfo_checkout.title"
@@ -81,7 +81,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
         <Collapsible title={fixCheckoutName(gettext("checkout_shipping.title"), paymentMethod)}>
           <p>{fixCheckoutName(gettext("checkout_shipping.description"), paymentMethod)}</p>
 
-          {/* Toggle for Posten Norge  */}
+          {/* Toggle Posten Norge  */}
           <SwitchFormField
             name="vcs_posten"
             titleKey="vcs_posten.title"
@@ -89,7 +89,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
             labelKey="vcs_posten.label"
           />
 
-          {/* Toggle for Posten Nord */}
+          {/* Toggle Posten Nord */}
           <SwitchFormField
             name="vcs_postnord"
             titleKey="vcs_postnord.title"
@@ -133,7 +133,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
             </>
           )}
 
-          {/* Toggle for Helthjem */}
+          {/* Toggle Helthjem */}
           <SwitchFormField
             name="vcs_helthjem"
             titleKey="vcs_helthjem.title"
@@ -211,7 +211,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
 
         {/* Advanced section */ }
         <Collapsible title={gettext('checkout_advanced_section')}>
-          {/* Toggle for the dropping of address fields */}
+          {/* Toggle address fields */}
           <SwitchFormField
             name="noAddressFields"
             titleKey="noAddressFields.title"
@@ -219,7 +219,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
             descriptionKey="noAddressFields.description"
           />
 
-          {/* Toggle for the dropping of contact fields */}
+          {/* Toggle contact fields */}
           <SwitchFormField
             disabled={!truthToBool(getOption('noAddressFields'))} // Requires this option!
             name="noContactFields"
