@@ -1549,7 +1549,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             'all' => __('All products','woo-vipps')
                             ), 
                         /* translators: %s is an option for this setting */
-                        'description' => sprintf(__('If you choose %s, enable it individually for the products you want to support.', 'woo-vipps'), __('Selected products', 'woo-vipps')),
+                        'description' => sprintf(__('If you choose %s, enable it individually in product edit.', 'woo-vipps'), __('Selected products', 'woo-vipps')),
                         'default'     => 'all',
                 ),
 

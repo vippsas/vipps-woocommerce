@@ -9,7 +9,7 @@ export function InfoTooltip({ html }: InfoTooltipProps): JSX.Element {
   return (
     <span className="vipps-mobilepay-react-info-tooltip">
       <button type="button" className="vipps-mobilepay-react-info-tooltip-trigger">
-        <span aria-hidden="true">i</span>
+        <span aria-hidden="true">?</span>
       </button>
       <span className="vipps-mobilepay-react-info-tooltip-content">
         <UnsafeHtmlText htmlString={html} />
