@@ -118,6 +118,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 Version 6.2.6
+* Fix: Add a class existence check for Checkout's classes during recurring payments
 Fix crashes with some Express Checkout shipping methods
 Version 6.2.5
 Fix style of express checkout buttons in Gutenberg Checkout and cart
