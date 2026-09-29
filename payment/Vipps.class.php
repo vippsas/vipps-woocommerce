@@ -4535,26 +4535,10 @@ else:
         $order_status = $order->get_status();
 
         if ($order_status != 'pending') return $order_status;
-        // No callback has occured yet. If this has been going on for a while, check directly with Vipps
-        // We can't use the vipps init timestamp here, because that may be  in the past for Checkout at least. IOK 2025-08-13
-        if ($order_status == 'pending') {
-            if (WC()->session) {
-                $now = time();
-                $then = WC()->session->get('_vipps_check_' . $order->get_id());
-                if (!$then) {
-                    $then = $now;
-                    WC()->session->set('_vipps_check_' . $order->get_id(), $then);
-                }
-                if (($then + (1 * 30)) > $now) { // more than half a minute? Start checking at Vipps
-                    return $order_status;
-                }
-            } else {
-                // No session shouldn't be possible, but if it is..
-                return $order_status;
-            }
-        }
+
+        $gw = $this->gateway();
         $this->log("Checking order status on Vipps for order id: " . $order->get_id(), 'info');
-        return $this->check_status_of_pending_order($order);
+        $newstatus = $gw->poll_and_check_order_status($order);
     }
 
     // In some situations we have to empty the cart when the user goes to Vipps, so
@@ -5732,10 +5716,10 @@ else:
         // This is for debugging only - set to false to ensure we wait for the callback. IOK 2023-08-04
         $do_poll = true;
 
-        // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
+        // Do a single poll here to check and set the order status at Woo using the order status at Vipps IOK 2026-09-29
         if ($do_poll && $status == 'pending') {
-            // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
-            $newstatus = $gw->callback_check_order_status($order);
+            // We will do *one* poll before waiting for the callback (for a while, at least.) IOK 2026-09-29
+            $newstatus = $gw->poll_and_check_order_status($order);
             $this->log(sprintf(__("In order return: Order status of %1\$d is %2\$s", 'woo-vipps'), $orderid, $newstatus), 'info');
             if ($status != $newstatus) {
                 $status = $newstatus;
@@ -5746,6 +5730,8 @@ else:
             // No need to do anyting here. IOK 2020-01-26
         }
 
+        // Actually, this may cause a second poll if the first left us pending. Should be rewritten - but *mostly* it will just check
+        // the payment status at Vipps without polls, which will tell us if the payment succeeded in case people use custom order statuses and so on. IOK 2026-09-29
         $payment = 'notchecked';
         if ($do_poll) {
             $payment = $deleted_order ? 'cancelled' : $gw->check_payment_status($order);
