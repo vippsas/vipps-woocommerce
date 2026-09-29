@@ -88,6 +88,26 @@
         window.__vippsWidgetHostStarted = true;
     }
 
+    /**
+     * Keep pointer interaction with the SDK backdrop inside the modal. The SDK
+     * suppresses the final click, but focus normally changes on pointerdown or
+     * mousedown; that would make the merchant window appear to have been revisited.
+     */
+    function preventVippsBackdropFocus(event) {
+        const target = event.target;
+        if (
+            target instanceof HTMLDialogElement &&
+            target.id === "vipps-trigger-dialog" &&
+            target.open
+        ) {
+            event.preventDefault();
+        }
+    }
+
+    document.addEventListener("pointerdown", preventVippsBackdropFocus, true);
+    document.addEventListener("mousedown", preventVippsBackdropFocus, true);
+    document.addEventListener("contextmenu", preventVippsBackdropFocus, true);
+
     window.ensureVippsWidgetHostStarted = ensureVippsWidgetHostStarted;
 })();
 (() => {
@@ -160,6 +180,7 @@
         const disabledSelector = options.disabledSelector ||
             "[data-checkout-button], [data-cart-button]";
         const disabledButtonStates = new Map();
+        let leftForegroundDuringHandoff = false;
 
         /** Read only a valid, recent marker; stale or malformed state is discarded. */
         function get() {
@@ -185,6 +206,7 @@
 
         /** Record that an order has a payment URL and may outlive this page view. */
         function mark(result = {}) {
+            leftForegroundDuringHandoff = false;
             try {
                 sessionStorage.setItem(storageKey, JSON.stringify({
                     createdAt: Date.now(),
@@ -199,6 +221,7 @@
 
         /** Remove the marker when the local attempt ends, including after cancellation. */
         function clear() {
+            leftForegroundDuringHandoff = false;
             try {
                 sessionStorage.removeItem(storageKey);
             } catch {
@@ -307,11 +330,28 @@
             clear();
         }
 
-        window.addEventListener("pageshow", handlePageshow);
-        window.addEventListener("focus", reloadOnceForStalePage);
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "visible") {
+        /** Record a real page/app departure; focus changes inside a modal do not qualify. */
+        function markForegroundDeparture() {
+            if (get()) {
+                leftForegroundDuringHandoff = true;
+            }
+        }
+
+        /** Refresh only after this document actually left the foreground. */
+        function handleForegroundReturn() {
+            if (leftForegroundDuringHandoff) {
                 reloadOnceForStalePage();
+            }
+        }
+
+        window.addEventListener("pageshow", handlePageshow);
+        window.addEventListener("pagehide", markForegroundDeparture);
+        window.addEventListener("focus", handleForegroundReturn);
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden") {
+                markForegroundDeparture();
+            } else if (document.visibilityState === "visible") {
+                handleForegroundReturn();
             }
         });
 
