@@ -216,7 +216,20 @@ class VippsAdminSettings
                 'checkoutcreateuser_extra' => sprintf(__('When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %1$s to provide easier login for customers.', 'woo-vipps'), Vipps::LoginName()),
                 'expresscreateuser_extra' => sprintf(__('When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %1$s to provide easier login for customers.<br>If you have %1$s installed, customer creation is enabled by default unless disabled in WooCommerce.', 'woo-vipps'), Vipps::LoginName()),
                 'enablestaticshipping_extra' => __('Guest orders use your store’s base location; logged-in customers use their saved address. Enable this only when those locations produce accurate shipping options, such as with flat-rate or free shipping.', 'woo-vipps'),
-                );
+                'result_status_extra' => sprintf(
+                    __('Select %1$s if you capture payment before shipping, either manually or by marking the order as %3$s.<br>Select %2$s if %1$s triggers shipping in your store.<br>&#9;&gt; Note that %2$s may send customers an email suggesting there is a problem with their order.', 'woo-vipps'),
+                    __('Processing', 'woo-vipps'),
+                    __('On hold','woo-vipps'),
+                    __('Complete','woo-vipps'),
+                ),
+                'status_on_fail_extra' => sprintf(
+                        __('%1$s orders will keep the customer\'s shopping cart intact.<br>%2$s orders can be restarted, possibly with another payment method.', 'woo-vipps'),
+                        /* translators: woocommerce order status name */
+                        __('Failed', 'woo-vipps'),
+                        /* translators: woocommerce order status name */
+                        __('Cancelled','woo-vipps'),
+                ),
+            );
 
         /* We need to postprocess the settings for.. various reasons IOK 2024-06-04  */
         /* Also we need to run init_form_fields here, because for whatever reason the

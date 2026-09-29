@@ -4,6 +4,7 @@ import { getMetadata, gettext } from '../../lib/wp-data';
 import { SwitchFormField, InputFormField, SelectFormField, TextareaFormField } from '../options-form-fields';
 import { truthToBool } from '../form-elements';
 import { Collapsible } from '../collapsible';
+import { InfoTooltip } from '../info-tooltip';
 
 /**
  * A React component that renders the main options tab for the admin settings page.
@@ -98,6 +99,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
             name="result_status"
             titleKey="result_status.title"
             descriptionKey="result_status.description"
+            trailingAction={<InfoTooltip html={gettext('result_status_extra')}/>}
             options={[
               { label: gettext('result_status.options.on-hold'), value: 'on-hold' },
               { label: gettext('result_status.options.processing'), value: 'processing' }
@@ -109,6 +111,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
             name="status_on_fail"
             titleKey="status_on_fail.title"
             descriptionKey="status_on_fail.description"
+            trailingAction={<InfoTooltip html={gettext('status_on_fail_extra')}/>}
             options={[
               { label: gettext('status_on_fail.options.failed'), value: 'failed' },
               { label: gettext('status_on_fail.options.cancelled'), value: 'cancelled' }

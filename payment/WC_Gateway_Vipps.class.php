@@ -1368,12 +1368,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'on-hold' => __('On hold','woo-vipps'),
                 ), 
                 /* translators: placeholders are options for this setting */
-                'description' => sprintf(
-                    __('The order status when the customer\'s payment is reserved (these are <b>not yet captured</b>).<br>Select %1$s if you capture payment before shipping, either manually or by marking the order as %3$s.<br>Select %2$s if %1$s triggers shipping in your store.<br>&#9;&gt; Note that %2$s may send customers an email suggesting there is a problem with their order.', 'woo-vipps'),
-                    __('Processing', 'woo-vipps'),
-                    __('On hold','woo-vipps'),
-                    __('Complete','woo-vipps'),
-                ),
+                'description' => __('The order status when the customer\'s payment is reserved (these are <b>not yet captured</b>).', 'woo-vipps'),
                 'default'     => 'processing',
             ),
 
@@ -1388,14 +1383,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'cancelled' => __('Cancelled','woo-vipps'),
                 ), 
                 /* translators: the first placeholder is company name, the rest are woocommerce order statuses */
-                'description' => sprintf(
-                    __('The order status when payment fails, this will only affect orders that truly can be restarted at %1s.<br>%2$s orders will keep the customer\'s shopping cart intact.<br>%3$s orders can be restarted, possibly with another payment method.', 'woo-vipps'),
-                    Vipps::CompanyName(),
-                    /* translators: woocommerce order status name */
-                    __('Failed', 'woo-vipps'),
-                    /* translators: woocommerce order status name */
-                    __('Cancelled','woo-vipps'),
-                ),
+                'description' => sprintf(__('The order status when payment fails, this will only affect orders that truly can be restarted at %1s.', 'woo-vipps'), Vipps::CompanyName()),
                 'default'     => $default_status_on_fail,
             ),
 

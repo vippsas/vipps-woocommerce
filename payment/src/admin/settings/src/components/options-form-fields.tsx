@@ -205,6 +205,9 @@ interface SelectFormFieldProps {
    * The error message for the select form field.
    */
   error?: string;
+
+  /** Optional control displayed at the right edge of a switch field. */
+  trailingAction?: ReactNode;
 }
 
 /**
@@ -222,14 +225,18 @@ export function SelectFormField({
   onChange,
   required = false,
   includeEmptyOption = false,
-  error
+  error,
+  trailingAction,
 }: SelectFormFieldProps): JSX.Element {
   const { getOption, setOption } = useWP();
   const paymentMethod = getOption("payment_method_name");
 
   return (
     <WPFormField>
-      <WPLabel htmlFor={name}>{fixCheckoutName(gettext(titleKey), paymentMethod)}</WPLabel>
+      <div className="vipps-mobilepay-react-form-field-header">
+        <WPLabel htmlFor={name}>{fixCheckoutName(gettext(titleKey), paymentMethod)}</WPLabel>
+        {trailingAction}
+      </div>
       <div className="vipps-mobilepay-react-col">
         <WPSelect
           id={name}

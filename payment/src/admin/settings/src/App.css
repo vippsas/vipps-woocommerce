@@ -856,3 +856,8 @@
     align-items: stretch;
   }
 }
+.vipps-mobilepay-react-form-field-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
