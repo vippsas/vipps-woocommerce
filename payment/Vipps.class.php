@@ -4624,6 +4624,7 @@ else:
     // Maybe log in user
     // It is done on the thank-you page of the order, and only for express checkout.
     function maybe_log_in_user ($order) {
+
         if (is_user_logged_in()) return;
         if (!$order || ! self::is_vipps_order($order)) return;
 
@@ -5025,6 +5026,17 @@ else:
             if ( ! WC()->session instanceof WC_Session ) {
                 WC()->session = new WC_Session_Handler();
                 WC()->session->init();
+
+                // If we don't have a session cookie, we need to set it, and also initialize the $_COOKIE value.  IOK 2026-09-29
+                if (! WC()->session->get_session_cookie()) {
+                    $store_session_cookie = function ( $options, $name, $value ) { $_COOKIE[$name] = $value; return $options;};
+                    add_filter('woocommerce_set_cookie_options', $store_session_cookie, 10, 3);
+                    try {
+                        WC()->session->set_customer_session_cookie( true ); // We have to explicitly set the cookie if this session is fresh. IOK 2026-09-29
+                    } finally {
+                        remove_filter('woocommerce_set_cookie_options', $store_session_cookie, 10);
+                    }
+                }
             }
             if (is_null( WC()->customer)) {
                 WC()->customer = new WC_Customer( get_current_user_id(), true );
@@ -5135,6 +5147,7 @@ else:
         } else {
             WC()->cart->add_to_cart($product->get_id(),$quantity);
         }
+        WC()->session->save_data();
 
         $result = $this->create_and_process_express_order();
 
@@ -5215,7 +5228,7 @@ else:
 
         $sessionorders= WC()->session->get('_vipps_session_orders');
         if (!isset($sessionorders[$orderid])) {
-            wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','woo-vipps')));
+            wp_send_json(array('status'=>'error', 'msg'=>__('Not a session order','woo-vipps')));
         }
 
         $order = wc_get_order($orderid); 
@@ -5663,6 +5676,7 @@ else:
     // Called in template_redirect before we get to the wait-for-payment page IOK 2026-09-21
     private function handle_payment_poll_and_redirect () {
         $orderid = WC()->session->get('_vipps_pending_order');
+
         $order = null;
         $gw = $this->gateway();
 
@@ -5693,7 +5707,12 @@ else:
                 if (!$session->has_session()) {
                     $session->set_customer_session_cookie(true);
                 }
+
+                $sessionorders= WC()->session->get('_vipps_session_orders');
+                $sessionorders[$orderid] = 1;
+                WC()->session->set('_vipps_session_orders',$sessionorders);
                 $session->set('_vipps_pending_order', $orderid);
+                WC()->session->save_data();
             }
         }
 
@@ -5773,7 +5792,6 @@ else:
     }
 
     public function vipps_wait_for_payment() {
-
         // This will have been computed in template_redirect, but the status will be either still pending or failed. IOK 2026-09-21
         $data = apply_filters('woo_vipps_wait_for_payment_status', []);
 
@@ -5815,7 +5833,6 @@ else:
         $content .= "<input type='hidden' name='action' value='check_order_status'>";
         $content .= wp_nonce_field('vippsstatus','sec',1,false);
         $content .= "</form>";
-
 
         $content .= "<div id='error' style='display:none'><p>".__('Error during order confirmation','woo-vipps'). '</p>';
         $content .= "<p>" . __('An error occured during order confirmation. The error has been logged. Please contact us to determine the status of your order', 'woo-vipps') . "</p>";
