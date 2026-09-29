@@ -1,7 +1,7 @@
 == Changelog ==
 
 = 2.2.19 =
-* Fix: add a class existence check for Checkout's classes during recurring payments
+* Fix: Add a class existence check for Checkout's classes during recurring payments
 
 = 2.2.18 =
 * Fix: Restrict permissions on capturing recurring orders.
