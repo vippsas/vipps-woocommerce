@@ -1115,7 +1115,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'label'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Create and log in new customers during %s. When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %s to provide easier login for customers.', 'woo-vipps'), 'Checkout', Vipps::LoginName()),
+                        'description' => sprintf(__('Create and log in new customers during %s.', 'woo-vipps'), 'Checkout'),
                         'default'     => $vippscreateuserdefault,
                         ),
 
@@ -1123,7 +1123,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Static shipping', 'woo-vipps'),
                         'label'       => __('Static shipping', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('If your shipping options do not depend on the customers address, you can enable this.<br><br>Speed up %s by precalculating shipping options in advance. Guest orders use your store’s base location; logged-in customers use their saved address. Enable this only when those locations produce accurate shipping options, such as with flat-rate or free shipping.', 'woo-vipps'), 'Checkout'),
+                        'description' => sprintf(__('Speed up %s by precalculating shipping options in advance. Should only be used if your shipping options do not depend on the customer\'s address.', 'woo-vipps'), 'Checkout'),
                         'default'     => $default_static_shipping_for_checkout
                         ),
 
@@ -1156,7 +1156,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'checkout_shipping' => array(
                     'title' => __('Shipping Methods', 'woo-vipps'),
                     'type'  => 'title',
-                    'description' => '',
+                    'description' => sprintf(__('Provide external shipping methods in %s.', 'woo-vipps'), 'Checkout'),
                     ),
 
                 'vcs_posten' => array(
@@ -1269,7 +1269,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                        'label'       => __('Klarna', 'woo-vipps'),
                        'type'        => 'checkbox',
                        'class' => 'external_payments klarna',
-                       'description' => sprintf(__("Allow Klarna as an external payment method in %1\$s",'woo-vipps'), Vipps::CheckoutName()),
+                       'description' => '',
                        'default'     => 'no',
                        );
            }
@@ -1278,7 +1278,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                    'checkout_external_payment_title' => array(
                            'title' => sprintf(__('External Payment Methods', 'woo-vipps'), Vipps::CheckoutName()),
                            'type'  => 'title',
-                           'description' => sprintf(__("Allow certain external payment methods in %1\$s, returning control to WooCommerce for the order", 'woo-vipps'), Vipps::CheckoutName())
+                           'description' => sprintf(__('Allow external payment methods in %s. Selecting one of these returns payment control to WooCommerce.', 'woo-vipps'), 'Checkout')
                    ),
                ];
                foreach($externals as $k => $def)   $external_payment_fields[$k] = $def;
@@ -1289,13 +1289,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            'checkout_widgets' => [
                'title' => __('Widgets', 'woo-vipps'),
                'type'  => 'title',
-               'description' => sprintf(__('Widgets are elements shown above the %1$s frame with extra functionality.', 'woo-vipps'), Vipps::CheckoutName()),
+               'description' => sprintf(__('Widgets are elements shown above the %1$s frame with extra functionality.', 'woo-vipps'), 'Checkout'),
            ],
            'checkout_widget_ordernotes' => [
                'title'       => __('Order notes', 'woo-vipps'),
-               'label'       => __('Enable the order notes widget', 'woo-vipps'),
+               'label'       => '',
                'type'        => 'checkbox',
-               'description' => __('A widget to add customer notes with their order.', 'woo-vipps'),
+               'description' => __('Allows the customer to add a customer note with their order.', 'woo-vipps'),
                'default'     => 'yes'
            ],
        ];
@@ -1303,9 +1303,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 //       if (wc_coupons_enabled()) {
            $vipps_checkout_widgets_fields['checkout_widget_coupon'] = [
                'title'       => __('Coupon code', 'woo-vipps'),
-               'label'       => __('Enable the coupon code widget', 'woo-vipps'),
+               'label'       => '',
                'type'        => 'checkbox',
-               'description' => __('A widget to activate coupon codes.', 'woo-vipps'),
+               'description' => __('Allows the customer to activate coupon codes.', 'woo-vipps'),
                'default'     => 'yes'
            ];
 //       }

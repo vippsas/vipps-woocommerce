@@ -50,7 +50,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
               type="button"
               className="vipps-mobilepay-react-overrides-toggle"
               aria-label={gettext('express_placement')}
-              title={gettext('express_advanced_placement')}
+              title={gettext('express_placement')}
               aria-expanded={expressEnableShowMore}
               aria-controls="vipps-mobilepay-react-express-overrides"
               onClick={() => setExpressEnableShowMore((showMore) => !showMore)}
@@ -62,7 +62,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
 
         {/* Context/page specific overrides for express. LP 2026-09-28 */}
         <div id="vipps-mobilepay-react-express-overrides" className="vipps-mobilepay-react-express-overrides" hidden={!expressEnableShowMore}>
-          <div className="vipps-mobilepay-react-express-overrides-heading">{gettext('express_advanced_placement')}</div>
+          <div className="vipps-mobilepay-react-express-overrides-heading">{gettext('express_placement')}</div>
           {expressOverrides.map(option => (
             <SwitchFormField
               key={option}
@@ -119,7 +119,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
             titleKey="enablestaticshipping.title"
             labelKey="enablestaticshipping.label"
             descriptionKey="enablestaticshipping.description"
-        trailingAction={<InfoTooltip html={gettext('enablestaticshipping_extra')}/>}
+            trailingAction={<InfoTooltip html={gettext('enablestaticshipping_extra')}/>}
           />
         </Collapsible>
 

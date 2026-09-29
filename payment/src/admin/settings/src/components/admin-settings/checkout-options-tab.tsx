@@ -5,6 +5,7 @@ import { SwitchFormField, InputFormField } from '../options-form-fields';
 import { UnsafeHtmlText } from '../unsafe-html-text';
 import { Collapsible } from '../collapsible';
 import { truthToBool } from '../form-elements';
+import { InfoTooltip } from '../info-tooltip';
 
 /**
  * A React component that renders the checkout options tab for the admin settings page.
@@ -56,6 +57,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           titleKey="enablestaticshipping_checkout.title"
           labelKey="enablestaticshipping_checkout.label"
           descriptionKey="enablestaticshipping_checkout.description"
+          trailingAction={<InfoTooltip html={gettext('enablestaticshipping_extra')}/>}
         />
 
         {/* Toggle for the creation of new customers on Checkout */}
@@ -64,6 +66,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           titleKey="checkoutcreateuser.title"
           labelKey="checkoutcreateuser.label"
           descriptionKey="checkoutcreateuser.description"
+          trailingAction={<InfoTooltip html={gettext('checkoutcreateuser_extra')}/>}
         />
 
         {/* Toggle for the sharing of user information */}
