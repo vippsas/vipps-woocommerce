@@ -44,7 +44,9 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
           titleKey="express_enabled.title"
           labelKey="express_enabled.label"
           descriptionKey="express_enabled.description"
+          // Sync master toggle to overrides. LP 2026-09-29
           onChange={(value) => expressOverrides.forEach(option => setOption(option, value))}
+
           trailingAction={
             <button
               type="button"
