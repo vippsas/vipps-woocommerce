@@ -5701,7 +5701,7 @@ else:
         if ($orderid && !$order) {
             // If this happens, we actually did have an order, but it has been deleted, which must mean that it was cancelled.
             // Concievably a hook on the 'cancel'-transition or in the callback handlers could clean that up before we get here. IOK 2019-09-26
-            $this->log(__("In order return: The order %1\$d  seems to be deleted", 'woo-vipps'), 'debug');
+            $this->log(sprintf(__("In order return: The order %1\$d  seems to be deleted", 'woo-vipps'), $orderid), 'debug');
             $deleted_order=1;
         }
 
@@ -5717,6 +5717,7 @@ else:
         if ($do_poll && $status == 'pending') {
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
             $newstatus = $gw->callback_check_order_status($order);
+            $this->log(sprintf(__("In order return: Order status of %1\$d is %2\$s", 'woo-vipps'), $orderid, $newstatus), 'info');
             if ($status != $newstatus) {
                 $status = $newstatus;
                 clean_post_cache($orderid);
@@ -5761,6 +5762,8 @@ else:
             // If not, enqueue the status checker IOK 2026-09-21
             wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
         }
+
+        $this->log(sprintf(__("Order status of %1\$d not ready in order return: payment status %2\$s", 'woo-vipps'), $orderid, $payment), 'info');
 
         // Communicate this to the shortcode IOK 2026-09-21
         add_filter('woo_vipps_wait_for_payment_status', function () use($orderid, $status, $payment) {
