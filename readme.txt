@@ -120,6 +120,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 Version 6.3.0
 Implements the new Vipps MobilePay Widget SDK, improving the Express Checkout experience
 Version 6.2.6
+* Fix: Add a class existence check for Checkout's classes during recurring payments
 Fix crashes with some Express Checkout shipping methods
 
 == Frequently Asked Questions ==
