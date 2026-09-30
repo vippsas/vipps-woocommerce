@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 6.2.6
-Stable tag: 6.2.6
+Version: 6.3.0
+Stable tag: 6.3.0
 Requires at least: 6.3
 Tested up to: 7.1.1
 Requires PHP: 8.0
