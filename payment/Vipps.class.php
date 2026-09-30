@@ -975,7 +975,11 @@ jQuery('a.webhook-adder').click(function (e) {
             }
         }
         update_option('vipps_button_options2', $new);
-        wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu"));
+        $express_context = '';
+        if ($_POST['express-context'] ?? null) {
+            $express_context = '&express-context=' . sanitize_title($_POST['express-context']);
+        }
+        wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu$express_context"));
         exit();
     }
 
@@ -1163,6 +1167,7 @@ EOF;
             <span><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></span>
             <form id="vipps-button-settings-form" class="vipps-button-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
                 <input type="hidden" name="action" value="update_vipps_button_settings" />
+                <input id="vipps-button-menu-express-context" type="hidden" name="express-context" value="<?php echo esc_attr($_GET['context'] ?? ''); ?>" />
                 <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
 
                 <!-- Express section -->
@@ -1192,6 +1197,10 @@ EOF;
             'checkout' => __('Checkout', 'woo-vipps'),
         ];
         $init_context = 'global';
+        // Restore context from url. LP 2026-09-30
+        if ($_GET['express-context'] ?? null) {
+            $init_context = sanitize_title($_GET['express-context']);
+        }
         $init_config = $configs[$init_context] ?? [];
 
         // html button args
@@ -1209,7 +1218,7 @@ EOF;
                 </label>
                 <select id="context" onChange='updateContext()'>
                   <?php foreach($contexts as $key => $label): ?>
-                    <option value="<?php echo $key; ?>" <?php if ('global' === $key) echo " selected "; ?> >
+                    <option value="<?php echo $key; ?>" <?php if ($init_context === $key) echo " selected "; ?> >
                        <?php echo $label ; ?>
                     </option>
                   <?php endforeach; ?>
@@ -1357,6 +1366,10 @@ EOF;
                 // Swap to new context: set all input fields to the stored values if exists. LP 2026-06-25
                 const newContext = jQuery("#context").val();
                 const newConfig = contextConfigs[newContext];
+
+                // Set context in url. LP 2026-09-30
+                const input = document.getElementById('vipps-button-menu-express-context');
+                if (input) input.value = newContext;
 
                 setInputsFromConfig(newContext, newConfig);
                 currentContext = newContext;
