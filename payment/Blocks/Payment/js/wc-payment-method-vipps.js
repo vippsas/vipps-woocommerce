@@ -613,9 +613,33 @@ const Label = props => {
  * and session creation independently of the standard Checkout Block submission.
  */
 const ExpressCheckoutButton = props => {
- var expressbutton = createElement('div', {dangerouslySetInnerHTML: {__html: settings.expressbutton  },  className: 'vipps-express-container'}, null);
- return applyFilters('woo_vipps_checkout_block_express_button', expressbutton, settings);
-}
+        const ref = useRef(null);
+
+        useEffect(() => {
+                const root = ref.current;
+                const li = root?.closest('#express-payment-method-vippsexpress');
+                const button = root?.querySelector('vipps-mobilepay-button');
+                const compact = button?.getAttribute('compact');
+
+                if (!li || !button || compact !== 'false' || typeof ResizeObserver !== 'function') {
+                        return;
+                }
+
+                const observer = new ResizeObserver(([entry]) => {
+                        const width = entry.contentRect.width;
+                        const nextCompact = String(width < 250);
+                        const previousCompact = button.getAttribute('compact');
+                        if (previousCompact !== nextCompact) { button.setAttribute('compact', nextCompact); }
+                });
+
+                observer.observe(li);
+
+                return () => { observer.disconnect(); };
+        }, []);
+
+        const expressbutton = createElement('div', { ref, dangerouslySetInnerHTML: { __html: settings.expressbutton }, className: 'vipps-express-container' });
+        return applyFilters('woo_vipps_checkout_block_express_button', expressbutton, settings);
+};
 
 /**
  * Validate the Checkout Block, create a pending attempt, start the SDK, and then
