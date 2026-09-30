@@ -3878,7 +3878,7 @@ else:
 
            $tax  = $rate->get_shipping_tax() ?: 0;
            $cost = $rate->get_cost() ?: 0;
-           $label = $rate->get_label();
+           $label = html_entity_decode($rate->get_label());
   
            if ($cost == 0 && ($methodid != 'local_pickup' && $methodid != 'pickup_location')) {
               $has_free_shipping = true;
@@ -3906,7 +3906,7 @@ else:
            $shippingcost = max($shippingcostA, $shippingcostB);
 
            $vippsmethod['shippingCost'] = $shippingcost;
-           $vippsmethod['shippingMethod'] = $rate->get_label();
+           $vippsmethod['shippingMethod'] = html_entity_decode($rate->get_label());
            $vippsmethod['shippingMethodId'] = $key;
            $vippsmethods[]=$vippsmethod;
 
@@ -4253,7 +4253,7 @@ else:
             $cost = $rate->get_cost() ?: 0;
 
             $method['shippingCost'] = sprintf("%.2F",wc_format_decimal($cost+$tax,''));
-            $method['shippingMethod'] = $rate->get_label();
+            $method['shippingMethod'] = html_entity_decode($rate->get_label());
             // We may not really need the tax stashed here, but just to be sure.
             $method['shippingMethodId'] = $rate->get_id() . ";" . $tax; 
             $methods[]= $method;

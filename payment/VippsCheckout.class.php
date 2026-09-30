@@ -1604,7 +1604,7 @@ jQuery(document).ready(function () {
                 // specialcase some known methods so they get brands, and put the label into the description
                 if ($shipping_method && is_a($shipping_method, 'WC_Shipping_Method') && get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
                     $m2['brand'] = "POSTEN";
-                    $m2['description'] = $rate->get_label();
+                    $m2['description'] = html_entity_decode($rate->get_label());
                 }
                 $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2['brand'],$shipping_method, $rate);
             }
