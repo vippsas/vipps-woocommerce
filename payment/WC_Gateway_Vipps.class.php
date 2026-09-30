@@ -1624,15 +1624,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 0,
                         ),
 
-
-                'use_flock' => array (
-                            'title'       => __('Use flock() to lock orders for Express Checkout', 'woo-vipps'),
-                            'label'       => __('Use flock() to lock orders for Express Checkout', 'woo-vipps'),
-                            'type'        => 'checkbox',
-                            'description' => __('Use the flock() system call to ensure orders are only finalized once. You can use this for normal setups, but probably not on Windows with IIS, and possibly not on distributed filesystems like NFS. If you don\t know what it is, probably do not use it. If you get duplicated shipping lines on some express orders, you may try using this', 'woo-vipps'),
-                            'default'     => 'no',
-                            ),
-
                 'delete_settings_on_deactivation' => array (
                             'title'       => __('Delete plugin settings on deactivation', 'woo-vipps'),
                             'label'       => __('Delete plugin settings on deactivation', 'woo-vipps'),
@@ -2434,13 +2425,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Something changed, so we are now going to sideeffect the order. IOK 2025-10-15
             $this->log(sprintf(__("%1\$s poll: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
 
-            // If we are in the process of getting a callback from vipps, don't update anything. Currently, Woo/WP has no locking mechanism,
-            // and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of races when this method is called 
-            // and callbacks happen at the same time.
-            if (!$Vipps->lockOrder($order)) {
-                return $oldstatus;
-            }
-
             // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
             // IOK 2024-01-09 ensure this is called only when order is complete/authorized
             if ($ready) {
@@ -2474,7 +2458,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e) {
             $this->log(sprintf(__("Error getting payment details from %1\$s for order_id:",'woo-vipps'), $this->get_payment_method_name()) . $orderid . "\n" . $e->getMessage(), 'error');
             clean_post_cache($order->get_id());
-            $Vipps->unlockOrder($order);
             return $oldstatus;
         }
         $order->save();
@@ -2509,7 +2492,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     }
                 }
                 clean_post_cache($order->get_id());
-                $Vipps->unlockOrder($order);
                 return $oldstatus; 
             }
         }
@@ -2547,7 +2529,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->save();
         clean_post_cache($order->get_id());
         $newstatus = $order->get_status();
-        $Vipps->unlockOrder($order);
         return $newstatus;
     }
 

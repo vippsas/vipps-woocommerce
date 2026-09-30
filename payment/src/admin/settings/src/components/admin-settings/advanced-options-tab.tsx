@@ -132,9 +132,6 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         </div>
       </WPFormField>
 
-      {/* Renders a checkbox to enable the use of flock() */}
-      <CheckboxFormField name="use_flock" titleKey="use_flock.title" descriptionKey="use_flock.description" labelKey="use_flock.label" />
-
       {/* Renders a checkbox to delete (reset) plugin settings on plugin deactivation. LP 2025-10-06 */}
       <CheckboxFormField
         name="delete_settings_on_deactivation"
