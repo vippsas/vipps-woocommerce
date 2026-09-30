@@ -9,6 +9,7 @@ const { getSetting }  = wc.wcSettings;
 const { registerPaymentMethod }  = wc.wcBlocksRegistry;
 const { registerExpressPaymentMethod }  = wc.wcBlocksRegistry;
 const { applyFilters } = wp.hooks;
+const { useEffect, useRef } = wp.element;
 
 //( 'hookName', content, arg1, arg2, ... )
 
@@ -38,9 +39,31 @@ const Label = props => {
 };
 
 const ExpressCheckoutButton = props => {
- var expressbutton = React.createElement('div', {dangerouslySetInnerHTML: {__html: settings.expressbutton  },  className: 'vipps-express-container'}, null);
- return applyFilters('woo_vipps_checkout_block_express_button', expressbutton, settings);
-}
+    // We need a ref to our button so we can set it to "compact" if its container gets too small
+    const ref = useRef(null);
+
+    // Add an observer to our button that sets the attribute to 'compact' if the container gets smaller than 250px.
+    useEffect(() => {
+            const li = ref.current?.closest('#express-payment-method-vippsexpress');
+            const button = ref.current?.querySelector('vipps-mobilepay-button');
+
+            if (!li || button?.getAttribute('compact') !== 'false') return;
+
+            const observer = new ResizeObserver(([entry]) => {
+                    button.setAttribute(
+                            'compact',
+                            String(entry.contentRect.width < 250)
+                            );
+                    });
+
+            observer.observe(li);
+            return () => observer.disconnect();
+            }, []);
+
+    const expressbutton = React.createElement('div', { ref, dangerouslySetInnerHTML: { __html: settings.expressbutton }, className: 'vipps-express-container' });
+    return applyFilters( 'woo_vipps_checkout_block_express_button', expressbutton, settings);
+};
+
 
 const canMakeExpressPayment = (args) => {
  var candoit = settings.show_express_checkout;
