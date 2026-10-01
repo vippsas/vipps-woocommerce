@@ -44,13 +44,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
           <p>{gettext('wizard_header.description')}</p>
           <div className="vipps-mobilepay-form-container">
             <div className="vipps-mobilepay-form-col">
-              {/* Toggle test mode */}
-              <SwitchFormField 
-                name="testmode"
-                titleKey="testmode.title"
-                descriptionKey="testmode_wizard.description"
-              />
-
+              {/* Select country */}
               <SelectFormField
                 name="country"
                 titleKey="country.title"
@@ -70,7 +64,6 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 ]}
               />
 
-              {/* Inputs for keys. Uses test keys if testmode is switched on above. LP 2026-09-29 */}
               {/* Renders a select field that specifies the payment method name (Vipps or MobilePay) */}
               <SelectFormField
                 name="payment_method_name"
@@ -89,6 +82,15 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                   }
                 ]}
               />
+
+              {/* Toggle test mode */}
+              <SwitchFormField 
+                name="testmode"
+                titleKey="testmode.title"
+                descriptionKey="testmode_wizard.description"
+              />
+
+              {/* Inputs for keys. Uses test keys if testmode is switched on above. LP 2026-09-29 */}
               {/* Renders an input field for the merchant serial number */}
               <InputFormField
                 asterisk
