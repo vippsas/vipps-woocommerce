@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import fixCheckoutName from '../../lib/fix-checkout-name';
 import { detectPaymentMethodName } from '../../lib/payment-method';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
