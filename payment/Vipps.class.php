@@ -268,13 +268,6 @@ class Vipps {
         // Therefore test it first. IOK 2022-12-08
         $gw = $this->gateway();
 
-        // This is a developer-mode level feature because flock() is not portable. This ensures callbacks and shopreturns do not
-        // simultaneously update the orders, in particular not the express checkout order lines wrt shipping. IOK 2020-05-19
-        if ($gw && $gw->get_option('use_flock') == 'yes') {
-            add_filter('woo_vipps_lock_order', array($this,'flock_lock_order'));
-            add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
-        }
-
         // Set default button options, migrating any older setup IOK 2026-07-15
         $this->init_button_options();
 
