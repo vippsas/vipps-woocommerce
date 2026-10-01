@@ -26,11 +26,6 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
     );
     setOption('express_enabled', anyEnabled ? 'yes' : 'no');
   }
-  const expressEnabled = truthToBool(getOption('cartexpress'))
-    || truthToBool(getOption('express_show_in_checkout'))
-    || truthToBool(getOption('singleproductexpressarchives'))
-    || getOption('singleproductexpress') !== 'none';
-
   const [expressEnableShowMore, setExpressEnableShowMore] = useState(false);
 
   return (
@@ -62,6 +57,8 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
           }
         />
 
+        {/* Don't show the rest of the options unless express is enabled. LP 2026-10-01 */}
+
         {/* Context/page specific overrides for express. LP 2026-09-28 */}
         <div id="vipps-mobilepay-react-express-overrides" className="vipps-mobilepay-react-express-overrides" hidden={!expressEnableShowMore}>
           <div className="vipps-mobilepay-react-express-overrides-heading">{gettext('express_placement')}</div>
@@ -78,32 +75,28 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         </div>
       </div>
 
-
-      {/* Dont show the rest of the options unless express is on. LP 2026-09-28 */ }
-
-      {/* Renders a select field that allows an admin to specify which products should have the "express checkout" option enabled  */}
-      <SelectFormField
-        name="singleproductexpress"
-        titleKey="singleproductexpress.title"
-        descriptionKey="singleproductexpress.description"
-        options={[
-          { value: 'all', label: gettext('singleproductexpress.options.all') },
-          { value: 'some', label: gettext('singleproductexpress.options.some') },
-        ]}
-      />
-
-      {/* Toggle whether or not new users should be created when using Express Checkout */}
-      <SwitchFormField
-        name="expresscreateuser"
-        titleKey="expresscreateuser.title"
-        labelKey="expresscreateuser.label"
-        descriptionKey="expresscreateuser.description"
-        trailingAction={<InfoTooltip html={gettext('expresscreateuser_extra')}/>}
-      />
-
-
       {/* Only show the rest of the options if express is actually enabled (the options above). LP 2026-09-25 */}
-      {expressEnabled && (<>
+      {truthToBool(getOption('express_enabled')) && (<>
+        {/* Renders a select field that allows an admin to specify which products should have the "express checkout" option enabled  */}
+        <SelectFormField
+          name="singleproductexpress"
+          titleKey="singleproductexpress.title"
+          descriptionKey="singleproductexpress.description"
+          options={[
+            { value: 'all', label: gettext('singleproductexpress.options.all') },
+            { value: 'some', label: gettext('singleproductexpress.options.some') },
+          ]}
+        />
+
+        {/* Toggle whether or not new users should be created when using Express Checkout */}
+        <SwitchFormField
+          name="expresscreateuser"
+          titleKey="expresscreateuser.title"
+          labelKey="expresscreateuser.label"
+          descriptionKey="expresscreateuser.description"
+          trailingAction={<InfoTooltip html={gettext('expresscreateuser_extra')}/>}
+        />
+
         {/* Shipping section */ }
         <Collapsible title={gettext('express_shipping_section')}>
           {/* Toggle whether or not the users should always be asked for an address */}
