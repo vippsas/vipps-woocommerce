@@ -1090,9 +1090,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // 'singleproductexpress' now specifies which products that support express generally, and  'express_singleproduct_enabled'
             // is whether to show Express button on single product page/context specifically. LP 2026-09-29
             if ('none' === ($current['singleproductexpress'] ?? null)) {
-                $default_express_singleproduct_enabled = 'no';
                 $current['singleproductexpress'] = 'all';
                 $this->update_option('singleproductexpress', 'all');
+
+                $default_express_singleproduct_enabled = 'no';
+
+                $current['singleproductexpressarchives'] = 'no';
+                $this->update_option('singleproductexpressarchives', 'no');
             }
         }
 
