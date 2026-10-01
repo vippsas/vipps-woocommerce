@@ -334,6 +334,16 @@ class Vipps {
         $gw = $this->gateway();
         require_once(dirname(__FILE__) . "/admin/settings/VippsAdminSettings.class.php");
         $adminSettings = VippsAdminSettings::instance();
+
+        // Supress Woo and WP notices on this screen IOK 2026-10-01
+        add_action( 'in_admin_header', function () {
+            $screen = get_current_screen();
+            if ( ! $screen || 'vipps-mobilepay_page_vipps_settings_menu' !== $screen->id ) return;
+            remove_all_actions( 'admin_notices' );
+            remove_all_actions( 'all_admin_notices' );
+        }, 9999);
+
+
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
 
