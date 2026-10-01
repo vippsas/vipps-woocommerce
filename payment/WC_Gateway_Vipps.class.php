@@ -228,7 +228,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
                 $is_vipps_express = (bool) $order->get_meta( '_vipps_express_checkout' );
                 $has_billing_email = (bool) $order->get_billing_email();
-                if ( $is_vipps_express && ! $has_billing_email ) {
+                if ( $is_vipps_express) {
                     return false;
                 }
                 return $enabled;
@@ -2345,20 +2345,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
          return "initiated";
     }
 
-    // This does not normally call Vipps, so if you need to refresh status, please use callback_check_order_status first. IOK 2019-01-23
+    // This does not normally call Vipps, so if you need to refresh status, please use poll_and_check_order_status first. IOK 2019-01-23
     public function check_payment_status($order) {
         if (!$order) return 'cancelled';
         $status = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         // This can happen if the vipps status is set from the back end for instance. IOK 2020-08-14
         if ($order->get_status() == 'pending' && $status != 'initiated') {
-           $this->callback_check_order_status($order);
+           $this->poll_and_check_order_status($order);
            $order = wc_get_order($order->get_id()); // refresh to get the new status IOK 2021-01-20
            $status = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         }
         return $status;
     }
 
-    // Called by callback_check_order_status and handle_callback to handle the situation where
+    // Called by poll_and_check_order_status and handle_callback to handle the situation where
     // the payment method has been set to something else *after* Vipps has gotten the order.
     // This happens very rarely for people who use Vipps as an external payment method in Klarna, so
     // we only do it for orders that match this. IOK 2023-02-03
@@ -2387,7 +2387,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
-    public function callback_check_order_status($order, $allow_retry = true) {
+    public function poll_and_check_order_status($order, $allow_retry = true) {
         global $Vipps;
         $orderid = $order->get_id();
 
@@ -3181,7 +3181,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         $decoded = $is_base64 ? @base64_decode($shipping_table[$key]) : $shipping_table[$key];
 
                         // Ensure no shop manager has injected an evil object (that they would have had to add as a plugin) here. IOK 2026-09-18
-                        $shipping_rate = $decoded ? @unserialize($decoded, ['allowed_classes' => [WC_Shipping_Rate::class]]) : null;
+                        $allowed_classes = apply_filters('woo_vipps_express_checkout_allowed_shipping_classes', [WC_Shipping_Rate::class, \stdClass::class]);
+                        $shipping_rate = $decoded ? @unserialize($decoded, ['allowed_classes' => $allowed_classes]) : null;
                         $shipping_rate = is_a($shipping_rate,'WC_Shipping_Rate') ? $shipping_rate : null;
 
                         if (!$shipping_rate) {
@@ -3369,7 +3370,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $shipping_rate;
     }
 
-    // Used by both callback_check_order_status and handle_callback - sets the neccessary order metadata after a successful (or not vipps transaction). IOK 2025-08-13
+    // Used by both poll_and_check_order_status and handle_callback - sets the neccessary order metadata after a successful (or not vipps transaction). IOK 2025-08-13
     public function order_set_transaction_metadata($order, $transaction) {
         // Set Vipps metadata as early as possible
         $vippsstamp = strtotime($transaction['timeStamp']);

@@ -184,20 +184,24 @@ jQuery(document).ready(function () {
     # Called in admin-post and will finalize a Vipps Checkout order + send the customer to the payment page.
     public function choose_other_gw () {
         $orderid = intval($_GET['o']);
+
+
         $gw = trim(sanitize_title($_GET['gw']));
         if ($gw == 'any') $gw = "";
         $nonce = $_GET['cb'];
-        $ok = wp_verify_nonce($nonce, 'vipps_gw');
+        $ok = wp_verify_nonce($nonce, 'vipps_gw_' . $orderid);
         if (!$ok) {
             $this->abandonVippsCheckoutOrder(false);
             $this->log(sprintf(__("Orderid %1\$s: Wrong nonce when trying to switch payment methods.", 'woo-vipps'), $orderid), 'error');
             wp_redirect(home_url());
+            exit();
         }
         $order = wc_get_order($orderid);
         if (!$order || $order->get_status() != 'pending') {
             $this->abandonVippsCheckoutOrder(false);
             $this->log(sprintf(__("Orderid %1\$s is not pending when choosing another payment method from Vipps Checkout", 'woo-vipps'), $orderid), 'error');
             wp_redirect(home_url());
+            exit();
         }
 
         try {
@@ -208,6 +212,17 @@ jQuery(document).ready(function () {
                 if (! WC()->session->has_session()) {
                     WC()->session->set_customer_session_cookie( true );
                 }
+
+                // Check to see if we actually are paying for an order in session IOK 2026-09-24
+                $current_pending =  WC()->session->get('vipps_checkout_current_pending');
+
+                if ($orderid != $current_pending) {
+                    $this->abandonVippsCheckoutOrder(false);
+                    $this->log(sprintf(__("Orderid %1\$s: Wrong current pending order when trying to switch payment methods.", 'woo-vipps'), $orderid), 'error');
+                    wp_redirect(home_url());
+                    exit();
+                }
+
                 // There is actually a bug here for KCO which will redirect to the normal checkout page with an error message. 
                 // Try to stop that.. IOK 2024-05-15
                 if ($gw != 'kco') {
@@ -1589,7 +1604,7 @@ jQuery(document).ready(function () {
                 // specialcase some known methods so they get brands, and put the label into the description
                 if ($shipping_method && is_a($shipping_method, 'WC_Shipping_Method') && get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
                     $m2['brand'] = "POSTEN";
-                    $m2['description'] = $rate->get_label();
+                    $m2['description'] = html_entity_decode($rate->get_label());
                 }
                 $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2['brand'],$shipping_method, $rate);
             }

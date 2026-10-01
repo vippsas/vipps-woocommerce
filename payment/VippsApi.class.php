@@ -928,9 +928,10 @@ class VippsApi {
         $other_payment_methods = apply_filters('woo_vipps_checkout_external_payment_methods', VippsCheckout::instance()->external_payment_methods(), $order);
         if (!empty($other_payment_methods)) {
             $others = [];
+            $cb = wp_create_nonce('vipps_gw_' . $orderid);
             foreach ($other_payment_methods as $methodkey => $methoddata) {
                 $chooseanother = ['action'=>'vipps_gw', 'o'=>$orderid];
-                $chooseanother['cb'] = wp_create_nonce('vipps_gw');
+                $chooseanother['cb'] = $cb;
                 $chooseanother['gw'] = ($methoddata['gw'] ?? "");
                 $others[] = ['paymentMethod' => $methodkey, 'redirectUrl'=> add_query_arg($chooseanother,admin_url("admin-post.php")) ];
             }

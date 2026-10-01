@@ -85,7 +85,7 @@ class WC_Vipps_Recurring_Rest_Api {
 
 		$return_url = false;
 		if ( $agreement->status !== 'PENDING' ) {
-			if ( $agreement->status === 'ACTIVE' ) {
+			if ( $agreement->status === 'ACTIVE' && class_exists( WC_Vipps_Recurring_Checkout::class ) ) {
 				WC_Vipps_Recurring_Checkout::get_instance()->maybe_login_checkout_user( $order->get_id(), $order_key );
 			}
 			$return_url = $order->get_checkout_order_received_url();

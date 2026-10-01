@@ -23,10 +23,10 @@
   "license": "ISC",
   "devDependencies": {
     "@wordpress/api-fetch": "^6.49.0",
-    "@wordpress/blocks": "^12.30.0",
+    "@wordpress/blocks": "^16.1.0",
     "@wordpress/data": "^9.23.0",
     "@wordpress/element": "^5.30.0",
     "@wordpress/i18n": "^4.53.0",
-    "@wordpress/scripts": "^35.0.0"
+    "@wordpress/scripts": "^36.0.0"
   }
 }
