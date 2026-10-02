@@ -70,18 +70,20 @@ class VippsRecurringAdminSettings {
 			'title_orders' => 'orders',
 			'title_cron' => 'cron',
 			'title_developer' => 'advanced',
-			'title_test_api' => 'test_keys',
+			// Test credentials belong in the same API keys tab as production keys.
+			'title_test_api' => 'keys',
 		];
 		foreach ( $gateway->get_form_fields() as $key => $field ) {
 			if ( isset( $titles[ $key ] ) ) {
 				$section = $titles[ $key ];
 				if ( ! isset( $sections[ $section ] ) ) {
-					$sections[ $section ] = [ 'id' => $section, 'title' => wp_strip_all_tags( $field['title'] ?? '' ), 'description' => wp_kses_post( $field['description'] ?? '' ), 'fields' => [] ];
+					$title = $section === 'general' ? __( 'Main options', 'woo-vipps' ) : ( $section === 'keys' ? __( 'API keys', 'woo-vipps' ) : ( $field['title'] ?? '' ) );
+					$sections[ $section ] = [ 'id' => $section, 'title' => wp_strip_all_tags( $title ), 'description' => wp_kses_post( $field['description'] ?? '' ), 'fields' => [] ];
 				}
 				continue;
 			}
 			if ( ! isset( $sections[ $section ] ) ) {
-				$sections[ $section ] = [ 'id' => $section, 'title' => __( 'General', 'woo-vipps' ), 'description' => '', 'fields' => [] ];
+				$sections[ $section ] = [ 'id' => $section, 'title' => __( 'Main options', 'woo-vipps' ), 'description' => '', 'fields' => [] ];
 			}
 			if ( ( $field['type'] ?? '' ) === 'title' ) {
 				continue;
@@ -132,6 +134,8 @@ class VippsRecurringAdminSettings {
 			'native_url' => admin_url( 'admin.php?page=wc-settings&tab=checkout&section=vipps_recurring' ),
 			'translations' => [
 				'page_title' => __( 'Recurring Payments', 'woo-vipps' ),
+				'production_keys_section' => __( 'Production environment', 'woo-vipps' ),
+				'test_keys_section' => __( 'Test environment', 'woo-vipps' ),
 				'save_changes' => __( 'Save changes', 'woo-vipps' ),
 				'settings_saved' => __( 'Settings saved', 'woo-vipps' ),
 				'save_failed' => __( 'Could not save settings. Please try again.', 'woo-vipps' ),
@@ -158,16 +162,25 @@ class VippsRecurringAdminSettings {
 		}
 		$gateway = $this->gateway();
 		$gateway->init_settings();
-		// Conditional fields must be available on the first save that enables test mode or Checkout.
+		// Keep fields shown when the screen loaded. Turning Checkout or test
+		// mode off removes them from init_form_fields(), including the toggle
+		// being switched off, before WooCommerce has had a chance to save it.
 		$original = $gateway->settings;
+		$gateway->init_form_fields();
+		$fields_before = $gateway->form_fields;
 		foreach ( [ 'test_mode', 'checkout_enabled' ] as $key ) {
 			if ( isset( $values[ $key ] ) && in_array( $values[ $key ], [ 'yes', 'no' ], true ) ) {
 				$gateway->settings[ $key ] = $values[ $key ];
 			}
 		}
+		// Also include fields newly exposed by enabling one of those modes.
+		// Only this save uses the union; the gateway rebuilds its normal
+		// conditional fields after process_admin_options().
 		$gateway->init_form_fields();
-		$fields = $gateway->get_form_fields();
+		$fields_after = $gateway->form_fields;
 		$gateway->settings = $original;
+		$gateway->form_fields = array_replace( $fields_before, $fields_after );
+		$fields = $gateway->get_form_fields();
 
 		foreach ( $values as $key => $value ) {
 			if ( ! isset( $fields[ $key ] ) || ( $fields[ $key ]['type'] ?? '' ) === 'title' || ! is_scalar( $value ) || ! empty( $fields[ $key ]['disabled'] ) ) {

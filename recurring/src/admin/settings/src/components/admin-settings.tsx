@@ -6,17 +6,26 @@ import { WPButton, WPForm } from './form-elements';
 import { NotificationBanner, NotificationBannerProps } from './notification-banner';
 import { OptionsFormField } from './options-form-field';
 import { SettingsTab, Tabs } from './tabs';
+import { Collapsible } from './collapsible';
 
 /** The Login/Payment settings shell, fed by this gateway's own field definitions. */
 export function AdminSettings(): JSX.Element {
-  const { settings, isDirty, submitChanges } = useWP();
+  const { settings, values, isDirty, submitChanges } = useWP();
   const [activeTab, setActiveTab] = useHash('general');
   const [isLoading, setIsLoading] = useState(false);
   const [banner, setBanner] = useState<NotificationBannerProps | null>(null);
   const saving = useRef(false);
   const notice = useRef<HTMLDivElement>(null);
-  const tabs: SettingsTab[] = settings.sections.map((section) => ({ id: section.id, title: section.title, fields: Object.keys(section.fields) }));
-  const selected = settings.sections.find((section) => section.id === activeTab) ?? settings.sections[0];
+  // Match Payment and Login: keep the enable switch and API keys available
+  // while the gateway is disabled, and reveal the other tabs immediately
+  // when an administrator turns it back on.
+  const gatewayEnabled = values.enabled === 'yes';
+  const visibleSections = settings.sections.filter((section) => gatewayEnabled || ['general', 'keys'].includes(section.id));
+  const tabs: SettingsTab[] = visibleSections.map((section) => ({ id: section.id, title: section.title, fields: Object.keys(section.fields) }));
+  const selected = visibleSections.find((section) => section.id === activeTab) ?? visibleSections[0];
+  const visibleFields = Object.entries(selected.fields).filter(([key]) => gatewayEnabled || selected.id !== 'general' || key === 'enabled');
+  const productionKeys = visibleFields.filter(([key]) => !key.startsWith('test_'));
+  const testKeys = visibleFields.filter(([key]) => key.startsWith('test_'));
 
   async function handleSave(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,9 +67,20 @@ export function AdminSettings(): JSX.Element {
             aria-labelledby={`vipps-recurring-tab-${selected.id}`} tabIndex={0}>
             <h2>{selected.title}</h2>
             {selected.description && <p className="vipps-mobilepay-react-tab-description" dangerouslySetInnerHTML={{ __html: selected.description }} />}
-            <fieldset className="vipps-recurring-fields">
-              {Object.entries(selected.fields).map(([key, field]) => <OptionsFormField key={key} name={key} field={field} />)}
-            </fieldset>
+            {selected.id === 'keys' ? <div>
+              <Collapsible title={gettext('production_keys_section')}>
+                <fieldset className="vipps-recurring-fields">
+                  {productionKeys.map(([key, field]) => <OptionsFormField key={key} name={key} field={field} />)}
+                </fieldset>
+              </Collapsible>
+              {testKeys.length > 0 && <Collapsible title={gettext('test_keys_section')}>
+                <fieldset className="vipps-recurring-fields">
+                  {testKeys.map(([key, field]) => <OptionsFormField key={key} name={key} field={field} />)}
+                </fieldset>
+              </Collapsible>}
+            </div> : <fieldset className="vipps-recurring-fields">
+              {visibleFields.map(([key, field]) => <OptionsFormField key={key} name={key} field={field} />)}
+            </fieldset>}
           </section>
           <div className="vipps-mobilepay-react-save-section">
             {isDirty && <span className="vipps-recurring-unsaved">{gettext('unsaved_changes')}</span>}
