@@ -30,6 +30,7 @@ export function AdminSettings(): JSX.Element {
   const { submitChanges, getOption, setOptions } = useWP();
   const currency = getMetadata('currency');  // Get currency from metadata
   const companyName = getMetadata('company_name') ?? 'Vipps MobilePay';
+  const settingsSubtitle = gettext('settings_subtitle') ?? 'Single payments';
   const paymentMethod = getOption('payment_method_name');
   const showCurrencyWarning = !isPaymentMethodCurrencySupported(paymentMethod, currency);
   // The tabs to render on the admin settings page.
@@ -156,6 +157,7 @@ export function AdminSettings(): JSX.Element {
     <div className="vipps-settings-shell">
       <header className="vipps-settings-header">
         <h1>{companyName}</h1>
+        <p className="vipps-settings-subtitle">{settingsSubtitle}</p>
       </header>
 
       {(banner || showCurrencyWarning) && (
