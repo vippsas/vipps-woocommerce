@@ -16,6 +16,8 @@ export function AdminSettings(): JSX.Element {
   const [banner, setBanner] = useState<NotificationBannerProps | null>(null);
   const saving = useRef(false);
   const notice = useRef<HTMLDivElement>(null);
+  // The brand option updates in provider state as soon as its select changes.
+  const brandClass = values.brand === 'mobilepay' ? 'MobilePay' : 'Vipps';
   // Match Payment and Login: keep the enable switch and API keys available
   // while the gateway is disabled, and reveal the other tabs immediately
   // when an administrator turns it back on.
@@ -51,7 +53,7 @@ export function AdminSettings(): JSX.Element {
     }
   }
 
-  return <div className="vipps-settings-shell">
+  return <div className={`vipps-settings-shell ${brandClass}`}>
     <header className="vipps-settings-header"><h1>Vipps MobilePay</h1><p className="vipps-recurring-subtitle">{gettext('page_title')}</p></header>
     {banner && <div className="vipps-settings-notices" role="status" tabIndex={-1} ref={notice}>
       <NotificationBanner {...banner} />
