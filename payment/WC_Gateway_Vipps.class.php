@@ -1432,7 +1432,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $keysfields = [
             'keys_options'             => array(
-                    'title' => __('Keys', 'woo-vipps'),
+                    'title' => __('API keys', 'woo-vipps'),
                     'type'  => 'title',
                     'class' => 'tab',
                     ),

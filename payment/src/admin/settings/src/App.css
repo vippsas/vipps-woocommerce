@@ -37,6 +37,12 @@
   letter-spacing: -0.025em;
 }
 
+.vipps-settings-header p {
+  color: var(--vipps-settings-muted);
+  margin: .65rem 0 0;
+  font-size: 1rem
+}
+
 .vipps-settings-layout {
   display: grid;
   grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);

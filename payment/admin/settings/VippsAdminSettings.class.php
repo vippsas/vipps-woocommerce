@@ -190,6 +190,7 @@ class VippsAdminSettings
 
         // Add some extra common translations only used by the React UI
         $commonTranslations = array(
+                'settings_subtitle' => __('Single payments', 'woo-vipps'),
                 'express_shipping_section' => __('Shipping', 'woo-vipps'),
                 'test_keys_section' => __('Test environment', 'woo-vipps'),
                 'production_keys_section' => __('Production environment', 'woo-vipps'),
