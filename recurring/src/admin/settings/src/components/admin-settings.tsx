@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { gettext } from '../lib/wp-data';
+import { gettext, isFieldVisibleForBrand } from '../lib/wp-data';
 import { useHash } from '../hooks/use-hash';
 import { useWP } from '../wp-options-provider';
 import { WPButton, WPForm } from './form-elements';
@@ -17,7 +17,8 @@ export function AdminSettings(): JSX.Element {
   const saving = useRef(false);
   const notice = useRef<HTMLDivElement>(null);
   // The brand option updates in provider state as soon as its select changes.
-  const brandClass = values.brand === 'mobilepay' ? 'MobilePay' : 'Vipps';
+  const brand = values.brand === 'mobilepay' ? 'mobilepay' : 'vipps';
+  const brandClass = brand === 'mobilepay' ? 'MobilePay' : 'Vipps';
   // Match Payment and Login: keep the enable switch and API keys available
   // while the gateway is disabled, and reveal the other tabs immediately
   // when an administrator turns it back on.
@@ -25,7 +26,12 @@ export function AdminSettings(): JSX.Element {
   const visibleSections = settings.sections.filter((section) => gatewayEnabled || ['general', 'keys'].includes(section.id));
   const tabs: SettingsTab[] = visibleSections.map((section) => ({ id: section.id, title: section.title, fields: Object.keys(section.fields) }));
   const selected = visibleSections.find((section) => section.id === activeTab) ?? visibleSections[0];
-  const visibleFields = Object.entries(selected.fields).filter(([key]) => gatewayEnabled || selected.id !== 'general' || key === 'enabled');
+  // Brand-specific fields only affect presentation. Keep their values in the
+  // provider so switching brands or saving does not discard earlier choices.
+  const visibleFields = Object.entries(selected.fields).filter(([key, field]) =>
+    (gatewayEnabled || selected.id !== 'general' || key === 'enabled') &&
+    isFieldVisibleForBrand(field, brand)
+  );
   const productionKeys = visibleFields.filter(([key]) => !key.startsWith('test_'));
   const testKeys = visibleFields.filter(([key]) => key.startsWith('test_'));
 

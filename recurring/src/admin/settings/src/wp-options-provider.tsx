@@ -1,5 +1,5 @@
 import { PropsWithChildren, createContext, useContext, useEffect, useState } from 'react';
-import { initialSettings, SettingsData, gettext } from './lib/wp-data';
+import { initialSettings, SettingsData, gettext, isFieldVisibleForBrand } from './lib/wp-data';
 
 interface WPContext {
   settings: SettingsData;
@@ -33,8 +33,12 @@ export function WPOptionsProvider({ children }: PropsWithChildren): JSX.Element 
 
   async function submitChanges(): Promise<SettingsData> {
     // The PHP controller maps one gateway's field keys to WooCommerce post keys.
+    // Omit fields for the other brand; the controller preserves their stored
+    // values when it delegates this save to WooCommerce.
+    const brand = values.brand === 'mobilepay' ? 'mobilepay' : 'vipps';
     const editable = new Set(settings.sections.flatMap((section) =>
       Object.entries(section.fields).filter(([, field]) => !field.disabled &&
+        isFieldVisibleForBrand(field, brand) &&
         ['checkbox', 'text', 'password', 'number', 'select', 'page_dropdown'].includes(field.type))
         .map(([key]) => key)
     ));

@@ -6,6 +6,11 @@ defined( 'ABSPATH' ) || exit;
 class VippsRecurringAdminSettings {
 	private const ACTION = 'vipps_recurring_save_settings';
 	private const NONCE = 'vipps_recurring_settings';
+	// UI-only visibility rules. Add a field key with ['vipps'] or ['mobilepay']
+	// here when a setting only applies to one brand; Woo still saves its value.
+	private const BRAND_FIELDS = [
+		'auto_capture_mobilepay' => [ 'mobilepay' ],
+	];
 	private static ?VippsRecurringAdminSettings $instance = null;
 
 	public static function instance(): VippsRecurringAdminSettings {
@@ -109,6 +114,7 @@ class VippsRecurringAdminSettings {
 				'default' => $field['default'] ?? '',
 				'disabled' => ! empty( $field['disabled'] ),
 				'options' => $options,
+				'brands' => self::BRAND_FIELDS[ $key ] ?? [],
 			];
 		}
 		return array_values( $sections );
@@ -199,8 +205,9 @@ class VippsRecurringAdminSettings {
 			if ( ( $field['type'] ?? '' ) === 'title' || ! empty( $field['disabled'] ) ) {
 				continue;
 			}
-			// Newly revealed fields were absent from the old UI schema. Re-post
-			// their stored values with the same slash layer as a normal WP POST.
+			// WooCommerce reads every active field, even one omitted from the POST.
+			// Re-post stored values for absent fields (including brand-hidden ones)
+			// so they remain unchanged through its validators and save hooks.
 			$value = array_key_exists( $key, $values ) ? $values[ $key ] : ( isset( $original[ $key ] ) ? wp_slash( $original[ $key ] ) : null );
 			if ( $value === null || ( $field['type'] ?? '' ) === 'checkbox' && $value === 'no' ) {
 				continue;

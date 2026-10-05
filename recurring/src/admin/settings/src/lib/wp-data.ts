@@ -7,6 +7,12 @@ export interface FormField {
   default: string | number;
   disabled: boolean;
   options: Record<string, string>;
+  brands: string[];
+}
+
+/** Brand rules affect visibility and submission, not the gateway's stored values. */
+export function isFieldVisibleForBrand(field: FormField, brand: string): boolean {
+  return !field.brands.length || field.brands.includes(brand);
 }
 
 export interface SettingsSection {
