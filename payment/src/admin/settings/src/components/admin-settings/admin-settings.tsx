@@ -154,7 +154,7 @@ export function AdminSettings(): JSX.Element {
   const selectedTab = visibleTabs.includes(activeTab) ? activeTab : MAIN_TAB_ID;
 
   return (
-    <div className="vipps-settings-shell">
+    <div className={"vipps-settings-shell" + " " +  paymentMethod}>
       <header className="vipps-settings-header">
         <h1>{companyName}</h1>
         <p className="vipps-settings-subtitle">{settingsSubtitle}</p>
