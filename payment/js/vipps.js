@@ -901,7 +901,7 @@
             ".vipps-express-checkout:not(body)"
         );
 
-        if (!wrapper || !wrapper.querySelector("vipps-mobilepay-button")) {
+        if (!wrapper) {
             return;
         }
 
