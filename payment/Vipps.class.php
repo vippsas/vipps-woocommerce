@@ -2922,6 +2922,8 @@ else:
         $this->vippsJSConfig['paymentMethodName'] = $this->get_payment_method_name();
         $wc_lang = $this->get_html_button_attrs_for_context()['language'];
         if ('store' === $wc_lang) $wc_lang = $this->get_customer_language();
+        // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+        if ('dk' === $wc_lang) $wc_lang = 'da';
         $this->vippsJSConfig['webcomponentLanguage'] = $wc_lang;
 
 
