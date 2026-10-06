@@ -1092,6 +1092,8 @@ jQuery('a.webhook-adder').click(function (e) {
         if (in_array($attrs['verb'], ['login', 'register'])) $attrs['verb'] = 'buy';
         // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
         if ('dk' === $attrs['language']) $attrs['language'] = 'da';
+        // Fix swedish too. LP 2026-10-06
+        if ('se' === $attrs['language']) $attrs['language'] = 'sv';
 
         $escaped_attrs = [];
         foreach($attrs as $k => $v) {
