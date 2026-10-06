@@ -1948,7 +1948,7 @@ EOF;
         $payment_method = $this->get_payment_method_name();
         $header_text = __('Express Checkout', 'woo-vipps');
         $header = "<legend class='express-header'>$header_text</legend>";
-        $div_classes = "legacy-checkout $payment_method";
+        $div_classes = "legacy-checkout express $payment_method";
         echo "<fieldset class='$div_classes'>$header";
         $this->checkout_express_checkout_button_html();
         echo '</fieldset>';
