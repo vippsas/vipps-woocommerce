@@ -38,7 +38,7 @@ class WC_Vipps_Checkout_Session_Transaction_Order_Summary_Bottom_Line extends WC
 		return $this;
 	}
 
-	public function set_payment_sources( int $gift_card = null, int $card = null, int $voucher = null, int $cash = null ): self {
+	public function set_payment_sources( ?int $gift_card = null, ?int $card = null, ?int $voucher = null, ?int $cash = null ): self {
 		$this->payment_sources = array_merge(
 			$this->conditional( "giftCard", $gift_card ),
 			$this->conditional( "card", $card ),
