@@ -143,7 +143,7 @@
 
         actionConfirm.id = "action-required-confirm";
         actionConfirm.setAttribute("brand", "vipps");
-        actionConfirm.setAttribute("language", config.webcomponentLang);
+        actionConfirm.setAttribute("language", window.vippsConfig?.webcomponentLanguage);
         actionConfirm.setAttribute("verb", "continue");
         actionConfirm.setAttribute("variant", "primary");
         actionConfirm.setAttribute("type", "button");
