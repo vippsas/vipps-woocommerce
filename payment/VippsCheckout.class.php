@@ -1310,12 +1310,6 @@ jQuery(document).ready(function () {
         }
 
         if (is_a($order, 'WC_Order') && $order->get_status() == 'pending') {
-            // We want to kill orders that have failed, or that the user has abandoned. To do this,
-            // we must ensure that no race or other mechanism kills the order while or after being paid.
-            // if order is in the process of being finalized, don't kill it
-            if (Vipps::instance()->isLocked($order)) {
-                return false;
-            }
             // Get it again to ensure we have all the info, and check status again
             clean_post_cache($order->get_id());
             $order = wc_get_order($order->get_id());
