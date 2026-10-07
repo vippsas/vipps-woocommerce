@@ -97,10 +97,13 @@ export function AdminSettings(): JSX.Element {
         setSaveConfirmation(false);
       } else {
         // If the connection is ok, show a success message
-        setBanner({
-          text: data.connection_msg,
-          variant: 'success'
-        });
+        // NEW: unless skipped wizard, dont show a connection message. LP 2026-10-07
+        if (!skipWizard) {
+          setBanner({
+            text: data.connection_msg,
+            variant: 'success'
+          });
+        }
         setSaveConfirmation(true);
         console.log('handleSaveSettings - Setting new options:', data.options);
         // Ensure we have the new options, then reload the screens using the new values

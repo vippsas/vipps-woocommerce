@@ -116,9 +116,19 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
       setOption('enabled', 'yes');
       values.enabled = 'yes';
     }
+
+    // Skip wizard: discard wizard key inputs. LP 2026-10-07
     if (args?.skippedWizard) {
       values.skip_wizard = 'yes';
+      values.merchantSerialNumber = '';
+      values.clientId = '';
+      values.secret = '';
+      values.Ocp_Apim_Key_eCommerce = '';
       setOption('skip_wizard', 'yes');
+      setOption('merchantSerialNumber', '');
+      setOption('clientId', '');
+      setOption('secret', '');
+      setOption('Ocp_Apim_Key_eCommerce', '');
     }
 
     // Grab the nonce to avoid csrf IOK 2024-01-03
