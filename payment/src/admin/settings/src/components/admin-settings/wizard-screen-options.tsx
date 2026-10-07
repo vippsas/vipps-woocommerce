@@ -97,6 +97,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               {/* Renders an input field for the merchant serial number */}
               <InputFormField
                 asterisk
+                autoComplete="off"
                 name="merchantSerialNumber"
                 titleKey="merchantSerialNumber.title"
                 descriptionKey="merchantSerialNumber.description"
@@ -106,6 +107,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               {/* Renders an input field for the VippsMobilePay client ID */}
               <InputFormField
                 asterisk
+                autoComplete="off"
                 name="clientId"
                 titleKey="clientId.title"
                 descriptionKey="clientId.description"
@@ -115,6 +117,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               {/* Renders an input field for the VippsMobilePay secret */}
               <InputFormField
                 asterisk
+                autoComplete="off"
                 name="secret"
                 titleKey="secret.title"
                 descriptionKey="secret.description"
@@ -124,6 +127,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               {/* Renders an input field for the VippsMobilePay Ocp_Apim_Key_eCommerce */}
               <InputFormField
                 asterisk
+                autoComplete="off"
                 name="Ocp_Apim_Key_eCommerce"
                 titleKey="Ocp_Apim_Key_eCommerce.title"
                 descriptionKey="Ocp_Apim_Key_eCommerce.description"
