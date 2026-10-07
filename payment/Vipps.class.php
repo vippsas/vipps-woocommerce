@@ -1129,13 +1129,12 @@ EOF;
 
     // Resolve language for web component library. LP 2026-10-07
     public function resolve_html_button_language($language) {
-        // Support using store language
-        if ('store' === $language) $language = $this->get_customer_language();
+        if ('store' === $language) $language = $this->get_customer_language(); // currently store is the default language. LP 2026-10-07
+
         // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
         if ('dk' === $language) $language = 'da';
         if ('se' === $language) $language = 'sv';
         return $language;
-
     }
 
     public function button_menu_page() {
