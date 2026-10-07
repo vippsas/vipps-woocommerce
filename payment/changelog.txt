@@ -1,4 +1,12 @@
 == Changelog ==
+= 2026-10-06 version 6.3.1 =
+Remove old order locking functionality.
+Fix: incorrect language on express buttons. workaround because of webcomponent library bug.
+Fix: custom non-webcomponent express buttons did not get purchase event attached.
+Fix: shipping rate label could include escaped characters.
+Fix: swedish when using store language for express buttons.
+Fix: express button container was clickable on old shortcode checkout.
+
 = 2026-09-30 version 6.3.0 =
 Implements the new Vipps MobilePay Widget SDK, improving the Express Checkout experience
 Fix crashes with some Express Checkout shipping methods

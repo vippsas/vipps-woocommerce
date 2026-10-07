@@ -328,22 +328,22 @@ img.inline {
 }
 
 /* New express section for woo legacy (shortcode) checkout. LP 2026-03-23 */
-.legacy-checkout.vipps-express-checkout {
-    max-width: 20rem;
-    box-sizing: border-box;
-    border: 1px solid lightgrey;
-    border-radius: 4px;
-    min-inline-size: 0;
-    padding: 1.1rem 1.7rem;
-    margin: 1rem auto;
-    text-align: center;
+.legacy-checkout.express {
+    max-width: 20rem !important;
+    box-sizing: border-box !important;
+    border: 1px solid lightgrey !important;
+    border-radius: 4px !important;
+    min-inline-size: 0 !important;
+    padding: 1.1rem 1.7rem !important;
+    margin: 1rem auto !important;
+    text-align: center !important;
 }
-.legacy-checkout.vipps-express-checkout .express-header {
-    display: table;
-    margin: 0 auto;
-    padding: 0 0.75rem;
-    line-height: 1;
-    font-size: var(--wp--preset--font-size--small);
+.legacy-checkout.express .express-header {
+    display: table !important;
+    margin: 0 auto !important;
+    padding: 0 0.75rem !important;
+    line-height: 1 !important;
+    font-size: var(--wp--preset--font-size--small) !important;
 }
 
 .vipps_checkout_button_wrapper {

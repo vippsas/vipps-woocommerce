@@ -1133,6 +1133,8 @@ jQuery('a.webhook-adder').click(function (e) {
         if (in_array($attrs['verb'], ['login', 'register'])) $attrs['verb'] = 'buy';
         // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
         if ('dk' === $attrs['language']) $attrs['language'] = 'da';
+        // Fix swedish too. LP 2026-10-06
+        if ('se' === $attrs['language']) $attrs['language'] = 'sv';
 
         $escaped_attrs = [];
         foreach($attrs as $k => $v) {
@@ -1998,7 +2000,7 @@ EOF;
         $payment_method = $this->get_payment_method_name();
         $header_text = __('Express Checkout', 'woo-vipps');
         $header = "<legend class='express-header'>$header_text</legend>";
-        $div_classes = "legacy-checkout vipps-express-checkout $payment_method";
+        $div_classes = "legacy-checkout express $payment_method";
         echo "<fieldset class='$div_classes'>$header";
         $this->checkout_express_checkout_button_html();
         echo '</fieldset>';
@@ -2972,7 +2974,12 @@ else:
         $this->vippsJSConfig['vippsexpressbuttonurl'] = $this->get_payment_method_name();
         $this->vippsJSConfig['paymentMethodSlug'] = sanitize_title($this->get_payment_method_name());
         $this->vippsJSConfig['paymentMethodName'] = $this->get_payment_method_name();
-       
+        $wc_lang = $this->get_html_button_attrs_for_context()['language'];
+        if ('store' === $wc_lang) $wc_lang = $this->get_customer_language();
+        // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+        if ('dk' === $wc_lang) $wc_lang = 'da';
+        $this->vippsJSConfig['webcomponentLanguage'] = $wc_lang;
+
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
         if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
