@@ -4319,7 +4319,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return array(false, $msg);
             }
         }
-        return array(false, ''); // No configuration
+        return array(false, __('missing API keys', 'woo-vipps')); // No configuration
     } 
 
     public function log ($what,$type='info') {
