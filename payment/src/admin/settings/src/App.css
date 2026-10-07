@@ -823,6 +823,32 @@
   margin-bottom: 0;
 }
 
+.vipps-mobilepay-react-wizard-intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.vipps-mobilepay-react-wizard-intro > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.vipps-mobilepay-react-wizard-intro h3 {
+  margin: 0 0 0.5rem;
+  color: #2d3040;
+  font-family: 'Vipps Display', 'Vipps Text', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.vipps-mobilepay-react-skip-wizard {
+  flex-shrink: 0;
+}
+
 @media (max-width: 800px) {
   .vipps-settings-layout {
     grid-template-columns: minmax(0, 1fr);
@@ -880,6 +906,19 @@
   .vipps-mobilepay-react-button-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .vipps-mobilepay-form-help-box {
+    order: -1;
+  }
+
+  .vipps-mobilepay-react-wizard-intro {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vipps-mobilepay-react-skip-wizard {
+    align-self: flex-end;
   }
 }
 .vipps-mobilepay-react-form-field-header {

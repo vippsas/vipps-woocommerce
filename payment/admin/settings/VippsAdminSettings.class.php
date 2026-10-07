@@ -199,7 +199,6 @@ class VippsAdminSettings
                 'express_advanced_section' => __('Advanced settings', 'woo-vipps'),
                 'express_placement' => __('Configure placement', 'woo-vipps'),
                 'save_changes' => __('Save changes', 'woo-vipps'),
-                'initial_settings' => __('Initial settings wizard', 'woo-vipps'),
                 'upload_image' => __('Upload image', 'woo-vipps'),
                 'remove_image' => __('Remove image', 'woo-vipps'),
                 'next_step' => __('Next step', 'woo-vipps'),
@@ -239,6 +238,7 @@ class VippsAdminSettings
         $settings = $gw->settings;
 
         $wizardTranslations = [
+            'initial_settings' => __('Initial settings wizard', 'woo-vipps'),
             'wizard_header' => [
                 'title' => __('Initial settings', 'woo-vipps'),
                 'description' => sprintf(__('Welcome! You are almost ready to accept payments with %1$s', 'woo-vipps'), Vipps::CompanyName()),

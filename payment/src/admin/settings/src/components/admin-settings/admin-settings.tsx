@@ -81,12 +81,15 @@ export function AdminSettings(): JSX.Element {
     setIsLoading(true);
     setSaveConfirmation(false);
 
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const skipWizard = submitter instanceof HTMLButtonElement && submitter.name === 'skip_wizard';
+
     try {
-      const data = await submitChanges({ forceEnable: showWizardScreen });
+      const data = await submitChanges({ forceEnable: showWizardScreen, skippedWizard: skipWizard });
       console.log('handleSaveSettings - Response data:', data);
 
       // Handle the error messages for connection and form errors
-      if (!data.connection_ok || !data.form_ok) {
+      if (!skipWizard && (!data.connection_ok || !data.form_ok)) {
         setBanner({
           text: data.connection_msg || data.form_errors,
           variant: 'error'
@@ -122,6 +125,7 @@ export function AdminSettings(): JSX.Element {
   }
 
   function showWizardp(): boolean {
+    const skipWizard = truthToBool(getOption('skip_wizard'));
     const hasImportantSettings =
       getOption('merchantSerialNumber') &&
       getOption('clientId') &&
@@ -139,7 +143,7 @@ export function AdminSettings(): JSX.Element {
       getOption('Ocp_Apim_Key_eCommerce_test') &&
       getOption('payment_method_name') &&
       getOption('country');
-    return !hasImportantSettings && !hasImportantSettingsTest && !isTestMode;
+    return !skipWizard && !hasImportantSettings && !hasImportantSettingsTest && !isTestMode;
   }
 
   // If the most important settings are not set, the user is shown a screen to set these settings.

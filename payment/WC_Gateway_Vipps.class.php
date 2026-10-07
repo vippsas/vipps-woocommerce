@@ -1337,6 +1337,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'type'        => 'checkbox',
                 'default'     => 'no',
             ),
+            'skip_wizard' => array(
+                'title'       => __('Skip wizard and set up manually', 'woo-vipps'),
+                'label' => '',
+                'description' => '',
+                'type'        => 'checkbox',
+                'default'     => 'no',
+            ),
             'country' => array(
                 'title' => __('Country', 'woo-vipps'),
                 'label' => '',

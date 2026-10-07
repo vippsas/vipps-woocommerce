@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { detectPaymentMethodName } from '../../lib/payment-method';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
-import { WPButton, WPFormField, WPLabel, truthToBool } from '../form-elements';
+import { WPButton, WPFormField, WPLabel } from '../form-elements';
 import { SwitchFormField, InputFormField, SelectFormField } from '../options-form-fields';
 import { UnsafeHtmlText } from '../unsafe-html-text';
 
@@ -19,8 +19,7 @@ interface Props {
 type Steps = 'ESSENTIAL' | 'EXPRESS';
 
 export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Element {
-  const { getOption, setOption } = useWP();
-  
+  const { setOption } = useWP();
   const [step, setStep] = useState<Steps>('ESSENTIAL');
   const [prevStep, setPrevStep] = useState<Steps>('ESSENTIAL');
 
@@ -31,17 +30,29 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
     'express_singleproduct_enabled'
   ];
 
-  var testSuffix = '';
-  if (truthToBool(getOption('testmode'))) {
-    testSuffix = '_test';
-  }
+  // Submit the form ignoring validation. LP 2026-10-07
+  const skipWizardButton = (
+    <WPButton
+      className="vipps-mobilepay-react-skip-wizard"
+      name="skip_wizard"
+      type="submit"
+      variant="secondary"
+      formNoValidate
+      isLoading={isLoading}
+    >{gettext('skip_wizard.title')}</WPButton>
+  );
 
   return (
     <>
       {step === 'ESSENTIAL' && (
         <>
-          <h3 className="vipps-mobilepay-react-tab-description">{gettext('wizard_header.title')}</h3>
-          <p>{gettext('wizard_header.description')}</p>
+          <div className="vipps-mobilepay-react-wizard-intro">
+            <div>
+              <h3 className="vipps-mobilepay-react-tab-description">{gettext('wizard_header.title')}</h3>
+              <p>{gettext('wizard_header.description')}</p>
+            </div>
+            {skipWizardButton}
+          </div>
           <div className="vipps-mobilepay-form-container">
             <div className="vipps-mobilepay-form-col">
               {/* Select country */}
@@ -83,47 +94,39 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 ]}
               />
 
-              {/* Toggle test mode */}
-              <SwitchFormField 
-                name="testmode"
-                titleKey="testmode.title"
-                descriptionKey="testmode_wizard.description"
-              />
-
-              {/* Inputs for keys. Uses test keys if testmode is switched on above. LP 2026-09-29 */}
               {/* Renders an input field for the merchant serial number */}
               <InputFormField
                 asterisk
-                name={`merchantSerialNumber${testSuffix}`}
-                titleKey={`merchantSerialNumber${testSuffix}.title`}
-                descriptionKey={`merchantSerialNumber${testSuffix}.description`}
+                name="merchantSerialNumber"
+                titleKey="merchantSerialNumber.title"
+                descriptionKey="merchantSerialNumber.description"
                 required
               />
 
               {/* Renders an input field for the VippsMobilePay client ID */}
               <InputFormField
                 asterisk
-                name={`clientId${testSuffix}`}
-                titleKey={`clientId${testSuffix}.title`}
-                descriptionKey={`clientId${testSuffix}.description`}
+                name="clientId"
+                titleKey="clientId.title"
+                descriptionKey="clientId.description"
                 required
               />
 
               {/* Renders an input field for the VippsMobilePay secret */}
               <InputFormField
                 asterisk
-                name={`secret${testSuffix}`}
-                titleKey={`secret${testSuffix}.title`}
-                descriptionKey={`secret${testSuffix}.description`}
+                name="secret"
+                titleKey="secret.title"
+                descriptionKey="secret.description"
                 required
               />
 
               {/* Renders an input field for the VippsMobilePay Ocp_Apim_Key_eCommerce */}
               <InputFormField
                 asterisk
-                name={"Ocp_Apim_Key_eCommerce" + testSuffix}
-                titleKey={`Ocp_Apim_Key_eCommerce${testSuffix}.title`}
-                descriptionKey={`Ocp_Apim_Key_eCommerce${testSuffix}.description`}
+                name="Ocp_Apim_Key_eCommerce"
+                titleKey="Ocp_Apim_Key_eCommerce.title"
+                descriptionKey="Ocp_Apim_Key_eCommerce.description"
                 required
               />
 
@@ -181,11 +184,16 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
       {step === 'EXPRESS' && (
         <>
           <div className="vipps-mobilepay-react-express-confirm">
-            <h1 className="vipps-mobilepay-react-tab-description title">
-              {gettext("express_options_wizard.title")}
-            </h1>
-            <p>{gettext("express_options_wizard.description")}</p>
-            <p><a href="https://vippsmobilepay.com/nb-NO/express">{gettext("express_options_wizard.readmore")}</a></p>
+            <div className="vipps-mobilepay-react-wizard-intro">
+              <div>
+                <h1 className="vipps-mobilepay-react-tab-description title">
+                  {gettext("express_options_wizard.title")}
+                </h1>
+                <p>{gettext("express_options_wizard.description")}</p>
+                <p><a href="https://vippsmobilepay.com/nb-NO/express">{gettext("express_options_wizard.readmore")}</a></p>
+              </div>
+              {skipWizardButton}
+            </div>
 
             {/* Checkbox to enable express. LP 2026-08-13 */}
             <SwitchFormField

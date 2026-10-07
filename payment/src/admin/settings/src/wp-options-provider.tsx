@@ -38,7 +38,7 @@ interface WPContext {
    * Submits changes made to WordPress options.
    * @returns A promise that resolves when the changes are submitted.
    */
-  submitChanges: (args?: { forceEnable: boolean }) => Promise<{
+  submitChanges: (args?: { forceEnable: boolean, skippedWizard: boolean }) => Promise<{
     /**
      * Whether the connection to the Vipps servers is OK.
      */
@@ -108,13 +108,17 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
   }
 
   // Submits the options changed to the WordPress backend.
-  async function submitChanges(args?: { forceEnable: boolean }) {
+  async function submitChanges(args?: { forceEnable: boolean, skippedWizard: boolean }) {
     console.log('submitChanges - Current values:', values);
 
     // In some cases, we want to force-enable the "Enable Vipps MobilePay" option, such as when the user sets up the plugin for the first time in the wizard screen.
     if (args?.forceEnable) {
       setOption('enabled', 'yes');
       values.enabled = 'yes';
+    }
+    if (args?.skippedWizard) {
+      values.skip_wizard = 'yes';
+      setOption('skip_wizard', 'yes');
     }
 
     // Grab the nonce to avoid csrf IOK 2024-01-03
