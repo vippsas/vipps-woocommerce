@@ -1085,6 +1085,8 @@ jQuery('a.webhook-adder').click(function (e) {
         $attrs = wp_parse_args($attrs, $this->get_html_button_default_attrs());
         $attrs['brand'] = strtolower($payment_method);
         $attrs['type'] = 'button'; // static
+
+        // Don't support these login verbs. LP 2026-06-04
         if (in_array($attrs['verb'], ['login', 'register'])) $attrs['verb'] = 'buy';
 
         $attrs['language'] = $this->resolve_html_button_language($attrs['language']);
@@ -1129,7 +1131,6 @@ EOF;
     public function resolve_html_button_language($language) {
         // Support using store language
         if ('store' === $language) $language = $this->get_customer_language();
-        // Don't support these login verbs. LP 2026-06-04
         // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
         if ('dk' === $language) $language = 'da';
         if ('se' === $language) $language = 'sv';
