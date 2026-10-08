@@ -108,7 +108,7 @@ export function BadgesPage() {
               </WPSelect>
             </WPFormField>
             <div className="vipps-mobilepay-react-save-section vipps-admin-save-section--spaced">
-              <WPButton variant="primary" isLoading={pending !== null}>{gettext("update")}</WPButton>
+              <WPButton variant="primary" isLoading={pending !== null}>{gettext("save_changes")}</WPButton>
             </div>
           </PostForm>
         </div>

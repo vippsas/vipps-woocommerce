@@ -281,6 +281,199 @@ class VippsAdminSettings
     }
 
 
+    public function webhook_menu_page () {
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__("You don't have sufficient rights to access this page", 'woo-vipps'));
+        }
+        $keyset = $this->gateway()->get_keyset();
+        $allhooks = $this->gateway()->initialize_webhooks();
+        $localhooks = get_option('_woo_vipps_webhooks', []);
+        $merchants = [];
+        foreach ($keyset as $msn => $data) {
+            $hooks = [];
+            foreach (($allhooks[$msn]['webhooks'] ?? []) as $hook) {
+                $hooks[] = [
+                    'id' => $hook['id'], 'url' => $hook['url'],
+                    'events' => $hook['events'],
+                    'local' => !empty($localhooks[$msn][$hook['id']]),
+                ];
+            }
+            $merchants[] = ['msn' => (string) $msn, 'testmode' => !empty($data['testmode']), 'hooks' => $hooks];
+        }
+        $events = [
+            'Epayment' => [
+                __('Created', 'woo-vipps') => 'epayments.payment.created.v1',
+                __('Aborted', 'woo-vipps') => 'epayments.payment.aborted.v1',
+                __('Expired', 'woo-vipps') => 'epayments.payment.expired.v1',
+                __('Cancelled', 'woo-vipps') => 'epayments.payment.cancelled.v1',
+                __('Captured', 'woo-vipps') => 'epayments.payment.captured.v1',
+                __('Refunded', 'woo-vipps') => 'epayments.payment.refunded.v1',
+                __('Authorized', 'woo-vipps') => 'epayments.payment.authorized.v1',
+                __('Terminated', 'woo-vipps') => 'epayments.payment.terminated.v1',
+            ],
+            'Recurring' => [
+                __('Agreement accepted', 'woo-vipps') => 'recurring.agreement-activated.v1',
+                __('Agreement rejected', 'woo-vipps') => 'recurring.agreement-rejected.v1',
+                __('Agreement stopped', 'woo-vipps') => 'recurring.agreement-stopped.v1',
+                __('Agreement expired', 'woo-vipps') => 'recurring.agreement-expired.v1',
+                __('Charge reserved', 'woo-vipps') => 'recurring.charge-reserved.v1',
+                __('Charge captured', 'woo-vipps') => 'recurring.charge-captured.v1',
+                __('Charge cancelled', 'woo-vipps') => 'recurring.charge-canceled.v1',
+                __('Charge failed', 'woo-vipps') => 'recurring.charge-failed.v1',
+            ],
+            'QR' => [__('User Checked in', 'woo-vipps') => 'user.checked-in.v1'],
+        ];
+        $this->mount_settings_subpage('webhooks', [
+            'merchants' => $merchants,
+            'events' => $events,
+            'defaultEvents' => ['epayments.payment.authorized.v1', 'epayments.payment.aborted.v1', 'epayments.payment.expired.v1', 'epayments.payment.terminated.v1'],
+        ], [
+            'title' => __('Webhooks', 'woo-vipps'),
+            'description' => sprintf(__('Whenever an event like a payment or a cancellation occurs on a %1$s account, you can be notified of this using a <i>webhook</i>. This is used by this plugin to get noticed of payments by users even when they do not return to your store.', 'woo-vipps'), Vipps::CompanyName()),
+            'automatic' => __('To do this, the plugin will automatically add webhooks for the MSN - Merchant Serial Numbers - configured on this site', 'woo-vipps'),
+            'other' => __('If your MSN has registered other callbacks, for instance for another website, you can manage these here - and you can also add your own hooks that will be notified of payment events to any other URL you enter.', 'woo-vipps'),
+            'developer' => sprintf(__('Implementing a webhook is not trivial, so you will probably need a developer for this.  You can read more about what is required <a href="%1$s">here</a>. ', 'woo-vipps'), 'https://developer.vippsmobilepay.com/docs/APIs/webhooks-api/'),
+            'limit' => sprintf(__('Please note that there is normally a limit of <em><strong>5</strong> webhooks per MSN</em> - contact %1$s if you need more', 'woo-vipps'), Vipps::CompanyName()),
+            'listing' => __('The following is a listing of your webhooks. If you have changed your website name, you may see some hooks that you do not recognize - these should be deleted', 'woo-vipps'),
+            'merchant' => __('Merchant Serial Number %1$s', 'woo-vipps'),
+            'testMode' => __('Test mode', 'woo-vipps'), 'addForMsn' => __('Add a webhook to this MSN', 'woo-vipps'),
+            'webhook' => __('Webhook', 'woo-vipps'), 'action' => __('Action', 'woo-vipps'),
+            'view' => __('View', 'woo-vipps'), 'delete' => __('Delete', 'woo-vipps'),
+            'createdHere' => __('Created for this site', 'woo-vipps'), 'add' => __('Add a webhook', 'woo-vipps'),
+            'addUrl' => __('Add this URL as a webhook', 'woo-vipps'), 'cancel' => __('No, forget it', 'woo-vipps'),
+            'ok' => __('OK', 'woo-vipps'),
+        ], 'webhook_nonce', 'webhook_nonce');
+    }
+
+    public function badge_menu_page () {
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__("You don't have sufficient rights to access this page", 'woo-vipps'));
+        }
+        $vipps = Vipps::instance();
+        wp_enqueue_script('vipps-onsite-messageing');
+        $language = $vipps->get_customer_language();
+        if ($language === 'se') $language = 'sv';
+        if ($language === 'dk') $language = 'da';
+        $this->mount_settings_subpage('badges', [
+            'options' => get_option('vipps_badge_options', []),
+            'brand' => strtolower($vipps->get_payment_method_name()),
+            'language' => $language,
+            'variants' => ['white' => __('White', 'woo-vipps'), 'grey' => __('Grey', 'woo-vipps'), 'filled' => __('Filled', 'woo-vipps'), 'light' => __('Light', 'woo-vipps'), 'purple' => __('Purple', 'woo-vipps')],
+        ], [
+            'title' => __('Badges', 'woo-vipps'),
+            'intro' => sprintf(__('%1$s On-Site Messaging contains <em>badges</em> in different variants that can be used to let your customers know that %1$s payment is accepted.', 'woo-vipps'), Vipps::CompanyName()),
+            'description' => __('You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block', 'woo-vipps'),
+            'settings' => __('Settings', 'woo-vipps'), 'enabled' => sprintf(__('Turn on support for %1$s On-site Messaging badges', 'woo-vipps'), Vipps::CompanyName()),
+            'defaultAll' => __('Add badge to all products by default', 'woo-vipps'),
+            'defaultAllHelp' => sprintf(__("If selected, all products will get a badge, but you can override this on the %1\$s tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page", 'woo-vipps'), Vipps::CompanyName()),
+            'variant' => __('Variant', 'woo-vipps'), 'chooseVariant' => __('Choose color variant:', 'woo-vipps'),
+            'block' => __('The Gutenberg Block', 'woo-vipps'),
+            'blockHelp' => sprintf(__('If you use Gutenberg, you should be able to add a %1$s Badge block wherever you need it. It is called %1$s On-Site Messaging Badge Block.', 'woo-vipps'), Vipps::CompanyName()),
+            'shortcodes' => __('Shortcodes', 'woo-vipps'),
+            'shortcodeHelp' => sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), 'https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/on-site-messaging/'),
+            'shortcodeIntro' => __('The shortcode looks like this:', 'woo-vipps'),
+            'shortcodeDocs' => __('Please refer to the documentation for the meaning of the parameters.', 'woo-vipps'),
+            'brandAutomatic' => __('The brand will be automatically applied.', 'woo-vipps'),
+        ], 'badgeaction', 'badgenonce');
+    }
+
+    public function button_menu_page() {
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__("You don't have sufficient rights to access this page", 'woo-vipps'));
+        }
+        $vipps = Vipps::instance();
+        wp_enqueue_script('vipps-button-webcomponent');
+        $this->mount_settings_subpage('buttons', [
+            'configs' => get_option('vipps_button_options2', [])['express']['configs'] ?? [],
+            'defaults' => $vipps->get_html_button_default_attrs(),
+            'brand' => strtolower($vipps->get_payment_method_name()),
+            'language' => substr(get_locale(), 0, 2),
+            'context' => sanitize_title($_GET['express-context'] ?? 'global'),
+            'isMobilePay' => $vipps->get_payment_method_name() === 'MobilePay',
+        ], [
+            'title' => __('Buttons', 'woo-vipps'),
+            'express' => __('Express', 'woo-vipps'), 'context' => __('Config context', 'woo-vipps'),
+            'global' => __('Global', 'woo-vipps'), 'product' => __('Product', 'woo-vipps'),
+            'catalog' => __('Catalog', 'woo-vipps'), 'cart' => __('Cart', 'woo-vipps'),
+            'minicart' => __('Mini cart', 'woo-vipps'), 'checkout' => __('Checkout', 'woo-vipps'),
+            'useGlobal' => __('Use global config', 'woo-vipps'), 'rounded' => __('Rounded', 'woo-vipps'),
+            'compact' => __('Compact', 'woo-vipps'), 'stretched' => __('Stretched', 'woo-vipps'),
+            'languageLabel' => __('Language', 'woo-vipps'), 'store' => __('Store language', 'woo-vipps'),
+            'en' => __('English', 'woo-vipps'), 'no' => __('Norwegian', 'woo-vipps'),
+            'dk' => __('Danish', 'woo-vipps'), 'sv' => __('Swedish', 'woo-vipps'),
+            'fi' => __('Finnish', 'woo-vipps'),
+            'finnishHelp' => sprintf(__('Finnish is currently only available with the %s payment method.', 'woo-vipps'), 'MobilePay'),
+            'verb' => __('Verb', 'woo-vipps'), 'buy' => __('Buy', 'woo-vipps'),
+            'pay' => __('Pay', 'woo-vipps'), 'continue' => __('Continue', 'woo-vipps'),
+            'confirm' => __('Confirm', 'woo-vipps'), 'donate' => __('Donate', 'woo-vipps'),
+            'expressVerb' => __('Express', 'woo-vipps'), 'variant' => __('Variant', 'woo-vipps'),
+            'primary' => __('Primary', 'woo-vipps'), 'dark' => __('Dark (WCAG AAA)', 'woo-vipps'),
+            'light' => __('Light (WCAG AAA)', 'woo-vipps')
+        ], 'buttonaction', 'buttonnonce');
+    }
+
+    private function mount_settings_subpage($page, $data, $translations, $nonce_action, $nonce_name) {
+        $vipps = Vipps::instance();
+        echo '<div class="wrap vipps-admin-settings-page"><div class="wp-header-end"></div>';
+        echo '<div id="vipps-mobilepay-react-ui"></div>';
+        wp_enqueue_script('vipps-mobilepay-react-ui', plugins_url('dist/plugin.js', __FILE__), ['wp-element'], filemtime(__DIR__ . '/dist/plugin.js'), true);
+        $translations = array_merge(self::common_translations(), $translations);
+        wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', $translations);
+        wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactOptions', []);
+        wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactMetadata', [
+            'page' => $page, 'company_name' => Vipps::CompanyName(), 'payment_method' => $vipps->get_payment_method_name(), 'page_data' => $data,
+            'post_url' => admin_url('admin-post.php'), 'nonce_name' => $nonce_name,
+            'nonce' => wp_create_nonce($nonce_action),
+        ]);
+        echo '</div>';
+    }
+
+    // Translations shared by every React admin page. Resolve them when the page is rendered.
+    public static function common_translations() {
+        return array(
+                'settings_subtitle' => __('Single payments', 'woo-vipps'),
+                'express_shipping_section' => __('Shipping', 'woo-vipps'),
+                'test_keys_section' => __('Test environment', 'woo-vipps'),
+                'production_keys_section' => __('Production environment', 'woo-vipps'),
+                'order_status_section' => __('Order status', 'woo-vipps'),
+                'checkout_advanced_section' => __('Advanced settings', 'woo-vipps'),
+                'express_advanced_section' => __('Advanced settings', 'woo-vipps'),
+                'express_placement' => __('Configure placement', 'woo-vipps'),
+                'request_error' => __('Could not complete the request. Please try again.', 'woo-vipps'),
+                'save_changes' => __('Save changes', 'woo-vipps'),
+                'upload_image' => __('Upload image', 'woo-vipps'),
+                'remove_image' => __('Remove image', 'woo-vipps'),
+                'next_step' => __('Next step', 'woo-vipps'),
+                'previous_step' => __('Previous step', 'woo-vipps'),
+                'receipt_image_size_requirement' => __('The image must be at least 167 pixels in height', 'woo-vipps'),
+                'receipt_image_error' => __('The uploaded image is too small. It must be at least 167 pixels in height.', 'woo-vipps'),
+                'settings_saved' => __('Settings saved', 'woo-vipps'),
+
+                'kustom_sale_1' => __('Checkout - Important Update', 'woo-vipps'),
+                'kustom_sale_2' => __('Vipps MobilePay has entered into an agreement to sell the Checkout solution to Kustom. As part of this transition, <b>Vipps MobilePay Checkout will become Kustom Checkout</b>. You can follow <a href="https://docs.kustom.co/contents/partners/e-commerce-platforms/woocommerce-vipps-guide#switch-from-vipps-checkout-to-kustom-checkoutguide" target="_blank">this guide</a> to migrate over to Kustom Checkout.', 'woo-vipps'),
+                'kustom_sale_3' => __('Going forward, Kustom will be responsible for delivering and developing the Checkout solution. <b>Vipps MobilePay will remain available as a payment method in Kustom Checkout</b>, so your customers can continue to pay with Vipps MobilePay in the familiar way.', 'woo-vipps'),
+                'kustom_sale_4' => __('Please note that <b>accounts created after March 27, 2026 will not support Checkout in this plugin</b>.', 'woo-vipps'),
+                'kustom_sale_5' => __('If you have any questions about what the transition means for you, please see our <a href="https://vippsmobilepay.com/en-NO/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps'),
+                'kustom_sale_6' => sprintf(__('For help you can reach out to <a href="mailto:%1$s">%1$s</a> and <a href="tel:%2$s">%3$s</a>. You can also find the Kustom portal <a href="%4$s" target="_blank">here</a>.', 'woo-vipps'), 'support@kustom.co', '+4721564684', '+47 21 56 46 84', 'https://portal.kustom.co/'),
+                'checkoutcreateuser_extra' => sprintf(__('When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %1$s to provide easier login for customers.', 'woo-vipps'), Vipps::LoginName()),
+                'expresscreateuser_extra' => sprintf(__('When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %1$s to provide easier login for customers.<br>If you have %1$s installed, customer creation is enabled by default unless disabled in WooCommerce.', 'woo-vipps'), Vipps::LoginName()),
+                'enablestaticshipping_extra' => __('Guest orders use your store’s base location; logged-in customers use their saved address. Enable this only when those locations produce accurate shipping options, such as with flat-rate or free shipping.', 'woo-vipps'),
+                'result_status_extra' => sprintf(
+                    __('Select %1$s if you capture payment before shipping, either manually or by marking the order as %3$s.<br>Select %2$s if %1$s triggers shipping in your store.<br>&#9;&gt; Note that %2$s may send customers an email suggesting there is a problem with their order.', 'woo-vipps'),
+                    __('Processing', 'woo-vipps'),
+                    __('On hold','woo-vipps'),
+                    __('Complete','woo-vipps'),
+                ),
+                'status_on_fail_extra' => sprintf(
+                        __('%1$s orders will keep the customer\'s shopping cart intact.<br>%2$s orders can be restarted, possibly with another payment method.', 'woo-vipps'),
+                        /* translators: woocommerce order status name */
+                        __('Failed', 'woo-vipps'),
+                        /* translators: woocommerce order status name */
+                        __('Cancelled','woo-vipps'),
+                ),
+            );
+    }
+
     // Initializes the admin settings UI for VippsMobilePay
     function init_admin_settings_page_react_ui() {
         global $Vipps;
@@ -314,49 +507,6 @@ class VippsAdminSettings
             // Only show checkout options if checkout has actually been activated.
             'vipps_checkout_activated' => intval(get_option('woo_vipps_checkout_activated'))
         );
-
-        // Add some extra common translations only used by the React UI
-        $commonTranslations = array(
-                'settings_subtitle' => __('Single payments', 'woo-vipps'),
-                'express_shipping_section' => __('Shipping', 'woo-vipps'),
-                'test_keys_section' => __('Test environment', 'woo-vipps'),
-                'production_keys_section' => __('Production environment', 'woo-vipps'),
-                'order_status_section' => __('Order status', 'woo-vipps'),
-                'checkout_advanced_section' => __('Advanced settings', 'woo-vipps'),
-                'express_advanced_section' => __('Advanced settings', 'woo-vipps'),
-                'express_placement' => __('Configure placement', 'woo-vipps'),
-                'save_changes' => __('Save changes', 'woo-vipps'),
-                'upload_image' => __('Upload image', 'woo-vipps'),
-                'remove_image' => __('Remove image', 'woo-vipps'),
-                'next_step' => __('Next step', 'woo-vipps'),
-                'previous_step' => __('Previous step', 'woo-vipps'),
-                'receipt_image_size_requirement' => __('The image must be at least 167 pixels in height', 'woo-vipps'),
-                'receipt_image_error' => __('The uploaded image is too small. It must be at least 167 pixels in height.', 'woo-vipps'),
-                'settings_saved' => __('Settings saved', 'woo-vipps'),
-
-                'kustom_sale_1' => __('Checkout - Important Update', 'woo-vipps'),
-                'kustom_sale_2' => __('Vipps MobilePay has entered into an agreement to sell the Checkout solution to Kustom. As part of this transition, <b>Vipps MobilePay Checkout will become Kustom Checkout</b>. You can follow <a href="https://docs.kustom.co/contents/partners/e-commerce-platforms/woocommerce-vipps-guide#switch-from-vipps-checkout-to-kustom-checkoutguide" target="_blank">this guide</a> to migrate over to Kustom Checkout.', 'woo-vipps'),
-                'kustom_sale_3' => __('Going forward, Kustom will be responsible for delivering and developing the Checkout solution. <b>Vipps MobilePay will remain available as a payment method in Kustom Checkout</b>, so your customers can continue to pay with Vipps MobilePay in the familiar way.', 'woo-vipps'),
-                'kustom_sale_4' => __('Please note that <b>accounts created after March 27, 2026 will not support Checkout in this plugin</b>.', 'woo-vipps'),
-                'kustom_sale_5' => __('If you have any questions about what the transition means for you, please see our <a href="https://vippsmobilepay.com/en-NO/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps'),
-                'kustom_sale_6' => sprintf(__('For help you can reach out to <a href="mailto:%1$s">%1$s</a> and <a href="tel:%2$s">%3$s</a>. You can also find the Kustom portal <a href="%4$s" target="_blank">here</a>.', 'woo-vipps'), 'support@kustom.co', '+4721564684', '+47 21 56 46 84', 'https://portal.kustom.co/'),
-                'checkoutcreateuser_extra' => sprintf(__('When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %1$s to provide easier login for customers.', 'woo-vipps'), Vipps::LoginName()),
-                'expresscreateuser_extra' => sprintf(__('When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %1$s to provide easier login for customers.<br>If you have %1$s installed, customer creation is enabled by default unless disabled in WooCommerce.', 'woo-vipps'), Vipps::LoginName()),
-                'enablestaticshipping_extra' => __('Guest orders use your store’s base location; logged-in customers use their saved address. Enable this only when those locations produce accurate shipping options, such as with flat-rate or free shipping.', 'woo-vipps'),
-                'result_status_extra' => sprintf(
-                    __('Select %1$s if you capture payment before shipping, either manually or by marking the order as %3$s.<br>Select %2$s if %1$s triggers shipping in your store.<br>&#9;&gt; Note that %2$s may send customers an email suggesting there is a problem with their order.', 'woo-vipps'),
-                    __('Processing', 'woo-vipps'),
-                    __('On hold','woo-vipps'),
-                    __('Complete','woo-vipps'),
-                ),
-                'status_on_fail_extra' => sprintf(
-                        __('%1$s orders will keep the customer\'s shopping cart intact.<br>%2$s orders can be restarted, possibly with another payment method.', 'woo-vipps'),
-                        /* translators: woocommerce order status name */
-                        __('Failed', 'woo-vipps'),
-                        /* translators: woocommerce order status name */
-                        __('Cancelled','woo-vipps'),
-                ),
-            );
 
         /* We need to postprocess the settings for.. various reasons IOK 2024-06-04  */
         /* Also we need to run init_form_fields here, because for whatever reason the
@@ -413,7 +563,7 @@ class VippsAdminSettings
             'test_mode_warning' => sprintf(__('Warning: card payments may not yet be available in the test environment, please check the %1$s <a href="https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/">knowledge base</a> for updated status about the test environment.'), Vipps::CompanyName()),
         ];
 
-        wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', array_merge($gw->form_fields, $cc_translations,  $commonTranslations, $wizardTranslations));
+        wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', array_merge($gw->form_fields, $cc_translations, self::common_translations(), $wizardTranslations));
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactOptions', $settings);
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactMetadata', $metadata);
 

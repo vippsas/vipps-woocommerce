@@ -238,7 +238,7 @@ export function ButtonsPage() {
               </div>
             </section>
             <div className="vipps-mobilepay-react-save-section">
-              <WPButton variant="primary" isLoading={pending !== null}>{gettext("update")}</WPButton>
+              <WPButton variant="primary" isLoading={pending !== null}>{gettext("save_changes")}</WPButton>
             </div>
           </div>
         </div>
