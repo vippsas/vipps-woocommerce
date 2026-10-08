@@ -338,7 +338,7 @@ class Vipps {
         // Supress Woo and WP notices on settings pages. IOK 2026-10-01
         add_action( 'in_admin_header', function () {
             $screen = get_current_screen();
-            if ( ! $screen || !in_array($screen->id, ['vipps-mobilepay_page_vipps_settings_menu', 'vipps-mobilepay_page_vipps_button_menu', 'vipps-mobilepay_page_vipps_badge_menu', 'vipps-mobilepay_page_vipps_webhook_menu']) ) return;
+            if ( ! $screen || !str_starts_with($screen->id, 'vipps-mobilepay_page') ) return;
             remove_all_actions( 'admin_notices' );
             remove_all_actions( 'all_admin_notices' );
         }, 9999);
