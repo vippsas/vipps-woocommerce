@@ -338,8 +338,7 @@ class Vipps {
         // Supress Woo and WP notices on settings pages. IOK 2026-10-01
         add_action( 'in_admin_header', function () {
             $screen = get_current_screen();
-            error_log('LP screen: ' . print_r($screen, true));
-            if ( ! $screen || !in_array($screen->id, ['vipps-mobilepay_page_vipps_settings_menu', 'vipps-mobilepay_page_vipps_button_menu', 'vipps-mobilepay_page_vipps_badge_meu', 'vipps-mobilepay_page_vipps_webhook_menu']) ) return;
+            if ( ! $screen || !in_array($screen->id, ['vipps-mobilepay_page_vipps_settings_menu', 'vipps-mobilepay_page_vipps_button_menu', 'vipps-mobilepay_page_vipps_badge_menu', 'vipps-mobilepay_page_vipps_webhook_menu']) ) return;
             remove_all_actions( 'admin_notices' );
             remove_all_actions( 'all_admin_notices' );
         }, 9999);
@@ -956,8 +955,7 @@ EOF;
             'isMobilePay' => $this->get_payment_method_name() === 'MobilePay',
         ], [
             'title' => __('Buttons', 'woo-vipps'),
-            'description' => sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), self::CompanyName()),
-            'express' => __('Express Checkout', 'woo-vipps'), 'context' => __('Config context', 'woo-vipps'),
+            'express' => __('Express', 'woo-vipps'), 'context' => __('Config context', 'woo-vipps'),
             'global' => __('Global', 'woo-vipps'), 'product' => __('Product', 'woo-vipps'),
             'catalog' => __('Catalog', 'woo-vipps'), 'cart' => __('Cart', 'woo-vipps'),
             'minicart' => __('Mini cart', 'woo-vipps'), 'checkout' => __('Checkout', 'woo-vipps'),
