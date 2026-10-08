@@ -926,3 +926,28 @@
   flex-direction: row;
   justify-content: space-between;
 }
+
+/* Buttons, Badges, and Webhooks pages */
+.vipps-extra-page + .vipps-extra-page { margin-top: 1.25rem; }
+.vipps-extra-page h2 { margin: 0 0 1rem; font-size: 1.25rem; }
+.vipps-extra-page p { max-width: 75ch; }
+.vipps-extra-page .vipps-mobilepay-react-save-section { margin-top: 1.25rem; }
+.vipps-extra-preview { margin: 1.5rem 0; padding: 1.5rem; border: 1px solid var(--vipps-settings-line); border-radius: 10px; background: #fafbfe; }
+.vipps-extra-inline, .vipps-extra-choices { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; margin: 1rem 0; padding: 0; border: 0; }
+.vipps-extra-choices legend { margin-bottom: .5rem; font-weight: 600; }
+.vipps-extra-inline label, .vipps-extra-choices label { display: inline-flex; align-items: center; gap: .35rem; }
+.vipps-extra-controls[aria-disabled="true"] { opacity: .6; }
+.vipps-extra-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.vipps-extra-heading h2 { margin: 0; }
+.vipps-extra-table-wrap { overflow-x: auto; }
+.vipps-extra-table { width: 100%; }
+.vipps-extra-table td { overflow-wrap: anywhere; }
+.vipps-extra-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.vipps-extra-actions form { margin: 0; }
+.vipps-extra-modal-backdrop { position: fixed; inset: 0; z-index: 100001; display: grid; place-items: center; padding: 1rem; background: rgb(0 0 0 / 45%); }
+.vipps-extra-modal { width: min(100%, 700px); max-height: 90vh; overflow: auto; }
+.vipps-extra-modal dl { display: grid; grid-template-columns: minmax(70px, auto) 1fr; gap: .5rem 1rem; overflow-wrap: anywhere; }
+.vipps-extra-modal dt { font-weight: 600; }
+.vipps-extra-modal dd { margin: 0; }
+.vipps-extra-modal .vipps-extra-choices { flex-direction: column; gap: .4rem; }
+@media (max-width: 560px) { .vipps-extra-heading { align-items: flex-start; flex-direction: column; } }
