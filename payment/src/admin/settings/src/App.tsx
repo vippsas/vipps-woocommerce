@@ -12,11 +12,10 @@ import { WebhooksPage } from './components/webhooks-menu/webhooks-page';
  * @returns The rendered application component.
  */
 function App(): JSX.Element {
-  const isAdminSettingsPage = getMetadata('page') === 'admin_settings_page';
   const page = getMetadata('page');
   return (
     <div className='vipps-mobilepay-react-admin-page'>
-      {isAdminSettingsPage && (
+      {page === 'admin_settings_page' && (
         <WPOptionsProvider>
           <AdminSettings />
         </WPOptionsProvider>

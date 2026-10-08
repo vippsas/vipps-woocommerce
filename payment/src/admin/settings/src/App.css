@@ -1,6 +1,6 @@
 .vipps-mobilepay-react-admin-page {
-  --vipps-settings-line: #e5e8f0;
-  --vipps-settings-muted: #686b79;
+  --vipps-admin-line: #e5e8f0;
+  --vipps-admin-muted: #686b79;
   color: #25232b;
   font-family: 'Vipps Text', Roboto, Helvetica, Arial, sans-serif;
   max-width: 1240px;
@@ -13,41 +13,41 @@
   box-sizing: border-box;
 }
 
-.vipps-settings-shell {
+.vipps-admin-shell {
   /* Vipps is the default; the MobilePay class restores the existing blue palette. */
-  --vipps-settings-primary: #FF5B24;
-  --vipps-settings-primary-dark: #FF5B24;
-  --vipps-settings-primary-tint: #FFF4EC;
-  --vipps-settings-secondary: #562C83;
-  --vipps-settings-control-hover: #FF5B24;
-  --vipps-settings-focus-ring: #FFD5C7;
-  --vipps-settings-tab-hover: #FFF4EC;
-  --vipps-settings-primary-hover: #E94C18;
-  --vipps-settings-primary-shadow: rgb(255 91 36 / 16%);
-  --vipps-settings-help-background: #FFF4EC;
+  --vipps-admin-primary: #FF5B24;
+  --vipps-admin-primary-dark: #FF5B24;
+  --vipps-admin-primary-tint: #FFF4EC;
+  --vipps-admin-secondary: #562C83;
+  --vipps-admin-control-hover: #FF5B24;
+  --vipps-admin-focus-ring: #FFD5C7;
+  --vipps-admin-tab-hover: #FFF4EC;
+  --vipps-admin-primary-hover: #E94C18;
+  --vipps-admin-primary-shadow: rgb(255 91 36 / 16%);
+  --vipps-admin-help-background: #FFF4EC;
   padding: clamp(1.25rem, 3vw, 2.75rem);
-  border: 1px solid var(--vipps-settings-line);
+  border: 1px solid var(--vipps-admin-line);
   border-radius: 18px;
   background: #f8f9fc;
 }
 
-.vipps-settings-shell.MobilePay {
-  --vipps-settings-primary: #5a78ff;
-  --vipps-settings-primary-dark: #354fc7;
-  --vipps-settings-primary-tint: #f2f4ff;
-  --vipps-settings-control-hover: #9daae7;
-  --vipps-settings-focus-ring: #c7d1ff;
-  --vipps-settings-tab-hover: #eef1fa;
-  --vipps-settings-primary-hover: #263da9;
-  --vipps-settings-primary-shadow: rgb(53 79 199 / 16%);
-  --vipps-settings-help-background: #f8f9ff;
+.vipps-admin-shell.MobilePay {
+  --vipps-admin-primary: #5a78ff;
+  --vipps-admin-primary-dark: #354fc7;
+  --vipps-admin-primary-tint: #f2f4ff;
+  --vipps-admin-control-hover: #9daae7;
+  --vipps-admin-focus-ring: #c7d1ff;
+  --vipps-admin-tab-hover: #eef1fa;
+  --vipps-admin-primary-hover: #263da9;
+  --vipps-admin-primary-shadow: rgb(53 79 199 / 16%);
+  --vipps-admin-help-background: #f8f9ff;
 }
 
-.vipps-settings-header {
+.vipps-admin-header {
   margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
 }
 
-.vipps-settings-header h1 {
+.vipps-admin-header h1 {
   margin: 0;
   color: #242633;
   font-family: 'Vipps Display', 'Vipps Text', Roboto, Helvetica, Arial, sans-serif;
@@ -57,47 +57,60 @@
   letter-spacing: -0.025em;
 }
 
-.vipps-settings-header p {
-  color: var(--vipps-settings-muted);
+.vipps-admin-header p {
+  color: var(--vipps-admin-muted);
   margin: .65rem 0 0;
   font-size: 1rem
 }
 
-.vipps-settings-layout {
+.vipps-admin-layout {
   display: grid;
   grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
   align-items: start;
   gap: clamp(1.25rem, 3vw, 2.5rem);
 }
 
-.vipps-settings-navigation {
+.vipps-admin-navigation {
   position: sticky;
   top: 32px;
   min-width: 0;
 }
 
-.vipps-settings-content {
+.vipps-admin-content {
   min-width: 0;
 }
 
-.vipps-settings-panel {
+.vipps-admin-panel {
   padding: 1.25rem;
-  border: 1px solid var(--vipps-settings-line);
+  border: 1px solid var(--vipps-admin-line);
   border-radius: 14px;
   background: #fff;
   box-shadow: 0 8px 28px rgb(33 39 72 / 4%);
 }
 
-.vipps-settings-panel:focus-visible {
-  outline: 2px solid var(--vipps-settings-primary);
+.vipps-admin-panel:focus-visible {
+  outline: 2px solid var(--vipps-admin-primary);
   outline-offset: 3px;
 }
 
-.vipps-settings-panel-wizard {
+.vipps-admin-panel + .vipps-admin-panel {
+  margin-top: 1.25rem;
+}
+
+.vipps-admin-panel-title {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+.vipps-admin-panel .vipps-admin-prose {
+  max-width: 75ch;
+}
+
+.vipps-admin-panel-wizard {
   max-width: 980px;
 }
 
-.vipps-settings-notices {
+.vipps-admin-notices {
   display: grid;
   gap: 0.75rem;
   margin-bottom: 1.25rem;
@@ -177,7 +190,7 @@
 }
 
 .vipps-mobilepay-react-form-field .vipps-mobilepay-react-control:hover:not(:disabled) {
-  border-color: var(--vipps-settings-control-hover);
+  border-color: var(--vipps-admin-control-hover);
 }
 
 .vipps-mobilepay-react-form-field textarea.vipps-mobilepay-react-control {
@@ -186,8 +199,8 @@
 }
 
 .vipps-mobilepay-react-form-field .vipps-mobilepay-react-control:focus {
-  border-color: var(--vipps-settings-primary);
-  outline: 2px solid var(--vipps-settings-focus-ring);
+  border-color: var(--vipps-admin-primary);
+  outline: 2px solid var(--vipps-admin-focus-ring);
   outline-offset: 1px;
   box-shadow: none;
 }
@@ -270,12 +283,12 @@
 }
 
 .vipps-mobilepay-react-overrides-toggle:hover {
-  border-color: var(--vipps-settings-primary);
-  color: var(--vipps-settings-primary);
+  border-color: var(--vipps-admin-primary);
+  color: var(--vipps-admin-primary);
 }
 
 .vipps-mobilepay-react-overrides-toggle:focus-visible {
-  outline: 2px solid var(--vipps-settings-primary);
+  outline: 2px solid var(--vipps-admin-primary);
   outline-offset: 2px;
 }
 
@@ -292,9 +305,9 @@
 }
 
 .vipps-mobilepay-react-overrides-toggle[aria-expanded="true"] {
-  border-color: var(--vipps-settings-primary);
-  background: var(--vipps-settings-primary-tint);
-  color: var(--vipps-settings-primary-dark);
+  border-color: var(--vipps-admin-primary);
+  background: var(--vipps-admin-primary-tint);
+  color: var(--vipps-admin-primary-dark);
 }
 
 .vipps-mobilepay-react-express-group {
@@ -307,7 +320,7 @@
 
 .vipps-mobilepay-react-express-overrides {
   padding: .2rem 1.25rem;
-  border: 1px solid var(--vipps-settings-line);
+  border: 1px solid var(--vipps-admin-line);
   margin-left: 1.5rem;
   margin-bottom: 0.8rem;
   border-radius: 11px;
@@ -315,7 +328,7 @@
 
 .vipps-mobilepay-react-express-overrides-heading {
   padding: 0.25rem 0 0.5rem;
-  color: var(--vipps-settings-muted);
+  color: var(--vipps-admin-muted);
   font-size: 14px;
   font-weight: 600;
 }
@@ -361,8 +374,8 @@
 }
 
 .vipps-mobilepay-react-admin-page input.vipps-mobilepay-react-switch:checked {
-  border-color: var(--vipps-settings-primary);
-  background: var(--vipps-settings-primary);
+  border-color: var(--vipps-admin-primary);
+  background: var(--vipps-admin-primary);
 }
 
 .vipps-mobilepay-react-admin-page input.vipps-mobilepay-react-switch:checked::before {
@@ -370,7 +383,7 @@
 }
 
 .vipps-mobilepay-react-admin-page input.vipps-mobilepay-react-switch:focus-visible {
-  outline: 2px solid var(--vipps-settings-primary);
+  outline: 2px solid var(--vipps-admin-primary);
   outline-offset: 3px;
 }
 
@@ -408,13 +421,13 @@
 }
 
 .vipps-mobilepay-react-tab:hover {
-  background: var(--vipps-settings-tab-hover);
+  background: var(--vipps-admin-tab-hover);
   color: #303342;
 }
 
 .vipps-mobilepay-react-tab.active {
-  background: var(--vipps-settings-primary-tint);
-  color: var(--vipps-settings-primary-dark);
+  background: var(--vipps-admin-primary-tint);
+  color: var(--vipps-admin-primary-dark);
 }
 
 .vipps-mobilepay-react-tab.active::before {
@@ -423,28 +436,28 @@
   height: 20px;
   margin-right: 0.7rem;
   border-radius: 99px;
-  background: var(--vipps-settings-primary);
+  background: var(--vipps-admin-primary);
 }
 
 .vipps-mobilepay-react-tab:focus-visible {
-  outline: 2px solid var(--vipps-settings-primary);
+  outline: 2px solid var(--vipps-admin-primary);
   outline-offset: 2px;
 }
 
 .vipps-mobilepay-react-tab-description {
   margin: 0 0 1.5rem;
-  color: var(--vipps-settings-muted);
+  color: var(--vipps-admin-muted);
   line-height: 1.6;
 }
 
-.vipps-settings-panel > div > p.vipps-mobilepay-react-tab-description:empty {
+.vipps-admin-panel > div > p.vipps-mobilepay-react-tab-description:empty {
   display: none;
 }
 
 .vipps-mobilepay-react-collapsible {
   max-width: 720px;
   margin: 1.25rem 0;
-  border: 1px solid var(--vipps-settings-line);
+  border: 1px solid var(--vipps-admin-line);
   border-radius: 11px;
   background: #fafbfe;
 }
@@ -480,13 +493,13 @@
 }
 
 .vipps-mobilepay-react-collapsible-title:focus-visible {
-  outline: 2px solid var(--vipps-settings-primary);
+  outline: 2px solid var(--vipps-admin-primary);
   outline-offset: 2px;
 }
 
 .vipps-mobilepay-react-collapsible-content {
   padding: 0.2rem 1.25rem;
-  border-top: 1px solid var(--vipps-settings-line);
+  border-top: 1px solid var(--vipps-admin-line);
   background: #fff;
   border-radius: 0 0 11px 11px;
 }
@@ -497,7 +510,7 @@
 
 /* General */
 .vipps-mobilepay-react-field-description {
-  color: var(--vipps-settings-muted);
+  color: var(--vipps-admin-muted);
   font-size: 0.85rem;
   line-height: 1.5;
 }
@@ -515,10 +528,10 @@
   width: 20px;
   height: 20px;
   padding: 0;
-  border: 1px solid var(--vipps-settings-muted);
+  border: 1px solid var(--vipps-admin-muted);
   border-radius: 50%;
   background: transparent;
-  color: var(--vipps-settings-muted);
+  color: var(--vipps-admin-muted);
   font: inherit;
   font-size: 13px;
   font-weight: 700;
@@ -527,7 +540,7 @@
 }
 
 .vipps-mobilepay-react-info-tooltip-trigger:focus-visible {
-  outline: 2px solid var(--vipps-settings-primary);
+  outline: 2px solid var(--vipps-admin-primary);
   outline-offset: 2px;
 }
 
@@ -605,32 +618,32 @@
 }
 
 .vipps-mobilepay-react-admin-page .vipps-mobilepay-react-button.button-primary {
-  border-color: var(--vipps-settings-primary-dark);
-  background: var(--vipps-settings-primary-dark);
+  border-color: var(--vipps-admin-primary-dark);
+  background: var(--vipps-admin-primary-dark);
   color: #fff;
-  box-shadow: 0 3px 8px var(--vipps-settings-primary-shadow);
+  box-shadow: 0 3px 8px var(--vipps-admin-primary-shadow);
 }
 
 .vipps-mobilepay-react-admin-page .vipps-mobilepay-react-button.button-link {
   border-color: transparent;
   background: transparent;
-  color: var(--vipps-settings-primary-dark);
+  color: var(--vipps-admin-primary-dark);
   text-decoration: underline;
 }
 
 .vipps-mobilepay-react-admin-page .vipps-mobilepay-react-button:hover:not(:disabled) {
-  border-color: var(--vipps-settings-primary);
-  color: var(--vipps-settings-primary-dark);
-  background: var(--vipps-settings-primary-tint);
+  border-color: var(--vipps-admin-primary);
+  color: var(--vipps-admin-primary-dark);
+  background: var(--vipps-admin-primary-tint);
 }
 
 .vipps-mobilepay-react-admin-page .vipps-mobilepay-react-button.button-primary:hover:not(:disabled) {
   color: #fff;
-  background: var(--vipps-settings-primary-hover);
+  background: var(--vipps-admin-primary-hover);
 }
 
 .vipps-mobilepay-react-admin-page .vipps-mobilepay-react-button:focus-visible {
-  outline: 2px solid var(--vipps-settings-primary);
+  outline: 2px solid var(--vipps-admin-primary);
   outline-offset: 2px;
 }
 
@@ -692,11 +705,15 @@
   min-height: 68px;
   padding: 0.75rem 1rem;
   margin-top: 0.85rem;
-  border: 1px solid var(--vipps-settings-line);
+  border: 1px solid var(--vipps-admin-line);
   border-radius: 12px;
   background: rgb(255 255 255 / 96%);
   box-shadow: 0 6px 24px rgb(33 39 72 / 8%);
   z-index: 2;
+}
+
+.vipps-mobilepay-react-save-section.vipps-admin-save-section--spaced {
+  margin-top: 1.25rem;
 }
 
 .vipps-mobilepay-react-save-confirmation {
@@ -726,9 +743,9 @@
 
 .vipps-mobilepay-form-help-box {
   padding: 1.25rem;
-  border: 1px solid var(--vipps-settings-line);
+  border: 1px solid var(--vipps-admin-line);
   border-radius: 12px;
-  background: var(--vipps-settings-help-background);
+  background: var(--vipps-admin-help-background);
   color: #4b5061;
 }
 
@@ -781,9 +798,9 @@
   font-weight: bold;
 }
 
-.vipps-settings-panel > div > h3,
-.vipps-settings-panel > div > .vipps-mobilepay-react-tab-description.title,
-.vipps-settings-panel-wizard h1 {
+.vipps-admin-panel > div > h3,
+.vipps-admin-panel > div > .vipps-mobilepay-react-tab-description.title,
+.vipps-admin-panel-wizard h1 {
   color: #2d3040;
   font-family: 'Vipps Display', 'Vipps Text', Roboto, Helvetica, Arial, sans-serif;
   font-size: 1.2rem;
@@ -791,20 +808,20 @@
   line-height: 1.35;
 }
 
-.vipps-settings-panel > div > h3 {
+.vipps-admin-panel > div > h3 {
   margin: 2rem 0 0.5rem;
 }
 
-.vipps-settings-panel a {
-  color: var(--vipps-settings-primary-dark);
+.vipps-admin-panel a {
+  color: var(--vipps-admin-primary-dark);
   text-underline-offset: 2px;
 }
 
-.vipps-settings-panel a:hover {
-  color: var(--vipps-settings-primary-hover);
+.vipps-admin-panel a:hover {
+  color: var(--vipps-admin-primary-hover);
 }
 
-.vipps-settings-callout {
+.vipps-admin-callout {
   margin: 1.5rem 0 2rem;
   padding: 1.35rem 1.5rem;
   border: 1px solid #f2c9cc;
@@ -813,13 +830,13 @@
   background: #fff7f7;
 }
 
-.vipps-settings-callout h3 {
+.vipps-admin-callout h3 {
   margin: 0 0 0.65rem;
   color: #8c2c36;
   font-size: 1.1rem;
 }
 
-.vipps-settings-callout p:last-child {
+.vipps-admin-callout p:last-child {
   margin-bottom: 0;
 }
 
@@ -850,12 +867,12 @@
 }
 
 @media (max-width: 800px) {
-  .vipps-settings-layout {
+  .vipps-admin-layout {
     grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
   }
 
-  .vipps-settings-navigation {
+  .vipps-admin-navigation {
     position: static;
     overflow-x: auto;
     margin-inline: -0.25rem;
@@ -879,12 +896,12 @@
 }
 
 @media (max-width: 560px) {
-  .vipps-settings-shell {
+  .vipps-admin-shell {
     padding: 1rem;
     border-radius: 12px;
   }
 
-  .vipps-settings-panel {
+  .vipps-admin-panel {
     padding: 1.15rem;
   }
 
@@ -927,27 +944,23 @@
   justify-content: space-between;
 }
 
-/* Buttons, Badges, and Webhooks pages */
-.vipps-extra-page + .vipps-extra-page { margin-top: 1.25rem; }
-.vipps-extra-page h2 { margin: 0 0 1rem; font-size: 1.25rem; }
-.vipps-extra-page p { max-width: 75ch; }
-.vipps-extra-page .vipps-mobilepay-react-save-section { margin-top: 1.25rem; }
-.vipps-extra-preview { margin: 1.5rem 0; padding: 1.5rem; border: 1px solid var(--vipps-settings-line); border-radius: 10px; background: #fafbfe; }
-.vipps-extra-inline, .vipps-extra-choices { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; margin: 1rem 0; padding: 0; border: 0; }
-.vipps-extra-choices legend { margin-bottom: .5rem; font-weight: 600; }
-.vipps-extra-inline label, .vipps-extra-choices label { display: inline-flex; align-items: center; gap: .35rem; }
-.vipps-extra-controls[aria-disabled="true"] { opacity: .6; }
-.vipps-extra-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
-.vipps-extra-heading h2 { margin: 0; }
-.vipps-extra-table-wrap { overflow-x: auto; }
-.vipps-extra-table { width: 100%; }
-.vipps-extra-table td { overflow-wrap: anywhere; }
-.vipps-extra-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-.vipps-extra-actions form { margin: 0; }
-.vipps-extra-modal-backdrop { position: fixed; inset: 0; z-index: 100001; display: grid; place-items: center; padding: 1rem; background: rgb(0 0 0 / 45%); }
-.vipps-extra-modal { width: min(100%, 700px); max-height: 90vh; overflow: auto; }
-.vipps-extra-modal dl { display: grid; grid-template-columns: minmax(70px, auto) 1fr; gap: .5rem 1rem; overflow-wrap: anywhere; }
-.vipps-extra-modal dt { font-weight: 600; }
-.vipps-extra-modal dd { margin: 0; }
-.vipps-extra-modal .vipps-extra-choices { flex-direction: column; gap: .4rem; }
-@media (max-width: 560px) { .vipps-extra-heading { align-items: flex-start; flex-direction: column; } }
+/* Shared admin previews, field groups, tables, and dialogs */
+.vipps-admin-preview { margin: 1.5rem 0; padding: 1.5rem; border: 1px solid var(--vipps-admin-line); border-radius: 10px; background: #fafbfe; }
+.vipps-admin-inline, .vipps-admin-choices { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; margin: 1rem 0; padding: 0; border: 0; }
+.vipps-admin-choices legend { margin-bottom: .5rem; font-weight: 600; }
+.vipps-admin-inline label, .vipps-admin-choices label { display: inline-flex; align-items: center; gap: .35rem; }
+.vipps-admin-controls[aria-disabled="true"] { opacity: .6; }
+.vipps-admin-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.vipps-admin-heading h2 { margin: 0; }
+.vipps-admin-table-wrap { overflow-x: auto; }
+.vipps-admin-table { width: 100%; }
+.vipps-admin-table td { overflow-wrap: anywhere; }
+.vipps-admin-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.vipps-admin-actions form { margin: 0; }
+.vipps-admin-modal-backdrop { position: fixed; inset: 0; z-index: 100001; display: grid; place-items: center; padding: 1rem; background: rgb(0 0 0 / 45%); }
+.vipps-admin-modal { width: min(100%, 700px); max-height: 90vh; overflow: auto; }
+.vipps-admin-modal dl { display: grid; grid-template-columns: minmax(70px, auto) 1fr; gap: .5rem 1rem; overflow-wrap: anywhere; }
+.vipps-admin-modal dt { font-weight: 600; }
+.vipps-admin-modal dd { margin: 0; }
+.vipps-admin-modal .vipps-admin-choices { flex-direction: column; gap: .4rem; }
+@media (max-width: 560px) { .vipps-admin-heading { align-items: flex-start; flex-direction: column; } }

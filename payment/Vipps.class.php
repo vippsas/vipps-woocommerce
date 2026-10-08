@@ -335,10 +335,11 @@ class Vipps {
         require_once(dirname(__FILE__) . "/admin/settings/VippsAdminSettings.class.php");
         $adminSettings = VippsAdminSettings::instance();
 
-        // Supress Woo and WP notices on this screen IOK 2026-10-01
+        // Supress Woo and WP notices on settings pages. IOK 2026-10-01
         add_action( 'in_admin_header', function () {
             $screen = get_current_screen();
-            if ( ! $screen || 'vipps-mobilepay_page_vipps_settings_menu' !== $screen->id ) return;
+            error_log('LP screen: ' . print_r($screen, true));
+            if ( ! $screen || !in_array($screen->id, ['vipps-mobilepay_page_vipps_settings_menu', 'vipps-mobilepay_page_vipps_button_menu', 'vipps-mobilepay_page_vipps_badge_meu', 'vipps-mobilepay_page_vipps_webhook_menu']) ) return;
             remove_all_actions( 'admin_notices' );
             remove_all_actions( 'all_admin_notices' );
         }, 9999);
@@ -715,7 +716,7 @@ class Vipps {
             'language' => $language,
             'variants' => ['white' => __('White', 'woo-vipps'), 'grey' => __('Grey', 'woo-vipps'), 'filled' => __('Filled', 'woo-vipps'), 'light' => __('Light', 'woo-vipps'), 'purple' => __('Purple', 'woo-vipps')],
         ], [
-            'title' => sprintf(__('%1$s On-Site Messaging', 'woo-vipps'), self::CompanyName()),
+            'title' => __('Badges', 'woo-vipps'),
             'intro' => sprintf(__('%1$s On-Site Messaging contains <em>badges</em> in different variants that can be used to let your customers know that %1$s payment is accepted.', 'woo-vipps'), self::CompanyName()),
             'description' => __('You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block', 'woo-vipps'),
             'settings' => __('Settings', 'woo-vipps'), 'enabled' => sprintf(__('Turn on support for %1$s On-site Messaging badges', 'woo-vipps'), self::CompanyName()),
@@ -954,7 +955,7 @@ EOF;
             'context' => sanitize_title($_GET['express-context'] ?? 'global'),
             'isMobilePay' => $this->get_payment_method_name() === 'MobilePay',
         ], [
-            'title' => sprintf(__('%1$s button configuration', 'woo-vipps'), self::CompanyName()),
+            'title' => __('Buttons', 'woo-vipps'),
             'description' => sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), self::CompanyName()),
             'express' => __('Express Checkout', 'woo-vipps'), 'context' => __('Config context', 'woo-vipps'),
             'global' => __('Global', 'woo-vipps'), 'product' => __('Product', 'woo-vipps'),
@@ -1350,8 +1351,8 @@ EOF;
             add_submenu_page( 'vipps_admin_menu', __('Recurring Payments', 'woo-vipps'),   __('Recurring Payments', 'woo-vipps'),   'manage_woocommerce', 'vipps_recurring__settings_menu', array($this, 'recurring_settings_page'), 95);
         }
 
-        add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
         add_submenu_page( 'vipps_admin_menu', __('Buttons', 'woo-vipps'),   __('Buttons', 'woo-vipps'),   'manage_woocommerce', 'vipps_button_menu', array($this, 'button_menu_page'), 80);
+        add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
         add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($this, 'webhook_menu_page'), 10);
     }
 

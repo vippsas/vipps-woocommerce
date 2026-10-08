@@ -1,10 +1,20 @@
-import { ComponentProps } from 'react';
+import { ComponentProps, ReactNode } from 'react';
 import { getMetadata } from '../lib/wp-data';
 
-export function PageShell({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
-  return <div className={`vipps-settings-shell ${getMetadata('payment_method') === 'MobilePay' ? 'MobilePay' : ''}`}>
-    <header className="vipps-settings-header"><h1>{title}</h1>{description && <p>{description}</p>}</header>
-    <div className="vipps-settings-content">{children}</div>
+type PageShellProps = {
+  companyName: string;
+  subtitle: string;
+  paymentMethod: string;
+  children: ReactNode;
+};
+
+export function PageShell({ companyName, subtitle, paymentMethod, children }: PageShellProps) {
+  return <div className={`vipps-admin-shell ${paymentMethod}`}>
+    <header className="vipps-admin-header">
+      <h1>{companyName}</h1>
+      <p className="vipps-admin-subtitle">{subtitle}</p>
+    </header>
+    {children}
   </div>;
 }
 

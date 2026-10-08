@@ -25,7 +25,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
   return (
     <div>
 
-      <div className="vipps-settings-callout">
+      <div className="vipps-admin-callout">
         <h3>{fixCheckoutName(gettext("kustom_sale_1"), paymentMethod)}</h3>
         <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_2"), paymentMethod)}></UnsafeHtmlText></p>
         <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("kustom_sale_3"), paymentMethod)}></UnsafeHtmlText></p>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getPageData, gettext } from '../../lib/wp-data';
+import { getMetadata, getPageData, gettext } from '../../lib/wp-data';
 import { WPButton, WPFormField, WPLabel, WPSelect } from '../form-elements';
 import { PageShell, PostForm } from '../page-shell';
 
@@ -31,35 +31,38 @@ export function ButtonsPage() {
     ...previous, [context]: checked ? { 'use-global-config': true } : editableConfig(globalConfig),
   }));
   const previewLanguage = config.language === 'store' ? language : String(config.language ?? language);
-  return <PageShell title={gettext('title')} description={gettext('description')}>
-    <div className="vipps-settings-panel vipps-extra-page">
-      <h2>{gettext('express')}</h2>
-      <PostForm action="update_vipps_button_settings">
-        <input type="hidden" name="express-context" value={context} />
-        {Object.entries({ ...configs, [context]: configs[context] ?? (context === 'global' ? editableConfig(globalConfig) : { 'use-global-config': true }) }).flatMap(([ctx, settings]) =>
-          Object.entries(boolValue(settings['use-global-config']) ? { 'use-global-config': true } : editableConfig(settings)).map(([key, value]) => <input key={`${ctx}-${key}`} type="hidden" name={`express[configs][${ctx}][${key}]`} value={String(value)} />)
-        )}
-        <WPFormField><WPLabel htmlFor="vipps-button-context">{gettext('context')}</WPLabel>
-          <WPSelect id="vipps-button-context" value={context} onChange={event => setContext(event.target.value)}>
-            {contexts.map(value => <option key={value} value={value}>{gettext(value)}</option>)}
-          </WPSelect>
-        </WPFormField>
-        {context !== 'global' && <WPFormField className="vipps-extra-inline"><label><input type="checkbox" checked={inherited} onChange={event => toggleInheritance(event.target.checked)} /> {gettext('useGlobal')}</label></WPFormField>}
-        <div className="vipps-extra-controls" aria-disabled={inherited}>
-          <fieldset className="vipps-extra-inline">
-            {booleanKeys.map(key => <label key={key}><input disabled={inherited} type="checkbox" checked={boolValue(config[key])} onChange={event => update(key, event.target.checked)} /> {gettext(key)}</label>)}
-          </fieldset>
-          {Object.entries(choices).map(([key, values]) => <fieldset key={key} className="vipps-extra-choices">
-            <legend>{gettext(labels[key] ?? key)}</legend>
-            {values.filter(value => key !== 'language' || value !== 'fi' || isMobilePay).map(value =>
-              <label key={value}><input disabled={inherited || (key === 'language' && value === 'fi')} type="radio" name={`ui-${key}`} checked={config[key] === value} onChange={() => update(key, value)} /> {gettext(labels[value] ?? value)}</label>
-            )}
-            {key === 'language' && !isMobilePay && <p>{gettext('finnishHelp')}</p>}
-          </fieldset>)}
-        </div>
-        <div className="vipps-extra-preview"><vipps-mobilepay-button type="button" brand={brand} language={previewLanguage === 'dk' ? 'da' : previewLanguage === 'se' ? 'sv' : previewLanguage} variant={String(config.variant ?? 'primary')} rounded={String(boolValue(config.rounded))} compact={String(boolValue(config.compact))} stretched={String(boolValue(config.stretched))} verb={String(config.verb ?? 'buy')}></vipps-mobilepay-button></div>
-        <div className="vipps-mobilepay-react-save-section"><WPButton variant="primary">{gettext('update')}</WPButton></div>
-      </PostForm>
+  return <PageShell companyName={getMetadata('company_name') ?? 'Vipps MobilePay'} subtitle={gettext('title')} paymentMethod={getMetadata('payment_method') ?? ''}>
+    <div className="vipps-admin-content">
+      <div className="vipps-admin-panel">
+        <p className="vipps-admin-prose">{gettext('description')}</p>
+        <h2 className="vipps-admin-panel-title">{gettext('express')}</h2>
+        <PostForm action="update_vipps_button_settings">
+          <input type="hidden" name="express-context" value={context} />
+          {Object.entries({ ...configs, [context]: configs[context] ?? (context === 'global' ? editableConfig(globalConfig) : { 'use-global-config': true }) }).flatMap(([ctx, settings]) =>
+            Object.entries(boolValue(settings['use-global-config']) ? { 'use-global-config': true } : editableConfig(settings)).map(([key, value]) => <input key={`${ctx}-${key}`} type="hidden" name={`express[configs][${ctx}][${key}]`} value={String(value)} />)
+          )}
+          <WPFormField><WPLabel htmlFor="vipps-button-context">{gettext('context')}</WPLabel>
+            <WPSelect id="vipps-button-context" value={context} onChange={event => setContext(event.target.value)}>
+              {contexts.map(value => <option key={value} value={value}>{gettext(value)}</option>)}
+            </WPSelect>
+          </WPFormField>
+          {context !== 'global' && <WPFormField className="vipps-admin-inline"><label><input type="checkbox" checked={inherited} onChange={event => toggleInheritance(event.target.checked)} /> {gettext('useGlobal')}</label></WPFormField>}
+          <div className="vipps-admin-controls" aria-disabled={inherited}>
+            <fieldset className="vipps-admin-inline">
+              {booleanKeys.map(key => <label key={key}><input disabled={inherited} type="checkbox" checked={boolValue(config[key])} onChange={event => update(key, event.target.checked)} /> {gettext(key)}</label>)}
+            </fieldset>
+            {Object.entries(choices).map(([key, values]) => <fieldset key={key} className="vipps-admin-choices">
+              <legend>{gettext(labels[key] ?? key)}</legend>
+              {values.filter(value => key !== 'language' || value !== 'fi' || isMobilePay).map(value =>
+                <label key={value}><input disabled={inherited || (key === 'language' && value === 'fi')} type="radio" name={`ui-${key}`} checked={config[key] === value} onChange={() => update(key, value)} /> {gettext(labels[value] ?? value)}</label>
+              )}
+              {key === 'language' && !isMobilePay && <p className="vipps-admin-prose">{gettext('finnishHelp')}</p>}
+            </fieldset>)}
+          </div>
+          <div className="vipps-admin-preview"><vipps-mobilepay-button type="button" brand={brand} language={previewLanguage === 'dk' ? 'da' : previewLanguage === 'se' ? 'sv' : previewLanguage} variant={String(config.variant ?? 'primary')} rounded={String(boolValue(config.rounded))} compact={String(boolValue(config.compact))} stretched={String(boolValue(config.stretched))} verb={String(config.verb ?? 'buy')}></vipps-mobilepay-button></div>
+          <div className="vipps-mobilepay-react-save-section vipps-admin-save-section--spaced"><WPButton variant="primary">{gettext('update')}</WPButton></div>
+        </PostForm>
+      </div>
     </div>
   </PageShell>;
 }
