@@ -24,7 +24,7 @@ For support, contact the
 *Official Vipps/MobilePay payment plugin for WooCommerce.*
 <!-- END_COMMENT -->
 
-Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway and Sweden. One platform gathering more than 11 million users and more than 400,000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.
+One platform gathering more than 11 million users and more than 400,000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.
 
 This is the official Vipps/MobilePay plugin for payments and Express buttons. Increase your conversion rate by letting your customers pay with a fast, secure and convenient payment method. Vipps MobilePay allows users to make quick and easy payments using their mobile phone, without the need for entering credit card details or other sensitive information.
 
@@ -127,7 +127,7 @@ Enter your [API keys](/docs/knowledge-base/api-keys/) and configure the plugin.
 
 ### In which countries can I use Vipps MobilePay?
 
-You can get paid by users who have Vipps in Norway and Sweden, or who have MobilePay in Denmark or Finland.
+You can get paid by Vipps MobilePay users in Denmark, Finland, Greenland, Norway, and Sweden.
 
 ### How do I set the default language?
 
@@ -136,8 +136,8 @@ The plugin should use the website language. The default is always English, and i
 ### For how long is an order reserved?
 
 :::note
-Payments initiated in Finland and Denmark have only 14 days to be captured, while
-payments in Norway have 180 days.
+Payments in the Danish and Finnish markets have only 14 days to be captured, while
+payments in the Norwegian market have 180 days.
 If the payments aren't captured within this time, they will be automatically cancelled.
 
 Payments can only be captured up to 14 days (MobilePay) or 180 days (Vipps) after reservation.
