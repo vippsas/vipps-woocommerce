@@ -216,7 +216,7 @@ You can read about how *WooCommerce Subscriptions* and *WooCommerce Memberships*
 
 ### Where can I use Vipps MobilePay?
 
-Vipps MobilePay is available in Norway, Denmark and Finland. Only users who have Vipps MobilePay will be able to pay with Vipps MobilePay.
+You can get paid by Vipps MobilePay users in Denmark, Finland, Greenland, and Norway.
 
 ### How can I test that the plugin works correctly?
 
