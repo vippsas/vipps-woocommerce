@@ -155,13 +155,12 @@ class VippsAdminSettings
     }
 
     public function post_update_button_settings () {
-        $ok = wp_verify_nonce($_REQUEST['buttonnonce'],'buttonaction');
+        $ok = wp_verify_nonce($_REQUEST['buttonnonce'] ?? '', 'buttonaction');
         if (!$ok) {
-           wp_die("Wrong nonce");
+           wp_send_json_error(['msg' => __("Wrong nonce", 'woo-vipps')], 403);
         }
         if (!current_user_can('manage_woocommerce')) {
-            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
-            wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
+            wp_send_json_error(['msg' => __('You don\'t have sufficient rights', 'woo-vipps')], 403);
         }
 
         $old = get_option('vipps_button_options2', []);
@@ -180,23 +179,21 @@ class VippsAdminSettings
             }
         }
         update_option('vipps_button_options2', $new);
-        $express_context = '';
-        if ($_POST['express-context'] ?? null) {
-            $express_context = '&express-context=' . sanitize_title($_POST['express-context']);
+        $saved = get_option('vipps_button_options2', []);
+        if ($saved != $new) {
+            wp_send_json_error(['msg' => __('Could not save settings', 'woo-vipps')], 500);
         }
-        wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu$express_context"));
-        exit();
+        wp_send_json_success(['msg' => __('Settings saved', 'woo-vipps'), 'configs' => $saved['express']['configs'] ?? (object) []]);
     }
 
     public function post_update_badge_settings () {
         Vipps::set_locale_if_in_header();
-        $ok = wp_verify_nonce($_REQUEST['badgenonce'],'badgeaction');
+        $ok = wp_verify_nonce($_REQUEST['badgenonce'] ?? '', 'badgeaction');
         if (!$ok) {
-           wp_die("Wrong nonce");
+           wp_send_json_error(['msg' => __("Wrong nonce", 'woo-vipps')], 403);
         }
         if (!current_user_can('manage_woocommerce')) {
-            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
-            wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
+            wp_send_json_error(['msg' => __('You don\'t have sufficient rights', 'woo-vipps')], 403);
         }
 
         $current = get_option('vipps_badge_options');
@@ -211,55 +208,76 @@ class VippsAdminSettings
         }
 
         update_option('vipps_badge_options', $current);
-        wp_safe_redirect(admin_url("admin.php?page=vipps_badge_menu"));
-        exit();
+        $saved = get_option('vipps_badge_options', []);
+        if ($saved != $current) {
+            wp_send_json_error(['msg' => __('Could not save settings', 'woo-vipps')], 500);
+        }
+        wp_send_json_success(['msg' => __('Settings saved', 'woo-vipps'), 'options' => $saved]);
     }
 
     // To be called in admin-post.php
     public function post_vipps_delete_webhook() {
         Vipps::set_locale_if_in_header();
-        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
+        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'] ?? '', 'webhook_nonce');
         if (!$ok) {
-           wp_die("Wrong nonce");
+           wp_send_json_error(['msg' => __("Wrong nonce", 'woo-vipps')], 403);
         }
         if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('You don\'t have sufficient rights', 'woo-vipps'));
+            wp_send_json_error(['msg' => __('You don\'t have sufficient rights', 'woo-vipps')], 403);
         }
 
-        $msn = sanitize_title($_REQUEST['webhook_msn']);
-        $id = sanitize_title($_REQUEST['webhook_id']);
+        $msn = sanitize_title($_REQUEST['webhook_msn'] ?? '');
+        $id = sanitize_title($_REQUEST['webhook_id'] ?? '');
 
-        if ($msn && $id) {
-            $this->gateway()->api->delete_webhook($msn, $id);
+        if (!$msn || !$id) {
+            wp_send_json_error(['msg' => __('Missing merchant serial number or webhook ID', 'woo-vipps')], 400);
         }
-
-        wp_safe_redirect(admin_url("admin.php?page=vipps_webhook_menu"));
-        exit();
+        try {
+            $result = $this->gateway()->api->delete_webhook($msn, $id);
+        } catch (Throwable $e) {
+            wp_send_json_error(['msg' => $e->getMessage()], 502);
+        }
+        // Successful DELETE responses may have no body (null); only false means failure.
+        if ($result === false) {
+            wp_send_json_error(['msg' => __('Could not delete webhook', 'woo-vipps')], 502);
+        }
+        wp_send_json_success(['msg' => __('Webhook deleted', 'woo-vipps'), 'msn' => $msn, 'id' => $id]);
     }
 
     // To be called in admin-post.php
     public function post_vipps_add_webhook() {
         Vipps::set_locale_if_in_header();
-        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
+        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'] ?? '', 'webhook_nonce');
         if (!$ok) {
-           wp_die("Wrong nonce");
+           wp_send_json_error(['msg' => __("Wrong nonce", 'woo-vipps')], 403);
         }
         if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('You don\'t have sufficient rights', 'woo-vipps'));
+            wp_send_json_error(['msg' => __('You don\'t have sufficient rights', 'woo-vipps')], 403);
         }
 
-        $msn = sanitize_title($_REQUEST['webhook_msn']);
-        $url = sanitize_url($_REQUEST['webhook_url']);
-        $events = [];
-        foreach(explode(",", $_REQUEST['webhook_events']) as $event) {
-            $events[] = $event; 
+        $msn = sanitize_title($_REQUEST['webhook_msn'] ?? '');
+        $url = sanitize_url($_REQUEST['webhook_url'] ?? '');
+        $events = array_values(array_filter(explode(',', $_REQUEST['webhook_events'] ?? ''), 'strlen'));
+        if (empty($events) || !$msn || !$url) {
+            wp_send_json_error(['msg' => __('Missing merchant serial number, URL or events', 'woo-vipps')], 400);
         }
-        if (!empty($events) && $msn && $url) {
-            $this->gateway()->api->register_webhook($msn, $url, $events);
+        try {
+            $result = $this->gateway()->api->register_webhook($msn, $url, $events);
+        } catch (Throwable $e) {
+            wp_send_json_error(['msg' => $e->getMessage()], 502);
         }
-
-        wp_safe_redirect(admin_url("admin.php?page=vipps_webhook_menu"));
-        exit();
+        if (!is_array($result) || empty($result['id'])) {
+            wp_send_json_error(['msg' => __('Could not register webhook', 'woo-vipps')], 502);
+        }
+        $localhooks = get_option('_woo_vipps_webhooks', []);
+        wp_send_json_success([
+            'msg' => __('Webhook added', 'woo-vipps'), 'msn' => $msn,
+            'hook' => [
+                'id' => $result['id'], 'url' => $result['url'] ?? $url,
+                'events' => $result['events'] ?? $events,
+                'local' => !empty($localhooks[$msn][$result['id']]),
+            ],
+        ]);
     }
 
 

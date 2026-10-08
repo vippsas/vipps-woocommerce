@@ -871,6 +871,7 @@ EOF;
         echo '<div class="wrap vipps-admin-settings-page"><div class="wp-header-end"></div>';
         echo '<div id="vipps-mobilepay-react-ui"></div>';
         wp_enqueue_script('vipps-mobilepay-react-ui', plugins_url('admin/settings/dist/plugin.js', __FILE__), ['wp-element'], filemtime(__DIR__ . '/admin/settings/dist/plugin.js'), true);
+        $translations['request_error'] = __('Could not complete the request. Please try again.', 'woo-vipps');
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', $translations);
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactOptions', []);
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactMetadata', [

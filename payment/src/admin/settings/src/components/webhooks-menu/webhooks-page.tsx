@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useAdminPost } from "../../hooks/use-admin-post";
+import { NotificationBanner } from "../notification-banner";
 import { getMetadata, getPageData, gettext } from "../../lib/wp-data";
 import { WPButton, WPFormField, WPInput, WPLabel } from "../form-elements";
 import { PageShell, PostForm, RichText } from "../page-shell";
@@ -12,11 +14,14 @@ type Data = {
 };
 
 export function WebhooksPage() {
-  const { merchants, events, defaultEvents } = getPageData<Data>();
+  const { merchants: initialMerchants, events, defaultEvents } = getPageData<Data>();
+  const [merchants, setMerchants] = useState(initialMerchants);
+  const { submit, pending, banner, clearBanner } = useAdminPost();
   const [view, setView] = useState<Hook | null>(null);
   const [addMsn, setAddMsn] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>(defaultEvents);
   const openAdd = (msn: string) => {
+    clearBanner();
     setSelected(defaultEvents);
     setAddMsn(msn);
   };
@@ -32,6 +37,11 @@ export function WebhooksPage() {
       subtitle={gettext("title")}
       paymentMethod={getMetadata("payment_method") ?? ""}
     >
+      {banner && !addMsn && (
+        <div className="vipps-admin-notices" role="status">
+          <NotificationBanner {...banner} />
+        </div>
+      )}
       <div className="vipps-admin-content">
         <div className="vipps-admin-panel">
           <p className="vipps-admin-prose">
@@ -52,7 +62,7 @@ export function WebhooksPage() {
                 {gettext("merchant").replace("%1$s", merchant.msn)}{" "}
                 {merchant.testmode && `(${gettext("testMode")})`}
               </h2>
-              <WPButton type="button" onClick={() => openAdd(merchant.msn)}>
+              <WPButton type="button" disabled={pending !== null} onClick={() => openAdd(merchant.msn)}>
                 {gettext("addForMsn")}
               </WPButton>
             </div>
@@ -79,7 +89,12 @@ export function WebhooksPage() {
                         {hook.local ? (
                           <em>{gettext("createdHere")}</em>
                         ) : (
-                          <PostForm action="vipps_delete_webhook">
+                          <PostForm action="vipps_delete_webhook" disabled={pending !== null} onSubmit={async (event) => {
+                            event.preventDefault();
+                            const data = await submit<{ msn: string; id: string }>(event.currentTarget, `${merchant.msn}:${hook.id}`);
+                            if (data) setMerchants((current) => current.map((item) => item.msn === data.msn
+                              ? { ...item, hooks: item.hooks.filter((value) => value.id !== data.id) } : item));
+                          }}>
                             <input
                               type="hidden"
                               name="webhook_msn"
@@ -90,7 +105,7 @@ export function WebhooksPage() {
                               name="webhook_id"
                               value={hook.id}
                             />
-                            <WPButton variant="link">
+                            <WPButton variant="link" disabled={pending !== null} isLoading={pending === `${merchant.msn}:${hook.id}`}>
                               {gettext("delete")}
                             </WPButton>
                           </PostForm>
@@ -136,7 +151,7 @@ export function WebhooksPage() {
         {addMsn && (
           <div
             className="vipps-admin-modal-backdrop"
-            onClick={() => setAddMsn(null)}
+            onClick={() => { if (pending === null) setAddMsn(null); }}
           >
             <div
               className="vipps-admin-panel vipps-admin-modal"
@@ -146,7 +161,16 @@ export function WebhooksPage() {
               onClick={(event) => event.stopPropagation()}
             >
               <h2>{gettext("add")}</h2>
-              <PostForm action="vipps_add_webhook">
+              {banner && <div role="status"><NotificationBanner {...banner} /></div>}
+              <PostForm action="vipps_add_webhook" disabled={pending !== null} onSubmit={async (event) => {
+                event.preventDefault();
+                const data = await submit<{ msn: string; hook: Hook }>(event.currentTarget, 'add');
+                if (data) {
+                  setMerchants((current) => current.map((item) => item.msn === data.msn
+                    ? { ...item, hooks: [...item.hooks.filter((hook) => hook.id !== data.hook.id), data.hook] } : item));
+                  setAddMsn(null);
+                }
+              }}>
                 <input type="hidden" name="webhook_msn" value={addMsn} />
                 <input
                   type="hidden"
@@ -184,10 +208,10 @@ export function WebhooksPage() {
                   </fieldset>
                 ))}
                 <div className="vipps-admin-actions">
-                  <WPButton variant="primary" disabled={!selected.length}>
+                  <WPButton variant="primary" disabled={!selected.length} isLoading={pending === "add"}>
                     {gettext("addUrl")}
                   </WPButton>
-                  <WPButton type="button" onClick={() => setAddMsn(null)}>
+                  <WPButton type="button" onClick={() => { if (pending === null) setAddMsn(null); }}>
                     {gettext("cancel")}
                   </WPButton>
                 </div>

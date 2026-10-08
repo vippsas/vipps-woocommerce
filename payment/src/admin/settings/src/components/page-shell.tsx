@@ -18,11 +18,13 @@ export function PageShell({ companyName, subtitle, paymentMethod, children }: Pa
   </div>;
 }
 
-export function PostForm({ action, children, ...props }: ComponentProps<'form'> & { action?: string }) {
-  return <form method="post" action={getMetadata('post_url') ?? ''} {...props}>
+export function PostForm({ action, children, disabled = false, ...props }: ComponentProps<'form'> & { action?: string; disabled?: boolean }) {
+  return <form method="post" action={getMetadata('post_url') ?? ''} aria-busy={disabled} {...props}>
     <input type="hidden" name="action" value={action} />
     <input type="hidden" name={getMetadata('nonce_name') ?? ''} value={getMetadata('nonce') ?? ''} />
-    {children}
+    <fieldset disabled={disabled} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+      {children}
+    </fieldset>
   </form>;
 }
 

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useAdminPost } from "../../hooks/use-admin-post";
+import { NotificationBanner } from "../notification-banner";
 import { getMetadata, getPageData, gettext } from "../../lib/wp-data";
 import { WPButton, WPFormField, WPLabel, WPSelect } from "../form-elements";
 import { PageShell, PostForm } from "../page-shell";
@@ -51,6 +53,7 @@ export function ButtonsPage() {
     context: initialContext,
     isMobilePay,
   } = getPageData<Data>();
+  const { submit, pending, banner } = useAdminPost();
   const [configs, setConfigs] = useState<Record<string, Config>>(() => ({
     ...initial,
   }));
@@ -91,7 +94,16 @@ export function ButtonsPage() {
       subtitle={gettext("title")}
       paymentMethod={getMetadata("payment_method") ?? ""}
     >
-      <PostForm action="update_vipps_button_settings">
+      {banner && (
+        <div className="vipps-admin-notices" role="status">
+          <NotificationBanner {...banner} />
+        </div>
+      )}
+      <PostForm action="update_vipps_button_settings" disabled={pending !== null} onSubmit={async (event) => {
+        event.preventDefault();
+        const data = await submit<{ configs: Record<string, Config> }>(event.currentTarget);
+        if (data) setConfigs(data.configs);
+      }}>
         <div className="vipps-admin-layout">
           <nav className="vipps-admin-navigation" aria-label={gettext("title")}>
             <Tabs
@@ -226,7 +238,7 @@ export function ButtonsPage() {
               </div>
             </section>
             <div className="vipps-mobilepay-react-save-section">
-              <WPButton variant="primary">{gettext("update")}</WPButton>
+              <WPButton variant="primary" isLoading={pending !== null}>{gettext("update")}</WPButton>
             </div>
           </div>
         </div>

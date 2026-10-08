@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useAdminPost } from "../../hooks/use-admin-post";
+import { NotificationBanner } from "../notification-banner";
 import { getMetadata, gettext, getPageData } from "../../lib/wp-data";
 import {
   WPButton,
@@ -18,6 +20,7 @@ type BadgeData = {
 
 export function BadgesPage() {
   const { options, brand, language, variants } = getPageData<BadgeData>();
+  const { submit, pending, banner } = useAdminPost();
   const [enabled, setEnabled] = useState(!!options.badgeon);
   const [defaultAll, setDefaultAll] = useState(!!options.defaultall);
   const [variant, setVariant] = useState(options.variant ?? "");
@@ -27,6 +30,11 @@ export function BadgesPage() {
       subtitle={gettext("title")}
       paymentMethod={getMetadata("payment_method") ?? ""}
     >
+      {banner && (
+        <div className="vipps-admin-notices" role="status">
+          <NotificationBanner {...banner} />
+        </div>
+      )}
       <div className="vipps-admin-content">
         <div className="vipps-admin-panel">
           <p className="vipps-admin-prose">
@@ -34,7 +42,15 @@ export function BadgesPage() {
           </p>
           <p className="vipps-admin-prose">{gettext("description")}</p>
           <h2 className="vipps-admin-panel-title">{gettext("settings")}</h2>
-          <PostForm action="update_vipps_badge_settings">
+          <PostForm action="update_vipps_badge_settings" disabled={pending !== null} onSubmit={async (event) => {
+            event.preventDefault();
+            const data = await submit<{ options: BadgeData['options'] }>(event.currentTarget);
+            if (data) {
+              setEnabled(!!data.options.badgeon);
+              setDefaultAll(!!data.options.defaultall);
+              setVariant(data.options.variant ?? '');
+            }
+          }}>
             <input type="hidden" name="badgeon" value={enabled ? "1" : "0"} />
             <input
               type="hidden"
@@ -92,7 +108,7 @@ export function BadgesPage() {
               </WPSelect>
             </WPFormField>
             <div className="vipps-mobilepay-react-save-section vipps-admin-save-section--spaced">
-              <WPButton variant="primary">{gettext("update")}</WPButton>
+              <WPButton variant="primary" isLoading={pending !== null}>{gettext("update")}</WPButton>
             </div>
           </PostForm>
         </div>
