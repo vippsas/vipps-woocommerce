@@ -16,7 +16,10 @@ export function useAdminPost() {
     setPending(key);
     setBanner(null);
     try {
-      const response = await fetch(form.action, {
+      // The hidden input named "action" shadows the form.action property.
+      const url = form.getAttribute('action');
+      if (!url) throw new Error(gettext('request_error'));
+      const response = await fetch(url, {
         method: 'POST',
         credentials: 'same-origin',
         body: new FormData(form),
