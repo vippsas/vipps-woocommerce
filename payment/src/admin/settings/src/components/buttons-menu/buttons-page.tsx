@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { getPageData, gettext } from '../../lib/wp-data';
 import { WPButton, WPFormField, WPLabel, WPSelect } from '../form-elements';
-import { PageShell, PostForm } from './shared';
+import { PageShell, PostForm } from '../page-shell';
 
 type Config = Record<string, string | boolean>;
 type Data = { configs: Record<string, Config>; defaults: Config; brand: string; language: string; context: string; isMobilePay: boolean };

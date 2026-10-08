@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { gettext, getPageData } from '../../lib/wp-data';
 import { WPButton, WPFormField, WPLabel, WPSelect, WPSwitchToggle } from '../form-elements';
-import { PageShell, PostForm, RichText } from './shared';
+import { PageShell, PostForm, RichText } from '../page-shell';
 
 type BadgeData = { options: { badgeon?: number; defaultall?: number; variant?: string }; brand: string; language: string; variants: Record<string, string> };
 

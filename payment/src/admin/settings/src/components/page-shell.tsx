@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react';
-import { getMetadata } from '../../lib/wp-data';
+import { getMetadata } from '../lib/wp-data';
 
 export function PageShell({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return <div className={`vipps-settings-shell ${getMetadata('payment_method') === 'MobilePay' ? 'MobilePay' : ''}`}>

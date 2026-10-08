@@ -1,10 +1,10 @@
 import './App.css';
-import { AdminSettings } from './components/admin-settings/admin-settings';
+import { AdminSettings } from './components/settings-menu/admin-settings';
 import { getMetadata } from './lib/wp-data';
 import { WPOptionsProvider } from './wp-options-provider';
-import { ButtonsPage } from './components/extra-pages/buttons-page';
-import { BadgesPage } from './components/extra-pages/badges-page';
-import { WebhooksPage } from './components/extra-pages/webhooks-page';
+import { ButtonsPage } from './components/buttons-menu/buttons-page';
+import { BadgesPage } from './components/badges-menu/badges-page';
+import { WebhooksPage } from './components/webhooks-menu/webhooks-page';
 
 /**
  * Renders the main application component.

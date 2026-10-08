@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { getPageData, gettext } from '../../lib/wp-data';
 import { WPButton, WPFormField, WPInput, WPLabel } from '../form-elements';
-import { PageShell, PostForm, RichText } from './shared';
+import { PageShell, PostForm, RichText } from '../page-shell';
 
 type Hook = { id: string; url: string; events: string[]; local: boolean };
 type Merchant = { msn: string; testmode: boolean; hooks: Hook[] };
