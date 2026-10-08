@@ -403,10 +403,10 @@ class Vipps {
         add_action('wp_ajax_vipps_update_admin_settings', array($adminSettings, 'ajax_vipps_update_admin_settings'));
 
         // POST actions for the backend
-        add_action('admin_post_update_vipps_badge_settings', array($this, 'update_badge_settings'));
-        add_action('admin_post_update_vipps_button_settings', array($this, 'update_button_settings'));
-        add_action('admin_post_vipps_delete_webhook', array($this, 'vipps_delete_webhook'));
-        add_action('admin_post_vipps_add_webhook', array($this, 'vipps_add_webhook'));
+        add_action('admin_post_update_vipps_badge_settings', array($adminSettings, 'post_update_badge_settings'));
+        add_action('admin_post_update_vipps_button_settings', array($adminSettings, 'post_update_button_settings'));
+        add_action('admin_post_vipps_delete_webhook', array($adminSettings, 'post_vipps_delete_webhook'));
+        add_action('admin_post_vipps_add_webhook', array($adminSettings, 'post_vipps_add_webhook'));
 
         // Link to the settings page from the plugin list
         add_filter( 'plugin_action_links_'.plugin_basename(WC_VIPPS_MAIN_FILE ), array($this, 'plugin_action_links'));
@@ -654,53 +654,6 @@ class Vipps {
         ], 'webhook_nonce', 'webhook_nonce');
     }
 
-    // To be called in admin-post.php
-    public function vipps_delete_webhook() {
-        static::set_locale_if_in_header();
-        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
-        if (!$ok) {
-           wp_die("Wrong nonce");
-        }
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('You don\'t have sufficient rights', 'woo-vipps'));
-        }
-
-        $msn = sanitize_title($_REQUEST['webhook_msn']);
-        $id = sanitize_title($_REQUEST['webhook_id']);
-
-        if ($msn && $id) {
-            $this->gateway()->api->delete_webhook($msn, $id);
-        }
-
-        wp_safe_redirect(admin_url("admin.php?page=vipps_webhook_menu"));
-        exit();
-    }
-
-    // To be called in admin-post.php
-    public function vipps_add_webhook() {
-        static::set_locale_if_in_header();
-        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
-        if (!$ok) {
-           wp_die("Wrong nonce");
-        }
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('You don\'t have sufficient rights', 'woo-vipps'));
-        }
-
-        $msn = sanitize_title($_REQUEST['webhook_msn']);
-        $url = sanitize_url($_REQUEST['webhook_url']);
-        $events = [];
-        foreach(explode(",", $_REQUEST['webhook_events']) as $event) {
-            $events[] = $event; 
-        }
-        if (!empty($events) && $msn && $url) {
-            $this->gateway()->api->register_webhook($msn, $url, $events);
-        }
-
-        wp_safe_redirect(admin_url("admin.php?page=vipps_webhook_menu"));
-        exit();
-    }
-
     public function badge_menu_page () {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(__("You don't have sufficient rights to access this page", 'woo-vipps'));
@@ -730,67 +683,6 @@ class Vipps {
             'shortcodeDocs' => __('Please refer to the documentation for the meaning of the parameters.', 'woo-vipps'),
             'brandAutomatic' => __('The brand will be automatically applied.', 'woo-vipps'),
         ], 'badgeaction', 'badgenonce');
-    }
-
-    public function update_button_settings () {
-        $ok = wp_verify_nonce($_REQUEST['buttonnonce'],'buttonaction');
-        if (!$ok) {
-           wp_die("Wrong nonce");
-        }
-        if (!current_user_can('manage_woocommerce')) {
-            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
-            wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
-        }
-
-        $old = get_option('vipps_button_options2', []);
-        $new = $old;
-        if (isset($_POST['express']['configs'])) {
-            foreach ($_POST['express']['configs'] as $ctx => $config) {
-                $sanitized_ctx = sanitize_title($ctx);
-                $sanitized_config = map_deep($config, 'sanitize_title');
-
-                // If nonglobal context that uses global config, just wipe the rest of the stored config. LP 2026-06-25
-                if ("global" !== $sanitized_ctx && ($sanitized_config['use-global-config'] ?? false)) {
-                    $new['express']['configs'][$sanitized_ctx] = ['use-global-config' => true];
-                } else {
-                    $new['express']['configs'][$sanitized_ctx] = $sanitized_config;
-                }
-            }
-        }
-        update_option('vipps_button_options2', $new);
-        $express_context = '';
-        if ($_POST['express-context'] ?? null) {
-            $express_context = '&express-context=' . sanitize_title($_POST['express-context']);
-        }
-        wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu$express_context"));
-        exit();
-    }
-
-    public function update_badge_settings () {
-        static::set_locale_if_in_header();
-        $ok = wp_verify_nonce($_REQUEST['badgenonce'],'badgeaction');
-        if (!$ok) {
-           wp_die("Wrong nonce");
-        }
-        if (!current_user_can('manage_woocommerce')) {
-            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
-            wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
-        }
-
-        $current = get_option('vipps_badge_options');
-        if (isset($_POST['badgeon'])) {
-            $current['badgeon'] = intval($_POST['badgeon']);
-        }
-        if (isset($_POST['defaultall'])) {
-            $current['defaultall'] = intval($_POST['defaultall']);
-        }
-        if (isset($_POST['variant'])) {
-            $current['variant'] = sanitize_title($_POST['variant']);
-        }
-
-        update_option('vipps_badge_options', $current);
-        wp_safe_redirect(admin_url("admin.php?page=vipps_badge_menu"));
-        exit();
     }
 
     public function vipps_mobilepay_badge_shortcode($atts) {
