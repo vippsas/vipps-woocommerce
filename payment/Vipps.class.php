@@ -5220,8 +5220,12 @@ else:
 
         // Install the plugin. LP 2026-10-09
         $url = 'https://downloads.wordpress.org/plugin/login-with-vipps.latest-stable.zip';
-        $upgrader = new Plugin_Upgrader(new Automatic_Upgrader_Skin());
-        $result = $upgrader->install($url);
+        try {
+            $upgrader = new Plugin_Upgrader(new Automatic_Upgrader_Skin());
+            $result = $upgrader->install($url);
+        } catch (Exception $e) {
+            wp_die($e->getMessage());
+        }
 
         if (is_wp_error($result)) {
             wp_die(esc_html($result->get_error_message()));
