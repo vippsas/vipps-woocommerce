@@ -582,13 +582,23 @@ class VippsAdminSettings
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="vipps_activate_login_plugin">';
             wp_nonce_field('vipps_activate_login_plugin');
-            submit_button(sprintf(__('Activate %s', 'woo-vipps'), Vipps::LoginName()), 'primary', 'vipps_activate_login_plugin');
+            submit_button(sprintf(__('Activate %s', 'woo-vipps'), Vipps::LoginName()),
+                    'primary',
+                    'vipps_activate_login_plugin',
+                    false,
+                    ['id' => 'vipps-activate-login-plugin']
+            );
             echo '</form>';
         } else { // not installed at all
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="vipps_install_login_plugin">';
             wp_nonce_field('vipps_install_login_plugin');
-            submit_button(sprintf(__('Install %s', 'woo-vipps'), Vipps::LoginName()), 'primary', 'vipps_install_login_plugin');
+            submit_button(sprintf(__('Install %s', 'woo-vipps'), Vipps::LoginName()),
+                    'primary',
+                    'vipps_install_login_plugin',
+                    false,
+                    ['id' => 'vipps-install-login-plugin']
+            );
             echo '</form>';
         }
         echo '</div>';

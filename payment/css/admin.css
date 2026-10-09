@@ -249,9 +249,12 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
 .vipps-login-plugin-container * {
     font-size: 1rem;
 }
-.vipps-login-plugin-container button, .vipps-login-plugin-container input[type="button"], .vipps-login-plugin-container input[type="submit"] {
-    background: var(--vipps-color-primary);
+.vipps-login-plugin-cta {
+    margin-bottom: 0;
 }
 .vipps-login-plugin-container a {
     color: var(--vipps-color-primary);
+}
+.vipps-login-plugin-container .button {
+    background: var(--vipps-color-primary);
 }
