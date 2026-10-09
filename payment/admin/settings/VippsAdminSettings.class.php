@@ -341,7 +341,7 @@ class VippsAdminSettings
             'view' => __('View', 'woo-vipps'), 'delete' => __('Delete', 'woo-vipps'),
             'createdHere' => __('Created for this site', 'woo-vipps'), 'add' => __('Add a webhook', 'woo-vipps'),
             'addUrl' => __('Add this URL as a webhook', 'woo-vipps'), 'cancel' => __('No, forget it', 'woo-vipps'),
-            'ok' => __('OK', 'woo-vipps'),
+            'ok' => __('OK', 'woo-vipps'), 'delete_confirm' => __('Delete webhook?', 'woo-vipps'),
         ], 'webhook_nonce', 'webhook_nonce');
     }
 

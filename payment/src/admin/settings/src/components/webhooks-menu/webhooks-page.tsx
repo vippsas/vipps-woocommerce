@@ -91,6 +91,7 @@ export function WebhooksPage() {
                         ) : (
                           <PostForm action="vipps_delete_webhook" disabled={pending !== null} onSubmit={async (event) => {
                             event.preventDefault();
+                            if (!confirm(gettext("delete_confirm"))) return;
                             const data = await submit<{ msn: string; id: string }>(event.currentTarget, `${merchant.msn}:${hook.id}`);
                             if (data) setMerchants((current) => current.map((item) => item.msn === data.msn
                               ? { ...item, hooks: item.hooks.filter((value) => value.id !== data.id) } : item));
