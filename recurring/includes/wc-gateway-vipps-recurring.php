@@ -2133,7 +2133,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 		}
 
-		if ( $this->get_option( 'test_mode' ) === "yes" || WC_VIPPS_RECURRING_TEST_MODE ) {
+                // IOK 2026-10-09 since the new settings screen is active, we'll always show the test environment section -
+                // it now occurs in the "API keys" section so there's plenty room.
+		if (true ||  $this->get_option( 'test_mode' ) === "yes" || WC_VIPPS_RECURRING_TEST_MODE ) {
 			$this->form_fields['title_test_api'] = [
 				'type'  => 'title',
 				'title' => __( 'Test API settings', 'woo-vipps' ),
