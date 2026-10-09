@@ -213,6 +213,11 @@ class WC_Vipps_Recurring {
 	 */
 	public function admin_init() {
 		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
+		// The Recurring settings app owns its AJAX save action and its screen assets.
+		require_once dirname( __DIR__ ) . '/admin/settings/VippsRecurringAdminSettings.class.php';
+		$settings = VippsRecurringAdminSettings::instance();
+		$settings->register();
+		add_action( 'admin_enqueue_scripts', [ $settings, 'enqueue' ] );
 
 		add_action( 'admin_head', [ $this, 'admin_head' ] );
 
@@ -274,6 +279,12 @@ class WC_Vipps_Recurring {
 		require_once( "wc-gateway-vipps-recurring.php" );
 
 		return WC_Gateway_Vipps_Recurring::get_instance();
+	}
+
+	/** Render the existing Vipps MobilePay Recurring submenu using its own controller. */
+	public function render_settings_page(): void {
+		require_once dirname( __DIR__ ) . '/admin/settings/VippsRecurringAdminSettings.class.php';
+		VippsRecurringAdminSettings::instance()->render();
 	}
 
 	/**
