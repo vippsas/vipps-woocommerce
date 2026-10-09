@@ -407,6 +407,8 @@ class Vipps {
         add_action('admin_post_update_vipps_button_settings', array($adminSettings, 'post_update_button_settings'));
         add_action('admin_post_vipps_delete_webhook', array($adminSettings, 'post_vipps_delete_webhook'));
         add_action('admin_post_vipps_add_webhook', array($adminSettings, 'post_vipps_add_webhook'));
+        add_action('admin_post_vipps_activate_login_plugin', array($this, 'post_vipps_activate_login_plugin'));
+        add_action('admin_post_vipps_install_login_plugin', array($this, 'post_vipps_install_login_plugin'));
 
         // Link to the settings page from the plugin list
         add_filter( 'plugin_action_links_'.plugin_basename(WC_VIPPS_MAIN_FILE ), array($this, 'plugin_action_links'));
@@ -1092,15 +1094,21 @@ EOF;
 
         add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $logo, 58);
 
-        add_submenu_page( 'vipps_admin_menu', __('Settings', 'woo-vipps'),   __('Settings', 'woo-vipps'),   'manage_woocommerce', 'vipps_settings_menu', array($adminSettings, 'init_admin_settings_page_react_ui'), 90);
+        add_submenu_page( 'vipps_admin_menu', __('Settings', 'woo-vipps'),   __('Settings', 'woo-vipps'),   'manage_woocommerce', 'vipps_settings_menu', array($adminSettings, 'init_admin_settings_page_react_ui'), 1);
 
         if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions_Plugin')) {
-            add_submenu_page( 'vipps_admin_menu', __('Recurring Payments', 'woo-vipps'),   __('Recurring Payments', 'woo-vipps'),   'manage_woocommerce', 'vipps_recurring__settings_menu', array($this, 'recurring_settings_page'), 95);
+            add_submenu_page( 'vipps_admin_menu', __('Recurring Payments', 'woo-vipps'),   __('Recurring Payments', 'woo-vipps'),   'manage_woocommerce', 'vipps_recurring__settings_menu', array($this, 'recurring_settings_page'), 15);
         }
 
-        add_submenu_page( 'vipps_admin_menu', __('Buttons', 'woo-vipps'),   __('Buttons', 'woo-vipps'),   'manage_woocommerce', 'vipps_button_menu', array($adminSettings, 'button_menu_page'), 80);
-        add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($adminSettings, 'badge_menu_page'), 90);
-        add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($adminSettings, 'webhook_menu_page'), 10);
+        add_submenu_page( 'vipps_admin_menu', __('Buttons', 'woo-vipps'),   __('Buttons', 'woo-vipps'),   'manage_woocommerce', 'vipps_button_menu', array($adminSettings, 'button_menu_page'), 3);
+        add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($adminSettings, 'badge_menu_page'), 4);
+        add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($adminSettings, 'webhook_menu_page'), 5);
+
+        // If login is not active, add the login submenu page with a "activate/download Login with vipps" button. LP 2026-10-09
+        if (!is_plugin_active('login-with-vipps/login-with-vipps.php')) {
+            add_submenu_page( 'vipps_admin_menu', __('Login', 'woo-vipps'),   __('Login', 'woo-vipps'),   'manage_woocommerce', 'vipps_login_options', array($adminSettings, 'login_plugin_install_menu'), 2);
+        }
+
     }
 
     // Just a redirect to the recurring payment settings for the time being. IOK 2025-01-08
@@ -5178,6 +5186,59 @@ else:
                 'readonly'    => true,
             ),
         );
+    }
+
+    // Activates login with vipps. LP 2026-10-09
+    public function post_vipps_activate_login_plugin() {
+        if (!current_user_can('activate_plugins')) {
+            wp_die('Insufficient permissions');
+        }
+
+        check_admin_referer('vipps_activate_login_plugin');
+
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        $result = activate_plugin('login-with-vipps/login-with-vipps.php');
+        if (is_wp_error($result)) {
+            wp_die(esc_html($result->get_error_message()));
+        }
+
+        // return to the login submenu for seamlessness. LP 2026-10-09
+        wp_safe_redirect(admin_url('admin.php?page=vipps_login_options'));
+        exit;
+    }
+
+    // Installs and activates Login with Vipps. LP 2026-10-09
+    public function post_vipps_install_login_plugin() {
+        if (!current_user_can('install_plugins') || !current_user_can('activate_plugins')) {
+            wp_die('Insufficient permissions');
+        }
+        check_admin_referer('vipps_install_login_plugin');
+
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+        require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+
+        // Install the plugin. LP 2026-10-09
+        $url = 'https://downloads.wordpress.org/plugin/login-with-vipps.latest-stable.zip';
+        $upgrader = new Plugin_Upgrader(new Automatic_Upgrader_Skin());
+        $result = $upgrader->install($url);
+
+        if (is_wp_error($result)) {
+            wp_die(esc_html($result->get_error_message()));
+        }
+        if (!$result) {
+            wp_die(__('Plugin installation failed.'), 'woo-vipps');
+        }
+
+        // Activate after installation. LP 2026-10-09
+        $result = activate_plugin('login-with-vipps/login-with-vipps.php');
+        if (is_wp_error($result)) {
+            wp_die(esc_html($result->get_error_message()));
+        }
+
+        // Return to the same submenu page. LP 2026-10-09
+        wp_safe_redirect(admin_url('admin.php?page=vipps_login_options'));
+        exit;
     }
 
     // Inits option 'vipps_button_options' and handles migration from older versions. LP 2026-06-26

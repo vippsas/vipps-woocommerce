@@ -280,7 +280,6 @@ class VippsAdminSettings
         ]);
     }
 
-
     public function webhook_menu_page () {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(__("You don't have sufficient rights to access this page", 'woo-vipps'));
@@ -568,6 +567,31 @@ class VippsAdminSettings
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactMetadata', $metadata);
 
         echo "</div>";
+    }
+
+    // Submenu page with button to install/activate (if installed) login with vipps. LP 2026-10-09
+    public function login_plugin_install_menu() {
+        $plugin = 'login-with-vipps/login-with-vipps.php';
+        if (is_plugin_active($plugin)) {
+            return;
+        }
+
+        $installed = file_exists(WP_PLUGIN_DIR . '/' . $plugin);
+        if ($installed) { // inactive
+            echo '<p>' . sprintf(esc_html__('You have %s already installed, click below to activate it!', 'woo-vipps'), Vipps::LoginName()) . '</p>';
+            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+            echo '<input type="hidden" name="action" value="vipps_activate_login_plugin">';
+            wp_nonce_field('vipps_activate_login_plugin');
+            submit_button(sprintf(__('Activate %s', 'woo-vipps'), Vipps::LoginName()), 'primary', 'vipps_activate_login_plugin');
+            echo '</form>';
+        } else { // not installed at all
+            echo '<p>' . sprintf( esc_html__('Click below to install and activate %s!', 'woo-vipps'), Vipps::LoginName()) . '</p>';
+            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+            echo '<input type="hidden" name="action" value="vipps_install_login_plugin">';
+            wp_nonce_field('vipps_install_login_plugin');
+            submit_button(sprintf(__('Install %s', 'woo-vipps'), Vipps::LoginName()), 'primary', 'vipps_install_login_plugin');
+            echo '</form>';
+        }
     }
 }
 ?>
