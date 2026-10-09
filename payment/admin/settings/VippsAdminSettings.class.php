@@ -366,13 +366,6 @@ class VippsAdminSettings
             'defaultAll' => __('Add badge to all products by default', 'woo-vipps'),
             'defaultAllHelp' => sprintf(__("If selected, all products will get a badge, but you can override this on the %1\$s tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page", 'woo-vipps'), Vipps::CompanyName()),
             'variant' => __('Variant', 'woo-vipps'), 'chooseVariant' => __('Choose color variant:', 'woo-vipps'),
-            'block' => __('The Gutenberg Block', 'woo-vipps'),
-            'blockHelp' => sprintf(__('If you use Gutenberg, you should be able to add a %1$s Badge block wherever you need it. It is called %1$s On-Site Messaging Badge Block.', 'woo-vipps'), Vipps::CompanyName()),
-            'shortcodes' => __('Shortcodes', 'woo-vipps'),
-            'shortcodeHelp' => sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), 'https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/on-site-messaging/'),
-            'shortcodeIntro' => __('The shortcode looks like this:', 'woo-vipps'),
-            'shortcodeDocs' => __('Please refer to the documentation for the meaning of the parameters.', 'woo-vipps'),
-            'brandAutomatic' => __('The brand will be automatically applied.', 'woo-vipps'),
         ], 'badgeaction', 'badgenonce');
     }
 

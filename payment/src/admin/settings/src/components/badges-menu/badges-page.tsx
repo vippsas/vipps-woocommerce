@@ -112,22 +112,6 @@ export function BadgesPage() {
             </div>
           </PostForm>
         </div>
-        <div className="vipps-admin-panel">
-          <h2 className="vipps-admin-panel-title">{gettext("block")}</h2>
-          <p className="vipps-admin-prose">{gettext("blockHelp")}</p>
-          <h2 className="vipps-admin-panel-title">{gettext("shortcodes")}</h2>
-          <p className="vipps-admin-prose">
-            <RichText html={gettext("shortcodeHelp")} />
-          </p>
-          <p className="vipps-admin-prose">{gettext("shortcodeIntro")}</p>
-          <pre>
-            [vipps-mobilepay-badge variant={"{white|filled|light|grey|purple}"}
-            <br /> language={"{en|no|fi|da|sv}"} ]
-          </pre>
-          <p className="vipps-admin-prose">
-            {gettext("shortcodeDocs")} {gettext("brandAutomatic")}
-          </p>
-        </div>
       </div>
     </PageShell>
   );
