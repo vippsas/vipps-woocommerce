@@ -1111,14 +1111,14 @@ EOF;
 
     }
 
-    // Just a redirect to the recurring payment settings for the time being. IOK 2025-01-08
+    // The Recurring plugin owns the settings screen and its save endpoint. IOK 2026-10-02
     public function recurring_settings_page () {
         if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions_Plugin')) {
-            wp_safe_redirect(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring'), 302);
+            WC_Vipps_Recurring::get_instance()->render_settings_page();
         } else {
             wp_safe_redirect(admin_url('/admin.php?page=vipps_admin_menu'), 302);
+            exit();
         }
-        exit();
     }
 
     public function add_meta_boxes () {
