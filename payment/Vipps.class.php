@@ -1106,7 +1106,7 @@ EOF;
 
         // If login is not active, add the login submenu page with a "activate/download Login with vipps" button. LP 2026-10-09
         if (!is_plugin_active('login-with-vipps/login-with-vipps.php')) {
-            add_submenu_page( 'vipps_admin_menu', __('Login', 'woo-vipps'),   __('Login', 'woo-vipps'),   'manage_woocommerce', 'vipps_login_options', array($adminSettings, 'login_plugin_install_menu'), 2);
+            add_submenu_page( 'vipps_admin_menu', Vipps::LoginName(), Vipps::LoginName(), 'manage_woocommerce', 'vipps_login_options', array($adminSettings, 'login_plugin_install_menu'), 2);
         }
 
     }

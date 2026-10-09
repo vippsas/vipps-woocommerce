@@ -1,3 +1,8 @@
+:root {
+  --vipps-color-primary: #FF5B24;
+  --vipps-color-secondary: #562C83;
+}
+
 table.webhook-table tr.local {
     font-weight: bold;
 }
@@ -71,7 +76,7 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     height: 8rem;
 }
 .vipps-admin-page-header h1 {
-    color: #fe5b24;;
+    color: #fe5b24;
     font-family: "Vipps Display", Roboto, Helvetica, Arial, sans-serif;
 }
 .vipps-admin-page-header {
@@ -236,4 +241,17 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     gap: 1rem;
     flex-wrap: wrap;
     margin-bottom: 1rem;
+}
+
+.vipps-login-plugin-container {
+    font-family: "Vipps Text", Roboto, Helvetica, Arial, sans-serif;
+}
+.vipps-login-plugin-container * {
+    font-size: 1rem;
+}
+.vipps-login-plugin-container button {
+    background: var(--vipps-color-primary);
+}
+.vipps-login-plugin-container a {
+    color: var(--vipps-color-primary);
 }
