@@ -3473,6 +3473,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     /** Runs in action scheduler: sync woo status from Vipps callback data. Handle shipping etc. for Express. LP 2026-03-31 */
     public function action_process_callback($order_id, $is_checkout, $is_webhook) {
+        /* translators: order id */
+        $this->log(sprintf(__('Callback process action running for order %1$s.', 'woo-vipps'), $order_id));
+
         $order = wc_get_order($order_id);
         if (!is_a($order, 'WC_Order')) {
             /* translators: order id */
@@ -3485,12 +3488,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Actually, we are ok with this order, abort the callback handler. IOK 2018-05-30
             $order->delete_meta_data('_vipps_callback_data');
             clean_post_cache($order->get_id());
+            /* translators: order id */
+            $this->log(sprintf(__('Callback process action aborted since %1$s is not pending.','woo-vipps'), $order_id), 'info');
             return false;
         }
         $data = $order->get_meta('_vipps_callback_data');
 
-        /* translators: order id */
-        $this->log(sprintf(__('Callback process action running for order %1$s.', 'woo-vipps'), $order_id));
 
         // The payment details field is passed in Checkout, not in Express, but none of them are complete, so we fill out the values 
         // depending on which one we are IOK 2025-08-13
