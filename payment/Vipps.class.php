@@ -5584,6 +5584,15 @@ else:
 
     // Called in template_redirect before we get to the wait-for-payment page IOK 2026-09-21
     private function handle_payment_poll_and_redirect () {
+
+        // Because the new SDK still uses the old payment landing page in an iframe, we may get an extra return here. We should
+        // ignore that, as those iframes are going to be gone. IOK 2026-10-12
+        $is_iframe = ($_SERVER['HTTP_SEC_FETCH_DEST'] ?? '') == 'iframe';
+        if ($is_iframe) {
+            print "Ok";
+            exit();
+        }
+
         $orderid = WC()->session->get('_vipps_pending_order');
 
         $order = null;
