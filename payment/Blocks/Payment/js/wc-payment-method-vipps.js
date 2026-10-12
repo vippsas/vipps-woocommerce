@@ -320,22 +320,27 @@ function createVippsCheckoutController(setBusy) {
 
                                 return paymentUrl;
                         })
-                        .on('success', (close, redirectUrl) => {
+                        .on('success', (_close, redirectUrl) => {
                                 clear();
-                                close();
+                                if (redirectUrl) {
+                                        window.showVippsSuccessRedirectOverlay('checkout-block-redirect');
+                                }
 
                                 if (redirectUrl) {
-                                        window.location.assign(redirectUrl);
+                                        const target = new URL(redirectUrl, window.location.href);
+                                        target.searchParams.set('pw', '1');
+                                        window.location.assign(target.href);
                                 } else {
                                         checkoutHandoff.clear();
                                 }
                         })
-                        .on('cancel', (close, redirectUrl) => {
+                        .on('cancel', (_close, redirectUrl) => {
                                 clear();
-                                close();
 
                                 if (redirectUrl) {
-                                        window.location.assign(redirectUrl);
+                                        const target = new URL(redirectUrl, window.location.href);
+                                        target.searchParams.set('pw', '1');
+                                        window.location.assign(target.href);
                                 } else {
                                         checkoutHandoff.clear();
                                 }

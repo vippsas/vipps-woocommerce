@@ -5587,9 +5587,12 @@ else:
 
         // Because the new SDK still uses the old payment landing page in an iframe, we may get an extra return here. We should
         // ignore that, as those iframes are going to be gone. IOK 2026-10-12
+        // Unless this *site* is in an iframe, in which case, go head. The "pw" argument stands for "parent window", it
+        // is added in our successhandlers, only.
         $is_iframe = ($_SERVER['HTTP_SEC_FETCH_DEST'] ?? '') == 'iframe';
-        if ($is_iframe) {
-            print "Ok";
+        $parentframe = $_GET['pw'] ?? 0;
+        if ($is_iframe  && !$parentframe) {
+            print "ok";
             exit();
         }
 
