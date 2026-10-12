@@ -216,10 +216,21 @@ jQuery(($) => {
                 current.trigger = window.vipps.trigger(() => requestPayment(current))
                     .on('success', (close, url) => {
                         current.phase = 'leaving';
-                        navigate(url || current.paymentUrl, Boolean(url));
+                        if (url) {
+                            url = new URL(url, window.location.href);
+                            url.searchParams.set('pw', '1'); // Parent windows' redirect
+                        }
+                        navigate(url?.href || current.paymentUrl, Boolean(url));
                         close();
                     })
-                    .on('cancel', (close, url) => { close(); navigate(url || window.location.href); })
+                    .on('cancel', (close, url) => {
+                        close();
+                        if (url) {
+                            url = new URL(url, window.location.href);
+                            url.searchParams.set('pw', '1'); // Parent windows' redirect
+                        }
+                        navigate(url?.href || window.location.href);
+                    })
                     .on('close', () => {
                         if (attempt !== current) return;
                         if (current.phase === 'leaving') return;
@@ -529,8 +540,20 @@ jQuery(($) => {
             window.setVippsPaymentBusy(true, owner);
             window.ensureVippsWidgetHostStarted();
             attempt.trigger = window.vipps.trigger(() => createSession(attempt))
-                .on('success', (close, url) => finishWidget(attempt, close, url, true))
-                .on('cancel', (close, url) => finishWidget(attempt, close, url))
+                .on('success', (close, url) => {
+                    if (url) {
+                        url = new URL(url, window.location.href);
+                        url.searchParams.set('pw', '1'); // Parent windows redirect
+                    }
+                    finishWidget(attempt, close, url?.href, true);
+                })
+                .on('cancel', (close, url) => {
+                    if (url) {
+                        url = new URL(url, window.location.href);
+                        url.searchParams.set('pw', '1'); // Parent windows redirect
+                    }
+                    finishWidget(attempt, close, url?.href);
+                })
                 .on('close', () => finishWidget(attempt))
                 .on('error', () => sdkError(attempt));
             Promise.resolve(attempt.trigger.open()).catch(() => sdkError(attempt));
