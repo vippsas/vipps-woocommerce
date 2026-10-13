@@ -29,6 +29,7 @@ if ( ! function_exists( 'array_key_last' ) ) {
 require_once __DIR__ . '/includes/wc-vipps-recurring-helper.php';
 require_once __DIR__ . '/includes/wc-vipps-recurring-logger.php';
 require_once __DIR__ . '/includes/wc-vipps-recurring-admin-notices.php';
+require_once __DIR__ . '/includes/wc-vipps-recurring-purchase.php';
 require_once __DIR__ . '/includes/wc-vipps-recurring.php';
 
 /*
