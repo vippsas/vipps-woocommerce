@@ -2408,6 +2408,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         /* Now read the payment details and update the order with the relevant values, finding the new Vipps status IOK 2021-01-20 */
         $paymentdetails = array();
+
+        if (!static::lockOrder($order)) {
+           $msg = sprintf(__("Order %d is locked when checking order status at %s - the return url or template_redirect may be called repeatedly. This is likely an error", 'woo-vipps'), $orderid, Vipps::CompanyName());
+           $this->log($msg);
+           return $oldstatus;
+        }
+
         try {
             $paymentdetails = $this->get_payment_details($order);
             $newvippsstatus = $paymentdetails['status'];
@@ -2530,6 +2537,43 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         clean_post_cache($order->get_id());
         $newstatus = $order->get_status();
         return $newstatus;
+    }
+
+    // Unfortunately, we cannot do any form of portable locking. The new setup should eliminate most race conditions, but in poll_and_check_order_status we do
+    // side-effect the order object, so we want to make as sure as possible that we don't poll twice at the same time (two tabs open, or something). This actually
+    // happened with the new SDK system, because the iframe'd shopping widget still redirected to the store before being closed - before the user in the parent window
+    // was redirected, sometimes. This caused duplicate emails etc. We will now consider this to be a bug so that we'll log it as such . If it should trigger, the customer
+    // will be sent to a waiting page, which should resolve the issue pretty quick. IOK 2026-10-13
+    // Returns true if lock succeeds, or false.
+    // The "lock" is actually a lease, implemented with a 30 second transient. Of course, if two polls arrive *exactly* at the same time, this will still fail.
+    // This should mostly be called in poll_and_check_order_status.
+    public static function lockOrder($order) {
+        if (has_filter('woo_vipps_lock_order')) {
+            $ok = apply_filters('woo_vipps_lock_order', $order);
+            if (!$ok) return false;
+        } else {
+            $orderid = $order->get_id();
+            if(get_transient('order_lock_'.$orderid)) {
+                return false;
+            }
+            $lockKey = uniqid();
+            set_transient('order_lock_' . $orderid, $lockKey, 30);
+        }
+        add_action('shutdown', function () use ($order) { WC_Gateway_Vipps::unlockOrder($order); });
+        return true;
+    }
+    public static function isLocked ($order) {
+        $orderid = $order->get_id();
+        $locked = get_transient('order_lock_'.$orderid);
+        return apply_filters('woo_vipps_order_locked', $locked, $order);
+    }
+    public static function unlockOrder($order) {
+        if (has_action('woo_vipps_unlock_order')) {
+            do_action('woo_vipps_unlock_order', $order); 
+        } else {
+            $orderid = $order->get_id();
+            delete_transient('order_lock_'.$orderid);
+        }
     }
 
     // IOK 2020-01-20 Previously was just a debugging tool, then was used to update postmeta values. Now is used as the main source of info
