@@ -1,5 +1,5 @@
 
-(function () { 
+window.registerVippsWidgetPaymentMethod = function (settings, method = 'vipps', filters = {}) {
 
 // Imports
 const { __ } = wp.i18n;
@@ -13,11 +13,13 @@ const { createElement, useEffect, useRef, useState } = wp.element;
 //( 'hookName', content, arg1, arg2, ... )
 
 // Data
-const settings = getSetting('vipps_data', {});
+const expressMethod = method === 'vipps' ? 'vippsexpress' : `${method}_express`;
+const filterName = (name) => filters[name] || name;
 const defaultLabel = VippsLocale['Vipps'];
 const label = decodeEntities(settings.title) || defaultLabel;
-const iconsrc = settings.iconsrc;
-const CHECKOUT_HANDOFF_STORAGE_KEY = 'vippsCheckoutPaymentHandoff';
+const iconsrc = settings.iconsrc || settings.logo;
+const CHECKOUT_HANDOFF_STORAGE_KEY = `${method}CheckoutPaymentHandoff`;
+
 let vippsCheckoutController = null;
 let setVippsCheckoutBusy = () => {};
 
@@ -490,7 +492,7 @@ function getVippsCheckoutController(setBusy) {
                 vippsCheckoutController = createVippsCheckoutController((busy) => {
                         // Use the same overlay as express checkout while the Store API
                         // creates the order. resolve/reject/clear release it for the SDK UI.
-                        window.setVippsPaymentBusy(busy, 'checkout-block');
+                        window.setVippsPaymentBusy(busy, `${method}-checkout-block`);
                         setVippsCheckoutBusy(busy);
                 });
         }
@@ -523,7 +525,7 @@ const Content = (props) => {
 
                         if (
                                 propsRef.current.activePaymentMethod &&
-                                propsRef.current.activePaymentMethod !== 'vipps'
+                                propsRef.current.activePaymentMethod !== method
                         ) {
                                 return true;
 			}
@@ -532,7 +534,7 @@ const Content = (props) => {
 				type: emitResponseRef.current.responseTypes.SUCCESS,
 				meta: {
 					paymentMethodData: {
-						payment_method: 'vipps',
+						payment_method: method,
                                                 vipps_checkout_widget: '1'
                                         }
                                 }
@@ -594,7 +596,7 @@ const Content = (props) => {
 		null,
 		decodeEntities(settings.description || '')
 	);
-       return applyFilters('woo_vipps_checkout_description', content, settings);
+       return applyFilters(filterName('woo_vipps_checkout_description'), content, settings);
 };
 
 /**
@@ -605,7 +607,7 @@ const Label = props => {
         let textlabel = createElement( 'span', null, decodeEntities(settings.title || ''));
         let icon = createElement('img', { style: {display: 'inline-block'}, alt: decodeEntities(settings.title || ''), title: decodeEntities(settings.title || ''), className: 'vipps-payment-logo', src:iconsrc});
         let label =  createElement(PaymentMethodLabel, { text: textlabel, icon: icon });
-        return applyFilters('woo_vipps_checkout_label', label, settings);
+        return applyFilters(filterName('woo_vipps_checkout_label'), label, settings);
 };
 
 /**
@@ -617,7 +619,7 @@ const ExpressCheckoutButton = props => {
 
         useEffect(() => {
                 const root = ref.current;
-                const li = root?.closest('#express-payment-method-vippsexpress');
+                const li = root?.closest(`#express-payment-method-${expressMethod}`);
                 const button = root?.querySelector('vipps-mobilepay-button');
                 const compact = button?.getAttribute('compact');
 
@@ -638,7 +640,7 @@ const ExpressCheckoutButton = props => {
         }, []);
 
         const expressbutton = createElement('div', { ref, dangerouslySetInnerHTML: { __html: settings.expressbutton }, className: 'vipps-express-container' });
-        return applyFilters('woo_vipps_checkout_block_express_button', expressbutton, settings);
+        return applyFilters(filterName('woo_vipps_checkout_block_express_button'), expressbutton, settings);
 };
 
 /**
@@ -662,7 +664,7 @@ const VippsCheckoutPlaceOrderButton = (props) => {
 
         useEffect(() => () => {
                 // Blocks can unmount the button when the selected method changes.
-                window.setVippsPaymentBusy(false, 'checkout-block');
+                window.setVippsPaymentBusy(false, `${method}-checkout-block`);
         }, []);
 
         if (!controllerRef.current) {
@@ -737,7 +739,7 @@ const VippsCheckoutPlaceOrderButton = (props) => {
  */
 const canMakeExpressPayment = (args) => {
  var candoit = settings.show_express_checkout;
- return applyFilters('woo_vipps_checkout_block_show_express_checkout', candoit, settings);
+ return applyFilters(filterName('woo_vipps_checkout_block_show_express_checkout'), candoit, settings);
 };
 
 /**
@@ -745,32 +747,36 @@ const canMakeExpressPayment = (args) => {
  */
 const canMakePayment = (args) => {
  var candoit = true;
- return applyFilters('woo_vipps_checkout_block_show_vipps', candoit, settings);
+ return applyFilters(filterName('woo_vipps_checkout_block_show_vipps'), candoit, settings);
 };
 
 /**
  * Vipps  payment method config object.
  */
 const VippsPaymentMethod = {
-      name: 'vipps',
+      name: method,
       label: createElement(Label, null),
       content: createElement(Content, null),
       edit: createElement(Content, null),
       placeOrderButton: VippsCheckoutPlaceOrderButton,
       icons: null,
       canMakePayment: canMakePayment,
+      ...(settings.supports ? { supports: { features: settings.supports } } : {}),
       ariaLabel: label
 };
 const VippsExpressPaymentMethod = {
-      name: 'vippsexpress',
+      name: expressMethod,
       content: createElement(ExpressCheckoutButton, null),
       edit: createElement(ExpressCheckoutButton, null),
-      paymentMethodId: 'vipps',
+      paymentMethodId: method,
       canMakePayment: canMakeExpressPayment,
 };
 
 registerPaymentMethod(VippsPaymentMethod);
-registerExpressPaymentMethod(VippsExpressPaymentMethod);
+if (method === 'vipps' || settings.expressbutton) registerExpressPaymentMethod(VippsExpressPaymentMethod);
 
 
-}());
+};
+
+const vippsWidgetSettings = wc.wcSettings.getSetting('vipps_data', null);
+if (vippsWidgetSettings) window.registerVippsWidgetPaymentMethod(vippsWidgetSettings);

@@ -110,6 +110,8 @@
 
     window.ensureVippsWidgetHostStarted = ensureVippsWidgetHostStarted;
 })();
+
+/* Shared purchase confirmation UI. No payment adapter or Checkout class is required. */
 (() => {
     /** Build the reusable WooCommerce confirmation dialog before any checkout starts. */
     function createVippsMobilepayDialog() {
@@ -167,6 +169,103 @@
 
     window.createVippsMobilepayDialog = createVippsMobilepayDialog;
 })();
+(() => {
+    /** Keep form validation separate from the purchase attempt that uses it. */
+    function createVippsConfirmationValidation(dialogUi, options = {}) {
+        const translate = options.translate || ((key, fallback) => window.VippsLocale?.[key] || fallback);
+        return { validate, clear: clearDialogValidation, setMessage: setDialogValidationMessage };
+
+        /** Combine browser, terms, and integration validation before resubmitting. */
+        function validate() {
+            clearDialogValidation();
+
+            let validation = validateTermsAndConditions(dialogUi.form);
+
+            if (!dialogUi.form.checkValidity()) {
+                dialogUi.form.reportValidity();
+                validation = false;
+                setDialogValidationMessage(translate(
+                    "correctHighlightedFields",
+                    "Please correct the highlighted fields."
+                ));
+            }
+
+            if (typeof options.validate === "function") {
+                validation = options.validate(validation, dialogUi.form);
+            }
+
+            if (!validation && !dialogUi.message.textContent) {
+                setDialogValidationMessage(translate(
+                    "checkFormBeforeContinuing",
+                    "Please check the form before continuing."
+                ));
+            }
+
+            if (validation) {
+                clearDialogValidation();
+            }
+
+            return Boolean(validation);
+        }
+
+        /** Require acceptance when WooCommerce included a terms checkbox. */
+        function validateTermsAndConditions(form) {
+            const termsBoxes = Array.from(
+                form.querySelectorAll('.input-checkbox[name="terms"], input[name="terms"]')
+            );
+
+            if (termsBoxes.length === 0) {
+                return true;
+            }
+
+            const accepted = termsBoxes.some((termsBox) => termsBox.checked);
+            termsBoxes.forEach((termsBox) => {
+                const container = termsBox.closest(".validate-required");
+
+                if (container) {
+                    container.classList.toggle("woocommerce-invalid", !accepted);
+                    container.classList.toggle(
+                        "woocommerce-invalid-required-field",
+                        !accepted
+                    );
+                }
+            });
+
+            if (!accepted) {
+                setDialogValidationMessage(translate(
+                    "termsAndConditionsError",
+                    "Please accept the terms and conditions."
+                ));
+            }
+
+            return accepted;
+        }
+
+        /** Remove previous validation feedback before another confirmation attempt. */
+        function clearDialogValidation() {
+            dialogUi.message.textContent = "";
+            dialogUi.message.hidden = true;
+
+            dialogUi.form
+                .querySelectorAll(".woocommerce-invalid, .woocommerce-invalid-required-field")
+                .forEach((element) => {
+                    element.classList.remove(
+                        "woocommerce-invalid",
+                        "woocommerce-invalid-required-field"
+                    );
+                });
+        }
+
+        /** Show a single accessible explanation for invalid confirmation input. */
+        function setDialogValidationMessage(message) {
+            dialogUi.message.textContent = message;
+            dialogUi.message.hidden = false;
+        }
+    }
+
+    window.createVippsConfirmationValidation = createVippsConfirmationValidation;
+})();
+
 /*
  * Keeps payment-handoff detection independent from the checkout implementation.
  * The factory is exposed only because this page is currently using classic
@@ -384,7 +483,8 @@
         return;
     }
 
-    if (typeof window.createVippsMobilepayDialog !== "function") {
+    if (typeof window.createVippsMobilepayDialog !== "function" ||
+        typeof window.createVippsConfirmationValidation !== "function") {
         console.error("vipps: Dialog module is not available");
         return;
     }
@@ -477,6 +577,12 @@
         let dialogBusy = false;
         let dialogConfirmed = false;
         let paymentSucceeded = false;
+        const confirmation = window.createVippsConfirmationValidation(dialogUi, {
+            translate,
+            validate: (validation, form) => wp.hooks.applyFilters(
+                "vippsValidateExpressCheckoutForm", validation, form, currentAttempt
+            )
+        });
 
         if (typeof window.ensureVippsWidgetHostStarted === "function") {
             window.ensureVippsWidgetHostStarted();
@@ -736,7 +842,7 @@
         /** Present server-requested fields while keeping the order attempt active. */
         function showActionRequiredDialog(html) {
             dialogUi.html.innerHTML = html;
-            clearDialogValidation();
+            confirmation.clear();
             dialogUi.confirm.disabled = false;
             dialogUi.confirm.removeAttribute("aria-disabled");
             dialogBusy = false;
@@ -764,7 +870,7 @@
                 return;
             }
 
-            if (!validateConfirmationForm()) {
+            if (!confirmation.validate()) {
                 return;
             }
 
@@ -782,100 +888,12 @@
             await start();
         });
 
-        dialogUi.form.addEventListener("input", clearDialogValidation);
-        dialogUi.form.addEventListener("change", clearDialogValidation);
+        dialogUi.form.addEventListener("input", confirmation.clear);
+        dialogUi.form.addEventListener("change", confirmation.clear);
 
         return { begin, addPostData, start };
 
-        /** Combine browser, terms, and integration validation before resubmitting. */
-        function validateConfirmationForm() {
-            clearDialogValidation();
 
-            let validation = validateTermsAndConditions(dialogUi.form);
-
-            if (!dialogUi.form.checkValidity()) {
-                dialogUi.form.reportValidity();
-                validation = false;
-                setDialogValidationMessage(translate(
-                    "correctHighlightedFields",
-                    "Please correct the highlighted fields."
-                ));
-            }
-
-            validation = wp.hooks.applyFilters(
-                "vippsValidateExpressCheckoutForm",
-                validation,
-                dialogUi.form,
-                currentAttempt
-            );
-
-            if (!validation && !dialogUi.message.textContent) {
-                setDialogValidationMessage(translate(
-                    "checkFormBeforeContinuing",
-                    "Please check the form before continuing."
-                ));
-            }
-
-            if (validation) {
-                clearDialogValidation();
-            }
-
-            return Boolean(validation);
-        }
-
-        /** Require acceptance when WooCommerce included a terms checkbox. */
-        function validateTermsAndConditions(form) {
-            const termsBoxes = Array.from(
-                form.querySelectorAll('.input-checkbox[name="terms"], input[name="terms"]')
-            );
-
-            if (termsBoxes.length === 0) {
-                return true;
-            }
-
-            const accepted = termsBoxes.some((termsBox) => termsBox.checked);
-            termsBoxes.forEach((termsBox) => {
-                const container = termsBox.closest(".validate-required");
-
-                if (container) {
-                    container.classList.toggle("woocommerce-invalid", !accepted);
-                    container.classList.toggle(
-                        "woocommerce-invalid-required-field",
-                        !accepted
-                    );
-                }
-            });
-
-            if (!accepted) {
-                setDialogValidationMessage(translate(
-                    "termsAndConditionsError",
-                    "Please accept the terms and conditions."
-                ));
-            }
-
-            return accepted;
-        }
-
-        /** Remove previous validation feedback before another confirmation attempt. */
-        function clearDialogValidation() {
-            dialogUi.message.textContent = "";
-            dialogUi.message.hidden = true;
-
-            dialogUi.form
-                .querySelectorAll(".woocommerce-invalid, .woocommerce-invalid-required-field")
-                .forEach((element) => {
-                    element.classList.remove(
-                        "woocommerce-invalid",
-                        "woocommerce-invalid-required-field"
-                    );
-                });
-        }
-
-        /** Show a single accessible explanation for invalid confirmation input. */
-        function setDialogValidationMessage(message) {
-            dialogUi.message.textContent = message;
-            dialogUi.message.hidden = false;
-        }
     }
 
     /** Send the normalized express transaction to the plugin's REST endpoint. */

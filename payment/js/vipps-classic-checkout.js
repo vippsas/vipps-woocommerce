@@ -10,6 +10,8 @@
 jQuery(($) => {
     'use strict';
     const boundSubmitButtons = new WeakSet();
+    const methods = window.VippsClassicCheckoutMethods || ['vipps'];
+    const isSupportedMethod = (method) => methods.includes(method);
 
     /** Keep the native WooCommerce submit control as the non-Vipps fallback. */
     function updateVippsButton($form) {
@@ -161,7 +163,7 @@ jQuery(($) => {
                     billing_email: config.billingEmail || undefined,
                     billing_address: config.billingAddress,
                     shipping_address: config.shippingAddress,
-                    payment_method: 'vipps',
+                    payment_method: current.method,
                     payment_data: paymentData
                 }),
                 contentType: 'application/json',
@@ -193,7 +195,7 @@ jQuery(($) => {
 
         function submit(event) {
             if (attempt) return false;
-            if ($form.find('[name="payment_method"]:checked').val() !== 'vipps') return true;
+            if (!isSupportedMethod($form.find('[name="payment_method"]:checked').val())) return true;
             event.preventDefault();
 
             if ($form.find('[name="terms-field"]').length && !$form.find('[name="terms"]:checked').length) {
@@ -208,7 +210,7 @@ jQuery(($) => {
                 .filter(({ name }) => !['payment_method', 'woocommerce-pay-nonce', '_wpnonce'].includes(name))
                 .map(({ name, value }) => ({ key: name, value }));
             paymentData.push({ key: 'vipps_checkout_widget', value: '1' });
-            attempt = { phase: 'submitting', closed: false, paymentUrl: '', paymentData };
+            attempt = { phase: 'submitting', closed: false, paymentUrl: '', paymentData, method: $form.find('[name="payment_method"]:checked').val() };
             const current = attempt;
             setBusy(true);
             try {
@@ -494,7 +496,7 @@ jQuery(($) => {
             event.stopImmediatePropagation();
             return false;
         }
-        if ($form.find('input[name="payment_method"]:checked').val() !== 'vipps' ||
+        if (!isSupportedMethod($form.find('input[name="payment_method"]:checked').val()) ||
             !window.vipps?.trigger || !window.vipps?.host ||
             typeof window.ensureVippsWidgetHostStarted !== 'function' ||
             typeof window.setVippsPaymentBusy !== 'function') {
@@ -540,7 +542,7 @@ jQuery(($) => {
         return false;
     }
 
-    $form.on('checkout_place_order_vipps.vippsClassic', submitVipps);
+    methods.forEach((method) => $form.on(`checkout_place_order_${method}.vippsClassic`, submitVipps));
     $(document.body)
         .on('update_checkout.vippsClassic', () => { updatingCheckout = true; })
         .on('updated_checkout.vippsClassic', () => {

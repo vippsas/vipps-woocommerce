@@ -409,64 +409,7 @@ class WC_Vipps_Recurring_Checkout {
 	}
 
 	public function maybe_login_checkout_user( int $order_id, ?string $key = null ): void {
-		if ( ! $key ) {
-			return;
-		}
-
-		$order = wc_get_order( $order_id );
-		if ( ! $order ) {
-			return;
-		}
-
-		$order_key_db = $order->get_order_key( 'code' );
-		if ( ! hash_equals( $order_key_db, $key ) ) {
-			return;
-		}
-
-		if ( ! WC()->session ) {
-			return;
-		}
-
-		// Only the browser session that created this Checkout order may log in its customer.
-		$session_auth_token = WC()->session->get( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN );
-		$order_auth_token   = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
-
-		if ( ! is_string( $order_auth_token ) || ! is_string( $session_auth_token )
-		     || ! $order_auth_token || ! $session_auth_token
-		     || ! hash_equals( $order_auth_token, $session_auth_token ) ) {
-			return;
-		}
-
-		if ( is_user_logged_in() ) {
-			$current_user_id = get_current_user_id();
-			$order_user_id   = $order->get_customer_id( 'edit' );
-
-			if ( $current_user_id !== $order_user_id ) {
-				$this->purchase()->assign_customer( $order, $current_user_id );
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Assigned the Checkout order to returning logged-in customer %s instead of customer %s', $order_id, $current_user_id, $order_user_id ) );
-			}
-
-			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
-
-			return;
-		}
-
-		$user = $order->get_user();
-		if ( ! $user ) {
-			return;
-		}
-
-		$roles       = $user->roles;
-		$is_customer = ! empty( array_intersect( [ 'customer', 'subscriber' ], $roles ) );
-		if ( ! $is_customer || user_can( $user, 'manage_woocommerce' ) || user_can( $user, 'manage_options' ) ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Refusing to log in a privileged or non-customer user on the Checkout return', $order_id ) );
-			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
-
-			return;
-		}
-
-		wc_set_customer_auth_cookie( $user->ID );
-		WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
+		$this->purchase()->maybe_login_customer( $order_id, $key );
 	}
 
 	private function session_owns_checkout_order( WC_Order $order ): bool {
@@ -1094,7 +1037,7 @@ class WC_Vipps_Recurring_Checkout {
 		$shipping = isset( $session['shippingDetails'] )
 			? $this->normalize_checkout_contact( $session['shippingDetails'] ) : null;
 
-		if ( $this->purchase()->complete( $order, $agreement_id, $billing, $shipping ) ) {
+		if ( $this->purchase()->complete( $order, $agreement_id, $billing, $shipping, WC_Vipps_Recurring_Purchase::ADDRESS_SOURCE_SELECTED ) ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Finished handling Vipps/MobilePay Checkout payment for agreement ID %s", $order_id, $agreement_id ) );
 		}
 	}
@@ -1104,7 +1047,7 @@ class WC_Vipps_Recurring_Checkout {
 		$billing  = $this->normalize_checkout_contact( $session['billingDetails'] ?? $session['shippingDetails'] ?? [] );
 		$shipping = isset( $session['shippingDetails'] )
 			? $this->normalize_checkout_contact( $session['shippingDetails'] ) : null;
-		$this->purchase()->update_addresses( $object, $billing, $shipping );
+		$this->purchase()->update_addresses( $object, $billing, $shipping, WC_Vipps_Recurring_Purchase::ADDRESS_SOURCE_SELECTED );
 	}
 
 	private function purchase(): WC_Vipps_Recurring_Purchase {
@@ -1117,19 +1060,34 @@ class WC_Vipps_Recurring_Checkout {
 			'email'         => 'email',
 			'firstName'     => 'first_name',
 			'lastName'      => 'last_name',
+			'company'       => 'company',
 			'streetAddress' => 'address_1',
+			'addressLine2'  => 'address_2',
 			'city'          => 'city',
+			'state'         => 'state',
 			'postalCode'    => 'postcode',
 			'country'       => 'country',
 		];
+
 		$normalized = [];
 		foreach ( $fields as $source => $target ) {
 			if ( array_key_exists( $source, $contact ) ) {
 				$normalized[ $target ] = $contact[ $source ];
 			}
 		}
-		if ( isset( $contact['phoneNumber'] ) ) {
-			$normalized['phone'] = '+' . $contact['phoneNumber'];
+
+		if ( ! empty( $normalized['address_1'] ) && is_scalar( $normalized['address_1'] ) ) {
+			$lines = preg_split( '/\r\n|\r|\n/', $normalized['address_1'], 2 );
+			$normalized['address_1'] = $lines[0];
+			$normalized['address_2'] = $normalized['address_2'] ?? ( $lines[1] ?? '' );
+		}
+
+		if ( ! empty( $contact['phoneNumber'] ) && is_scalar( $contact['phoneNumber'] ) ) {
+			$phone = WC_Vipps_Recurring_Helper::normalize_phone_number( $contact['phoneNumber'], $normalized['country'] ?? '' );
+
+			if ( $phone ) {
+				$normalized['phone'] = '+' . $phone;
+			}
 		}
 		return $normalized;
 	}
