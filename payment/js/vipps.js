@@ -591,7 +591,9 @@
                 close();
 
                 if (redirectUrl) {
-                    window.location.assign(redirectUrl);
+                    const target = new URL(redirectUrl, window.location.href);
+                    target.searchParams.set("pw", "1"); // This is the parent window
+                    window.location.assign(target.href);
                 }
             })
             .on("cancel", (close, redirectUrl) => {
@@ -601,7 +603,9 @@
                 close();
 
                 if (redirectUrl) {
-                    window.location.assign(redirectUrl);
+                    const target = new URL(redirectUrl, window.location.href);
+                    target.searchParams.set("pw", "1"); // Parent window redirect
+                    window.location.assign(target.href);
                 }
             })
             .on("close", () => {

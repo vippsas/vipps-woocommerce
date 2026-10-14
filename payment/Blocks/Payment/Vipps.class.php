@@ -265,10 +265,9 @@ final class Vipps extends AbstractPaymentMethodType {
 	public function get_payment_method_data() {
 		$logo = ( $this->payment_method_name == 'Vipps' ) ? plugins_url( '../../img/vipps-mark.svg', __FILE__ ) : plugins_url( '../../img/mobilepay-mark.png', __FILE__ );
 		$brand = ( $this->payment_method_name == 'Vipps' ) ? 'vipps' : 'mobilepay';
-		$language = substr( determine_locale(), 0, 2 );
-		if ( ! in_array( $language, array( 'no', 'en', 'da', 'fi', 'sv' ), true ) ) {
-			$language = 'en';
-		}
+		$Vipps = \Vipps::instance();
+		$language = $Vipps->resolve_html_button_language($Vipps->get_html_button_attrs_for_context()['language']);
+		$this->vippsJSConfig['webcomponentLanguage'] = $language;
 
 		$data = [
 			'title'                 => $this->payment_method_name,
