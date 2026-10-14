@@ -127,8 +127,15 @@ class WC_Vipps_Recurring_Express_Checkout {
 		}
 
 		$button = apply_filters( 'woo_vipps_express_checkout_button', Vipps::instance()->get_html_button_for_context( $context ) );
+		$classes = [ 'vipps-recurring-express', 'button', 'vipps-buy-now', Vipps::instance()->get_payment_method_name() ];
+		$button_args = Vipps::instance()->get_html_button_attrs_for_context( $context );
 
-		return '<a href="' . esc_url( wc_get_checkout_url() ) . '" class="vipps-recurring-express" data-context="' . esc_attr( $context )
+		if ( ( $button_args['compact'] ?? 'false' ) === 'true' ) {
+			$classes[] = 'short';
+		}
+
+		// Keep single-product and initialized exclusive to the one-time payment click handler.
+		return '<a href="' . esc_url( wc_get_checkout_url() ) . '" class="' . esc_attr( implode( ' ', $classes ) ) . '" data-context="' . esc_attr( $context )
 			. '" data-product-id="' . esc_attr( $product_id ) . '">' . $button . '</a>';
 	}
 
