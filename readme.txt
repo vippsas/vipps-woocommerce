@@ -3,14 +3,14 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 6.3.1
-Stable tag: 6.3.1
+Version: 6.3.2
+Stable tag: 6.3.2
 Requires at least: 6.3
-Tested up to: 7.1.1
+Tested up to: 7.1.3
 Requires PHP: 8.0
 Requires Plugins: woocommerce
 WC requires at least: 8.0.0
-WC tested up to: 11.1.2
+WC tested up to: 11.2.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -117,6 +117,9 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 6.3.2
+Fix issue with some buttons getting wrong language
+Fix duplicate order confirmation emails being sent
 Version 6.3.1
 Remove old order lock functionality.
 Fix: incorrect norwegian language for certain express buttons.
@@ -297,7 +300,11 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsInit'  - runs when a page with a Vipps MobilePay button is initialzed
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
-== Changelog ==
+== Changelog ===
+= 2026-10-12 version 6.3.2 =
+Fix issue with some buttons getting wrong language
+Fix duplicate order confirmation emails being sent
+
 = 2026-10-06 version 6.3.1 =
 Remove old order locking functionality.
 Fix: incorrect language on express buttons. workaround because of webcomponent library bug.
