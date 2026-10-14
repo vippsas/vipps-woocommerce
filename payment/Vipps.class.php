@@ -3580,6 +3580,23 @@ else:
             $vippsdata['country'] = $order->get_shipping_country();
         }
 
+        // First, check if we support selling to this country at all IOK 2026-10-14
+        if (class_exists('WC_Countries')) {
+            $countries = new WC_Countries();
+            $allowed = $countries->get_allowed_countries();
+            if (! array_key_exists($vippsdata['country'], $allowed)) {
+               $this->log(sprintf(__("Order $vippsorderid wants shipping options for disallowed country %1\$s - allowed countries are %2\$s. Shipping will fail.", 'woo-vipps'), $vippsdata['country'], join(", ", array_keys($allowed))));
+
+               // Early exit here.
+               if ($ischeckout) {
+                  return ['shippingDetails' => []];
+               } else {
+                  return [];
+               }
+
+            }
+        }
+
        // Since we have legacy users that may have filters defined on these values, we will translate newer apis to the older ones.
        // so filters will continue to work for newer apis/checkout
        if (isset($vippsdata['streetAddress'])){
