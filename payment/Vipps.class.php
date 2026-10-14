@@ -189,7 +189,7 @@ class Vipps {
     // These are strings that should be available for translation possibly at some future point. Partly to be easier to work with translate.wordpress.org
     // Other usages are to translate any dynamic strings that may come from APIs etc. IOK 2021-03-18
     private function translatable_strings() {
-        // Nothing here right now
+        __("Create and log in new customers during Express checkout.", 'woo-vipps');
         return false;
     }
 
