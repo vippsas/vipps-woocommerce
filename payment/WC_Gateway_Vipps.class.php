@@ -2439,6 +2439,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
             $order->update_meta_data('_vipps_status',$newvippsstatus);
+            $order->update_meta_data('_vipps_',$newvippsstatus);
+            if ($paymentdetails['captureGuaranteedUntil'] ?? 0) {
+                $order->update_meta_data('_vipps_capture_guaranteed_until', strtotime($paymentdetails['captureGuaranteedUntil']));
+            }
 
             // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
             if (!empty($paymentdetails)) {
