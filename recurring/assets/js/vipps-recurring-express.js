@@ -217,11 +217,15 @@ jQuery(($) => {
         const attempt = { data, paymentUrl: '', returnUrl: '' };
         active = attempt;
 
-        const finish = (close, url) => {
-            if (attempt.failed || attempt.leaving || attempt.closed) { close?.(); return; }
-            if (!attempt.paymentUrl) attempt.closed = true;
-            else navigate(attempt, url || attempt.returnUrl);
-            close?.();
+        const finish = (_close, url) => {
+            if (attempt.failed || attempt.leaving || attempt.closed) return;
+            if (!attempt.paymentUrl) { attempt.closed = true; return; }
+
+            const target = new URL(url || attempt.returnUrl, window.location.href);
+            target.searchParams.set('pw', '1');
+            window.showVippsSuccessRedirectOverlay(owner);
+            // Keep the SDK iframe in place until parent navigation takes over.
+            navigate(attempt, target.href);
         };
 
         const dismiss = (close, cancelled = false) => {
