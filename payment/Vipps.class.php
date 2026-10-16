@@ -1548,7 +1548,7 @@ EOF;
           if ($canbebought) {
             echo sprintf(__("This product supports %1\$s and will have an %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
           } else {
-            echo sprintf(__("This product does <b>not</b> support %1\$s, and so will <b>not</b> %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
+            echo sprintf(__("This product does <b>not</b> support %1\$s, and so will <b>not</b> have a %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
           } 
           echo "</p>";
         } else { // Express for products disabled. LP 2026-09-29
