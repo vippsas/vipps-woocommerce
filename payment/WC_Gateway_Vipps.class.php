@@ -1512,7 +1512,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
          $expressfields = array(
                 'express_options' => array(
-                        'title' => sprintf(Vipps::ExpressName()),
+                        'title' => __('Express Checkout', 'woo-vipps'),
                         'type'  => 'title',
                         'class' => 'tab',
                         'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressName())
