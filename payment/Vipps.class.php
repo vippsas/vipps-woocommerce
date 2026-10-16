@@ -189,7 +189,7 @@ class Vipps {
     // These are strings that should be available for translation possibly at some future point. Partly to be easier to work with translate.wordpress.org
     // Other usages are to translate any dynamic strings that may come from APIs etc. IOK 2021-03-18
     private function translatable_strings() {
-        // Nothing here right now
+        __("Create and log in new customers during Express checkout.", 'woo-vipps');
         return false;
     }
 
@@ -3580,6 +3580,23 @@ else:
             $vippsdata['country'] = $order->get_shipping_country();
         }
 
+        // First, check if we support selling to this country at all IOK 2026-10-14
+        if (class_exists('WC_Countries')) {
+            $countries = new WC_Countries();
+            $allowed = $countries->get_allowed_countries();
+            if (! array_key_exists($vippsdata['country'], $allowed)) {
+               $this->log(sprintf(__("Order $vippsorderid wants shipping options for disallowed country %1\$s - allowed countries are %2\$s. Shipping will fail.", 'woo-vipps'), $vippsdata['country'], join(", ", array_keys($allowed))));
+
+               // Early exit here.
+               if ($ischeckout) {
+                  return ['shippingDetails' => []];
+               } else {
+                  return [];
+               }
+
+            }
+        }
+
        // Since we have legacy users that may have filters defined on these values, we will translate newer apis to the older ones.
        // so filters will continue to work for newer apis/checkout
        if (isset($vippsdata['streetAddress'])){
@@ -5592,6 +5609,18 @@ else:
 
     // Called in template_redirect before we get to the wait-for-payment page IOK 2026-09-21
     private function handle_payment_poll_and_redirect () {
+
+        // Because the new SDK still uses the old payment landing page in an iframe, we may get an extra return here. We should
+        // ignore that, as those iframes are going to be gone. IOK 2026-10-12
+        // Unless this *site* is in an iframe, in which case, go head. The "pw" argument stands for "parent window", it
+        // is added in our successhandlers, only.
+        $is_iframe = ($_SERVER['HTTP_SEC_FETCH_DEST'] ?? '') == 'iframe';
+        $parentframe = $_GET['pw'] ?? 0;
+        if ($is_iframe  && !$parentframe) {
+            print "ok";
+            exit();
+        }
+
         $orderid = WC()->session->get('_vipps_pending_order');
 
         $order = null;
