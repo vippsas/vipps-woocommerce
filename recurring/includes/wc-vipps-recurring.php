@@ -799,6 +799,10 @@ class WC_Vipps_Recurring {
 			$latest_order = wc_get_order( $latest_order_id );
 			$subscription = wcs_get_subscription( $subscription_id );
 
+			if ( WC_Vipps_Recurring_Profile::protect_from_cleanup( $latest_order ) ) {
+				continue;
+			}
+
 			// If this subscription has been manually updated in the mean-time, we no longer want to delete it.
 			// Similarly, if it has a billing email we don't want to delete it.
 			$empty_email = trim( $subscription->get_billing_email() ) === trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) || ! $subscription->get_billing_email();

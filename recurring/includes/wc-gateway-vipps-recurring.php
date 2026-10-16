@@ -568,7 +568,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$order_status = $order->get_status();
 
-		if ( $order_status === 'failed' ) {
+		if ( $order_status === 'failed' && ! WC_Vipps_Recurring_Profile::needs_completion( $order ) ) {
 			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
 			$this->unlock_order( $order );
 
@@ -578,6 +578,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$agreement = $this->get_agreement_from_order( $order );
 
 		if ( ! $agreement ) {
+			if ( WC_Vipps_Recurring_Profile::needs_completion( $order ) ) {
+				$this->unlock_order( $order );
+				return 'SUCCESS';
+			}
+
 			// If there is no agreement we can't complete Checkout orders. Let Checkout deal with this through an action.
 			$order_initial = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL );
 
@@ -588,6 +593,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this->unlock_order( $order );
 
 			return 'INVALID';
+		}
+
+		if ( WC_Vipps_Recurring_Profile::needs_completion( $order ) ) {
+			if ( ! ( new WC_Vipps_Recurring_Profile( $this ) )->recover( $order, $agreement ) ) {
+				$this->unlock_order( $order );
+				return 'SUCCESS';
+			}
+
+			$order = wc_get_order( $order_id );
+			$order_status = $order->get_status();
 		}
 
 		$zero_amount_result = $this->handle_zero_amount_order( $order, $agreement, $is_renewal );
@@ -807,6 +822,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $transaction_id
 	 */
 	public function complete_order( $order, $transaction_id ): void {
+		if ( WC_Vipps_Recurring_Profile::needs_completion( $order ) ) {
+			$order->update_meta_data( WC_Vipps_Recurring_Profile::META_PAYMENT_STATUS, WC_Vipps_Charge::STATUS_CHARGED );
+			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
+			$order->save();
+			return;
+		}
+
 		$order->payment_complete( $transaction_id );
 
 		// Controlled by the `transition_renewals_to_completed` setting
@@ -833,6 +855,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function process_order_charge( $order, ?WC_Vipps_Charge $charge = null ): void {
 		if ( ! $charge ) {
 			// No charge
+			return;
+		}
+
+		if ( WC_Vipps_Recurring_Profile::needs_completion( $order ) ) {
+			$order->update_meta_data( WC_Vipps_Recurring_Profile::META_PAYMENT_STATUS, $charge->status );
+			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge->id );
+			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
+			$order->save();
 			return;
 		}
 
@@ -1281,6 +1311,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
 	public function capture_payment( $order ): bool {
+		if ( WC_Vipps_Recurring_Profile::needs_completion( $order ) ) {
+			$this->admin_error( __( 'Complete the recurring customer profile before capturing this payment.', 'woo-vipps' ) );
+			return false;
+		}
+
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 		$charge_id    = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
 
@@ -1413,6 +1448,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param string $idempotency_key
 	 */
 	public function capture_reserved_charge( WC_Vipps_Charge $charge, WC_Vipps_Agreement $agreement, $order, string $idempotency_key ): WC_Vipps_Charge {
+		if ( WC_Vipps_Recurring_Profile::needs_completion( $order ) ) {
+			throw new WC_Vipps_Recurring_Temporary_Exception( 'Recurring customer profile completion is pending' );
+		}
+
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Attempting to capture reserve charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $agreement->id ) );
 
 		$this->api->capture_reserved_charge( $agreement, $charge, $idempotency_key );
@@ -1603,6 +1642,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
 	 */
 	public function create_vipps_agreement_from_order( $order, $subscription = null, bool $is_gateway_change = false, bool $is_failed_renewal_order = false ): WC_Vipps_Agreement {
+		if ( $order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_ATTEMPT ) && ! $is_gateway_change && ! $is_failed_renewal_order ) {
+			$body = $order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_BODY );
+			if ( is_array( $body ) && $body ) {
+				return new WC_Vipps_Agreement( $body );
+			}
+		}
+
 		$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
 
 		if ( ! $subscription ) {
@@ -1654,12 +1700,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$is_virtual     = $product->is_virtual();
 		$direct_capture = $parent_product->get_meta( WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ) === 'yes';
 
-		$agreement_url = filter_var( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ), FILTER_VALIDATE_URL )
-			? get_permalink( get_option( 'woocommerce_myaccount_page_id' ) )
-			: wc_get_account_endpoint_url( 'dashboard' );
+		$account_page_id = wc_get_page_id( 'myaccount' );
+		$agreement_url = $account_page_id > 0 ? get_permalink( $account_page_id ) : false;
 
 		if ( ! filter_var( $agreement_url, FILTER_VALIDATE_URL ) ) {
-			$agreement_url = get_home_url();
+			$agreement_url = home_url( '/my-account/' );
 		}
 
 		$redirect_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order, $is_gateway_change );
@@ -1790,7 +1835,21 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$order->save();
 
-		return apply_filters( 'wc_vipps_recurring_process_payment_agreement', $agreement, $subscription, $order );
+		$agreement = apply_filters( 'wc_vipps_recurring_process_payment_agreement', $agreement, $subscription, $order );
+		if ( $order->get_meta( WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS )
+		     && ! $order->get_meta( WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT )
+		     && ! $is_gateway_change && ! $is_failed_renewal_order && ! $is_subscription_switch
+		     && ! wcs_order_contains_renewal( $order ) ) {
+			( new WC_Vipps_Recurring_Profile( $this ) )->prepare_agreement( $order, $agreement );
+		}
+
+		if ( $order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_ATTEMPT ) ) {
+			// Persist before the request, so a timeout retry has the same body and key.
+			$order->update_meta_data( WC_Vipps_Recurring_Express_Checkout::META_BODY, $agreement->to_array( true ) );
+			$order->save();
+		}
+
+		return $agreement;
 	}
 
 	/**
@@ -1811,7 +1870,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order     = wc_get_order( $order_id );
 		$debug_msg = sprintf( '[%s] process_payment (gateway change: %s)', $order_id, $is_gateway_change ? 'Yes' : 'No' ) . "\n";
 
-		$is_failed_renewal_order      = wcs_cart_contains_failed_renewal_order_payment() !== false;
+		$is_failed_renewal_order      = ! $order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_ATTEMPT ) && wcs_cart_contains_failed_renewal_order_payment() !== false;
 		$contains_manual_subscription = wcs_order_contains_manual_subscription( $order );
 
 		if ( ! $is_gateway_change
@@ -1936,7 +1995,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$idempotency_key = $this->api->generate_idempotency_key();
 			}
 
-			$response = $this->api->create_agreement( $agreement, $idempotency_key );
+			$response = $this->api->create_agreement( $agreement, $idempotency_key,
+				$order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_ATTEMPT ) ? $order : null );
 
 			$is_subscription_switch = wcs_order_contains_switch( $order );
 			$is_zero_amount         = (float) $order->get_total() === 0.0 || $is_gateway_change;
@@ -1990,7 +2050,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 
 			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT );
-			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS );
+
+			if ( $order->get_meta( WC_Vipps_Recurring_Profile::META_REQUIRED )
+			     && ! $is_gateway_change && ! $is_failed_renewal_order && ! $is_subscription_switch
+			     && ! wcs_order_contains_renewal( $order ) ) {
+				( new WC_Vipps_Recurring_Profile( $this ) )->bind_agreement( $order, $response['agreementId'] );
+			} else {
+				WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS );
+			}
+
 			WC_Vipps_Recurring_Helper::delete_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT );
 			WC_Vipps_Recurring_Helper::delete_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS );
 
@@ -2007,6 +2075,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'redirect' => $response['vippsConfirmationUrl'],
 			];
 		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+			if ( $order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_ATTEMPT ) ) {
+				throw $e;
+			}
+
 			$error_message = $e->getLocalizedMessage() ?: $e->getMessage();
 			wc_add_notice( $error_message, 'error' );
 
@@ -2017,6 +2089,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'redirect' => '',
 			];
 		} catch ( WC_Vipps_Recurring_Exception $e ) {
+			if ( $order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_ATTEMPT ) ) {
+				throw $e;
+			}
+
 			wc_add_notice( $e->getLocalizedMessage(), 'error' );
 
 			$order->update_status( 'failed' );
@@ -2774,6 +2850,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		WC_Vipps_Recurring_Logger::log( sprintf( "Handling webhook with data: %s", json_encode( $webhook_data ) ) );
 
 		$event_type = $webhook_data['eventType'];
+		if ( in_array( $event_type, [ 'recurring.agreement-activated.v1', 'recurring.agreement-rejected.v1', 'recurring.agreement-expired.v1', 'recurring.agreement-stopped.v1' ], true )
+		     && ! empty( $webhook_data['agreementId'] ) ) {
+			$args = WC_Vipps_Recurring_Helper::add_meta_query_to_args(
+				[ 'limit' => -1, 'payment_method' => $this->id ], WC_Vipps_Recurring_Helper::META_AGREEMENT_ID,
+				'=', $webhook_data['agreementId'], $this->use_high_performance_order_storage()
+			);
+			foreach ( wc_get_orders( $args ) as $profile_order ) {
+				if ( WC_Vipps_Recurring_Profile::needs_completion( $profile_order ) ) {
+					$this->check_charge_status( $profile_order->get_id() );
+				}
+			}
+		}
 
 		if ( in_array( $event_type, [
 			'recurring.charge-reserved.v1',
@@ -3125,6 +3213,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				wcs_set_recurring_item_total( $subscription_item );
 
 				$subscription_item->save();
+				// Raw item insertion does not update the subscription's cached item collection.
+				$subscription->add_item( $subscription_item );
 
 				// Check if this subscription will need shipping.
 				if ( ! $subscription_needs_shipping ) {
@@ -3222,6 +3312,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( $this->id !== $subscription->get_payment_method() ) {
+			return false;
+		}
+
+		$parent_order = $subscription->get_parent();
+		if ( $parent_order && WC_Vipps_Recurring_Profile::protect_from_cleanup( $parent_order ) ) {
 			return false;
 		}
 

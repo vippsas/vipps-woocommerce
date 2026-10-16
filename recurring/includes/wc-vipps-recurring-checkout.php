@@ -275,27 +275,7 @@ class WC_Vipps_Recurring_Checkout {
 			$checkout = WC_Vipps_Recurring_Checkout::get_instance();
 			$gateway  = $checkout->gateway();
 
-			// hack - fake "Anonymous Vipps/MobilePay User"
-			$fake_user = false;
-			if ( ! $order->get_customer_id( 'edit' ) ) {
-				$fake_user = true;
-
-				$order->set_customer_id( $this->gateway()->create_or_get_anonymous_system_customer()->get_id() );
-				$order->save();
-			}
-
-			// Check if we already have a subscription on this order, otherwise create one
-			if ( wcs_order_contains_subscription( $order, 'any' ) ) {
-				$subscriptions = wcs_get_subscriptions_for_order( $order );
-			} else {
-				$subscriptions = $gateway->create_partial_subscriptions_from_order( $order );
-			}
-
-			// reset hack
-			if ( $fake_user ) {
-				$order->set_customer_id( 0 );
-				$order->save();
-			}
+			$subscriptions = $this->purchase()->prepare_subscriptions( $order );
 
 			$subscription = array_pop( $subscriptions );
 
@@ -429,64 +409,7 @@ class WC_Vipps_Recurring_Checkout {
 	}
 
 	public function maybe_login_checkout_user( int $order_id, ?string $key = null ): void {
-		if ( ! $key ) {
-			return;
-		}
-
-		$order = wc_get_order( $order_id );
-		if ( ! $order ) {
-			return;
-		}
-
-		$order_key_db = $order->get_order_key( 'code' );
-		if ( ! hash_equals( $order_key_db, $key ) ) {
-			return;
-		}
-
-		if ( ! WC()->session ) {
-			return;
-		}
-
-		// Only the browser session that created this Checkout order may log in its customer.
-		$session_auth_token = WC()->session->get( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN );
-		$order_auth_token   = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
-
-		if ( ! is_string( $order_auth_token ) || ! is_string( $session_auth_token )
-		     || ! $order_auth_token || ! $session_auth_token
-		     || ! hash_equals( $order_auth_token, $session_auth_token ) ) {
-			return;
-		}
-
-		if ( is_user_logged_in() ) {
-			$current_user_id = get_current_user_id();
-			$order_user_id   = $order->get_customer_id( 'edit' );
-
-			if ( $current_user_id !== $order_user_id ) {
-				$this->assign_order_and_subscriptions_to_customer( $order, $current_user_id );
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Assigned the Checkout order to returning logged-in customer %s instead of customer %s', $order_id, $current_user_id, $order_user_id ) );
-			}
-
-			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
-
-			return;
-		}
-
-		$user = $order->get_user();
-		if ( ! $user ) {
-			return;
-		}
-
-		$roles       = $user->roles;
-		$is_customer = ! empty( array_intersect( [ 'customer', 'subscriber' ], $roles ) );
-		if ( ! $is_customer || user_can( $user, 'manage_woocommerce' ) || user_can( $user, 'manage_options' ) ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Refusing to log in a privileged or non-customer user on the Checkout return', $order_id ) );
-			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
-
-			return;
-		}
-
-		wc_set_customer_auth_cookie( $user->ID );
-		WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
+		$this->purchase()->maybe_login_customer( $order_id, $key );
 	}
 
 	private function session_owns_checkout_order( WC_Order $order ): bool {
@@ -500,17 +423,6 @@ class WC_Vipps_Recurring_Checkout {
 		return is_string( $order_auth_token ) && is_string( $session_auth_token )
 		       && $order_auth_token && $session_auth_token
 		       && hash_equals( $order_auth_token, $session_auth_token );
-	}
-
-	private function assign_order_and_subscriptions_to_customer( WC_Order $order, int $customer_id ): void {
-		$order->set_customer_id( $customer_id );
-		$order->save();
-
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
-		foreach ( $subscriptions as $subscription ) {
-			$subscription->set_customer_id( $customer_id );
-			$subscription->save();
-		}
 	}
 
 	private function prepare_pending_order_for_current_customer( WC_Order $order ): bool {
@@ -528,7 +440,7 @@ class WC_Vipps_Recurring_Checkout {
 				return false;
 			}
 
-			$this->assign_order_and_subscriptions_to_customer( $order, $current_user_id );
+			$this->purchase()->assign_customer( $order, $current_user_id );
 
 			return true;
 		}
@@ -542,7 +454,7 @@ class WC_Vipps_Recurring_Checkout {
 			return false;
 		}
 
-		$this->assign_order_and_subscriptions_to_customer( $order, $current_user_id );
+		$this->purchase()->assign_customer( $order, $current_user_id );
 
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Assigned a migrated guest Checkout order to logged-in customer %s', $order->get_id(), $current_user_id ) );
 
@@ -1108,19 +1020,7 @@ class WC_Vipps_Recurring_Checkout {
 
 		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment for agreement ID %s with status %s", $order_id, $agreement_id, $status ) );
 
-		// This makes sure we are covered by all our normal cron checks as well
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
-
-		$order_charge_id = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID );
-		if ( empty( $order_charge_id ) ) {
-			$charges = $this->gateway()->api->get_charges_for( $agreement_id );
-			/** @var WC_Vipps_Charge $charge */
-			$charge = array_pop( $charges );
-
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge->id );
-		}
-
-		$order->save();
+		$this->purchase()->record_agreement( $order, $agreement_id );
 
 		// "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
 		if ( in_array( $status, [ 'SessionExpired', 'PaymentTerminated' ] ) ) {
@@ -1133,138 +1033,63 @@ class WC_Vipps_Recurring_Checkout {
 			return;
 		}
 
-		// On success, we might have to create a user as well, if they don't already exist, this is because Woo Subscriptions REQUIRE a user.
-		$email                 = sanitize_email( $session['billingDetails']['email'] ?? '' );
-		$customer_id           = (int) $order->get_customer_id( 'edit' );
-		$anonymous_customer_id = (int) get_option( WC_Vipps_Recurring_Helper::OPTION_ANONYMOUS_SYSTEM_CUSTOMER_ID );
-		$user                  = $customer_id ? get_user_by( 'ID', $customer_id ) : false;
-		$has_real_user         = $user && $customer_id !== $anonymous_customer_id;
-		if ( ! $has_real_user && ! $email ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Unable to assign the Checkout order because the billing email is empty', $order_id ) );
+		$billing  = $this->normalize_checkout_contact( $session['billingDetails'] ?? [] );
+		$shipping = isset( $session['shippingDetails'] )
+			? $this->normalize_checkout_contact( $session['shippingDetails'] ) : null;
 
-			return;
+		if ( $this->purchase()->complete( $order, $agreement_id, $billing, $shipping, WC_Vipps_Recurring_Purchase::ADDRESS_SOURCE_SELECTED ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Finished handling Vipps/MobilePay Checkout payment for agreement ID %s", $order_id, $agreement_id ) );
 		}
-
-		if ( ! $has_real_user ) {
-			$user = get_user_by( 'email', $email );
-
-			if ( $user ) {
-				$has_real_user = true;
-				$order->set_customer_id( $user->ID );
-				$order->save();
-			}
-		}
-
-		if ( ! $has_real_user ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment: creating a new customer", $order_id ) );
-
-			$firstname = $session['billingDetails']['firstName'];
-			$lastname  = $session['billingDetails']['lastName'];
-			$name      = $firstname;
-
-			$userdata = [
-				'user_nicename' => $name,
-				'display_name'  => "$firstname $lastname",
-				'nickname'      => $firstname,
-				'first_name'    => $firstname,
-				'last_name'     => $lastname
-			];
-
-			$username = apply_filters( 'woo_vipps_express_checkout_new_username', '', $email, $userdata, $order );
-			$user_id  = wc_create_new_customer( $email, $username, wp_generate_password(), $userdata );
-			if ( is_wp_error( $user_id ) ) {
-				$user = get_user_by( 'email', $email );
-				if ( ! $user ) {
-					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Unable to create or find the Checkout customer: %s', $order_id, $user_id->get_error_message() ) );
-
-					return;
-				}
-
-				$user_id = $user->ID;
-			}
-
-			$customer = new WC_Customer( $user_id );
-			$this->maybe_update_billing_and_shipping( $customer, $session );
-
-			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment: replacing customer with new id %s", $order_id, $user_id ) );
-
-			$order->set_customer_id( $user_id );
-			$order->save();
-
-			$customer = new WC_Customer( $user_id );
-			do_action( 'woo_vipps_express_checkout_new_customer', $customer, $order->get_id() );
-		}
-
-		// Refresh order
-		$order = wc_get_order( $order_id );
-
-		$this->maybe_update_billing_and_shipping( $order, $session );
-
-		// Update subscription with the correct customer id, and agreement id
-		$existing_subscriptions = wcs_get_subscriptions_for_order( $order );
-
-		// Create a subscription if we have no subscription, because it might've been deleted previously if this session has been recovered.
-		if ( empty( $existing_subscriptions ) ) {
-			$existing_subscriptions = $this->gateway()->create_partial_subscriptions_from_order( $order );
-		}
-
-		// If we still have no subscriptions, something is wrong. Log it
-		if ( empty( $existing_subscriptions ) ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Unable to create a subscription for Checkout order and agreement ID %s", $order_id, $agreement_id ) );
-
-			return;
-		}
-
-		/** @var WC_Subscription $subscription */
-		$subscription = array_pop( $existing_subscriptions );
-
-		if ( ! $subscription ) {
-			return;
-		}
-
-		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
-
-		$subscription->set_customer_id( $order->get_customer_id( 'edit' ) );
-		wcs_copy_order_address( $order, $subscription );
-		$subscription->save();
-
-		$this->gateway()->check_charge_status( $order_id, true );
-
-		// This is passed off to regular cron or API handling after this point
-		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Finished handling Vipps/MobilePay Checkout payment for agreement ID %s", $order_id, $agreement_id ) );
 	}
 
+	/** Keep the public Checkout contact adapter for existing integrations. */
 	public function maybe_update_billing_and_shipping( $object, $session ): void {
-		$contact = $session['billingDetails'] ?? $session['shippingDetails'];
+		$billing  = $this->normalize_checkout_contact( $session['billingDetails'] ?? $session['shippingDetails'] ?? [] );
+		$shipping = isset( $session['shippingDetails'] )
+			? $this->normalize_checkout_contact( $session['shippingDetails'] ) : null;
+		$this->purchase()->update_addresses( $object, $billing, $shipping, WC_Vipps_Recurring_Purchase::ADDRESS_SOURCE_SELECTED );
+	}
 
-		if ( empty( $contact ) ) {
-			return;
+	private function purchase(): WC_Vipps_Recurring_Purchase {
+		return new WC_Vipps_Recurring_Purchase( $this->gateway() );
+	}
+
+	/** Checkout-specific field names stop at this adapter. */
+	private function normalize_checkout_contact( array $contact ): array {
+		$fields = [
+			'email'         => 'email',
+			'firstName'     => 'first_name',
+			'lastName'      => 'last_name',
+			'company'       => 'company',
+			'streetAddress' => 'address_1',
+			'addressLine2'  => 'address_2',
+			'city'          => 'city',
+			'state'         => 'state',
+			'postalCode'    => 'postcode',
+			'country'       => 'country',
+		];
+
+		$normalized = [];
+		foreach ( $fields as $source => $target ) {
+			if ( array_key_exists( $source, $contact ) ) {
+				$normalized[ $target ] = $contact[ $source ];
+			}
 		}
 
-		if ( ! trim( $object->get_billing_email() ) || trim( $object->get_billing_email() ) === trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) ) {
-			$object->set_billing_email( $contact['email'] );
+		if ( ! empty( $normalized['address_1'] ) && is_scalar( $normalized['address_1'] ) ) {
+			$lines = preg_split( '/\r\n|\r|\n/', $normalized['address_1'], 2 );
+			$normalized['address_1'] = $lines[0];
+			$normalized['address_2'] = $normalized['address_2'] ?? ( $lines[1] ?? '' );
 		}
 
-		$object->set_billing_phone( '+' . $contact['phoneNumber'] );
-		$object->set_billing_first_name( $contact['firstName'] );
-		$object->set_billing_last_name( $contact['lastName'] );
-		$object->set_billing_address_1( $contact['streetAddress'] );
-		$object->set_billing_city( $contact['city'] );
-		$object->set_billing_postcode( $contact['postalCode'] );
-		$object->set_billing_country( $contact['country'] );
+		if ( ! empty( $contact['phoneNumber'] ) && is_scalar( $contact['phoneNumber'] ) ) {
+			$phone = WC_Vipps_Recurring_Helper::normalize_phone_number( $contact['phoneNumber'], $normalized['country'] ?? '' );
 
-		if ( isset( $session['shippingDetails'] ) ) {
-			$contact = $session['shippingDetails'];
+			if ( $phone ) {
+				$normalized['phone'] = '+' . $phone;
+			}
 		}
-
-		$object->set_shipping_first_name( $contact['firstName'] );
-		$object->set_shipping_last_name( $contact['lastName'] );
-		$object->set_shipping_address_1( $contact['streetAddress'] );
-		$object->set_shipping_city( $contact['city'] );
-		$object->set_shipping_postcode( $contact['postalCode'] );
-		$object->set_shipping_country( $contact['country'] );
-
-		$object->save();
+		return $normalized;
 	}
 
 	public function maybe_cancel_initial_order( WC_Order $order ): void {
