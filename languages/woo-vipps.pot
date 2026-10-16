@@ -2971,7 +2971,7 @@ msgstr ""
 #, php-format
 msgid ""
 "Only works with '%3$s' (see the above option).<br><br>Hides the contact "
-"fields in %1$s, which speeds up the %2$s process if you <br>don't</b> care "
+"fields in %1$s, which speeds up the %2$s process if you <b>don't</b> care "
 "about customer/contact information. These will instead be filled with a "
 "placeholder.<br>NB: If you have plugins that require contact information, "
 "then this is not going to work very well."
@@ -4074,7 +4074,7 @@ msgstr ""
 #, php-format
 msgid ""
 "The order status when payment fails, this will only affect orders that truly "
-"can be restarted at %1s."
+"can be restarted at %1$s."
 msgstr ""
 
 #. placeholders are options for this setting
@@ -4307,7 +4307,7 @@ msgstr ""
 #: payment/Vipps.class.php:1551
 #, php-format
 msgid ""
-"This product does <b>not</b> support %1$s, and so will <b>not</b> %1$s "
+"This product does <b>not</b> support %1$s, and so will <b>not</b> have a %1$s "
 "button."
 msgstr ""
 
