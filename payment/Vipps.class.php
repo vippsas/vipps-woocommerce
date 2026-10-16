@@ -93,17 +93,69 @@ class Vipps {
     // To simplify development, we load translations from the plugins' own .mos on development branches. IOK 2023-11-28
     public static function load_plugin_textdomain( $domain, $deprecated = false, $plugin_rel_path = false ) {
         $development = apply_filters('woo_vipps_use_plugin_translations', false);
-        if (!$development) {
-           return load_plugin_textdomain($domain, $deprecated, $plugin_rel_path);
-        }
-        // Available since 6.1.0 only IOK 2023-01-25
-        global $wp_textdomain_registry;
-        if ($wp_textdomain_registry) {
-            $locale = apply_filters( 'plugin_locale', determine_locale(), $domain );
-            $mofile = $domain . '-' . $locale . '.mo';
+
+	// Available since 6.1.0 only IOK 2023-01-25
+	global $wp_textdomain_registry;
+	if ($development && $wp_textdomain_registry) {
+		$locale = apply_filters( 'plugin_locale', determine_locale(), $domain );
+		$mofile = $domain . '-' . $locale . '.mo';
+		$path = WP_PLUGIN_DIR . '/' . trim( $plugin_rel_path, '/' );
+		$wp_textdomain_registry->set_custom_path( $domain, $path );
+		return load_textdomain( $domain, $path . '/' . $mofile, $locale );
+	}
+
+	// When not in development, we'll use our local translations where the official ones are missing
+	// IOK 2026-10-16
+        $loaded = load_plugin_textdomain( $domain, $deprecated, $plugin_rel_path );
+
+        if ( false !== $plugin_rel_path ) {
             $path = WP_PLUGIN_DIR . '/' . trim( $plugin_rel_path, '/' );
-            $wp_textdomain_registry->set_custom_path( $domain, $path );
-            return load_textdomain( $domain, $path . '/' . $mofile, $locale );
+        } elseif ( false !== $deprecated ) {
+            $path = ABSPATH . trim( $deprecated, '/' );
+        } else {
+            $path = WP_PLUGIN_DIR;
+        }
+
+        // WordPress 6.3-6.6 load translations here; 6.7+ only registers the path.
+        // On 6.7+, just-in-time loading must run before our bundled fallback is added.
+        // This method is called on after_setup_theme, when that lookup is safe.
+        global $wp_version;
+        $locale = determine_locale();
+        if ( version_compare( $wp_version, '6.7', '<' ) ) {
+            $locale = apply_filters( 'plugin_locale', $locale, $domain );
+         }
+
+         // This loader is used for one domain. Keep its path in the callback
+         // so a locale switch can add the same fallback after WordPress reloads.
+         static $locale_hook_registered = false;
+         if ( ! $locale_hook_registered ) {
+             add_action( 'change_locale', static function ( $locale ) use ( $domain, $path ) {
+                 self::load_translation_fallback( $domain, $path, $locale );
+             } );
+             $locale_hook_registered = true;
+         }
+
+         self::load_translation_fallback( $domain, $path, $locale );
+         return $loaded;
+    }
+
+    private static function load_translation_fallback( $domain, $path, $locale ) {
+        $mofile = $path . '/' . $domain . '-' . $locale . '.mo';
+        if ( ! is_readable( $mofile ) ) {
+            return;
+        }
+
+        // WordPress 6.3-6.4 preserve entries already loaded when merging MO
+        // files; 6.5+ search loaded files in order. Trigger 6.7+'s deferred
+        // official load before adding our MO, so official entries always win.
+        get_translations_for_domain( $domain );
+
+        // load_textdomain() also changes the registry's preferred directory.
+        // Restore it so a later reload still selects the official language pack.
+        global $wp_textdomain_registry;
+        $preferred_path = $wp_textdomain_registry->get( $domain, $locale );
+        if ( load_textdomain( $domain, $mofile, $locale ) && $preferred_path ) {
+            $wp_textdomain_registry->set( $domain, $locale, $preferred_path );
         }
     }
 
