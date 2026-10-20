@@ -1072,7 +1072,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $default_ask_address_for_express = 'no';
         $default_status_on_fail = 'failed';
         $default_express_show_in_checkout = 'yes';
-        $default_terms_in_app = 'no';
+        $default_express_legacy_terms_override = 'no';
         if ($current) {
             $default_static_shipping_for_checkout = (isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
             $default_ask_address_for_express = (isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
@@ -1092,7 +1092,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Migrate new terms option. LP 2026-10-20
             if (isset($current['expresscheckout_termscheckbox']) == 'yes') {
-                $default_terms_in_app = 'yes';
+                $default_express_legacy_terms_override = 'yes';
             }
         }
 
@@ -1470,7 +1470,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'label' => __('Ask the customer to accept the terms and conditions in the app before purchase', 'woo-vipps'),
                     'type'        => 'checkbox',
                     'description' => __('Ask the user to accept the terms and conditions in the app before purchase.', 'woo-vipps'),
-                    'default'     => $default_terms_in_app,
+                    'default'     => 'no',
             ],
             'privacy_in_app' => [
                     'title'       => __('Accept privacy policy in the app', 'woo-vipps'),
@@ -1531,7 +1531,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'label'       => sprintf(__('Confirm terms and conditions in the store', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'type'        => 'checkbox',
                         'description' => sprintf(__('When using %1$s, ask the user to confirm that they have read and accepted the terms and conditons before proceeding to the app.<br>This overrides the main setting to confirm this in the app instead, so they won\'t be asked twice.', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                        'default'     => 'no',
+                        'default'     => $default_express_legacy_terms_override,
                 ),
 
                 'expresscheckout_always_address' => array(
