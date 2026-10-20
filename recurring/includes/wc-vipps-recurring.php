@@ -228,7 +228,7 @@ class WC_Vipps_Recurring {
 		] );
 
 		if ( $this->gateway()->test_mode ) {
-			$notice = __( 'Vipps/MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!', 'woo-vipps' );
+			$notice = sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!', 'woo-vipps' ), Vipps::CompanyName() );
 			$this->notices->warning( $notice );
 		}
 
@@ -487,8 +487,8 @@ class WC_Vipps_Recurring {
 	 */
 	public function admin_menu() {
 		add_options_page(
-			__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
-			__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
+			sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
+			sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
 			'manage_options',
 			'woo-vipps-recurring',
 			[ $this, 'admin_menu_page_html' ]
@@ -585,7 +585,7 @@ class WC_Vipps_Recurring {
 	 */
 	public function woocommerce_product_data_tabs( $tabs ) {
 		$tabs['wc_vipps_recurring'] = [
-			'label'    => __( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
+			'label'    => sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
 			'target'   => 'wc_vipps_recurring_product_data',
 			'priority' => 100,
 		];
@@ -619,7 +619,7 @@ class WC_Vipps_Recurring {
 			'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE,
 			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE, true ) ?: 'title',
 			'label'       => __( 'Description source', 'woo-vipps' ),
-			'description' => __( 'Where we should source the agreement description from. Displayed in the Vipps/MobilePay app.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Where we should source the agreement description from. Displayed in the %s app.', 'woo-vipps' ), Vipps::CompanyName() ),
 			'desc_tip'    => true,
 			'options'     => [
 				'none'              => __( 'None', 'woo-vipps' ),

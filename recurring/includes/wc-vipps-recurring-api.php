@@ -489,7 +489,7 @@ class WC_Vipps_Recurring_Api {
 		}
 
 		if ( ! $subscription_key || ! $secret_key || ! $client_id ) {
-			throw new WC_Vipps_Recurring_Config_Exception( __( 'Your Vipps/MobilePay Recurring Payments gateway is not correctly configured.', 'woo-vipps' ) );
+			throw new WC_Vipps_Recurring_Config_Exception( sprintf( /* translators: %s: Vipps MobilePay */ __( 'Your %s Recurring Payments gateway is not correctly configured.', 'woo-vipps' ), Vipps::CompanyName() ) );
 		}
 
 		$system_plugin_version = WC_VIPPS_RECURRING_VERSION;
@@ -567,7 +567,7 @@ class WC_Vipps_Recurring_Api {
 	private function handle_http_response( $response, $request_body, $endpoint, $default_error ) {
 		// no response from Vipps
 		if ( ! $response ) {
-			$error_msg = __( 'No response from Vipps/MobilePay', 'woo-vipps' );
+			$error_msg = sprintf( /* translators: %s: Vipps or MobilePay */ __( 'No response from %s', 'woo-vipps' ), $this->gateway->title );
 			WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Temporary Error: %s with request body: %s', $error_msg, $request_body ) );
 
 			throw new WC_Vipps_Recurring_Temporary_Exception( $error_msg );
@@ -594,9 +594,9 @@ class WC_Vipps_Recurring_Api {
 				$error_msg = sprintf( 'HTTP %d', $status );
 			}
 
-			$localized_msg = __( 'Vipps/MobilePay is temporarily unavailable. Please try again.', 'woo-vipps' );
+			$localized_msg = sprintf( /* translators: %s: Vipps or MobilePay */ __( '%s is temporarily unavailable. Please try again.', 'woo-vipps' ), $this->gateway->title );
 			if ( $status === 429 ) {
-				$localized_msg = __( "We hit Vipps/MobilePay's rate limit. Please try again shortly.", 'woo-vipps' );
+				$localized_msg = sprintf( /* translators: %s: Vipps or MobilePay */ __( 'We hit the rate limit at %s. Please try again shortly.', 'woo-vipps' ), $this->gateway->title );
 			}
 
 			$log_body = is_array( $body ) ? json_encode( $body ) : $body;

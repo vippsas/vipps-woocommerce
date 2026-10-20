@@ -5561,3 +5561,216 @@ msgstr ""
 #: recurring/includes/wc-vipps-recurring-express-checkout.php:492
 msgid "Fill in the form below, then try again."
 msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "The agreement was cancelled or expired in %s"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s payment cancelled."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s payment failed."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "A temporary error occurred when refunding a payment through %s. Please ensure the order is refunded manually or reset the order to \"Processing\" and try again."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "An unexpected error occurred while refunding a payment in %s."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%1$s charge created: %2$s. The charge will be complete %3$s."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s is temporarily unavailable."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not capture %1$s charge (HTTP 400): %2$s"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Payment gateway change request cancelled in %s"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "This subscription is already active in %s. You can leave this page."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Request to change gateway to %1$s with agreement ID: %2$s."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Agreement created: %1$s. Customer sent to %2$s for confirmation."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Cancelled due charge in %s."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not cancel charge in %s. Please manually check the status of this order if you plan to process a new renewal order!"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Subscription cancelled by the customer via the %s app."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "No response from %s"
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "%s is temporarily unavailable. Please try again."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "We hit the rate limit at %s. Please try again shortly."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Successfully authenticated with the %s API"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not authenticate with the %1$s API: %2$s"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s agreement ID"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "This %s agreement ID is invalid."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+#, php-format
+msgid "Recurring agreement creation could not be confirmed. Check the API configuration and reconcile this purchase with %s before creating another agreement or payment."
+msgstr ""
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php
+#, php-format
+msgid "Settings saved, but the %s API could not be authenticated."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Let customers start a subscription from a product page, the cart or checkout using their details from %s."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Use fixed-price or free shipping. Customers cannot choose shipping in the %s app."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "For selected products, enable Express checkout in the product's %s tab."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "These settings control the connection between your store and %s."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Find your Merchant Serial Number in the %s developer portal."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Get your API keys from your %s developer portal."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Set renewal orders to \"Completed\" when %s confirms payment."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Use the %s test environment to try payments."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "Where we should source the agreement description from. Displayed in the %s app."
+msgstr ""
+
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#, php-format
+msgid "If you have a lot of %s subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it's job."
+msgstr ""
+
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#, php-format
+msgid "Check status of all %s subscription orders now"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "%s Recurring Payments"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%1$s Recurring Payments works by redirecting your customers to %1$s for confirmation. It creates a payment plan and charges your users on the intervals you specify."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "Your %s Recurring Payments gateway is not correctly configured."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Enable %s Recurring Payments"
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "%s Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!"
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-profile.php
+#, php-format
+msgid "%s profile completion needs attention. Check the API configuration, assign a customer and complete the billing details, then use the order action to retry recurring completion with saved billing details. Do not create another payment."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-profile.php
+#, php-format
+msgid "Waiting for %s profile/customer completion. Automatic status checks will retry the existing purchase."
+msgstr ""

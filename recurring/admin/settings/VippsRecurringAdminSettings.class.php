@@ -167,7 +167,7 @@ class VippsRecurringAdminSettings {
 				'save_changes' => __( 'Save changes', 'woo-vipps' ),
 				'settings_saved' => __( 'Settings saved', 'woo-vipps' ),
 				'save_failed' => __( 'Could not save settings. Please try again.', 'woo-vipps' ),
-				'connection_failed' => __( 'Settings saved, but the Vipps MobilePay API could not be authenticated.', 'woo-vipps' ),
+				'connection_failed' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Settings saved, but the %s API could not be authenticated.', 'woo-vipps' ), Vipps::CompanyName() ),
 				'unsaved_changes' => __( 'You have unsaved changes.', 'woo-vipps' ),
 				'unsupported_field' => __( 'This additional field is available on the WooCommerce settings page.', 'woo-vipps' ),
 				'open_woocommerce' => __( 'Open WooCommerce settings', 'woo-vipps' ),

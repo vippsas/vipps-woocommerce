@@ -7,7 +7,7 @@ return apply_filters(
 	[
 		'enabled'                          => [
 			'title'       => __( 'Enable/Disable', 'woo-vipps' ),
-			'label'       => __( 'Enable Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
+			'label'       => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Enable %s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
 			'type'        => 'checkbox',
 			'description' => '',
 			'default'     => 'no',
@@ -43,9 +43,9 @@ return apply_filters(
 		'title_express_checkout'            => [
 			'type'        => 'title',
 			'title'       => __( 'Express checkout for subscriptions', 'woo-vipps' ),
-			'description' => __( 'Let customers start a subscription from a product page, the cart or checkout using their details from Vipps/MobilePay.', 'woo-vipps' )
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Let customers start a subscription from a product page, the cart or checkout using their details from %s.', 'woo-vipps' ), Vipps::CompanyName() )
 				. '<br><br><strong>' . __( 'Important! Express checkout for subscriptions currently supports only static shipping.', 'woo-vipps' ) . '</strong> '
-				. __( 'Use fixed-price or free shipping. Customers cannot choose shipping in the Vipps/MobilePay app.', 'woo-vipps' ),
+				. sprintf( /* translators: %s: Vipps MobilePay */ __( 'Use fixed-price or free shipping. Customers cannot choose shipping in the %s app.', 'woo-vipps' ), Vipps::CompanyName() ),
 		],
 		'express_enabled'                   => [
 			'title'       => __( 'Enable/Disable', 'woo-vipps' ),
@@ -69,7 +69,7 @@ return apply_filters(
 		'express_product_button'            => [
 			'title'       => __( 'Supported products', 'woo-vipps' ),
 			'type'        => 'select',
-			'description' => __( 'For selected products, enable Express checkout in the product\'s Vipps/MobilePay Recurring Payments tab.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: product tab name */ __( 'For selected products, enable Express checkout in the product\'s %s tab.', 'woo-vipps' ), sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ) ),
 			'default'     => 'all',
 			'options'     => [
 				'all'  => __( 'All subscription products', 'woo-vipps' ),
@@ -139,33 +139,33 @@ return apply_filters(
 		'title_api'                        => [
 			'type'        => 'title',
 			'title'       => __( 'API settings', 'woo-vipps' ),
-			'description' => __( 'These settings control the connection between your store and Vipps MobilePay.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'These settings control the connection between your store and %s.', 'woo-vipps' ), Vipps::CompanyName() ),
 		],
 		'merchant_serial_number'           => [
 			'title'       => __( 'Merchant Serial Number (MSN)', 'woo-vipps' ),
 			'type'        => 'text',
-			'description' => __( 'Find your Merchant Serial Number in the Vipps/MobilePay developer portal.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Find your Merchant Serial Number in the %s developer portal.', 'woo-vipps' ), Vipps::CompanyName() ),
 			'default'     => '',
 			'desc_tip'    => true,
 		],
 		'client_id'                        => [
 			'title'       => __( 'client_id', 'woo-vipps' ),
 			'type'        => 'text',
-			'description' => __( 'Get your API keys from your Vipps/MobilePay developer portal.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Get your API keys from your %s developer portal.', 'woo-vipps' ), Vipps::CompanyName() ),
 			'default'     => '',
 			'desc_tip'    => true,
 		],
 		'secret_key'                       => [
 			'title'       => __( 'client_secret', 'woo-vipps' ),
 			'type'        => 'password',
-			'description' => __( 'Get your API keys from your Vipps/MobilePay developer portal.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Get your API keys from your %s developer portal.', 'woo-vipps' ), Vipps::CompanyName() ),
 			'default'     => '',
 			'desc_tip'    => true,
 		],
 		'subscription_key'                 => [
 			'title'       => __( 'Ocp-Apim-Subscription-Key', 'woo-vipps' ),
 			'type'        => 'password',
-			'description' => __( 'Get your API keys from your Vipps/MobilePay developer portal.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Get your API keys from your %s developer portal.', 'woo-vipps' ), Vipps::CompanyName() ),
 			'default'     => '',
 			'desc_tip'    => true,
 		],
@@ -209,7 +209,7 @@ return apply_filters(
 			'type'        => 'checkbox',
 			'title'       => __( 'Automatically complete paid renewal orders', 'woo-vipps' ),
 			'label'       => __( 'Automatically complete paid renewal orders', 'woo-vipps' ),
-			'description' => __( 'Set renewal orders to "Completed" when Vipps/MobilePay confirms payment.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Set renewal orders to "Completed" when %s confirms payment.', 'woo-vipps' ), Vipps::CompanyName() ),
 			'default'     => 'no',
 		],
 		'title_cron'                       => [
@@ -250,7 +250,7 @@ return apply_filters(
 			'title'       => __( 'Test mode', 'woo-vipps' ),
 			'label'       => __( 'Enable test mode', 'woo-vipps' ),
 			'type'        => 'checkbox',
-			'description' => __( 'Use the Vipps MobilePay test environment to try payments.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Use the %s test environment to try payments.', 'woo-vipps' ), Vipps::CompanyName() ),
 			'default'     => 'no',
 			'disabled'    => WC_VIPPS_RECURRING_TEST_MODE,
 			'desc_tip'    => WC_VIPPS_RECURRING_TEST_MODE ? __( 'Test mode is controlled by WC_VIPPS_RECURRING_TEST_MODE.', 'woo-vipps' ) : null,

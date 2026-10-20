@@ -600,7 +600,7 @@ class WC_Vipps_Recurring_Express_Checkout {
 				wp_schedule_single_event( time() + min( HOUR_IN_SECONDS, 60 * ( 2 ** $attempts ) ), 'wc_vipps_recurring_resume_express_purchase', [ $order_id ] );
 			} else {
 				wp_clear_scheduled_hook( 'wc_vipps_recurring_resume_express_purchase', [ $order_id ] );
-				$order->add_order_note( __( 'Recurring agreement creation could not be confirmed. Check the API configuration and reconcile this purchase with Vipps MobilePay before creating another agreement or payment.', 'woo-vipps' ) );
+				$order->add_order_note( sprintf( /* translators: %s: Vipps MobilePay */ __( 'Recurring agreement creation could not be confirmed. Check the API configuration and reconcile this purchase with %s before creating another agreement or payment.', 'woo-vipps' ), Vipps::CompanyName() ) );
 				$order->update_meta_data( WC_Vipps_Recurring_Profile::META_STATUS, 'needs_attention' );
 				$order->update_meta_data( WC_Vipps_Recurring_Profile::META_REASON, 'agreement_creation' );
 			}

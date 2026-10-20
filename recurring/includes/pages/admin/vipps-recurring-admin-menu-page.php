@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
 
 <div class="wrap">
 	<h1>
-		<?php echo __( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ); ?>
+		<?php echo sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ); ?>
 	</h1>
 
 	<?php
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 
 	<div class="card">
 		<p>
-			<?php echo __( 'If you have a lot of Vipps/MobilePay subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it\'s job.', 'woo-vipps' ); ?>
+			<?php echo sprintf( /* translators: %s: Vipps MobilePay */ __( 'If you have a lot of %s subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it\'s job.', 'woo-vipps' ), Vipps::CompanyName() ); ?>
 		</p>
 
 		<button
@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
 			type="submit"
 			id="check_charge_statuses_now"
 		>
-			<?php echo __( 'Check status of all Vipps/MobilePay subscription orders now', 'woo-vipps' ); ?>
+			<?php echo sprintf( /* translators: %s: Vipps MobilePay */ __( 'Check status of all %s subscription orders now', 'woo-vipps' ), Vipps::CompanyName() ); ?>
 		</button>
 	</div>
 

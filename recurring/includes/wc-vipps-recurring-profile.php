@@ -311,8 +311,8 @@ class WC_Vipps_Recurring_Profile {
 			$message = $reason === 'stopped_payment'
 				? __( 'The recurring agreement has stopped but its initial payment has a capture or refund. Review this purchase manually; do not delete it or create another payment.', 'woo-vipps' )
 				: ( $state === 'needs_attention'
-				? __( 'Vipps profile completion needs attention. Check the API configuration, assign a customer and complete the billing details, then use the order action to retry recurring completion with saved billing details. Do not create another payment.', 'woo-vipps' )
-				: __( 'Waiting for Vipps profile/customer completion. Automatic status checks will retry the existing purchase.', 'woo-vipps' ) );
+				? sprintf( /* translators: %s: Vipps or MobilePay */ __( '%s profile completion needs attention. Check the API configuration, assign a customer and complete the billing details, then use the order action to retry recurring completion with saved billing details. Do not create another payment.', 'woo-vipps' ), $this->gateway->title )
+				: sprintf( /* translators: %s: Vipps or MobilePay */ __( 'Waiting for %s profile/customer completion. Automatic status checks will retry the existing purchase.', 'woo-vipps' ), $this->gateway->title ) );
 			$order->add_order_note( $message . ' (' . $reason . ')' );
 		}
 

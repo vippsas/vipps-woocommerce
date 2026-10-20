@@ -6420,3 +6420,216 @@ msgstr ""
 #: recurring/includes/wc-vipps-recurring-express-checkout.php:492
 msgid "Fill in the form below, then try again."
 msgstr "Fyll ut skjemaet nedenfor, og prøv igjen."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "The agreement was cancelled or expired in %s"
+msgstr "Denne avtalen ble avbrutt eller utløp i %s"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s payment cancelled."
+msgstr "%s-betaling kansellert."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s payment failed."
+msgstr "%s-betaling mislyktes."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "A temporary error occurred when refunding a payment through %s. Please ensure the order is refunded manually or reset the order to \"Processing\" and try again."
+msgstr "En midlertidig feil oppsto ved refusjon gjennom %s. Sørg for at ordren er refundert manuelt eller tilbakestill ordren til \"Behandler\" og forsøk på nytt."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "An unexpected error occurred while refunding a payment in %s."
+msgstr "En uforventet feil oppstod ved refusjon av betaling i %s."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%1$s charge created: %2$s. The charge will be complete %3$s."
+msgstr "%1$s-betaling opprettet: %2$s. Betalingen vil være fullført %3$s."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s is temporarily unavailable."
+msgstr "%s er midlertidig utilgjengelig."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not capture %1$s charge (HTTP 400): %2$s"
+msgstr "Kunne ikke trekke %1$s-betaling (HTTP 400): %2$s"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Payment gateway change request cancelled in %s"
+msgstr "Forespørsel om bytte av betalingsmåte avbrutt i %s"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "This subscription is already active in %s. You can leave this page."
+msgstr "Dette abonnementet har allerede en aktiv betalingsavtale i %s. Du kan forlate denne siden."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Request to change gateway to %1$s with agreement ID: %2$s."
+msgstr "Forespørsel om å bytte til %1$s med avtale-ID: %2$s."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Agreement created: %1$s. Customer sent to %2$s for confirmation."
+msgstr "Avtale opprettet: %1$s. Kunden sendt til %2$s for bekreftelse."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Cancelled due charge in %s."
+msgstr "Kansellerte ventende betaling i %s."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not cancel charge in %s. Please manually check the status of this order if you plan to process a new renewal order!"
+msgstr "Kunne ikke kansellere betaling i %s. Sjekk statusen på denne ordren manuelt dersom du skal behandle en ny fornyelsesordre!"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Subscription cancelled by the customer via the %s app."
+msgstr "Abonnementet ble avsluttet av kunden fra %s-appen."
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "No response from %s"
+msgstr "Intet svar fra %s"
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "%s is temporarily unavailable. Please try again."
+msgstr "%s er midlertidig utilgjengelig. Vennligst prøv igjen."
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "We hit the rate limit at %s. Please try again shortly."
+msgstr "Vi har nådd trafikkgrensen hos %s. Vennligst prøv igjen om kort tid."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Successfully authenticated with the %s API"
+msgstr "Autentisert med %s API-et"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not authenticate with the %1$s API: %2$s"
+msgstr "Kunne ikke autentisere med %1$s API-et: %2$s"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s agreement ID"
+msgstr "%s avtale-ID"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "This %s agreement ID is invalid."
+msgstr "Denne %s betalingsavtale-ID-en er ugyldig."
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+#, php-format
+msgid "Recurring agreement creation could not be confirmed. Check the API configuration and reconcile this purchase with %s before creating another agreement or payment."
+msgstr "Opprettelsen av betalingsavtalen kunne ikke bekreftes. Kontroller API-konfigurasjonen og avstem dette kjøpet med %s før du oppretter en ny avtale eller betaling."
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php
+#, php-format
+msgid "Settings saved, but the %s API could not be authenticated."
+msgstr "Innstillingene ble lagret, men kunne ikke autentiseres mot %s-API-et."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Let customers start a subscription from a product page, the cart or checkout using their details from %s."
+msgstr "La kunder starte et abonnement fra en produktside, handlekurven eller kassen med opplysningene sine fra %s."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Use fixed-price or free shipping. Customers cannot choose shipping in the %s app."
+msgstr "Bruk fastpris eller gratis frakt. Kunden kan ikke velge frakt i %s-appen."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "For selected products, enable Express checkout in the product's %s tab."
+msgstr "For utvalgte produkter aktiverer du hurtigkasse i produktets fane %s."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "These settings control the connection between your store and %s."
+msgstr "Disse innstillingene er for tilkoblingen mellom butikken din og %s."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Find your Merchant Serial Number in the %s developer portal."
+msgstr "Finn ditt Merchant Serial Number i utviklerportalen til %s."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Get your API keys from your %s developer portal."
+msgstr "Hent API-nøklene dine fra utviklerportalen hos %s."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Set renewal orders to \"Completed\" when %s confirms payment."
+msgstr "Sett fornyelsesbestillinger til «Fullført» når %s bekrefter betalingen."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Use the %s test environment to try payments."
+msgstr "Bruk testmiljøet til %s for å prøve betalinger."
+
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "Where we should source the agreement description from. Displayed in the %s app."
+msgstr "Hvor beskrivelsen som brukes til betalingsavtalen skal komme fra. Vist i %s-appen."
+
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#, php-format
+msgid "If you have a lot of %s subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it's job."
+msgstr "Om du har mange faste betalinger med %s som foreløpig er på vent kan det hende du vil til å kontrollere status på alle ordrene i stedet for å vente på at kjøring av en planlagt oppgave skal gjøre seg ferdig."
+
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#, php-format
+msgid "Check status of all %s subscription orders now"
+msgstr "Kontroller status på alle %s faste betalinger-ordre nå"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "%s Recurring Payments"
+msgstr "%s faste betalinger"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%1$s Recurring Payments works by redirecting your customers to %1$s for confirmation. It creates a payment plan and charges your users on the intervals you specify."
+msgstr "%1$s faste betalinger virker ved å omdirigere kundene dine til %1$s for bekreftelse. Den oppretter en betalingsplan og belaster brukerne dine på de intervallene du angir."
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "Your %s Recurring Payments gateway is not correctly configured."
+msgstr "Din %s faste betalinger-løsning er ikke konfigurert riktig."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Enable %s Recurring Payments"
+msgstr "Slå på %s faste betalinger"
+
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "%s Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!"
+msgstr "%s faste betalinger er foreløpig i testmodus - ingen ekte betalinger vil finne sted. Slå av testmodus når du er klar til å gå live!"
+
+#: recurring/includes/wc-vipps-recurring-profile.php
+#, php-format
+msgid "%s profile completion needs attention. Check the API configuration, assign a customer and complete the billing details, then use the order action to retry recurring completion with saved billing details. Do not create another payment."
+msgstr "Fullføring av %s-profilen krever oppfølging. Kontroller API-konfigurasjonen, tilordne en kunde og fyll ut fakturaopplysningene, og bruk deretter ordrehandlingen for å prøve å fullføre den faste betalingen på nytt med de lagrede fakturaopplysningene. Ikke opprett en ny betaling."
+
+#: recurring/includes/wc-vipps-recurring-profile.php
+#, php-format
+msgid "Waiting for %s profile/customer completion. Automatic status checks will retry the existing purchase."
+msgstr "Venter på fullføring av %s-profil/kunde. Automatiske statuskontroller prøver det eksisterende kjøpet på nytt."
