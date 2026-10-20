@@ -425,6 +425,10 @@ class VippsAdminSettings
         return array(
                 'settings_subtitle' => __('Single payments', 'woo-vipps'),
                 'express_shipping_section' => __('Shipping', 'woo-vipps'),
+                'keys_info' => [
+                    'body' => sprintf(__('Find your keys at the %s portal'), Vipps::CompanyName()),
+                    'link' => 'https://portal.vippsmobilepay.com/login',
+                ],
                 'test_keys_section' => __('Test environment', 'woo-vipps'),
                 'production_keys_section' => __('Production environment', 'woo-vipps'),
                 'order_status_section' => __('Order status', 'woo-vipps'),
