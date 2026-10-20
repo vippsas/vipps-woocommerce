@@ -1118,7 +1118,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
                 'vipps_checkout_enabled' => array(
-                    'title'       => sprintf(__('Enable %s'), Vipps::CheckoutName()),
+                    'title'       => sprintf(__('Enable %s', 'woo-vipps'), Vipps::CheckoutName()),
                     'label' => '',
                     'type'        => 'checkbox',
                     'description' => sprintf(__('This will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy with %2$s, card, and external payment methods - no need to manually type in addresses!', 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
@@ -1699,7 +1699,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'title' => __('Test mode', 'woo-vipps'),
                 'label' => __('Test mode', 'woo-vipps'),
                 'type'  => 'checkbox',
-                'description' => sprintf(__('Use the %1$s test environment instead of live production environment. No real transactions will be performed.<br><br>You will need to fill out your test environment keys in the <a href="#%2$s">%2$s</a> tab and install a separate app on your phone for the, see <a href="%3$s">%1$s docs</a> for more info.<br>The constant VIPPS_TEST_MODE in your wp-config file will override this option. ', 'woo-vipps'), Vipps::CompanyName(), __('Keys', 'woo-vipps'), 'https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/'),
+                'description' => sprintf(__('Use the %1$s test environment instead of live production environment. No real transactions will be performed.<br><br>You will need to fill out your test environment keys in the <a href="#%2$s">%2$s</a> tab and install a separate app on your phone for the, see <a href="%3$s" target="_blank">%1$s docs</a> for more info.<br>The constant VIPPS_TEST_MODE in your wp-config file will override this option. ', 'woo-vipps'), Vipps::CompanyName(), __('API keys', 'woo-vipps'), 'https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/'),
                 'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
                 ),
        );

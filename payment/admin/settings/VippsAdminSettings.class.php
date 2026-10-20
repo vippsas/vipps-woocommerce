@@ -556,7 +556,7 @@ class VippsAdminSettings
         $cc_translations['cc_options'] = [
            'title' => __('Card payments', 'woo-vipps'), 
            'description' => __("Provide a card payment method for customers that haven't got the app (yet!)", 'woo-vipps'),
-            'test_mode_warning' => sprintf(__('Warning: card payments may not yet be available in the test environment, please check the %1$s <a href="https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/">knowledge base</a> for updated status about the test environment.'), Vipps::CompanyName()),
+            'test_mode_warning' => sprintf(__('Warning: card payments may not yet be available in the test environment, please check the %1$s <a href="https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/">knowledge base</a> for updated status about the test environment.', 'woo-vipps'), Vipps::CompanyName()),
         ];
 
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', array_merge($gw->form_fields, $cc_translations, self::common_translations(), $wizardTranslations));

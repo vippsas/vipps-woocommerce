@@ -4639,7 +4639,7 @@ msgid ""
 "Use the %1$s test environment instead of live production environment. No "
 "real transactions will be performed.<br><br>You will need to fill out your "
 "test environment keys in the <a href=\"#%2$s\">%2$s</a> tab and install a "
-"separate app on your phone for the, see <a href=\"%3$s\">%1$s docs</a> for "
+"separate app on your phone for the, see <a href=\"%3$s\" target=\"_blank\">%1$s docs</a> for "
 "more info.<br>The constant VIPPS_TEST_MODE in your wp-config file will "
 "override this option. "
 msgstr ""
@@ -4865,6 +4865,15 @@ msgstr ""
 
 #: payment/Vipps.class.php:4578 payment/Vipps.class.php:4592
 msgid "Waiting on order"
+msgstr ""
+
+#: payment/admin/settings/VippsAdminSettings.class.php:559
+#, php-format
+msgid ""
+"Warning: card payments may not yet be available in the test environment, "
+"please check the %1$s <a "
+"href=\"https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/\">knowledge "
+"base</a> for updated status about the test environment."
 msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:349

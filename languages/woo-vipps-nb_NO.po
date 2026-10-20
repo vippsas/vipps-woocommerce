@@ -2,16 +2,18 @@
 # This file is distributed under the same license as the Plugins - Pay with Vipps and MobilePay for WooCommerce - Stable (latest release) package.
 msgid ""
 msgstr ""
+"Project-Id-Version: Plugins - Pay with Vipps and MobilePay for WooCommerce - "
+"Stable (latest release)\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-16 08:58+0000\n"
 "PO-Revision-Date: 2026-10-16 11:01+0000\n"
+"Language-Team: Norsk bokmål\n"
+"Language: nb_NO\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Loco https://localise.biz/\n"
-"Language: nb_NO\n"
-"Project-Id-Version: Plugins - Pay with Vipps and MobilePay for WooCommerce - "
-"Stable (latest release)\n"
-"Language-Team: Norsk bokmål"
 
 #: payment/WC_Gateway_Vipps.class.php:2512
 msgid " - order does not need processing"
@@ -30,8 +32,8 @@ msgstr "\"Fortsett å handle\"-lenke"
 
 #: payment/VippsCheckout.class.php:1252 payment/VippsKCSupport.class.php:64
 #: payment/Vipps.class.php:964 payment/Vipps.class.php:1152
-#: payment/Vipps.class.php:1152 payment/Vipps.class.php:1207
-#: payment/Vipps.class.php:1258 payment/Vipps.class.php:1504
+#: payment/Vipps.class.php:1207 payment/Vipps.class.php:1258
+#: payment/Vipps.class.php:1504
 #, php-format
 msgid "%1$s"
 msgstr "%1$s"
@@ -107,8 +109,8 @@ msgid ""
 "%1$s is installed and active. You can configure the plugin at its <a "
 "href='%2$s'>settings page</a>"
 msgstr ""
-"%1$s er installert og aktiv. Du kan konfigurere utvidelsen på <a href='%2$s'>"
-"innstillinger-siden dens.</a>"
+"%1$s er installert og aktiv. Du kan konfigurere utvidelsen på <a "
+"href='%2$s'>innstillinger-siden dens.</a>"
 
 #: payment/Vipps.class.php:977
 #, php-format
@@ -116,8 +118,8 @@ msgid ""
 "%1$s is installed, but not active. Activate it on the <a href='%2$s'>plugins "
 "page</a>"
 msgstr ""
-"%1$s er installert, men ikke aktiv. Aktiver den på <a href='%2$s'>"
-"utvidelsessiden</a>"
+"%1$s er installert, men ikke aktiv. Aktiver den på <a "
+"href='%2$s'>utvidelsessiden</a>"
 
 #: payment/WC_Gateway_Vipps.class.php:3855
 #, php-format
@@ -388,8 +390,8 @@ msgstr "<a href='%1$s'>%2$s -oppsettet</a> er ferdig."
 #: payment/Vipps.class.php:494
 #, php-format
 msgid ""
-"<p>%1$s not yet configured:  please go to <a href='%2$s'>the %1$s "
-"settings</a> to complete your setup!</p>"
+"<p>%1$s not yet configured:  please go to <a href='%2$s'>the %1$s settings</"
+"a> to complete your setup!</p>"
 msgstr ""
 "<p>%1$s er ikke konfigurert. Vennligst gå til <a href='%2$s'>%1$s-"
 "innstillingene</a> for å fullføre oppsettet!</p>"
@@ -400,8 +402,8 @@ msgid ""
 "<p>%1$s not yet correctly configured:  please go to <a href='%2$s'>the %1$s "
 "settings</a> to complete your setup:<br> %3$s</p>"
 msgstr ""
-"<p>%1$s er ennå ikke korrekt konfigurert: Vennligst gå til <a href='%2$s'>"
-"%1$s -innstillingene</a> for å fullføre oppsettet:<br> %3$s</p>"
+"<p>%1$s er ennå ikke korrekt konfigurert: Vennligst gå til <a "
+"href='%2$s'>%1$s -innstillingene</a> for å fullføre oppsettet:<br> %3$s</p>"
 
 #: payment/lib/recurring-translations.php:49
 #: recurring/includes/admin/vipps-recurring-settings.php:111
@@ -466,7 +468,6 @@ msgstr "Legg til"
 
 #: payment/Blocks/woo-vipps-blocks.php:152
 #, php-format
-#| msgid "Add a %1$s Buy Now-button to the mini-cart"
 msgid "Add a %s %s button to the mini-cart"
 msgstr "Legg til en %s %s -knapp til minihandlekurven"
 
@@ -957,8 +958,8 @@ msgstr "Kan ikke legge til kategori for ordre %1$d: Ingen Vipps-id"
 
 #: payment/VippsCheckout.class.php:1522
 msgid ""
-"Cannot add pickup point: A pickup point needs to have keys id, name, address,"
-" city, postalCode and country: "
+"Cannot add pickup point: A pickup point needs to have keys id, name, "
+"address, city, postalCode and country: "
 msgstr ""
 "Kan ikke legge til hentepunkt: Et hentepunkt må ha nøklene id, name, adress, "
 "city, postalCode og country: "
@@ -1241,9 +1242,6 @@ msgstr "Kasse-innstillinger"
 
 #: payment/WC_Gateway_Vipps.class.php:1428
 #, php-format
-#| msgid ""
-#| "Choose a transformation to apply to phone numbers for %1$s and Express "
-#| "Checkout"
 msgid "Choose a transformation to apply to phone numbers for %1$s and %2$s"
 msgstr "Velg en transformasjon for telefonnumre for %1$s og %2$s"
 
@@ -1290,7 +1288,8 @@ msgstr "Velg verb"
 
 #: payment/WC_Gateway_Vipps.class.php:1363
 #: payment/WC_Gateway_Vipps.class.php:1369
-msgid "Choose which payment method should be displayed to customers at checkout"
+msgid ""
+"Choose which payment method should be displayed to customers at checkout"
 msgstr "Velg betalingsmåte som vises til kundene i kassen"
 
 #: recurring/includes/admin/vipps-recurring-settings.php:56
@@ -1754,7 +1753,7 @@ msgstr "Rabattkode lagt til!"
 #: payment/WC_Gateway_Vipps.class.php:1602
 #, php-format
 msgid "Create and log in new customers during %1$s checkout."
-msgstr "Opprett nye kunder og logg dem inn i %1$s-kassen."
+msgstr "Opprett nye kunder og logg dem inn under %1$s-kjøp."
 
 #: payment/WC_Gateway_Vipps.class.php:1132
 #, php-format
@@ -1770,7 +1769,7 @@ msgstr "Opprett nye kunder og logg dem inn i hurtigkassen."
 #: payment/WC_Gateway_Vipps.class.php:1599
 #: payment/WC_Gateway_Vipps.class.php:1600
 msgid "Create new customers for guest checkouts"
-msgstr "Opprett nye kunder ved kjøp uten innlogging"
+msgstr "Opprett nye kunder ved gjestekjøp"
 
 #: payment/Vipps.class.php:1623 payment/Vipps.class.php:1633
 msgid "Create shareable link"
@@ -2047,11 +2046,11 @@ msgstr "Slå på %1$s"
 #: payment/WC_Gateway_Vipps.class.php:1523
 #, php-format
 msgid "Enable %s"
-msgstr "Aktiver %s"
+msgstr "Slå på %s"
 
 #: payment/WC_Gateway_VippsCard.class.php:116
 msgid "Enable card payments"
-msgstr "Aktiver kortbetalinger"
+msgstr "Slå på kortbetalinger"
 
 #: payment/lib/recurring-translations.php:71
 #: recurring/includes/admin/vipps-recurring-settings.php:174
@@ -2208,9 +2207,9 @@ msgstr "Feil under tilbakebetaling via %1$s:"
 #: payment/Vipps.class.php:239
 #: payment/admin/settings/VippsAdminSettings.class.php:57
 msgid ""
-"Error: Cannot instantiate payment gateway, because WooCommerce is not loaded!"
-" This can happen when WooCommerce updates itself; but if it didn't, please "
-"activate WooCommerce again"
+"Error: Cannot instantiate payment gateway, because WooCommerce is not "
+"loaded! This can happen when WooCommerce updates itself; but if it didn't, "
+"please activate WooCommerce again"
 msgstr ""
 "Feil: Kunne ikke opprette betalingsmåten, fordi WooCommerce ikke er lastet "
 "inn ennå! Dette kan hende i noen situasjoner der WooCommerce oppdaterer seg "
@@ -2355,13 +2354,14 @@ msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1475
 #: payment/WC_Gateway_Vipps.class.php:1507
+#, fuzzy
 msgid ""
 "Find your account under the \"Developer\" tab on https://portal."
 "vippsmobilepay.com/ and choose \"show keys\". Copy the value of \"Ocp-Apim-"
 "Subscription-Key\""
 msgstr ""
-"Finn salgsstedet ditt under «Utvikler» på https://portal.vippsmobilepay.com/,"
-" og velg «Show keys». Kopier verdien for «Ocp-Apim-Subscription-Key»."
+"Finn ditt salgssted under “Utvikler” på https://portal.vippsmobilepay.com/ "
+"og trykk på “Show keys”, kopier verdien til “client_secret”"
 
 #: payment/WC_Gateway_Vipps.class.php:1354
 msgid "Finland"
@@ -2575,7 +2575,7 @@ msgstr ""
 #, php-format
 msgid "If you choose %s, enable it individually in product edit."
 msgstr ""
-"Hvis du velger %s, må du aktivere det for hvert enkelt produkt under "
+"Hvis du velger %s, må du aktivere det for hvert enkelt produkt i "
 "produktredigering."
 
 #: payment/Vipps.class.php:858 payment/Vipps.class.php:906
@@ -2615,9 +2615,9 @@ msgid ""
 "out the <a href=\"https://wordpress.org/support/plugin/woo-vipps/\" "
 "target=\"_blank\">support forum.</a>"
 msgstr ""
-"Om du har spørsmål om denne utvidelsen, er du velkommen til <a href=\"https:"
-"//wordpress.org/support/plugin/woo-vipps/\" target=\"_blank\">brukerforumet."
-"</a>"
+"Om du har spørsmål om denne utvidelsen, er du velkommen til <a "
+"href=\"https://wordpress.org/support/plugin/woo-vipps/\" "
+"target=\"_blank\">brukerforumet.</a>"
 
 #: payment/WC_Gateway_Vipps.class.php:1645
 msgid ""
@@ -2641,9 +2641,9 @@ msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:333
 msgid ""
-"If your MSN has registered other callbacks, for instance for another website,"
-" you can manage these here - and you can also add your own hooks that will "
-"be notified of payment events to any other URL you enter."
+"If your MSN has registered other callbacks, for instance for another "
+"website, you can manage these here - and you can also add your own hooks "
+"that will be notified of payment events to any other URL you enter."
 msgstr ""
 "Hvis din MSN har registrert andre callbacks, foreksempel for et annet "
 "nettsted, kan du vedlikeholde dise her - og du kan også legge til dine egne "
@@ -2673,12 +2673,12 @@ msgstr "Bilde-URL"
 #, php-format
 msgid ""
 "Implementing a webhook is not trivial, so you will probably need a developer "
-"for this.  You can read more about what is required <a href=\"%1$s\">here</a>"
-". "
+"for this.  You can read more about what is required <a href=\"%1$s\">here</"
+"a>. "
 msgstr ""
 "Å implementere en webhook er ikke trivielt, så du vil antagelig trenge en "
-"utvikler for dette. Du kan lese mer om hva som trengs <a href=\"%1$s\">"
-"her</a>. "
+"utvikler for dette. Du kan lese mer om hva som trengs <a href=\"%1$s\">her</"
+"a>. "
 
 #: payment/VippsQRCodeController.class.php:239
 msgid "Import"
@@ -2772,10 +2772,10 @@ msgstr ""
 "Vipps. Hvis du nylig har gjenopprettet databasen din, prøv å i stedet "
 "importere denne QR-koden fra valget \"Usynkroniserte koder\" og slett denne. "
 "Hvis du har mange WordPress-systemer som bruker samme Vipps-konto, sørg for "
-"at de bruker forskjellige ordreprefikser (i WooCommerce Vipps-innstillingene)"
-". Du kan også endre på identifikatoren for denne koden (det er mulig du må "
-"slå på dette i sideinnstilllingene) og lagre på nytt hvis du ikke bryr deg "
-"om duplikaten. "
+"at de bruker forskjellige ordreprefikser (i WooCommerce Vipps-"
+"innstillingene). Du kan også endre på identifikatoren for denne koden (det "
+"er mulig du må slå på dette i sideinnstilllingene) og lagre på nytt hvis du "
+"ikke bryr deg om duplikaten. "
 
 #: payment/VippsQRCodeController.class.php:605
 msgid "Item Archives"
@@ -3397,8 +3397,8 @@ msgid ""
 "may be required."
 msgstr ""
 "En ordre med belastede midler eldre enn %d dager ble kansellert - fordi "
-"ordren er så gammel vil den ikke automatisk bli refundert av Vipps MobilePay."
-" Manuell refusjon kan være nødvendig."
+"ordren er så gammel vil den ikke automatisk bli refundert av Vipps "
+"MobilePay. Manuell refusjon kan være nødvendig."
 
 #: payment/VippsCheckout.class.php:202
 #, php-format
@@ -3591,24 +3591,16 @@ msgstr "Tilpasning av telefonnummer for %1$s og %2$s"
 
 #: payment/WC_Gateway_Vipps.class.php:1435
 #, php-format
-#| msgid ""
-#| "Phone numbers from Express or Checkout are in the format 47xxxxxx without "
-#| "plus-sign in front. If you prefer, or if it is neccessary for your "
-#| "integrations, you can transform these numbers either by adding the plus "
-#| "sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping "
-#| "country codes is at the moment only supported for Norwegian, Danish, "
-#| "Finnish and Swedish numbers.<br>Remember to explicitly test your use case "
-#| "before committing to any transformation on your live store."
 msgid ""
 "Phone numbers from %1$s or %2$s are in the format 47xxxxxx without plus-sign "
 "in front. If you prefer, or if it is neccessary for your integrations, you "
 "can transform these numbers either by adding the plus sign or by stripping "
 "the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the "
-"moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>"
-"Remember to explicitly test your use case before committing to any "
+"moment only supported for Norwegian, Danish, Finnish and Swedish numbers."
+"<br>Remember to explicitly test your use case before committing to any "
 "transformation on your live store."
 msgstr ""
-"Telefonnr fra %1$s or %2$s er i formatet 47xxxxxx uten pluss-tegn foran. "
+"Telefonnummer fra %1$s or %2$s er i formatet 47xxxxxx uten pluss-tegn foran. "
 "Hvis du foretrekker det, eller hvis det er nødvendig for dine integrasjoner, "
 "kan du transformere disse telefonnumrene enten ved å legge til et plusstegn "
 "eller ved å fjerne landkoden (45, 46, 47, 358)<br>NB: Å fjerne landkoder "
@@ -3891,9 +3883,9 @@ msgid ""
 "Portal</a>, where you will find the keys you need and where you will have to "
 "register the <em>return url</em> you will find on the settings page."
 msgstr ""
-"Husk, du må sette opp %3$s på <a target='_blank' href='%2$s'>%1$s Portal</a>,"
-" hvor du vil finne nøklene du trenger og hvor du også må registrere <em>"
-"retur-URL-en</em> som du finner på innstillinger-siden."
+"Husk, du må sette opp %3$s på <a target='_blank' href='%2$s'>%1$s Portal</"
+"a>, hvor du vil finne nøklene du trenger og hvor du også må registrere "
+"<em>retur-URL-en</em> som du finner på innstillinger-siden."
 
 #. {brand}: brand name, Vipps or MobilePay
 #: payment/lib/recurring-translations.php:78
@@ -4036,7 +4028,7 @@ msgid "Setting order status to pending to start payment"
 msgstr "Setter ordrestatus til Avventer Betaling for å starte betalingen"
 
 #: payment/Vipps.class.php:995 payment/Vipps.class.php:1154
-#: payment/Vipps.class.php:1154 payment/lib/recurring-translations.php:153
+#: payment/lib/recurring-translations.php:153
 #: recurring/includes/wc-vipps-recurring.php:854
 #: payment/admin/settings/VippsAdminSettings.class.php:365
 msgid "Settings"
@@ -4066,9 +4058,10 @@ msgid ""
 "places that when followed will start %1$s of this product immediately. "
 "Maintain these links here for this product."
 msgstr ""
-"Delbare lenker er lenker du kan dele eksternt, på bannere eller andre steder,"
-" som er slik at når du klikker på dem så vil de starte %1$s på produktet "
-"straks. Du kan holde orden på disse lenkene her for dette produktet."
+"Delbare lenker er lenker du kan dele eksternt, på bannere eller andre "
+"steder, som er slik at når du klikker på dem så vil de starte %1$s på "
+"produktet straks. Du kan holde orden på disse lenkene her for dette "
+"produktet."
 
 #: payment/admin/settings/VippsAdminSettings.class.php:427
 msgid "Shipping"
@@ -4137,10 +4130,10 @@ msgstr ""
 "metadata i frakt-alternativene, som er nødvendig for integrasjon med Bring, "
 "Postnord og lignende. Den nye metoden er dessverre ikke kompatibel med det "
 "gamle <code>'woo_vipps_shipping_methods'</code> filteret, som på ditt "
-"nettsted er blitt overstyrt enten i temaet eller i en utvidelse. Hvis du vil,"
-" kan du fortsette å bruke dette filteret og den gamle metoden - dette vil "
-"fortsette å virke som før. Hvis du vil koble ut filtrene dine og bruke den "
-"nye metoden, kan du velge dette her. "
+"nettsted er blitt overstyrt enten i temaet eller i en utvidelse. Hvis du "
+"vil, kan du fortsette å bruke dette filteret og den gamle metoden - dette "
+"vil fortsette å virke som før. Hvis du vil koble ut filtrene dine og bruke "
+"den nye metoden, kan du velge dette her. "
 
 #: payment/admin/settings/VippsAdminSettings.class.php:426
 msgid "Single payments"
@@ -4361,9 +4354,9 @@ msgstr "Denne avtalen ble avbrutt eller utløp i Vipps MobilePay"
 #: payment/lib/recurring-translations.php:59
 #: recurring/includes/admin/vipps-recurring-settings.php:146
 msgid ""
-"The amount of charges to check the status for in wp-cron per scheduled event."
-" It is recommended to keep this between 5 and 100. The higher the value, the "
-"more performance issues you may run into."
+"The amount of charges to check the status for in wp-cron per scheduled "
+"event. It is recommended to keep this between 5 and 100. The higher the "
+"value, the more performance issues you may run into."
 msgstr ""
 "Mengden trekk som skal sjekkes status på samtidig i wp-cron. Det anbefales å "
 "sette denne til et tall mellom 5 og 100. Desto høyre verdi, desto større "
@@ -4665,8 +4658,8 @@ msgstr "Denne siden blir brukt for diverse spesialhandlinger av %1$s"
 #, php-format
 msgid ""
 "This plugin can no longer be activated because its functionality is now "
-"included in <strong>%1$s</strong>. It is recommended to <strong>"
-"delete</strong> it."
+"included in <strong>%1$s</strong>. It is recommended to <strong>delete</"
+"strong> it."
 msgstr ""
 "Denne utvidelsen kan ikke lenger aktiveres fordi funksjonaliteten nå er "
 "inkludert i <strong>%1$s</strong>. Det anbefales å <strong>slette</strong> "
@@ -4900,10 +4893,6 @@ msgstr "Slå på støtte for %1$s On-Site Messaging merker"
 
 #: payment/WC_Gateway_Vipps.class.php:1653
 #, php-format
-#| msgid ""
-#| "Turn this on to add support for Woos Order Attribution API for Checkout "
-#| "and Express Checkout. Some stores have reported problems when using this "
-#| "API together with Vipps, so be sure to test this if you turn it on."
 msgid ""
 "Turn this on to add support for Woos Order Attribution API for %s and %s. "
 "Some stores have reported problems when using this API together with %s, so "
@@ -5093,16 +5082,16 @@ msgid ""
 "Use the %1$s test environment instead of live production environment. No "
 "real transactions will be performed.<br><br>You will need to fill out your "
 "test environment keys in the <a href=\"#%2$s\">%2$s</a> tab and install a "
-"separate app on your phone for the, see <a href=\"%3$s\">%1$s docs</a> for "
-"more info.<br>The constant VIPPS_TEST_MODE in your wp-config file will "
-"override this option. "
+"separate app on your phone for the, see <a href=\"%3$s\" "
+"target=\"_blank\">%1$s docs</a> for more info.<br>The constant "
+"VIPPS_TEST_MODE in your wp-config file will override this option. "
 msgstr ""
 "Bruk testmiljøet til %1$s i stedet for produksjonsmiljøet. Ingen virkelige "
 "transaksjoner vil bli utført.<br><br>Du må fylle inn nøklene for testmiljøet "
 "under fanen <a href=\"#%2$s\">%2$s</a> og installere en egen app på "
-"telefonen. Se <a href=\"%3$s\">dokumentasjonen for %1$s</a> for mer "
-"informasjon.<br>Konstanten VIPPS_TEST_MODE i wp-config-filen overstyrer "
-"dette valget. "
+"telefonen. Se <a href=\"%3$s\" target=\"_blank\">dokumentasjonen for %1$s</"
+"a> for mer informasjon.<br>Konstanten VIPPS_TEST_MODE i wp-config-filen "
+"overstyrer dette valget. "
 
 #: payment/WC_Gateway_Vipps.class.php:1661
 #, php-format
@@ -5200,14 +5189,14 @@ msgid ""
 "Vipps MobilePay Checkout replaces the normal WooCommerce checkout with an "
 "easier and more seamless checkout that allows you to pay with Vipps "
 "MobilePay (and soon also a credit card). Your customers will be able to "
-"provide their billing/shipping details directly from the Vipps MobilePay app."
-" <br><br><strong>Important!</strong> Checkout for recurring payments <strong>"
-"only supports static shipping</strong> at the moment."
+"provide their billing/shipping details directly from the Vipps MobilePay "
+"app. <br><br><strong>Important!</strong> Checkout for recurring payments "
+"<strong>only supports static shipping</strong> at the moment."
 msgstr ""
 "Vipps MobilePay Checkout erstatter den normale WooCommerce utsjekkingen med "
 "en enklere og mer sømløs utsjekking som lar deg betale med Vipps MobilePay "
-"(og snart også et kredittkort). Dine kunder vil kunne gi sine fakturerings-"
-"/fraktopplysninger direkte fra Vipps MobilePay-appen. <br><br><strong>Viktig!"
+"(og snart også et kredittkort). Dine kunder vil kunne gi sine fakturerings-/"
+"fraktopplysninger direkte fra Vipps MobilePay-appen. <br><br><strong>Viktig!"
 "</strong> Checkout for gjentakende betalinger <strong>støtter kun statisk "
 "frakt</strong> for øyeblikket."
 
@@ -5233,17 +5222,17 @@ msgstr ""
 msgid ""
 "Vipps MobilePay has entered into an agreement to sell the Checkout solution "
 "to Kustom. As part of this transition, <b>Vipps MobilePay Checkout will "
-"become Kustom Checkout</b>. You can follow <a href=\"https://docs.kustom."
-"co/contents/partners/e-commerce-platforms/woocommerce-vipps-guide#switch-"
-"from-vipps-checkout-to-kustom-checkoutguide\" target=\"_blank\">this "
-"guide</a> to migrate over to Kustom Checkout."
+"become Kustom Checkout</b>. You can follow <a href=\"https://docs.kustom.co/"
+"contents/partners/e-commerce-platforms/woocommerce-vipps-guide#switch-from-"
+"vipps-checkout-to-kustom-checkoutguide\" target=\"_blank\">this guide</a> to "
+"migrate over to Kustom Checkout."
 msgstr ""
 "Vipps MobilePay har inngått en avtale om å selge Checkout til Kustom. Som en "
 "del av denne overgangen vil  <b>Vipps Mobilepay Checkout bli til Kustom "
-"Checkout</b>. Du kan følge <a href=\"https://docs.kustom."
-"co/contents/partners/e-commerce-platforms/woocommerce-vipps-guide#switch-"
-"from-vipps-checkout-to-kustom-checkoutguide\" target=\"_blank\">denne "
-"guiden</a> for å gå over til Kustom Checkout."
+"Checkout</b>. Du kan følge <a href=\"https://docs.kustom.co/contents/"
+"partners/e-commerce-platforms/woocommerce-vipps-guide#switch-from-vipps-"
+"checkout-to-kustom-checkoutguide\" target=\"_blank\">denne guiden</a> for å "
+"gå over til Kustom Checkout."
 
 #: payment/lib/recurring-translations.php:139
 msgid "Vipps MobilePay Recurring Checkout"
@@ -5354,6 +5343,19 @@ msgstr "Venter på at du skal belaste betalingen"
 #: payment/Vipps.class.php:4578 payment/Vipps.class.php:4592
 msgid "Waiting on order"
 msgstr "Venter på ordren"
+
+#: payment/admin/settings/VippsAdminSettings.class.php:559
+#, php-format
+msgid ""
+"Warning: card payments may not yet be available in the test environment, "
+"please check the %1$s <a href=\"https://developer.vippsmobilepay.com/docs/"
+"knowledge-base/test-environment/\">knowledge base</a> for updated status "
+"about the test environment."
+msgstr ""
+"Advarsel: Kortbetaling er kanskje ikke tilgjengelig i testmiljøet ennå. Se "
+"<a href=\"https://developer.vippsmobilepay.com/docs/knowledge-base/test-"
+"environment/\">kunnskapsbasen</a> til %1$s for oppdatert status for "
+"testmiljøet."
 
 #: payment/WC_Gateway_Vipps.class.php:349
 #, php-format
@@ -5694,8 +5696,9 @@ msgstr ""
 #, php-format
 msgid ""
 "Your support for recurring payments with %1$s uses the legacy stand-alone "
-"plugin. This is no longer required, and you should <b><a href='%2$s'>"
-"deactivate</a></b> this plugin, since development on this will soon cease."
+"plugin. This is no longer required, and you should <b><a "
+"href='%2$s'>deactivate</a></b> this plugin, since development on this will "
+"soon cease."
 msgstr ""
 "Din støtte for gjentalknde betalinger med %1$s bruker den foreldede, "
 "frittstående utvidelsen. Dette er ikke lenger nødvendig, og du bør <b><a "
@@ -5705,19 +5708,19 @@ msgstr ""
 #: payment/Vipps.class.php:478
 #, php-format
 msgid ""
-"Your theme or a plugin is currently overriding the <code>"
-"'woo_vipps_shipping_methods'</code> filter to customize your shipping "
+"Your theme or a plugin is currently overriding the "
+"<code>'woo_vipps_shipping_methods'</code> filter to customize your shipping "
 "alternatives.  While this works, this disables the newer Express Checkout "
-"shipping system, which is neccessary if your shipping is to include metadata."
-" You can do this, or stop this message, from the <a href=\"%1$s\">settings "
-"page</a>"
+"shipping system, which is neccessary if your shipping is to include "
+"metadata. You can do this, or stop this message, from the <a "
+"href=\"%1$s\">settings page</a>"
 msgstr ""
-"Temaet ditt eller en utvidelse overstyrer for øyeblikket filteret <code>"
-"'woo_vipps_shipping_methods'</code> for å tilpasse dine fraktalternativer. "
-"Dette virker, men vil skru av den nyere Hurtigkasse-fraktmodulen, som er "
-"nødvendig hvis fraktmetodene dine skal inneholde metadata. Du kan gjøre "
-"dette, eller slå av denne meldingen, fra <a href=\"%1$s\">siden for "
-"innstillinger</a>"
+"Temaet ditt eller en utvidelse overstyrer for øyeblikket filteret "
+"<code>'woo_vipps_shipping_methods'</code> for å tilpasse dine "
+"fraktalternativer. Dette virker, men vil skru av den nyere Hurtigkasse-"
+"fraktmodulen, som er nødvendig hvis fraktmetodene dine skal inneholde "
+"metadata. Du kan gjøre dette, eller slå av denne meldingen, fra <a "
+"href=\"%1$s\">siden for innstillinger</a>"
 
 #: payment/lib/recurring-translations.php:124
 #: recurring/includes/wc-vipps-recurring-api.php:456
@@ -5734,3 +5737,10 @@ msgid ""
 msgstr ""
 "WordPress-nettadressen din samsvarer ikke med kravene til nettadresse i "
 "forhandleravtalen. Er nettsiden din offentlig tilgjengelig?"
+
+#~ msgid ""
+#~ "Find your account under the \"Developer\" tab on https://portal."
+#~ "Subscription-Key\""
+#~ msgstr ""
+#~ "Finn salgsstedet ditt under «Utvikler» på https://portal.vippsmobilepay."
+#~ "com/, og velg «Show keys». Kopier verdien for «Ocp-Apim-Subscription-Key»."
