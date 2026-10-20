@@ -4447,3 +4447,176 @@ msgstr "Vipps"
 #: payment/Vipps.class.php:1126 payment/Vipps.class.php:1174
 msgid "%1$s is currently in test mode - no real transactions will occur."
 msgstr "%1$s er i testmodus - ingen ekte transaksjoner vil skje."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Express checkout for subscriptions"
+msgstr "Hurtigkasse for abonnementer"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Customers can start a subscription without filling in the standard checkout form. The Recurring API creates the agreement, and Userinfo supplies customer details with consent. Shipping is calculated in your store, not selected in the Vipps/MobilePay app."
+msgstr "Kunder kan starte et abonnement uten å fylle ut det vanlige kasseskjemaet. Recurring API oppretter avtalen, og Userinfo henter kundeopplysninger med kundens samtykke. Frakt beregnes i nettbutikken og velges ikke i Vipps/MobilePay-appen."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s: Express checkout for subscriptions"
+msgstr "%s: Hurtigkasse for abonnementer"
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid "Could not start Express checkout. Check your order before trying again."
+msgstr "Kunne ikke starte hurtigkassen. Kontroller bestillingen før du prøver igjen."
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid "Could not start Express checkout. Reload this page to check the existing purchase before trying again."
+msgstr "Kunne ikke starte hurtigkassen. Last inn siden på nytt for å kontrollere det eksisterende kjøpet før du prøver igjen."
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid "This product is not available for Express checkout."
+msgstr "Dette produktet er ikke tilgjengelig i hurtigkassen."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Enable Express checkout for subscriptions"
+msgstr "Aktiver hurtigkasse for abonnementer"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Controls new Express purchases. Existing purchases can still complete when this is disabled."
+msgstr "Gjelder nye kjøp i hurtigkassen. Påbegynte kjøp kan fortsatt fullføres når dette er deaktivert."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Cart and mini-cart"
+msgstr "Handlekurv og minihandlekurv"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show the Express checkout button in the cart and supported mini-carts"
+msgstr "Vis hurtigkasseknappen i handlekurven og støttede minihandlekurver"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Checkout page"
+msgstr "Kasseside"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show the Express checkout button on the checkout page"
+msgstr "Vis hurtigkasseknappen på kassesiden"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Subscription product buttons"
+msgstr "Knapper for abonnementsprodukter"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "For selected products, enable the button in the product's Vipps/MobilePay Recurring Payments tab."
+msgstr "For utvalgte produkter aktiverer du knappen i produktfanen Vipps/MobilePay Recurring Payments."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Do not show"
+msgstr "Ikke vis"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "All subscription products"
+msgstr "Alle abonnementsprodukter"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Selected subscription products"
+msgstr "Utvalgte abonnementsprodukter"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Product listings"
+msgstr "Produktlister"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show subscription buttons in shop and category listings"
+msgstr "Vis abonnementsknapper i butikk- og kategorilister"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Uses the product selection above. Variable subscriptions require customers to select options on the product page."
+msgstr "Bruker produktutvalget ovenfor. For variable abonnementer må kunden velge alternativer på produktsiden."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Existing cart"
+msgstr "Eksisterende handlekurv"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Include the existing cart when using a subscription product button"
+msgstr "Ta med den eksisterende handlekurven ved bruk av en abonnementsknapp på et produkt"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "When disabled, only the selected product is purchased and the previous cart is saved for restoration."
+msgstr "Når dette er deaktivert, kjøpes bare det valgte produktet. Den tidligere handlekurven lagres slik at den kan gjenopprettes."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Require terms acceptance before starting an Express purchase"
+msgstr "Krev aksept av vilkårene før et kjøp startes i hurtigkassen"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Uses the WooCommerce terms checkbox and terms page."
+msgstr "Bruker avmerkingsboksen og vilkårssiden fra WooCommerce."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Customer address"
+msgstr "Kundeadresse"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Request an address through Userinfo even when shipping is not required"
+msgstr "Be om adresse via Userinfo også når frakt ikke er nødvendig"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Shipping purchases always request an address. Userinfo does not provide shipping selection in the app."
+msgstr "Ved kjøp som krever frakt, bes det alltid om adresse. Userinfo gir ikke valg av frakt i appen."
+
+#: recurring/includes/wc-vipps-recurring.php
+msgid "Show the product button when recurring Express checkout is enabled for selected products."
+msgstr "Vis produktknappen når hurtigkasse for abonnementer er aktivert for utvalgte produkter."
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid "Express checkout for subscriptions is disabled. Please use the checkout page."
+msgstr "Hurtigkasse for abonnementer er deaktivert. Bruk kassesiden."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Let customers start a subscription from a product page, the cart or checkout using their details from Vipps/MobilePay."
+msgstr "La kunder starte et abonnement fra en produktside, handlekurven eller kassen med opplysningene sine fra Vipps/MobilePay."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Important! Express checkout for subscriptions currently supports only static shipping."
+msgstr "Viktig! Hurtigkasse for abonnementer støtter foreløpig bare statisk frakt."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Use fixed-price or free shipping. Customers cannot choose shipping in the Vipps/MobilePay app."
+msgstr "Bruk fastpris eller gratis frakt. Kunden kan ikke velge frakt i Vipps/MobilePay-appen."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Turning this off hides the buttons. Purchases already started can still finish."
+msgstr "Når dette slås av, skjules knappene. Påbegynte kjøp kan fortsatt fullføres."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Uses the product selection above. Products with options must be opened before purchase."
+msgstr "Bruker produktutvalget ovenfor. Produkter med valgmuligheter må åpnes før kjøp."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "When turned off, customers buy only the selected product. Their other cart items are kept for later."
+msgstr "Når dette er slått av, kjøper kunden bare det valgte produktet. Andre varer i handlekurven beholdes til senere."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Ask customers to accept the terms before payment"
+msgstr "Be kunden godta vilkårene før betaling"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Set your terms and conditions page in WooCommerce settings."
+msgstr "Velg vilkårssiden i innstillingene for WooCommerce."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Ask for an address even for purchases that do not need shipping"
+msgstr "Be om adresse også ved kjøp som ikke krever frakt"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "An address is always requested when shipping is needed."
+msgstr "Det bes alltid om adresse når kjøpet krever frakt."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Abandoned purchases"
+msgstr "Avbrutte kjøp"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Clean up abandoned Express purchases"
+msgstr "Rydd opp i avbrutte kjøp fra hurtigkassen"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Move unpaid, cancelled or expired purchases to the trash after seven days. Runs hourly. Purchases with billing details, a payment or an unresolved status are kept."
+msgstr "Flytt ubetalte, avbrutte eller utløpte kjøp til papirkurven etter sju dager. Kjøres hver time. Kjøp med faktureringsopplysninger, en betaling eller uavklart status beholdes."

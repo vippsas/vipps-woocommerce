@@ -589,6 +589,14 @@ class WC_Vipps_Recurring {
 		echo '<div id="wc_vipps_recurring_product_data" class="panel woocommerce_options_panel hidden">';
 
 		woocommerce_wp_checkbox( [
+			'id'          => WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON,
+			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON, true ),
+			'label'       => __( 'Express checkout for subscriptions', 'woo-vipps' ),
+			'description' => __( 'Show the product button when recurring Express checkout is enabled for selected products.', 'woo-vipps' ),
+			'desc_tip'    => true,
+		] );
+
+		woocommerce_wp_checkbox( [
 			'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE,
 			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, true ),
 			'label'       => __( 'Capture payment instantly', 'woo-vipps' ),
@@ -627,6 +635,9 @@ class WC_Vipps_Recurring {
 	 * @param $post_id
 	 */
 	public function woocommerce_process_product_meta( $post_id ) {
+		update_post_meta( $post_id, WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON,
+			isset( $_POST[ WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON ] ) ? 'yes' : 'no' );
+
 		$capture_instantly = isset( $_POST[ WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ] ) ? 'yes' : 'no';
 		update_post_meta( $post_id, WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, $capture_instantly );
 
@@ -786,6 +797,12 @@ class WC_Vipps_Recurring {
 
 		foreach ( $subscriptions as $subscription ) {
 			$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
+
+			$parent_order = $subscription->get_parent();
+			if ( $parent_order && $parent_order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_ATTEMPT ) ) {
+				( new WC_Vipps_Recurring_Express_Cleanup( $this->gateway() ) )->delete_if_abandoned( $subscription );
+				continue;
+			}
 
 			// Check the status of this subscription's latest order charge just in case.
 			$latest_order    = $subscription->get_last_order( 'all' );

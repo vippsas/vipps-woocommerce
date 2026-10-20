@@ -4757,11 +4757,11 @@ else:
     }
 
 
-    // Reuse the active Express terms policy without starting its purchase flow.
-    public function get_express_checkout_terms_html(): ?string {
+    // Reuse the terms template without starting a purchase. Recurring can supply its own setting.
+    public function get_express_checkout_terms_html(?bool $enabled = null): ?string {
         $gw = $this->gateway();
         $askForTerms = function_exists('wc_terms_and_conditions_checkbox_enabled') ? wc_terms_and_conditions_checkbox_enabled() : true;
-        $askForTerms = $askForTerms && ($gw->get_option('expresscheckout_termscheckbox') == 'yes');
+        $askForTerms = $askForTerms && ($enabled ?? ($gw->get_option('expresscheckout_termscheckbox') == 'yes'));
         $askForTerms = apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $askForTerms);
         if (!$askForTerms) return null;
 

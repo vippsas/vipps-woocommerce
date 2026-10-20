@@ -8,6 +8,7 @@ class WC_Vipps_Recurring_Express_Checkout {
 	public const META_BODY = '_vipps_recurring_express_agreement_body';
 	public const META_REQUEST = '_vipps_recurring_express_request';
 	public const META_SAVED_CART = '_vipps_recurring_saved_cart';
+	public const META_PRODUCT_BUTTON = '_vipps_recurring_express_button';
 	private const SESSION_ATTEMPT = 'vipps_recurring_express_attempt';
 	private const SESSION_BACKUP = 'vipps_recurring_product_cart_backup';
 	private static ?self $instance = null;
@@ -18,6 +19,10 @@ class WC_Vipps_Recurring_Express_Checkout {
 
 	private function gateway(): WC_Gateway_Vipps_Recurring {
 		return WC_Vipps_Recurring::get_instance()->gateway();
+	}
+
+	public function is_enabled(): bool {
+		return $this->gateway()->get_option( 'express_enabled' ) === 'yes' && $this->gateway()->is_available();
 	}
 
 	public static function register_hooks(): void {
@@ -114,20 +119,27 @@ class WC_Vipps_Recurring_Express_Checkout {
 	}
 
 	public function show_cart_button( string $context ): bool {
-		$key = $context === 'checkout' ? 'express_show_in_checkout' : 'cartexpress';
-		$show = Vipps::instance()->gateway()->get_option( $key ) === 'yes';
+		$key = $context === 'checkout' ? 'express_checkout_button' : 'express_cart_button';
+		$show = $this->gateway()->get_option( $key ) === 'yes';
 
-		return $this->gateway()->is_available() && WC()->cart && WC_Subscriptions_Cart::cart_contains_subscription()
+		return $this->is_enabled() && WC()->cart && WC_Subscriptions_Cart::cart_contains_subscription()
 			&& apply_filters( 'woo_vipps_show_express_checkout', $show );
 	}
 
 	public function button_html( string $context, int $product_id = 0 ): string {
+		if ( ! $this->is_enabled() ) { return ''; }
 		if ( ! $product_id && ! $this->show_cart_button( strpos( $context, 'checkout' ) === 0 ? 'checkout' : 'cart' ) ) {
 			return '';
 		}
 
 		$button = apply_filters( 'woo_vipps_express_checkout_button', Vipps::instance()->get_html_button_for_context( $context ) );
-		$classes = [ 'vipps-recurring-express', 'button', 'vipps-buy-now', Vipps::instance()->get_payment_method_name() ];
+		// Reuse the renderer and appearance options, but use the recurring agreement's brand.
+		$markup = new WP_HTML_Tag_Processor( $button );
+		while ( $markup->next_tag( 'vipps-mobilepay-button' ) ) {
+			$markup->set_attribute( 'brand', $this->gateway()->brand );
+		}
+		$button = $markup->get_updated_html();
+		$classes = [ 'vipps-recurring-express', 'button', 'vipps-buy-now', $this->gateway()->title ];
 		$button_args = Vipps::instance()->get_html_button_attrs_for_context( $context );
 
 		if ( ( $button_args['compact'] ?? 'false' ) === 'true' ) {
@@ -214,12 +226,12 @@ class WC_Vipps_Recurring_Express_Checkout {
 
 	private function product_enabled( $product ): bool {
 		if ( ! $product || ! WC_Subscriptions_Product::is_subscription( $product ) || ! $product->is_purchasable()
-			|| ! $product->is_in_stock() || ! $this->gateway()->is_available() ) {
+			|| ! $product->is_in_stock() || ! $this->is_enabled() ) {
 			return false;
 		}
 
-		$how = Vipps::instance()->gateway()->get_option( 'singleproductexpress' );
-		$show = $how === 'all' || ( $how === 'some' && $product->get_meta( '_vipps_buy_now_button' ) === 'yes' );
+		$how = $this->gateway()->get_option( 'express_product_button' );
+		$show = $how === 'all' || ( $how === 'some' && $product->get_meta( self::META_PRODUCT_BUTTON ) === 'yes' );
 
 		return apply_filters( 'woo_vipps_show_single_product_buy_now', $show, $product );
 	}
@@ -235,7 +247,7 @@ class WC_Vipps_Recurring_Express_Checkout {
 	public function catalog_button(): void {
 		global $product;
 
-		if ( Vipps::instance()->gateway()->get_option( 'singleproductexpressarchives' ) === 'yes'
+		if ( $this->gateway()->get_option( 'express_archive_button' ) === 'yes'
 			&& $this->product_enabled( $product ) && $product->is_type( 'subscription' )
 			&& apply_filters( 'woo_vipps_show_single_product_buy_now_in_loop', true, $product ) ) {
 			echo $this->button_html( 'catalog', $product->get_id() );
@@ -420,6 +432,10 @@ class WC_Vipps_Recurring_Express_Checkout {
 		}
 
 		if ( ! $order ) {
+			if ( ! $this->is_enabled() ) {
+				return new WP_Error( 'vipps_recurring_express_disabled', __( 'Express checkout for subscriptions is disabled. Please use the checkout page.', 'woo-vipps' ), [ 'status' => 403 ] );
+			}
+
 			$context = $args['context'] ?? 'cart';
 			$product_request = substr( $request->get_route(), -8 ) === '/product';
 
@@ -447,7 +463,7 @@ class WC_Vipps_Recurring_Express_Checkout {
 				return [ 'redirect' => wc_get_checkout_url() ];
 			}
 
-			$terms = Vipps::instance()->get_express_checkout_terms_html();
+			$terms = Vipps::instance()->get_express_checkout_terms_html( $this->gateway()->get_option( 'express_terms' ) === 'yes' );
 			if ( $previous_order && $previous_order->has_cart_hash( WC()->cart->get_cart_hash() )
 				&& time() - $previous_order->get_date_created()->getTimestamp() <= apply_filters( 'woo_vipps_recent_order_cutoff', 3 * MINUTE_IN_SECONDS ) ) {
 				$terms = '<p>' . esc_html__( 'You recently completed an order with these products. Confirm that you want to buy them again.', 'woo-vipps' ) . '</p>' . ( $terms ?? '' );
@@ -585,7 +601,7 @@ class WC_Vipps_Recurring_Express_Checkout {
 
 		$product = wc_get_product( absint( $args['product_id'] ?? 0 ) );
 		if ( ! $this->product_enabled( $product ) ) {
-			return new WP_Error( 'vipps_recurring_product', __( 'This product is not available for express checkout.', 'woo-vipps' ), [ 'status' => 400 ] );
+			return new WP_Error( 'vipps_recurring_product', __( 'This product is not available for Express checkout.', 'woo-vipps' ), [ 'status' => 400 ] );
 		}
 
 		$variation_id = absint( $args['variation_id'] ?? 0 );
@@ -606,7 +622,7 @@ class WC_Vipps_Recurring_Express_Checkout {
 			return new WP_Error( 'vipps_recurring_quantity', __( 'Could not add this product to the cart. Check its options and quantity.', 'woo-vipps' ), [ 'status' => 400 ] );
 		}
 
-		$compat = apply_filters( 'woo_vipps_single_product_compat_mode', Vipps::instance()->gateway()->get_option( 'singleproductbuynowcompatmode' ) === 'yes', $product );
+		$compat = apply_filters( 'woo_vipps_single_product_compat_mode', $this->gateway()->get_option( 'express_include_cart' ) === 'yes', $product );
 		$contents = WC()->cart->get_cart_contents();
 		$coupons = WC()->cart->get_applied_coupons();
 

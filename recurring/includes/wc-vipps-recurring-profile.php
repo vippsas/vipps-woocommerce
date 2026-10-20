@@ -60,7 +60,7 @@ class WC_Vipps_Recurring_Profile {
 			$scope[] = 'address';
 		}
 
-		if ( Vipps::instance()->gateway()->get_option( 'expresscheckout_always_address' ) === 'yes' ) {
+		if ( $this->gateway->get_option( 'express_always_address' ) === 'yes' ) {
 			$scope[] = 'address';
 		}
 
@@ -303,6 +303,10 @@ class WC_Vipps_Recurring_Profile {
 	}
 
 	private function set_state( WC_Order $order, string $state, string $reason = '' ): void {
+		if ( $state === 'aborted' && ! $order->get_meta( WC_Vipps_Recurring_Express_Cleanup::META_ABANDONED_AT ) ) {
+			$order->update_meta_data( WC_Vipps_Recurring_Express_Cleanup::META_ABANDONED_AT, time() );
+		}
+
 		if ( $reason && ( $order->get_meta( self::META_STATUS ) !== $state || $order->get_meta( self::META_REASON ) !== $reason ) ) {
 			$message = $reason === 'stopped_payment'
 				? __( 'The recurring agreement has stopped but its initial payment has a capture or refund. Review this purchase manually; do not delete it or create another payment.', 'woo-vipps' )

@@ -40,6 +40,78 @@ return apply_filters(
 			// translators: {brand}: brand title (Vipps or MobilePay)
 			'default'     => __( 'Pay with {brand}.', 'woo-vipps' ),
 		],
+		'title_express_checkout'            => [
+			'type'        => 'title',
+			'title'       => __( 'Express checkout for subscriptions', 'woo-vipps' ),
+			'description' => __( 'Let customers start a subscription from a product page, the cart or checkout using their details from Vipps/MobilePay.', 'woo-vipps' )
+				. '<br><br><strong>' . __( 'Important! Express checkout for subscriptions currently supports only static shipping.', 'woo-vipps' ) . '</strong> '
+				. __( 'Use fixed-price or free shipping. Customers cannot choose shipping in the Vipps/MobilePay app.', 'woo-vipps' ),
+		],
+		'express_enabled'                   => [
+			'title'       => __( 'Enable/Disable', 'woo-vipps' ),
+			'label'       => __( 'Enable Express checkout for subscriptions', 'woo-vipps' ),
+			'type'        => 'checkbox',
+			'description' => __( 'Turning this off hides the buttons. Purchases already started can still finish.', 'woo-vipps' ),
+			'default'     => 'no',
+		],
+		'express_cart_button'               => [
+			'title'   => __( 'Cart and mini-cart', 'woo-vipps' ),
+			'label'   => __( 'Show the Express checkout button in the cart and supported mini-carts', 'woo-vipps' ),
+			'type'    => 'checkbox',
+			'default' => 'yes',
+		],
+		'express_checkout_button'           => [
+			'title'   => __( 'Checkout page', 'woo-vipps' ),
+			'label'   => __( 'Show the Express checkout button on the checkout page', 'woo-vipps' ),
+			'type'    => 'checkbox',
+			'default' => 'yes',
+		],
+		'express_product_button'            => [
+			'title'       => __( 'Subscription product buttons', 'woo-vipps' ),
+			'type'        => 'select',
+			'description' => __( 'For selected products, enable the button in the product\'s Vipps/MobilePay Recurring Payments tab.', 'woo-vipps' ),
+			'default'     => 'no',
+			'options'     => [
+				'no'   => __( 'Do not show', 'woo-vipps' ),
+				'all'  => __( 'All subscription products', 'woo-vipps' ),
+				'some' => __( 'Selected subscription products', 'woo-vipps' ),
+			],
+		],
+		'express_archive_button'            => [
+			'title'       => __( 'Product listings', 'woo-vipps' ),
+			'label'       => __( 'Show subscription buttons in shop and category listings', 'woo-vipps' ),
+			'type'        => 'checkbox',
+			'description' => __( 'Uses the product selection above. Products with options must be opened before purchase.', 'woo-vipps' ),
+			'default'     => 'no',
+		],
+		'express_include_cart'              => [
+			'title'       => __( 'Existing cart', 'woo-vipps' ),
+			'label'       => __( 'Include the existing cart when using a subscription product button', 'woo-vipps' ),
+			'type'        => 'checkbox',
+			'description' => __( 'When turned off, customers buy only the selected product. Their other cart items are kept for later.', 'woo-vipps' ),
+			'default'     => 'no',
+		],
+		'express_terms'                     => [
+			'title'       => __( 'Terms and conditions', 'woo-vipps' ),
+			'label'       => __( 'Ask customers to accept the terms before payment', 'woo-vipps' ),
+			'type'        => 'checkbox',
+			'description' => __( 'Set your terms and conditions page in WooCommerce settings.', 'woo-vipps' ),
+			'default'     => 'yes',
+		],
+		'express_always_address'            => [
+			'title'       => __( 'Customer address', 'woo-vipps' ),
+			'label'       => __( 'Ask for an address even for purchases that do not need shipping', 'woo-vipps' ),
+			'type'        => 'checkbox',
+			'description' => __( 'An address is always requested when shipping is needed.', 'woo-vipps' ),
+			'default'     => 'no',
+		],
+		'express_cleanup_abandoned_orders'  => [
+			'title'       => __( 'Abandoned purchases', 'woo-vipps' ),
+			'label'       => __( 'Clean up abandoned Express purchases', 'woo-vipps' ),
+			'type'        => 'checkbox',
+			'description' => __( 'Move unpaid, cancelled or expired purchases to the trash after seven days. Runs hourly. Purchases with billing details, a payment or an unresolved status are kept.', 'woo-vipps' ),
+			'default'     => 'no',
+		],
 		// todo: remove the checkout settings in a future release.
 		'title_checkout'                   => [
 			'type'        => 'title',

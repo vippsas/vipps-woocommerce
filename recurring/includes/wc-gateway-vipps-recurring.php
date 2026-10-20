@@ -3029,7 +3029,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT, 1 );
 				$order->set_payment_method_title( 'Vipps/MobilePay Recurring Checkout' );
 			} else {
-				$order->set_payment_method_title( 'Vipps/MobilePay Recurring Express Checkout' );
+				// translators: %s: payment method title.
+				$order->set_payment_method_title( sprintf( __( '%s: Express checkout for subscriptions', 'woo-vipps' ), $this->title ) );
 			}
 
 			// We use 'checkout' as the created_via key as per requests, but allow merchants to use their own.
@@ -3316,6 +3317,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$parent_order = $subscription->get_parent();
+		// Express purchases have a separate opt-in policy with terminal-payment checks.
+		if ( $parent_order && $parent_order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_ATTEMPT ) ) {
+			return false;
+		}
 		if ( $parent_order && WC_Vipps_Recurring_Profile::protect_from_cleanup( $parent_order ) ) {
 			return false;
 		}
