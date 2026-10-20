@@ -1154,16 +1154,16 @@ EOF;
         add_submenu_page( 'vipps_admin_menu', __('Settings', 'woo-vipps'),   __('Settings', 'woo-vipps'),   'manage_woocommerce', 'vipps_settings_menu', array($adminSettings, 'init_admin_settings_page_react_ui'), 1);
 
         if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions_Plugin')) {
-            add_submenu_page( 'vipps_admin_menu', __('Recurring Payments', 'woo-vipps'),   __('Recurring Payments', 'woo-vipps'),   'manage_woocommerce', 'vipps_recurring__settings_menu', array($this, 'recurring_settings_page'), 15);
+            add_submenu_page( 'vipps_admin_menu', __('Recurring Payments', 'woo-vipps'),   __('Recurring Payments', 'woo-vipps'),   'manage_woocommerce', 'vipps_recurring__settings_menu', array($this, 'recurring_settings_page'), 2);
         }
 
-        add_submenu_page( 'vipps_admin_menu', __('Buttons', 'woo-vipps'),   __('Buttons', 'woo-vipps'),   'manage_woocommerce', 'vipps_button_menu', array($adminSettings, 'button_menu_page'), 3);
+        add_submenu_page( 'vipps_admin_menu', __('Buttons', 'woo-vipps'),   __('Buttons', 'woo-vipps'),   'manage_woocommerce', 'vipps_button_menu', array($adminSettings, 'button_menu_page'), 4);
         add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($adminSettings, 'badge_menu_page'), 4);
-        add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($adminSettings, 'webhook_menu_page'), 5);
+        add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($adminSettings, 'webhook_menu_page'), 4);
 
         // If login is not active, add the login submenu page with a "activate/download Login with vipps" button. LP 2026-10-09
         if (!is_plugin_active('login-with-vipps/login-with-vipps.php')) {
-            add_submenu_page( 'vipps_admin_menu', Vipps::LoginName(), Vipps::LoginName(), 'manage_woocommerce', 'vipps_login_options', array($adminSettings, 'login_plugin_install_menu'), 2);
+            add_submenu_page( 'vipps_admin_menu', Vipps::LoginName(), Vipps::LoginName(), 'manage_woocommerce', 'vipps_login_options', array($adminSettings, 'login_plugin_install_menu'), 3);
         }
 
     }
