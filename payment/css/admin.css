@@ -1,3 +1,26 @@
+/* Color is based on container .vipps-shell. LP 2026-10-20 */
+:root {
+  --vipps-color-primary: #FF5B24;
+  --vipps-color-primary-dark: #FF5B24;
+  --vipps-color-primary-tint: #FFF4EC;
+  --vipps-color-secondary: #562C83;
+  --vipps-color-control-hover: #FF5B24;
+  --vipps-color-focus-ring: #FFD5C7;
+  --vipps-color-tab-hover: #FFF4EC;
+  --vipps-color-primary-hover: #E94C18;
+  --vipps-color-primary-shadow: rgb(255 91 36 / 16%);
+}
+.vipps-shell.MobilePay {
+  --vipps-color-primary: #5a78ff;
+  --vipps-color-primary-dark: #354fc7;
+  --vipps-color-primary-tint: #f2f4ff;
+  --vipps-color-control-hover: #9daae7;
+  --vipps-color-focus-ring: #c7d1ff;
+  --vipps-color-tab-hover: #eef1fa;
+  --vipps-color-primary-hover: #263da9;
+  --vipps-color-primary-shadow: rgb(53 79 199 / 16%);
+}
+
 table.webhook-table tr.local {
     font-weight: bold;
 }
@@ -71,7 +94,7 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     height: 8rem;
 }
 .vipps-admin-page-header h1 {
-    color: #fe5b24;;
+    color: #fe5b24;
     font-family: "Vipps Display", Roboto, Helvetica, Arial, sans-serif;
 }
 .vipps-admin-page-header {
@@ -236,4 +259,25 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     gap: 1rem;
     flex-wrap: wrap;
     margin-bottom: 1rem;
+}
+
+.vipps-login-plugin-container {
+    font-family: "Vipps Text", Roboto, Helvetica, Arial, sans-serif;
+}
+.vipps-login-plugin-container * {
+    font-size: 1rem;
+}
+.vipps-login-plugin-cta {
+    margin-bottom: 0;
+}
+.vipps-login-plugin-container a {
+    color: var(--vipps-color-primary);
+}
+.vipps-login-plugin-container .button,
+.vipps-login-plugin-container .button:focus {
+    background: var(--vipps-color-primary);
+}
+.vipps-login-plugin-container .button:active,
+.vipps-login-plugin-container .button:hover {
+    background: var(--vipps-color-primary-hover);
 }

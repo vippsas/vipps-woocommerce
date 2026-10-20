@@ -9,7 +9,7 @@
 type WPWindow = (Window & typeof globalThis) & {
   VippsMobilePayReactTranslations?: Record<string, string>;
   VippsMobilePayReactOptions?: Record<string, string>;
-  VippsMobilePayReactMetadata?: Record<string, string>;
+  VippsMobilePayReactMetadata?: Record<string, unknown>;
 };
 
 /**
@@ -73,7 +73,12 @@ export function gettext(msgid: string): string {
  * @returns The metadata value or null.
  */
 export function getMetadata(key: string): string | null {
-  return wpWindow.VippsMobilePayReactMetadata?.[key] ?? null;
+  const value = wpWindow.VippsMobilePayReactMetadata?.[key];
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : null;
+}
+
+export function getPageData<T>(): T {
+  return (wpWindow.VippsMobilePayReactMetadata?.page_data ?? {}) as T;
 }
 
 /**

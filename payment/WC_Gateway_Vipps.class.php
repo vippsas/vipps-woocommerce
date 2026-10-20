@@ -1118,7 +1118,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
                 'vipps_checkout_enabled' => array(
-                    'title'       => sprintf(__('Enable %s'), Vipps::CheckoutName()),
+                    'title'       => sprintf(__('Enable %s', 'woo-vipps'), Vipps::CheckoutName()),
                     'label' => '',
                     'type'        => 'checkbox',
                     'description' => sprintf(__('This will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy with %2$s, card, and external payment methods - no need to manually type in addresses!', 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
@@ -1160,7 +1160,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Don\'t require contact fields', 'woo-vipps'),
                         'label'       => __('Don\'t require contact fields', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Only works with \'%3$s\' (see the above option).<br><br>Hides the contact fields in %1$s, which speeds up the %2$s process if you <br>don\'t</b> care about customer/contact information. These will instead be filled with a placeholder.<br>NB: If you have plugins that require contact information, then this is not going to work very well.','woo-vipps'), Vipps::CheckoutName(), 'Checkout', __('Don\'t require address fields', 'woo-vipps')),
+                        'description' => sprintf(__('Only works with \'%3$s\' (see the above option).<br><br>Hides the contact fields in %1$s, which speeds up the %2$s process if you <b>don\'t</b> care about customer/contact information. These will instead be filled with a placeholder.<br>NB: If you have plugins that require contact information, then this is not going to work very well.','woo-vipps'), Vipps::CheckoutName(), 'Checkout', __('Don\'t require address fields', 'woo-vipps')),
                         'default'     => 'no'
                         ),
         );
@@ -1337,6 +1337,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'type'        => 'checkbox',
                 'default'     => 'no',
             ),
+            'skip_wizard' => array(
+                'title'       => __('Skip wizard and set up manually', 'woo-vipps'),
+                'label' => '',
+                'description' => '',
+                'type'        => 'checkbox',
+                'default'     => 'no',
+            ),
             'country' => array(
                 'title' => __('Country', 'woo-vipps'),
                 'label' => '',
@@ -1353,13 +1360,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             'payment_method_name' => array(
                 'title'       => __('Payment method', 'woo-vipps'),
-                'label'       => __('Choose which payment method should be displayed to users at checkout', 'woo-vipps'),
+                'label'       => __('Choose which payment method should be displayed to customers at checkout', 'woo-vipps'),
                 'type'        => 'select',
                 'options' => array(
                     'Vipps' => __('Vipps','woo-vipps'),
                     'MobilePay' => __('MobilePay', 'woo-vipps'),
                 ), 
-                'description' => __('Choose which payment method should be displayed to users at checkout', 'woo-vipps'),
+                'description' => __('Choose which payment method should be displayed to customers at checkout', 'woo-vipps'),
                 'default'     => $payment_method_name,
             ),
 
@@ -1397,7 +1404,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'cancelled' => __('Cancelled','woo-vipps'),
                 ), 
                 /* translators: the first placeholder is company name, the rest are woocommerce order statuses */
-                'description' => sprintf(__('The order status when payment fails, this will only affect orders that truly can be restarted at %1s.', 'woo-vipps'), Vipps::CompanyName()),
+                'description' => sprintf(__('The order status when payment fails, this will only affect orders that truly can be restarted at %1$s.', 'woo-vipps'), Vipps::CompanyName()),
                 'default'     => $default_status_on_fail,
             ),
 
@@ -1505,7 +1512,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
          $expressfields = array(
                 'express_options' => array(
-                        'title' => sprintf(Vipps::ExpressName()),
+                        'title' => __('Express Checkout', 'woo-vipps'),
                         'type'  => 'title',
                         'class' => 'tab',
                         'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressName())
@@ -1692,7 +1699,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'title' => __('Test mode', 'woo-vipps'),
                 'label' => __('Test mode', 'woo-vipps'),
                 'type'  => 'checkbox',
-                'description' => sprintf(__('Use the %1$s test environment instead of live production environment. No real transactions will be performed.<br><br>You will need to fill out your test environment keys in the <a href="#%2$s">%2$s</a> tab and install a separate app on your phone for the, see <a href="%3$s">%1$s docs</a> for more info.<br>The constant VIPPS_TEST_MODE in your wp-config file will override this option. ', 'woo-vipps'), Vipps::CompanyName(), __('Keys', 'woo-vipps'), 'https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/'),
+                'description' => sprintf(__('Use the %1$s test environment instead of live production environment. No real transactions will be performed.<br><br>You will need to fill out your test environment keys in the <a href="#%2$s">%2$s</a> tab and install a separate app on your phone for the, see <a href="%3$s" target="_blank">%1$s docs</a> for more info.<br>The constant VIPPS_TEST_MODE in your wp-config file will override this option. ', 'woo-vipps'), Vipps::CompanyName(), __('API keys', 'woo-vipps'), 'https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/'),
                 'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
                 ),
        );
@@ -4362,7 +4369,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return array(false, $msg);
             }
         }
-        return array(false, ''); // No configuration
+        return array(false, __('missing API keys', 'woo-vipps')); // No configuration
     } 
 
     public function log ($what,$type='info') {

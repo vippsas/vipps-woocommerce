@@ -307,6 +307,10 @@ interface InputFormFieldProps {
    * The type of the form field.
    */
   type?: string;
+  /**
+   * Controls browser autofill for the input.
+   */
+  autoComplete?: string;
 }
 
 /**
@@ -323,7 +327,8 @@ export function InputFormField({
   pattern,
   required,
   asterisk,
-  type = 'text'
+  type = 'text',
+  autoComplete
 }: InputFormFieldProps): JSX.Element {
   const { getOption, setOption } = useWP();
   const [isFocused, setIsFocused] = useState(false);
@@ -344,6 +349,7 @@ export function InputFormField({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           type={shouldHideValue ? 'password' : type}
+          autoComplete={autoComplete}
         />
         {labelKey && (
           <WPLabel htmlFor={name} className="vipps-mobilepay-react-secondary-label">

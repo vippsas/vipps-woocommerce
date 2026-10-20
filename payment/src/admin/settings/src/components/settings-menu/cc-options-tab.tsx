@@ -17,7 +17,7 @@ export function AdminSettingsCCOptionsTab(): JSX.Element {
     <div>
       {/* Warning about possible unavailability in test environment if test mode is enabled. LP 2026-05-28 */}
       {truthToBool(getOption('testmode')) && (
-        <div className="vipps-settings-callout"><UnsafeHtmlText htmlString={gettext("cc_options.test_mode_warning")}></UnsafeHtmlText></div>
+        <div className="vipps-admin-callout"><UnsafeHtmlText htmlString={gettext("cc_options.test_mode_warning")}></UnsafeHtmlText></div>
       )}
 
       <p className="vipps-mobilepay-react-tab-description">{gettext('cc_options.description')}</p>

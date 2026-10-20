@@ -17,23 +17,26 @@ interface Props {
    * The name of the currently active tab.
    */
   activeTab: string;
+
+  /** Prefix used for tab IDs and the associated panel ID. */
+  idPrefix?: string;
 }
 
 /**
  * Renders a set of tabs, with the ability to switch between them.
  * @returns The rendered set of tabs.
  */
-export function Tabs({ tabs, onTabChange, activeTab }: Props): JSX.Element {
+export function Tabs({ tabs, onTabChange, activeTab, idPrefix = 'vipps-settings' }: Props): JSX.Element {
   return (
     <div className="vippstabholder" role="tablist">
       {tabs.map((tab, index) => (
         <button
           key={tab}
-          id={`vipps-settings-tab-${index}`}
+          id={`${idPrefix}-tab-${index}`}
           type="button"
           role="tab"
           aria-selected={tab === activeTab}
-          aria-controls="vipps-settings-tab-panel"
+          aria-controls={`${idPrefix}-tab-panel`}
           className={`vipps-mobilepay-react-tab ${tab === activeTab ? 'active' : ''}`}
           onClick={() => onTabChange(tab)}
         >

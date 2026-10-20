@@ -12,6 +12,7 @@ import { useWP } from '../../wp-options-provider';
 import { useState } from 'react';
 import { AdminSettingsWizardScreenOptions } from './wizard-screen-options';
 import { NotificationBanner, type NotificationBannerProps } from '../notification-banner';
+import { PageShell } from '../page-shell';
 import { isPaymentMethodCurrencySupported, getPaymentMethodSupportedCurrencies } from '../../lib/payment-method';
 
 // Development option to force the wizard screen to be shown. This is useful for testing the wizard screen.
@@ -81,12 +82,15 @@ export function AdminSettings(): JSX.Element {
     setIsLoading(true);
     setSaveConfirmation(false);
 
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const skipWizard = submitter instanceof HTMLButtonElement && submitter.name === 'skip_wizard';
+
     try {
-      const data = await submitChanges({ forceEnable: showWizardScreen });
+      const data = await submitChanges({ forceEnable: showWizardScreen, skippedWizard: skipWizard });
       console.log('handleSaveSettings - Response data:', data);
 
       // Handle the error messages for connection and form errors
-      if (!data.connection_ok || !data.form_ok) {
+      if (!skipWizard && (!data.connection_ok || !data.form_ok)) {
         setBanner({
           text: data.connection_msg || data.form_errors,
           variant: 'error'
@@ -94,10 +98,13 @@ export function AdminSettings(): JSX.Element {
         setSaveConfirmation(false);
       } else {
         // If the connection is ok, show a success message
-        setBanner({
-          text: data.connection_msg,
-          variant: 'success'
-        });
+        // NEW: unless skipped wizard, dont show a connection message. LP 2026-10-07
+        if (!skipWizard) {
+          setBanner({
+            text: data.connection_msg,
+            variant: 'success'
+          });
+        }
         setSaveConfirmation(true);
         console.log('handleSaveSettings - Setting new options:', data.options);
         // Ensure we have the new options, then reload the screens using the new values
@@ -122,6 +129,7 @@ export function AdminSettings(): JSX.Element {
   }
 
   function showWizardp(): boolean {
+    const skipWizard = truthToBool(getOption('skip_wizard'));
     const hasImportantSettings =
       getOption('merchantSerialNumber') &&
       getOption('clientId') &&
@@ -139,7 +147,7 @@ export function AdminSettings(): JSX.Element {
       getOption('Ocp_Apim_Key_eCommerce_test') &&
       getOption('payment_method_name') &&
       getOption('country');
-    return !hasImportantSettings && !hasImportantSettingsTest && !isTestMode;
+    return !skipWizard && !hasImportantSettings && !hasImportantSettingsTest && !isTestMode;
   }
 
   // If the most important settings are not set, the user is shown a screen to set these settings.
@@ -154,14 +162,9 @@ export function AdminSettings(): JSX.Element {
   const selectedTab = visibleTabs.includes(activeTab) ? activeTab : MAIN_TAB_ID;
 
   return (
-    <div className={"vipps-settings-shell" + " " +  paymentMethod}>
-      <header className="vipps-settings-header">
-        <h1>{companyName}</h1>
-        <p className="vipps-settings-subtitle">{settingsSubtitle}</p>
-      </header>
-
+    <PageShell companyName={companyName} subtitle={settingsSubtitle} paymentMethod={paymentMethod}>
       {(banner || showCurrencyWarning) && (
-        <div className="vipps-settings-notices" role="status">
+        <div className="vipps-admin-notices" role="status">
           {banner && <NotificationBanner variant={banner.variant} text={banner.text} />}
           {showCurrencyWarning && (
             <NotificationBanner
@@ -175,19 +178,19 @@ export function AdminSettings(): JSX.Element {
       <WPForm onSubmit={handleSaveSettings} className="vippsAdminSettings">
         {showWizardScreen ? (
           // If the important settings are not set, show the wizard screen.
-          <div className="vipps-settings-panel vipps-settings-panel-wizard">
+          <div className="vipps-admin-panel vipps-admin-panel-wizard">
             <AdminSettingsWizardScreenOptions isLoading={isLoading} />
           </div>
         ) : (
           // If the important settings are set, show the normal settings screen.
-          <div className="vipps-settings-layout">
-            <nav className="vipps-settings-navigation" aria-label={gettext('main_options.title')}>
+          <div className="vipps-admin-layout">
+            <nav className="vipps-admin-navigation" aria-label={gettext('main_options.title')}>
               <Tabs tabs={visibleTabs} onTabChange={setActiveTab} activeTab={selectedTab} />
             </nav>
 
-            <div className="vipps-settings-content">
+            <div className="vipps-admin-content">
               <section
-                className="vipps-settings-panel"
+                className="vipps-admin-panel"
                 id="vipps-settings-tab-panel"
                 role="tabpanel"
                 aria-labelledby={`vipps-settings-tab-${visibleTabs.indexOf(selectedTab)}`}
@@ -216,6 +219,6 @@ export function AdminSettings(): JSX.Element {
           </div>
         )}
       </WPForm>
-    </div>
+    </PageShell>
   );
 }

@@ -1240,8 +1240,8 @@ msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1166
 #: payment/WC_Gateway_Vipps.class.php:1172
-msgid "Choose which payment method should be displayed to users at checkout"
-msgstr "Valitse, mikä maksutapa näytetään käyttäjille kassalla"
+msgid "Choose which payment method should be displayed to customers at checkout"
+msgstr "Valitse, mikä maksutapa näytetään asiakkaille kassalla"
 
 #: payment/WC_Gateway_Vipps.class.php:1325
 msgid ""
@@ -5324,3 +5324,17 @@ msgid ""
 msgstr ""
 "WordPress URL-osoitteesi ei läpäise kauppiassopimuksen mukaan URL-"
 "osoitteille asettuja sääntöjä. Onko verkkosivustosi julkisesti saatavilla?"
+
+#: payment/admin/settings/VippsAdminSettings.class.php:559
+#, php-format
+msgid ""
+"Warning: card payments may not yet be available in the test environment, "
+"please check the %1$s <a href=\"https://developer.vippsmobilepay.com/docs/"
+"knowledge-base/test-environment/\">knowledge base</a> for updated status "
+"about the test environment."
+msgstr "Varoitus: Korttimaksut eivät välttämättä ole vielä käytettävissä testiympäristössä. Tarkista testiympäristön ajantasainen tila %1$s-palvelun <a href=\"https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/\">tietopankista</a>."
+
+#: payment/WC_Gateway_Vipps.class.php:1702
+#, php-format
+msgid "Use the %1$s test environment instead of live production environment. No real transactions will be performed.<br><br>You will need to fill out your test environment keys in the <a href=\"#%2$s\">%2$s</a> tab and install a separate app on your phone for the, see <a href=\"%3$s\" target=\"_blank\">%1$s docs</a> for more info.<br>The constant VIPPS_TEST_MODE in your wp-config file will override this option. "
+msgstr "Käytä %1$s-palvelun testiympäristöä tuotantoympäristön sijaan. Todellisia maksutapahtumia ei suoriteta.<br><br>Sinun on täytettävä testiympäristön avaimet <a href=\"#%2$s\">%2$s</a>-välilehdellä ja asennettava erillinen sovellus puhelimeesi. Lisätietoja on <a href=\"%3$s\" target=\"_blank\">%1$s-palvelun ohjeissa</a>.<br>Wp-config-tiedoston VIPPS_TEST_MODE-vakio ohittaa tämän asetuksen. "

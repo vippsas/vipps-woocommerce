@@ -93,17 +93,69 @@ class Vipps {
     // To simplify development, we load translations from the plugins' own .mos on development branches. IOK 2023-11-28
     public static function load_plugin_textdomain( $domain, $deprecated = false, $plugin_rel_path = false ) {
         $development = apply_filters('woo_vipps_use_plugin_translations', false);
-        if (!$development) {
-           return load_plugin_textdomain($domain, $deprecated, $plugin_rel_path);
-        }
-        // Available since 6.1.0 only IOK 2023-01-25
-        global $wp_textdomain_registry;
-        if ($wp_textdomain_registry) {
-            $locale = apply_filters( 'plugin_locale', determine_locale(), $domain );
-            $mofile = $domain . '-' . $locale . '.mo';
+
+	// Available since 6.1.0 only IOK 2023-01-25
+	global $wp_textdomain_registry;
+	if ($development && $wp_textdomain_registry) {
+		$locale = apply_filters( 'plugin_locale', determine_locale(), $domain );
+		$mofile = $domain . '-' . $locale . '.mo';
+		$path = WP_PLUGIN_DIR . '/' . trim( $plugin_rel_path, '/' );
+		$wp_textdomain_registry->set_custom_path( $domain, $path );
+		return load_textdomain( $domain, $path . '/' . $mofile, $locale );
+	}
+
+	// When not in development, we'll use our local translations where the official ones are missing
+	// IOK 2026-10-16
+        $loaded = load_plugin_textdomain( $domain, $deprecated, $plugin_rel_path );
+
+        if ( false !== $plugin_rel_path ) {
             $path = WP_PLUGIN_DIR . '/' . trim( $plugin_rel_path, '/' );
-            $wp_textdomain_registry->set_custom_path( $domain, $path );
-            return load_textdomain( $domain, $path . '/' . $mofile, $locale );
+        } elseif ( false !== $deprecated ) {
+            $path = ABSPATH . trim( $deprecated, '/' );
+        } else {
+            $path = WP_PLUGIN_DIR;
+        }
+
+        // WordPress 6.3-6.6 load translations here; 6.7+ only registers the path.
+        // On 6.7+, just-in-time loading must run before our bundled fallback is added.
+        // This method is called on after_setup_theme, when that lookup is safe.
+        global $wp_version;
+        $locale = determine_locale();
+        if ( version_compare( $wp_version, '6.7', '<' ) ) {
+            $locale = apply_filters( 'plugin_locale', $locale, $domain );
+         }
+
+         // This loader is used for one domain. Keep its path in the callback
+         // so a locale switch can add the same fallback after WordPress reloads.
+         static $locale_hook_registered = false;
+         if ( ! $locale_hook_registered ) {
+             add_action( 'change_locale', static function ( $locale ) use ( $domain, $path ) {
+                 self::load_translation_fallback( $domain, $path, $locale );
+             } );
+             $locale_hook_registered = true;
+         }
+
+         self::load_translation_fallback( $domain, $path, $locale );
+         return $loaded;
+    }
+
+    private static function load_translation_fallback( $domain, $path, $locale ) {
+        $mofile = $path . '/' . $domain . '-' . $locale . '.mo';
+        if ( ! is_readable( $mofile ) ) {
+            return;
+        }
+
+        // WordPress 6.3-6.4 preserve entries already loaded when merging MO
+        // files; 6.5+ search loaded files in order. Trigger 6.7+'s deferred
+        // official load before adding our MO, so official entries always win.
+        get_translations_for_domain( $domain );
+
+        // load_textdomain() also changes the registry's preferred directory.
+        // Restore it so a later reload still selects the official language pack.
+        global $wp_textdomain_registry;
+        $preferred_path = $wp_textdomain_registry->get( $domain, $locale );
+        if ( load_textdomain( $domain, $mofile, $locale ) && $preferred_path ) {
+            $wp_textdomain_registry->set( $domain, $locale, $preferred_path );
         }
     }
 
@@ -335,10 +387,10 @@ class Vipps {
         require_once(dirname(__FILE__) . "/admin/settings/VippsAdminSettings.class.php");
         $adminSettings = VippsAdminSettings::instance();
 
-        // Supress Woo and WP notices on this screen IOK 2026-10-01
+        // Supress Woo and WP notices on settings pages. IOK 2026-10-01
         add_action( 'in_admin_header', function () {
             $screen = get_current_screen();
-            if ( ! $screen || 'vipps-mobilepay_page_vipps_settings_menu' !== $screen->id ) return;
+            if ( ! $screen || !str_starts_with($screen->id, 'vipps-mobilepay_page') ) return;
             remove_all_actions( 'admin_notices' );
             remove_all_actions( 'all_admin_notices' );
         }, 9999);
@@ -403,10 +455,12 @@ class Vipps {
         add_action('wp_ajax_vipps_update_admin_settings', array($adminSettings, 'ajax_vipps_update_admin_settings'));
 
         // POST actions for the backend
-        add_action('admin_post_update_vipps_badge_settings', array($this, 'update_badge_settings'));
-        add_action('admin_post_update_vipps_button_settings', array($this, 'update_button_settings'));
-        add_action('admin_post_vipps_delete_webhook', array($this, 'vipps_delete_webhook'));
-        add_action('admin_post_vipps_add_webhook', array($this, 'vipps_add_webhook'));
+        add_action('admin_post_update_vipps_badge_settings', array($adminSettings, 'post_update_badge_settings'));
+        add_action('admin_post_update_vipps_button_settings', array($adminSettings, 'post_update_button_settings'));
+        add_action('admin_post_vipps_delete_webhook', array($adminSettings, 'post_vipps_delete_webhook'));
+        add_action('admin_post_vipps_add_webhook', array($adminSettings, 'post_vipps_add_webhook'));
+        add_action('admin_post_vipps_activate_login_plugin', array($this, 'post_vipps_activate_login_plugin'));
+        add_action('admin_post_vipps_install_login_plugin', array($this, 'post_vipps_install_login_plugin'));
 
         // Link to the settings page from the plugin list
         add_filter( 'plugin_action_links_'.plugin_basename(WC_VIPPS_MAIN_FILE ), array($this, 'plugin_action_links'));
@@ -590,441 +644,6 @@ class Vipps {
 
     }
 
-    // A small interface for editing and managing the webhooks for the MSNs for this site IOK 2023-12-20
-    public function webhook_menu_page () {
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
-        }
-        $portalurl = 'https://portal.vippsmobilepay.com';
-        $webhookapi = 'https://developer.vippsmobilepay.com/docs/APIs/webhooks-api/';
-
-        echo "<div class='wrap vipps-badge-settings'>\n";
-        echo "<h1>" . __('Webhooks', 'woo-vipps') . "</h1>\n";
-        echo "<p>"; printf(__('Whenever an event like a payment or a cancellation occurs on a %1$s account, you can be notified of this using a <i>webhook</i>. This is used by this plugin to get noticed of payments by users even when they do not return to your store.', 'woo-vipps'), Vipps::CompanyName()); echo "</p>";
-        echo "<p>"; __('To do this, the plugin will automatically add webhooks for the MSN - Merchant Serial Numbers - configured on this site', 'woo-vipps'); echo "</p>";
-        echo "<p>"; __('If your MSN has registered other callbacks, for instance for another website, you can manage these here - and you can also add your own hooks that will be notified of payment events to any other URL you enter.', 'woo-vipps'); echo "</p>";
-        echo "<p>"; printf(__('Implementing a webhook is not trivial, so you will probably need a developer for this.  You can read more about what is required <a href="%1$s">here</a>. ', 'woo-vipps'), $webhookapi); 
-        printf(__('Please note that there is normally a limit of <em><strong>5</strong> webhooks per MSN</em> - contact %1$s if you need more', 'woo-vipps'), Vipps::CompanyName());
-        echo "</p>";
-        echo "<p>"; print __('The following is a listing of your webhooks. If you have changed your website name, you may see some hooks that you do not recognize - these should be deleted', 'woo-vipps'); echo "</p>";
-
-        $keyset = $this->gateway()->get_keyset();
-	$recurrings = $this->gateway()->get_keyset();
-	foreach($recurrings as $msn=> $keys) {
-		if (!isset($keyset[$msn])) {
-			$keyset[$msn] = $keys;
-		}
-	}
-        $allhooks = $this->gateway()->initialize_webhooks();
-        $localhooks = get_option('_woo_vipps_webhooks');
-
-        echo "<form method='post' action='" . admin_url("admin-post.php") . "' autocomplete='off' id=webhook_action_form>";
-        echo "<input type='hidden' id='webhook_id' name='webhook_id' value='' autocomplete='false'>";
-        echo "<input type='hidden' id='webhook_msn' name='webhook_msn' value='' autocomplete='false'>";
-        echo "<input type='hidden' id='webhook_url' name='webhook_url' value='' autocomplete='false'>";
-        echo "<input type='hidden' id='webhook_events' name='webhook_events' value='' autocomplete='false'>";
-        echo "<input type='hidden' id='webhook_post_action' name='action' value='' autocomplete='false'>";
-        wp_nonce_field('webhook_nonce', 'webhook_nonce');
-        echo "</form>";
-
-        foreach ($keyset as $msn => $data) {
-            $testmode = $data['testmode'] ?? false;
-            echo "<div style='margin-top: 2rem; margin-bottom: 2rem'>";
-            echo "<h2>";
-            echo  sprintf(__('Merchant Serial Number %1$s', 'woo-vipps'), $msn);
-            if ($testmode) echo " (" . __('Test mode', 'woo-vipps') . ")";
-            echo "<a style='float:right; font-size:smaller' class='webhook-adder'  href='javascript:void(0)' data-msn='" . esc_attr($msn) . "'>[" . __('Add a webhook to this MSN', 'woo-vipps') . "]</a>";
-            echo "</h2>";
-
-            $all = $allhooks[$msn] ?? [];
-            $thehooks = $all['webhooks'] ?? [];
-            $locals = $localhooks[$msn] ?? [];
-
-            echo "<table class='table webhook-table'><thead><tr><th style='text-align: left'>"  . __('Webhook', 'woo-vipps') . "</th><th>" . __('Action', 'woo-vipps') . "</th>" . "</tr></thead>";
-            echo "<tbody>";
-            foreach($thehooks as $hook) {
-                $id = $hook['id'];
-                $url = $hook['url'];
-                $events = $hook['events'];
-                $local = $locals[$id] ?? false;
-
-
-                echo "<tr" . ($local ? " class='local' " : '') . "  data-webhook-id='" . esc_attr($id) .  "' data-msn='" . esc_attr($msn) . "'";
-                echo " data-hookdata='" . json_encode($hook) . "'>"; 
-                echo "<td>" .  esc_html($url) .  "</td>";
-                echo "<td class='actions'>";
-                    echo "<a href='javascript:void(0)' class='webhook-viewer'>[" . __('View', 'woo-vipps') . "]</a> ";
-                if (!$local) {
-                    echo " <a href='javascript:void(0)' class='webhook-deleter'>[" . __('Delete', 'woo-vipps') . "]</a>";
-                } else {
-                    echo " <em>". __('Created for this site', 'woo-vipps') . "</em>";
-                }
-                echo "</td>";
-                echo "</tr>";
-            }
-            echo "</tbody>";
-            echo "</table>";
-            echo "</div>";
-            echo "<hr>";
-        }
-
-        $epayment_events = [__('Created', 'woo-vipps') => 'epayments.payment.created.v1',
-                            __('Aborted', 'woo-vipps') => 'epayments.payment.aborted.v1',
-                            __('Expired', 'woo-vipps') => 'epayments.payment.expired.v1',
-                            __('Cancelled', 'woo-vipps') => 'epayments.payment.cancelled.v1',
-                            __('Captured', 'woo-vipps') => 'epayments.payment.captured.v1',
-                            __('Refunded', 'woo-vipps') => 'epayments.payment.refunded.v1',
-                            __('Authorized', 'woo-vipps') => 'epayments.payment.authorized.v1',
-                            __('Terminated', 'woo-vipps') => 'epayments.payment.terminated.v1'];
-
-        $recurring_events = [ __('Agreement accepted', 'woo-vipps') =>'recurring.agreement-activated.v1',
-            __('Agreement rejected', 'woo-vipps') =>'recurring.agreement-rejected.v1',
-            __('Agreement stopped', 'woo-vipps') =>'recurring.agreement-stopped.v1',
-            __('Agreement expired', 'woo-vipps') =>'recurring.agreement-expired.v1',
-            __('Charge reserved', 'woo-vipps') =>'recurring.charge-reserved.v1',
-            __('Charge captured', 'woo-vipps') =>'recurring.charge-captured.v1',
-            __('Charge cancelled', 'woo-vipps') =>'recurring.charge-canceled.v1',
-            __('Charge failed', 'woo-vipps') =>'recurring.charge-failed.v1'];
-
-        $qr_events = [__('User Checked in', 'woo-vipps')=> 'user.checked-in.v1'];
-
-
-        $defaultevents = ['epayments.payment.authorized.v1', 'epayments.payment.aborted.v1', 'epayments.payment.expired.v1', 'epayments.payment.terminated.v1'];
-
-
-        ?>
-
-<dialog id='webhook_view_dialog' style='width:70%'>
-  <form method="dialog">
-       <div class='viewdata' style='margin-bottom: 3rem'>
-         <label>ID</label><span class='webhook_id'></span>
-         <label>URL</label><span class='webhook_url'></span>
-         <label>Events</label><div style='width:80%' class='webhook_events'></div>
-       </div>
-       <button class="button btn button-primary" type="submit" value="OK"><?php _e('OK'); ?></button>
-  </form>
-</dialog>
-
-
-<dialog id='webhook_add_dialog' style='width: 70%'>
-  <form method="dialog">
-    <h3><?php _e('Add a webhook', 'woo-vipps'); ?></h3>
-    <label for='dialog_webhook_msn'>MSN</label><input style='width: 50%' id='dialog_webhook_msn' required readonly type="text" name="webhook_msn" placeholder="">
-    <label for='dialog_webhook_url'>URL</label><input style='width: 50%' id='dialog_webhook_url' autofocus required type="url" name="webhook_url" placeholder="https://...">
-    <div class="events" style="margin-bottom: 2rem">
-     <h3>Epayment</h3>
-     <?php foreach($epayment_events as $label=>$event): ?> 
-       <label for='<?php echo  esc_attr($event); ?>'><?php echo esc_html($label);?>
-          <input <?php if (in_array($event, $defaultevents)) echo " checked " ?>
-                  type='checkbox' name='webhook_event' value='<?php echo esc_attr($event); ?>'>
-       </label>
-     <?php endforeach; ?>
-     <h3>Recurring</h3>
-     <?php foreach($recurring_events as $label=>$event): ?> 
-       <label for='<?php echo  esc_attr($event); ?>'><?php echo esc_html($label);?>
-          <input <?php if (in_array($event, $defaultevents)) echo " checked " ?>
-                  type='checkbox' name='webhook_event' value='<?php echo esc_attr($event); ?>'>
-       </label>
-     <?php endforeach; ?>
-     <h3>QR</h3>
-     <?php foreach($qr_events as $label=>$event): ?> 
-       <label for='<?php echo  esc_attr($event); ?>'><?php echo esc_html($label);?>
-          <input <?php if (in_array($event, $defaultevents)) echo " checked " ?>
-                  type='checkbox' name='webhook_event' value='<?php echo esc_attr($event); ?>'>
-       </label>
-     <?php endforeach; ?>
-
-    </div>
-    <div class='buttonholder'>
-       <button class="button btn button-primary" type="submit" value="OK"><?php _e('Add this URL as a webhook', 'woo-vipps'); ?></button>
-       <button class="button btn" type="submit" formnovalidate value="NO"><?php _e('No, forget it', 'woo-vipps'); ?></button>
-    </div>
-  </form>
-</dialog>
-
-<style>
- dialog#webhook_add_dialog::backdrop {
-   background-color: rgba(0.9,0.9,0.9,0.7);
- }
-</style>
-
-<script>
-let dialog = document.getElementById('webhook_add_dialog');
-let viewdialog = document.getElementById('webhook_view_dialog');
-dialog.addEventListener('close', function () {
-    if (dialog.returnValue =='OK') {
-      let msn = dialog.querySelector('input[name="webhook_msn"]').value;
-      let url = dialog.querySelector('input[name="webhook_url"]').value;
-      dialog.querySelector('input[name="webhook_url"]').value = "";
-      dialog.querySelector('input[name="webhook_msn"]').value = "";
-
-      let events = dialog.querySelectorAll('input[name="webhook_event"]:checked');
-      let eventlist = [];
-      let eventstring = '';
-       for (const ev of events.values()) {
-          eventlist.push(ev.value);
-      }
-      eventstring = eventlist.join(',');
-     
-
-      if (msn && url && eventstring) {
-       jQuery('#webhook_msn').val(msn);
-       jQuery('#webhook_post_action').val('vipps_add_webhook');
-       jQuery('#webhook_url').val(url);
-       jQuery('#webhook_events').val(eventstring);
-       let f = jQuery('#webhook_action_form');
-       f.submit();
-      }
-    }
-    dialog.querySelector('input[name="webhook_url"]').value = "";
-    dialog.querySelector('input[name="webhook_msn"]').value = "";
-});
-
-let data = "";
-jQuery('a.webhook-viewer').click(function (e) {
-       e.preventDefault();
-       let row= jQuery(this).closest('tr');
-       data = row.data('hookdata');
-       viewdialog.querySelector('.viewdata').querySelector('.webhook_id').innerHTML= data['id'];
-       viewdialog.querySelector('.viewdata').querySelector('.webhook_url').innerHTML= data['url'];
-       viewdialog.querySelector('.viewdata').querySelector('.webhook_events').innerHTML= data['events'].join(" ");
-       viewdialog.showModal();
-});
-
-
-jQuery('a.webhook-deleter').click(function (e) {
-       e.preventDefault();
-       let row = jQuery(this).closest('tr');
-       let wh  = row.data('webhook-id');
-       let msn = row.data('msn');
-       let f = jQuery('#webhook_action_form');
-       jQuery('#webhook_id').val(wh);
-       jQuery('#webhook_msn').val(msn);
-       jQuery('#webhook_post_action').val('vipps_delete_webhook');
-       f.submit();
-});
-
-jQuery('a.webhook-adder').click(function (e) {
-            e.preventDefault();
-            let msn = jQuery(this).data('msn');
-            dialog.querySelector('input[name="webhook_url"]').value = "";
-            dialog.querySelector('input[name="webhook_msn"]').value = msn;
-            dialog.showModal();
-});
-
-        </script>
-
-        <?php
-
-
-        echo "</div>";
-    }
-
-    // To be called in admin-post.php
-    public function vipps_delete_webhook() {
-        static::set_locale_if_in_header();
-        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
-        if (!$ok) {
-           wp_die("Wrong nonce");
-        }
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('You don\'t have sufficient rights', 'woo-vipps'));
-        }
-
-        $msn = sanitize_title($_REQUEST['webhook_msn']);
-        $id = sanitize_title($_REQUEST['webhook_id']);
-
-        if ($msn && $id) {
-            $this->gateway()->api->delete_webhook($msn, $id);
-        }
-
-        wp_safe_redirect(admin_url("admin.php?page=vipps_webhook_menu"));
-        exit();
-    }
-
-    // To be called in admin-post.php
-    public function vipps_add_webhook() {
-        static::set_locale_if_in_header();
-        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
-        if (!$ok) {
-           wp_die("Wrong nonce");
-        }
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('You don\'t have sufficient rights', 'woo-vipps'));
-        }
-
-        $msn = sanitize_title($_REQUEST['webhook_msn']);
-        $url = sanitize_url($_REQUEST['webhook_url']);
-        $events = [];
-        foreach(explode(",", $_REQUEST['webhook_events']) as $event) {
-            $events[] = $event; 
-        }
-        if (!empty($events) && $msn && $url) {
-            $this->gateway()->api->register_webhook($msn, $url, $events);
-        }
-
-        wp_safe_redirect(admin_url("admin.php?page=vipps_webhook_menu"));
-        exit();
-    }
-
-    public function badge_menu_page () {
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
-        }
-        wp_enqueue_script('vipps-onsite-messageing');
-
-        $badge_options = get_option('vipps_badge_options');
-        
-        // Get current brand and language
-        $current_brand = strtolower($this->get_payment_method_name());
-        $current_language = $this->get_customer_language();
-        if ('se' === $current_language) $current_language = 'sv';
-        // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-13
-        if ('dk' === $current_language) $current_language = 'da';
-
-        $variants = ['white'=> __('White', 'woo-vipps'), 'grey' => __('Grey','woo-vipps'), 
-                     'filled'=> __('Filled', 'woo-vipps'), 'light'=>__('Light','woo-vipps'), 
-                     'purple'=> __('Purple', 'woo-vipps')];
-
-        ?>
-        <div class='wrap vipps-badge-settings'>
-
-          <h1><?php echo sprintf(__('%1$s On-Site Messaging', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
-
-           <h3><?php echo sprintf(__('%1$s On-Site Messaging contains <em>badges</em> in different variants that can be used to let your customers know that %1$s payment is accepted.', 'woo-vipps'), Vipps::CompanyName()); ?></h3>
-
-           <p>
-            <?php _e('You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block', 'woo-vipps'); ?>
-           </p>
-
-           <h2> <?php _e('Settings', 'woo-vipps'); ?></h2>
-           <form class="vipps-badge-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
-            <input type="hidden" name="action" value="update_vipps_badge_settings" />
-            <?php wp_nonce_field( 'badgeaction', 'badgenonce'); ?>
-            <div>
-             <label for="badgeon"><?php echo sprintf(__('Turn on support for %1$s On-site Messaging badges', 'woo-vipps'), Vipps::CompanyName()); ?></label>
-             <input type="hidden" name="badgeon" value="0" />
-             <input <?php if (@$badge_options['badgeon']) echo " checked "; ?> value="1" type="checkbox" id="badgeon" name="badgeon" />
-            </div>
-
-            <div>
-             <label for="defaultall"><?php _e('Add badge to all products by default', 'woo-vipps'); ?></label>
-             <input type="hidden" name="defaultall" value="0" />
-             <input <?php if (@$badge_options['defaultall']) echo " checked "; ?> value="1" type="checkbox" id="defaultall" name="defaultall" />
-             <p><?php echo sprintf(__("If selected, all products will get a badge, but you can override this on the %1\$s tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page", 'woo-vipps'), Vipps::CompanyName()); ?></p>
-            </div>
-           <p id="badgeholder" style="font-size:1.5rem">
-              <vipps-mobilepay-badge id="vipps-badge-demo"
-                brand="<?php echo esc_attr($current_brand); ?>"
-                language="<?php echo esc_attr($current_language); ?>"
-                <?php if (@$badge_options['variant']) echo ' variant="' . esc_attr($badge_options['variant']) . '" ' ?>
-               ></vipps-mobilepay-badge>
-           </p>
-
-            <div>
-              <label for="vippsBadgeVariant"><?php _e('Variant', 'woo-vipps'); ?></label>
-            
-              <select id=vippsBadgeVariant  name="variant" onChange='changeVariant()'>
-               <option value=""><?php _e('Choose color variant:', 'woo-vipps'); ?></option>
-               <?php foreach($variants as $key=>$name): ?>
-                <option value="<?php echo $key; ?>" <?php if (@$badge_options['variant'] == $key) echo " selected "; ?> >
-                   <?php echo $name ; ?>
-                </option>
-               <?php endforeach; ?>
-              </select>
-
-            <div>
-              <input class="btn button primary"  type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
-            </div>
-
-           </form>
-
-           <h2><?php _e('The Gutenberg Block', 'woo-vipps'); ?></h2>
-           <p><?php echo sprintf(__('If you use Gutenberg, you should be able to add a %1$s Badge block wherever you need it. It is called %1$s On-Site Messaging Badge Block.', 'woo-vipps'), Vipps::CompanyName()); ?>
-
-           <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
-           <p><?php echo sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), "https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/on-site-messaging/"); ?></p>
-           <br><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
-              <pre>[vipps-mobilepay-badge variant={white|filled|light|grey|purple}<br>                       language={en|no|fi|da|sv} ] </pre><br> 
-              <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?></br>
-              <?php _e("The brand will be automatically applied.", 'woo-vipps'); ?>
-           </p>
-
-        </div>
-        <script>
-        function changeVariant() {
-            const badge = document.getElementById('vipps-badge-demo');
-            const variantSelector = document.getElementById('vippsBadgeVariant');
-            const variant = variantSelector.options[variantSelector.selectedIndex].value;
-            
-            // Just update the variant attribute, preserving brand and language
-            badge.setAttribute('variant', variant);
-        }
-        </script> 
-        <?php
-    }
-
-    public function update_button_settings () {
-        $ok = wp_verify_nonce($_REQUEST['buttonnonce'],'buttonaction');
-        if (!$ok) {
-           wp_die("Wrong nonce");
-        }
-        if (!current_user_can('manage_woocommerce')) {
-            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
-            wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
-        }
-
-        $old = get_option('vipps_button_options2', []);
-        $new = $old;
-        if (isset($_POST['express']['configs'])) {
-            foreach ($_POST['express']['configs'] as $ctx => $config) {
-                $sanitized_ctx = sanitize_title($ctx);
-                $sanitized_config = map_deep($config, 'sanitize_title');
-
-                // If nonglobal context that uses global config, just wipe the rest of the stored config. LP 2026-06-25
-                if ("global" !== $sanitized_ctx && ($sanitized_config['use-global-config'] ?? false)) {
-                    $new['express']['configs'][$sanitized_ctx] = ['use-global-config' => true];
-                } else {
-                    $new['express']['configs'][$sanitized_ctx] = $sanitized_config;
-                }
-            }
-        }
-        update_option('vipps_button_options2', $new);
-        $express_context = '';
-        if ($_POST['express-context'] ?? null) {
-            $express_context = '&express-context=' . sanitize_title($_POST['express-context']);
-        }
-        wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu$express_context"));
-        exit();
-    }
-
-    public function update_badge_settings () {
-        static::set_locale_if_in_header();
-        $ok = wp_verify_nonce($_REQUEST['badgenonce'],'badgeaction');
-        if (!$ok) {
-           wp_die("Wrong nonce");
-        }
-        if (!current_user_can('manage_woocommerce')) {
-            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
-            wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
-        }
-
-        $current = get_option('vipps_badge_options');
-        if (isset($_POST['badgeon'])) {
-            $current['badgeon'] = intval($_POST['badgeon']);
-        }
-        if (isset($_POST['defaultall'])) {
-            $current['defaultall'] = intval($_POST['defaultall']);
-        }
-        if (isset($_POST['variant'])) {
-            $current['variant'] = sanitize_title($_POST['variant']);
-        }
-
-        update_option('vipps_badge_options', $current);
-        wp_safe_redirect(admin_url("admin.php?page=vipps_badge_menu"));
-        exit();
-    }
-
     public function vipps_mobilepay_badge_shortcode($atts) {
         $args = shortcode_atts( array('id'=>'', 'class'=>'', 'brand' => '', 'variant' => '','language'=>''), $atts );
 
@@ -1177,254 +796,6 @@ EOF;
         if ('se' === $language) $language = 'sv';
         return $language;
     }
-
-    public function button_menu_page() {
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
-        }
-        wp_enqueue_script('vipps-button-webcomponent');
-        ?>
-        <div class='wrap vipps-button-settings'>
-            <h1><?php echo sprintf(__('%1$s button configuration', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
-            <span><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></span>
-            <form id="vipps-button-settings-form" class="vipps-button-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
-                <input type="hidden" name="action" value="update_vipps_button_settings" />
-                <input id="vipps-button-menu-express-context" type="hidden" name="express-context" value="<?php echo esc_attr($_GET['context'] ?? ''); ?>" />
-                <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
-
-                <!-- Express section -->
-                <?php $this->button_menu_express_section(); ?>
-
-                <!-- submit button -->
-                <div id="vipps-button-settings-save">
-                    <input class="btn button primary" type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
-                </div>
-            </form>
-        </div>
-        <?php
-    }
-
-    private function button_menu_express_section() {
-        $options = get_option('vipps_button_options2', []);
-        $express = $options['express'] ?? [];
-        $configs = $express['configs'] ?? [];
-
-
-        $contexts = [
-            'global' => __('Global', 'woo-vipps'),
-            'product' => __('Product', 'woo-vipps'),
-            'catalog' => __('Catalog', 'woo-vipps'),
-            'cart' => __('Cart', 'woo-vipps'),
-            'minicart' => __('Mini cart', 'woo-vipps'),
-            'checkout' => __('Checkout', 'woo-vipps'),
-        ];
-        $init_context = 'global';
-        // Restore context from url. LP 2026-09-30
-        if ($_GET['express-context'] ?? null) {
-            $init_context = sanitize_title($_GET['express-context']);
-        }
-        $init_config = $configs[$init_context] ?? [];
-
-        // html button args
-        $init_args = $init_config;
-        $init_args['id'] = 'vipps-button-express-preview';
-
-        ?>
-        <div class="vipps-button-settings-section" id="vipps-button-settings-express-container">
-            <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
-
-            <!-- Context dropdown -->
-            <div id="vipps-button-settings-express-context">
-                <label>
-                    <?php _e('Config context', 'woo-vipps'); ?>
-                </label>
-                <select id="context" onChange='updateContext()'>
-                  <?php foreach($contexts as $key => $label): ?>
-                    <option value="<?php echo $key; ?>" <?php if ($init_context === $key) echo " selected "; ?> >
-                       <?php echo $label ; ?>
-                    </option>
-                  <?php endforeach; ?>
-                </select>
-                <label class="hidden" id="use-global-config-container"><input onchange="updateContext()" type="checkbox" name="express[tmpConfig][use-global-config]" checked><?php _e('Use global config', 'woo-vipps'); ?></label>
-            </div>
-  
-
-            <!-- Button paremeter inputs. These input values are put into post data express.tmpConfig temporarily. 
-            On context change, configs are stored in a global 'contextConfigs'. Each config is processed into new option structure before submit. LP 2026-06-24 -->
-            <div class="vipps-button-settings-section" id="vipps-button-settings-express-args">
-                <fieldset>
-                    <label><input type="checkbox" name="express[tmpConfig][rounded]" checked=""><?php _e('Rounded', 'woo-vipps'); ?></label>
-                    <label><input type="checkbox" name="express[tmpConfig][compact]"><?php _e('Compact', 'woo-vipps'); ?></label>
-                    <label><input type="checkbox" name="express[tmpConfig][stretched]"><?php _e('Stretched', 'woo-vipps'); ?></label>
-                </fieldset>
-                <fieldset>
-                    <legend><?php _e('Language', 'woo-vipps'); ?></legend>
-                    <label><input type="radio" name="express[tmpConfig][language]" checked value="store"><?php _e('Store language', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][language]" value="en"><?php _e('English', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][language]" value="no"><?php _e('Norwegian', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][language]" value="dk"><?php _e('Danish', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][language]" value="sv"><?php _e('Swedish', 'woo-vipps'); ?></label>
-                    <?php if ($this->get_payment_method_name() === 'MobilePay'): ?>
-                    <label><input type="radio" disabled="" name="express[tmpConfig][language]" value="fi"><?php _e('Finnish', 'woo-vipps'); ?></label>
-                    <?php endif; ?>
-                </fieldset>
-
-                <?php if ($this->get_payment_method_name() !== 'MobilePay'): ?>
-                <p><?php printf(__('Finnish is currently only available with the %s payment method.', 'woo-vipps'), 'MobilePay'); ?></p>
-                <?php endif; ?>
-
-                <fieldset>
-                    <legend><?php _e('Verb', 'woo-vipps'); ?></legend>
-                    <label><input type="radio" name="express[tmpConfig][verb]" checked value="buy"><?php _e('Buy', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="pay"><?php _e('Pay', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="continue"><?php _e('Continue', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="confirm"><?php _e('Confirm', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="donate"><?php _e('Donate', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][verb]" value="express"><?php _e('Express', 'woo-vipps'); ?></label>
-                </fieldset>
-                <fieldset>
-                    <legend><?php _e('Variant', 'woo-vipps'); ?></legend>
-                    <label><input type="radio" name="express[tmpConfig][variant]" checked value="primary"><?php _e('Primary', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][variant]" value="dark"><?php _e('Dark (WCAG AAA)', 'woo-vipps'); ?></label>
-                    <label><input type="radio" name="express[tmpConfig][variant]" value="light"><?php _e('Light (WCAG AAA)', 'woo-vipps'); ?></label>
-                </fieldset>
-            </div>
-
-            <!-- Button preview that changes depending on the chosen parameters. LP 2026-06-24 -->
-            <?php echo $this->get_html_button($init_args); ?>
-        </div>
-
-        <script>
-            // When inputs change, update the preview args. LP 2026-06-24
-            jQuery('#vipps-button-settings-express-args input').on('click', updatePreview);
-
-            let currentContext = '<?php echo $init_context; ?>';
-            let contextConfigs = <?php echo json_encode($configs) ?: "{}"; ?> // maps context slug to config object. LP 2026-06-24
-
-            // Updates the actual html inputs from given config. LP 2026-07-01
-            function setInputsFromConfig(context, config) {
-                const useGlobalConfig = Boolean(config?.["use-global-config"]);
-                const isGlobal = "global" === context;
-
-                // Only show the 'use-global-config' checkbox for nonglobal context. LP 2026-06-26
-                jQuery('#use-global-config-container').toggleClass('hidden', isGlobal);
-
-                // Nonglobal contexts with useGlobalConfig, and empty configs, should fallback to the global config. LP 2026-06-26
-                if (!config || (!isGlobal && useGlobalConfig)) {
-                    config = contextConfigs["global"];
-
-                    jQuery('input[name="express[tmpConfig][use-global-config]"]').prop("checked", true);
-
-                    // When using global config, the inputs should be disabled until its unchecked. LP 2026-06-26
-                    jQuery('#vipps-button-settings-express-args input').prop("disabled", true);
-                } else {
-                    jQuery('input[name="express[tmpConfig][use-global-config]"]').prop("checked", false);
-                    jQuery('#vipps-button-settings-express-args input').prop("disabled", false);
-                }
-
-                Object.entries(config).forEach(([key, val]) => {
-                        if ("use-global-config" === key) return;
-                        const inputs = jQuery(`input[name="express[tmpConfig][${key}]"]`);
-                        const type = inputs.prop('type');
-                        switch (type) { 
-                            case "checkbox":
-                                inputs.prop('checked', typeof val === "boolean" ? val : "true" === val);
-                                break;
-                            case "radio":
-                                inputs.filter(`[value="${val}"]`).prop('checked', true);
-                                break;
-                            default:
-                                console.error(`woo-vipps: Unexpected input type '${type}' for button config. key=${key}, val=${val}`);
-                        }
-                });
-
-                updatePreview();
-            }
-             // init the starting config from option. LP 2026-06-25
-            setInputsFromConfig(currentContext, contextConfigs[currentContext]);
-
-            // Update the preview web component's attributes. LP 2026-06-24
-            function updatePreview(event) {
-                const args = getPreviewArgs();
-                // FIXME: when i use get_customer_language() here it gives me my user language, but on frontend it gives the site language, i.e not the same value. So this preview will be wrong language. so use get_locale for now. LP 2026-07-02
-                // if ('store' === args.language) args.language = '<?php echo $this->get_customer_language(); ?>';
-                if ('store' === args.language) args.language = '<?php echo substr(get_locale(), 0, 2); ?>';
-                const button = jQuery('#vipps-button-express-preview');
-                button.attr(args);
-            }
-
-            function getPreviewArgs() {
-                const args = {};
-                jQuery('#vipps-button-settings-express-args input').each(function () {
-                    // inputs are put in form arrays like 'express[tmpConfig][attribute]', so extract the actual attribute name. LP 2026-06-24
-                    const matches = [...this.name.matchAll(/\[([^\]]+)\]/g)];
-                    const attr = matches.length ? matches[matches.length - 1][1] : null;
-                    if (!attr) {
-                        console.error("woo-vipps: Could not extract attribute name for button preview:", this);
-                        return;
-                    }
-                    if (this.type === 'checkbox') {
-                        args[attr] = this.checked;
-                    } else if (this.checked) {
-                        args[attr] = this.value;
-                    }
-                });
-
-                return args;
-            }
-
-            // Stores selected config for context and switches to another (if changed). LP 2026-07-01
-            function updateContext() {
-                const wasGlobal = "global" === currentContext;
-                const useGlobalConfig = jQuery('#use-global-config-container input').prop("checked");
-
-                // Store config to global, unless its a non-global context that uses global config. LP 2026-06-25
-                if (wasGlobal || !useGlobalConfig) {
-                    contextConfigs[currentContext] = getPreviewArgs();
-                } else {
-                    contextConfigs[currentContext] = {'use-global-config': true};
-                }
-
-                // Swap to new context: set all input fields to the stored values if exists. LP 2026-06-25
-                const newContext = jQuery("#context").val();
-                const newConfig = contextConfigs[newContext];
-
-                // Set context in url. LP 2026-09-30
-                const input = document.getElementById('vipps-button-menu-express-context');
-                if (input) input.value = newContext;
-
-                setInputsFromConfig(newContext, newConfig);
-                currentContext = newContext;
-            }
-
-            // Before submit: delete the tmpConfig for the current selected values, and add the stored contextConfigs to the post data. LP 2026-06-24
-            jQuery('#vipps-button-settings-form').on('formdata', e => {
-                const formData = e?.originalEvent?.formData;
-                if (!formData) return;
-
-                // run this to store current context config before posting. LP 2026-06-24
-                updateContext();
-
-                // now we can delete the current temporary config from post data. LP 2026-06-24
-                const keysToDelete = [];
-                for (const [key] of formData.entries()) {
-                    if (key.startsWith("express[tmpConfig][")) {
-                        keysToDelete.push(key);
-                    }
-                }
-                keysToDelete.forEach(key => formData.delete(key));
-
-                // Now add the actual post data from the stored global contextConfigs. LP 2026-06-24
-                Object.entries(contextConfigs).forEach(([context, config]) => {
-                    Object.entries(config).forEach(([key, val]) => {
-                        formData.append(`express[configs][${context}][${key}]`, val);
-                    });
-                });
-            });
-        </script>
-        <?php
-    }
-
 
     public function admin_menu_page () {
         $flavour = sanitize_title($this->get_payment_method_name());
@@ -1780,15 +1151,21 @@ EOF;
 
         add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $logo, 58);
 
-        add_submenu_page( 'vipps_admin_menu', __('Settings', 'woo-vipps'),   __('Settings', 'woo-vipps'),   'manage_woocommerce', 'vipps_settings_menu', array($adminSettings, 'init_admin_settings_page_react_ui'), 90);
+        add_submenu_page( 'vipps_admin_menu', __('Settings', 'woo-vipps'),   __('Settings', 'woo-vipps'),   'manage_woocommerce', 'vipps_settings_menu', array($adminSettings, 'init_admin_settings_page_react_ui'), 1);
 
         if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions_Plugin')) {
-            add_submenu_page( 'vipps_admin_menu', __('Recurring Payments', 'woo-vipps'),   __('Recurring Payments', 'woo-vipps'),   'manage_woocommerce', 'vipps_recurring__settings_menu', array($this, 'recurring_settings_page'), 95);
+            add_submenu_page( 'vipps_admin_menu', __('Recurring Payments', 'woo-vipps'),   __('Recurring Payments', 'woo-vipps'),   'manage_woocommerce', 'vipps_recurring__settings_menu', array($this, 'recurring_settings_page'), 2);
         }
 
-        add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
-        add_submenu_page( 'vipps_admin_menu', __('Buttons', 'woo-vipps'),   __('Buttons', 'woo-vipps'),   'manage_woocommerce', 'vipps_button_menu', array($this, 'button_menu_page'), 80);
-        add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($this, 'webhook_menu_page'), 10);
+        add_submenu_page( 'vipps_admin_menu', __('Buttons', 'woo-vipps'),   __('Buttons', 'woo-vipps'),   'manage_woocommerce', 'vipps_button_menu', array($adminSettings, 'button_menu_page'), 4);
+        add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($adminSettings, 'badge_menu_page'), 4);
+        add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($adminSettings, 'webhook_menu_page'), 4);
+
+        // If login is not active, add the login submenu page with a "activate/download Login with vipps" button. LP 2026-10-09
+        if (!is_plugin_active('login-with-vipps/login-with-vipps.php')) {
+            add_submenu_page( 'vipps_admin_menu', Vipps::LoginName(), Vipps::LoginName(), 'manage_woocommerce', 'vipps_login_options', array($adminSettings, 'login_plugin_install_menu'), 3);
+        }
+
     }
 
     // The Recurring plugin owns the settings screen and its save endpoint. IOK 2026-10-02
@@ -2171,7 +1548,7 @@ EOF;
           if ($canbebought) {
             echo sprintf(__("This product supports %1\$s and will have an %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
           } else {
-            echo sprintf(__("This product does <b>not</b> support %1\$s, and so will <b>not</b> %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
+            echo sprintf(__("This product does <b>not</b> support %1\$s, and so will <b>not</b> have a %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
           } 
           echo "</p>";
         } else { // Express for products disabled. LP 2026-09-29
@@ -5904,6 +5281,63 @@ else:
                 'readonly'    => true,
             ),
         );
+    }
+
+    // Activates login with vipps. LP 2026-10-09
+    public function post_vipps_activate_login_plugin() {
+        if (!current_user_can('activate_plugins')) {
+            wp_die('Insufficient permissions');
+        }
+
+        check_admin_referer('vipps_activate_login_plugin');
+
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        $result = activate_plugin('login-with-vipps/login-with-vipps.php');
+        if (is_wp_error($result)) {
+            wp_die(esc_html($result->get_error_message()));
+        }
+
+        // return to the login submenu for seamlessness. LP 2026-10-09
+        wp_safe_redirect(admin_url('admin.php?page=vipps_login_options'));
+        exit;
+    }
+
+    // Installs and activates Login with Vipps. LP 2026-10-09
+    public function post_vipps_install_login_plugin() {
+        if (!current_user_can('install_plugins') || !current_user_can('activate_plugins')) {
+            wp_die('Insufficient permissions');
+        }
+        check_admin_referer('vipps_install_login_plugin');
+
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+        require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+
+        // Install the plugin. LP 2026-10-09
+        $url = 'https://downloads.wordpress.org/plugin/login-with-vipps.latest-stable.zip';
+        try {
+            $upgrader = new Plugin_Upgrader(new Automatic_Upgrader_Skin());
+            $result = $upgrader->install($url);
+        } catch (Exception $e) {
+            wp_die($e->getMessage());
+        }
+
+        if (is_wp_error($result)) {
+            wp_die(esc_html($result->get_error_message()));
+        }
+        if (!$result) {
+            wp_die(__('Plugin installation failed.'), 'woo-vipps');
+        }
+
+        // Activate after installation. LP 2026-10-09
+        $result = activate_plugin('login-with-vipps/login-with-vipps.php');
+        if (is_wp_error($result)) {
+            wp_die(esc_html($result->get_error_message()));
+        }
+
+        // Return to the same submenu page. LP 2026-10-09
+        wp_safe_redirect(admin_url('admin.php?page=vipps_login_options'));
+        exit;
     }
 
     // Inits option 'vipps_button_options' and handles migration from older versions. LP 2026-06-26
