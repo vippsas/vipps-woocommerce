@@ -1290,8 +1290,8 @@ msgstr "Velg verb"
 
 #: payment/WC_Gateway_Vipps.class.php:1363
 #: payment/WC_Gateway_Vipps.class.php:1369
-msgid "Choose which payment method should be displayed to users at checkout"
-msgstr "Velg betalingsmåte som vises til brukerne i kassen"
+msgid "Choose which payment method should be displayed to customers at checkout"
+msgstr "Velg betalingsmåte som vises til kundene i kassen"
 
 #: recurring/includes/admin/vipps-recurring-settings.php:56
 #: recurring/includes/admin/vipps-recurring-settings.php:57

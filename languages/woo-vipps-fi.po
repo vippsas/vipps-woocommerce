@@ -1240,8 +1240,8 @@ msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1166
 #: payment/WC_Gateway_Vipps.class.php:1172
-msgid "Choose which payment method should be displayed to users at checkout"
-msgstr "Valitse, mikä maksutapa näytetään käyttäjille kassalla"
+msgid "Choose which payment method should be displayed to customers at checkout"
+msgstr "Valitse, mikä maksutapa näytetään asiakkaille kassalla"
 
 #: payment/WC_Gateway_Vipps.class.php:1325
 msgid ""
