@@ -564,6 +564,9 @@ class VippsAdminSettings
 
     // Submenu page with button to install/activate (if installed) login with vipps. LP 2026-10-09
     public function login_plugin_install_menu() {
+        $paymentmethod = Vipps::instance()->get_payment_method_name();
+        echo "<div class='vipps-shell $paymentmethod'>";
+
         $plugin = 'login-with-vipps/login-with-vipps.php';
         if (is_plugin_active($plugin)) {
             return;
@@ -582,6 +585,7 @@ class VippsAdminSettings
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="vipps_activate_login_plugin">';
             wp_nonce_field('vipps_activate_login_plugin');
+
             submit_button(sprintf(__('Activate %s', 'woo-vipps'), Vipps::LoginName()),
                     'primary',
                     'vipps_activate_login_plugin',
@@ -593,6 +597,8 @@ class VippsAdminSettings
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="vipps_install_login_plugin">';
             wp_nonce_field('vipps_install_login_plugin');
+
+            echo "<div class='vipps-shell $paymentmethod'>";
             submit_button(sprintf(__('Install %s', 'woo-vipps'), Vipps::LoginName()),
                     'primary',
                     'vipps_install_login_plugin',
@@ -601,6 +607,7 @@ class VippsAdminSettings
             );
             echo '</form>';
         }
+        echo '</div>';
         echo '</div>';
     }
 }
