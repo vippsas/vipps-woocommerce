@@ -163,6 +163,7 @@ class VippsAdminSettings
 
         // We must first generate the root element for the React UI before we load the React app itself, otherwise React will fail to load.
         ?>
+        <div class="wp-header-end"></div> <?php // this makes the wp admin notices render here instead of inside the settings panel. LP 2026-09-25 ?>
         <div id="vipps-mobilepay-react-ui"></div>
         <?php
 
@@ -179,6 +180,7 @@ class VippsAdminSettings
         $metadata = array(
             'admin_url' => admin_url('admin-ajax.php'),
             'page' => 'admin_settings_page',
+            'company_name' => Vipps::CompanyName(),
             'currency' => get_woocommerce_currency(),
             // for debugging/testing: show wizard screen always IOK 2025-01-20
             '__dev_force_wizard_screen' => defined('WOO_VIPPS_FORCE_WIZARD') && WOO_VIPPS_FORCE_WIZARD,
@@ -188,8 +190,16 @@ class VippsAdminSettings
 
         // Add some extra common translations only used by the React UI
         $commonTranslations = array(
+                'settings_subtitle' => __('Single payments', 'woo-vipps'),
+                'express_shipping_section' => __('Shipping', 'woo-vipps'),
+                'test_keys_section' => __('Test environment', 'woo-vipps'),
+                'production_keys_section' => __('Production environment', 'woo-vipps'),
+                'order_status_section' => __('Order status', 'woo-vipps'),
+                'checkout_advanced_section' => __('Advanced settings', 'woo-vipps'),
+                'express_advanced_section' => __('Advanced settings', 'woo-vipps'),
+                'express_placement' => __('Configure placement', 'woo-vipps'),
                 'save_changes' => __('Save changes', 'woo-vipps'),
-                'initial_settings' => __('Initial settings', 'woo-vipps'),
+                'initial_settings' => __('Initial settings wizard', 'woo-vipps'),
                 'upload_image' => __('Upload image', 'woo-vipps'),
                 'remove_image' => __('Remove image', 'woo-vipps'),
                 'next_step' => __('Next step', 'woo-vipps'),
@@ -204,7 +214,23 @@ class VippsAdminSettings
                 'kustom_sale_4' => __('Please note that <b>accounts created after March 27, 2026 will not support Checkout in this plugin</b>.', 'woo-vipps'),
                 'kustom_sale_5' => __('If you have any questions about what the transition means for you, please see our <a href="https://vippsmobilepay.com/en-NO/vippsmobilepay-kustom" target="_blank">FAQ</a>.', 'woo-vipps'),
                 'kustom_sale_6' => sprintf(__('For help you can reach out to <a href="mailto:%1$s">%1$s</a> and <a href="tel:%2$s">%3$s</a>. You can also find the Kustom portal <a href="%4$s" target="_blank">here</a>.', 'woo-vipps'), 'support@kustom.co', '+4721564684', '+47 21 56 46 84', 'https://portal.kustom.co/'),
-                );
+                'checkoutcreateuser_extra' => sprintf(__('When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %1$s to provide easier login for customers.', 'woo-vipps'), Vipps::LoginName()),
+                'expresscreateuser_extra' => sprintf(__('When disabled, orders are placed as guest checkouts.<br>If enabled, you may want to install the plugin %1$s to provide easier login for customers.<br>If you have %1$s installed, customer creation is enabled by default unless disabled in WooCommerce.', 'woo-vipps'), Vipps::LoginName()),
+                'enablestaticshipping_extra' => __('Guest orders use your store’s base location; logged-in customers use their saved address. Enable this only when those locations produce accurate shipping options, such as with flat-rate or free shipping.', 'woo-vipps'),
+                'result_status_extra' => sprintf(
+                    __('Select %1$s if you capture payment before shipping, either manually or by marking the order as %3$s.<br>Select %2$s if %1$s triggers shipping in your store.<br>&#9;&gt; Note that %2$s may send customers an email suggesting there is a problem with their order.', 'woo-vipps'),
+                    __('Processing', 'woo-vipps'),
+                    __('On hold','woo-vipps'),
+                    __('Complete','woo-vipps'),
+                ),
+                'status_on_fail_extra' => sprintf(
+                        __('%1$s orders will keep the customer\'s shopping cart intact.<br>%2$s orders can be restarted, possibly with another payment method.', 'woo-vipps'),
+                        /* translators: woocommerce order status name */
+                        __('Failed', 'woo-vipps'),
+                        /* translators: woocommerce order status name */
+                        __('Cancelled','woo-vipps'),
+                ),
+            );
 
         /* We need to postprocess the settings for.. various reasons IOK 2024-06-04  */
         /* Also we need to run init_form_fields here, because for whatever reason the
@@ -217,55 +243,6 @@ class VippsAdminSettings
                 'title' => __('Initial settings', 'woo-vipps'),
                 'description' => sprintf(__('Welcome! You are almost ready to accept payments with %1$s', 'woo-vipps'), Vipps::CompanyName()),
             ],
-            'checkout_options_wizard' => array(
-                'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                'description' => sprintf(__('%1$s is a service from %2$s, which allows you to replace the usual WooCommerce checkout page with a super simple checkout screen, where your customers can pay with Vipps, Visa, and MasterCard!', 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
-            ),
-            'enablestaticshipping_checkout_wizard' => array(
-                'title' => __('Are you going to base shipping price on the customers address?', 'woo-vipps'),
-                'label' => __('Yes, I want dynamic shipping calculation', 'woo-vipps'),
-                'description' => __('If your shipping prices are the same no matter where the customer lives, you don\'t need dynamic shipping calculation.'),
-            ),
-            'checkoutcreateuser_wizard' => array(
-                    'title' => sprintf(__('Do you want to create new customers on %1$s?', 'woo-vipps'), Vipps::CheckoutName()),
-                    'label' => sprintf(__('Yes, create new customers on %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                    'description' => sprintf(__('By creating new customers, you avoid orders showing up as guest orders. We recommend combining this with Log in with %1$s for a full overview of your customers.', 'woo-vipps'), Vipps::CompanyName()),
-                ),
-            'noAddressFields_wizard' => array(
-                    'title' => __('Do you want the customer to enter their address?', 'woo-vipps'),
-                    'label' => __('Yes, all customers must enter their address', 'woo-vipps'),
-                    'description' => __('If you only sell products that are not to be shipped, you don\'t need the customer to enter their address.', 'woo-vipps'),
-                ),
-            'checkout_shipping_wizard' => array(
-                    'title' => sprintf(__('Shipping alternatives available with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                    'description' => sprintf(__('When you use %1$s, you have a variety of shipping options to choose from, giving you even more choices from certain shipping providers.'), Vipps::CheckoutName())
-                ),
-            'vcs_posten_wizard' => array(
-                'title' => __('Posten Norge', 'woo-vipps'),
-                'custom_attributes' => array('data-vcs-show' => '.vcs_depend.vcs_posten'),
-                'label' => __('Offer Posten Norge as a shipping method', 'woo-vipps'),
-                'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
-            ),
-            'vcs_helthjem_wizard' => array(
-                'title' => __('Helthjem', 'woo-vipps'),
-                'label' => __('Offer Helthjem as a shipping method', 'woo-vipps'),
-                'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
-            ),
-            'vcs_posti_wizard' => array(
-                    'title' => __('Posti', 'woo-vipps'),
-                    'label' => __('Offer Posti as a shipping method', 'woo-vipps'),
-                    'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
-                ),
-            'vcs_postnord_wizard' => array(
-                    'title' => __('PostNord', 'woo-vipps'),
-                    'label' => __('Offer PostNord as a shipping method', 'woo-vipps'),
-                    'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
-                ),
-            'vcs_porterbuddy_wizard' => array(
-                    'title' => __('Porterbuddy', 'woo-vipps'),
-                    'label' => __('Offer Porterbuddy as a shipping method', 'woo-vipps'),
-                    'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
-                ),
             'help_box' => [
                     'get_started' => __('Get started', 'woo_vipps'),
                     'documentation' => __('Documentation', 'woo-vipps'),
@@ -275,40 +252,13 @@ class VippsAdminSettings
                         'description' => __('If you have any questions related to this plugin, you are welcome to check out the <a href="https://wordpress.org/support/plugin/woo-vipps/" target="_blank">support forum.</a>', 'woo-vipps'),
                     ],
                 ],
-            'checkout_confirm' => [
-                'title' => sprintf(__('Upgrade your customer experience with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                'img' => [
-                    'vipps' => [
-                        'src' => plugins_url('img/no_vippsmobilepay_checkout_app-teaser_2400x1600.webp', WC_VIPPS_PAYMENT_MAIN_FILE),
-                        'alt' => __('Sketch of', 'woo-vipps') . ' Vipps Checkout', // dont translate checkout name
-                    ],
-                    'mobilepay' => [
-                        'src' => plugins_url('img/dk_vm_checkout_app-teaser_2400x1600.webp', WC_VIPPS_PAYMENT_MAIN_FILE),
-                        'alt' => __('Sketch of', 'woo-vipps') . ' MobilePay Checkout',
-                    ],
-                ],
-                'paragraph1' => [
-                    'header' => sprintf(__('Why %1$s?', 'woo-vipps'), Vipps::CheckoutName()),
-                    'first' => __('Effortless Payments: Accept payments smoothly with Vipps/MobilePay, Visa, and Mastercard.', 'woo-vipps'),
-                    'second' => __('Streamlined Shopping Process: Simplify your customers\' journey from cart to confirmation', 'woo-vipps'),
-                    'third' => __('All-in-One Solution: No fixed monthly fees-just pure convenience.', 'woo-vipps'),
-                ],
-                'paragraph2' => [
-                    'header' => __('Perfect for you if:', 'woo-vipps'),
-                    'first' => __('You want simple, varied payment options', 'woo-vipps'),
-                    'second' => __('You need easy shipping solutions with diverse choices.', 'woo-vipps'),
-                ],
-                'accept' => sprintf(__('Start using %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                'skip' => __('Skip & save', 'woo-vipps'),
-            ],
             'express_options_wizard' => array(
-                'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                'description' => sprintf(__("%1\$s allows you to buy products by a single click from the cart, checkout, or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately.", 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::ExpressName()),
+                'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressName()),
                 'readmore' => __('Read more', 'woo-vipps'),
             ),
-            'singleproductexpressarchives_wizard' => [
-                'title'       => sprintf(__('%s on product catalog pages', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                'label'       => sprintf(__('Enable a %s button for relevant products on catalog pages', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+            'testmode_wizard' => [
+                'description' => sprintf(__('Use the %1$s test environment instead of live production environment. No real transactions will be performed.', 'woo-vipps'), Vipps::CompanyName()),
             ],
         ];
 

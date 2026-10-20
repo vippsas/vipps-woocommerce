@@ -1,0 +1,19 @@
+/* Recurring-only additions; App.css follows the Payment/Login settings layout. */
+.vipps-recurring-react-admin-page .vipps-recurring-subtitle {
+  margin: 0.65rem 0 0;
+  color: var(--vipps-settings-muted);
+  font-size: 1rem;
+}
+.vipps-recurring-react-admin-page .vipps-recurring-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.vipps-recurring-react-admin-page .vipps-recurring-unsaved { color: var(--vipps-settings-muted); }
+.vipps-recurring-react-admin-page .vipps-settings-panel h2 {
+  margin: 0 0 1rem;
+  color: #2d3040;
+  font-family: 'Vipps Display', 'Vipps Text', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 1.2rem;
+}

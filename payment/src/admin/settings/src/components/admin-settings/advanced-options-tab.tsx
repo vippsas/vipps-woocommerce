@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useWPImageUpload } from '../../hooks/use-wp-image-upload';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
-import { CheckboxFormField, SelectFormField } from '../options-form-fields';
+import { SwitchFormField, SelectFormField } from '../options-form-fields';
 import { WPButton, WPFormField, WPLabel } from '../form-elements';
 import { NotificationBanner } from '../notification-banner';
 
@@ -55,6 +55,17 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
     <div>
       <p className="vipps-mobilepay-react-tab-description">{gettext('advanced_options.description')}</p>
 
+      {/* Toggle for test mode */}
+      <SwitchFormField name="testmode" titleKey="testmode.title" descriptionKey="testmode.description" labelKey="testmode.label" />
+
+      {/* Toggle for the sending of receipts */}
+      <SwitchFormField
+        name="sendreceipts"
+        titleKey="sendreceipts.title"
+        labelKey="sendreceipts.label"
+        descriptionKey="sendreceipts.description"
+      />
+
       {/* Renders a select field for phone number transformations for checkout + express. LP 2025-12-29 */}
       <SelectFormField
         name="checkout_phone_transformation"
@@ -67,14 +78,14 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         ]}
       />
 
-      <CheckboxFormField
+      <SwitchFormField
         labelKey="vippsorderattribution.label"
         name="vippsorderattribution"
         titleKey="vippsorderattribution.title"
         descriptionKey="vippsorderattribution.description"
       />
 
-      {/*  Renders a checkbox to override the page template used for the special Vipps pages.
+      {/*  Select template for special page.
       From now (2026-08-27) on the special page is now a real page, so hide this setting if its unset/default. But if changed, still show it so users can change it. LP 2026-08-27
       */}
       {showSpecialPageTemplates &&
@@ -88,14 +99,6 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
           }))}
         />
       }
-
-      {/* Renders a checkbox to enable the sending of receipts */}
-      <CheckboxFormField
-        name="sendreceipts"
-        titleKey="sendreceipts.title"
-        labelKey="sendreceipts.label"
-        descriptionKey="sendreceipts.description"
-      />
 
       {/* Renders an image upload field to upload the receipt image */}
       {error && <NotificationBanner variant="error" text={error} />}
@@ -133,19 +136,11 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
       </WPFormField>
 
       {/* Renders a checkbox to delete (reset) plugin settings on plugin deactivation. LP 2025-10-06 */}
-      <CheckboxFormField
+      <SwitchFormField
         name="delete_settings_on_deactivation"
         titleKey="delete_settings_on_deactivation.title"
         descriptionKey="delete_settings_on_deactivation.description"
         labelKey="delete_settings_on_deactivation.label"
-      />
-
-      {/* Renders a checkbox to enable developer mode */}
-      <CheckboxFormField
-        name="developermode"
-        titleKey="developermode.title"
-        descriptionKey="developermode.description"
-        labelKey="developermode.label"
       />
     </div>
   );

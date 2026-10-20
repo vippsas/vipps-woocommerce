@@ -67,6 +67,10 @@ class Vipps {
     public static function CheckoutName($order=null) {
         return "Vipps MobilePay Checkout"; // Do not translate
     }
+    // Seems Vipps is now testing branding it as just Express, Ekpress in norwegian etc. LP 2026-09-24
+    public static function ExpressName() {
+        return __("Express", 'woo-vipps');
+    }
     public static function ExpressCheckoutName($order=null) {
         return __("Vipps MobilePay Express Checkout", 'woo-vipps');
     }
@@ -299,8 +303,9 @@ class Vipps {
 
        // Add an admin interface for this page as well IOK 2026-09-11
        add_action('woocommerce_settings_pages', array($this, 'woocommerce_settings_pages'));
-    }
 
+       $this->correct_express_enabled_option();
+    }
 
     public function rest_api_init ()  {
 
@@ -329,6 +334,16 @@ class Vipps {
         $gw = $this->gateway();
         require_once(dirname(__FILE__) . "/admin/settings/VippsAdminSettings.class.php");
         $adminSettings = VippsAdminSettings::instance();
+
+        // Supress Woo and WP notices on this screen IOK 2026-10-01
+        add_action( 'in_admin_header', function () {
+            $screen = get_current_screen();
+            if ( ! $screen || 'vipps-mobilepay_page_vipps_settings_menu' !== $screen->id ) return;
+            remove_all_actions( 'admin_notices' );
+            remove_all_actions( 'all_admin_notices' );
+        }, 9999);
+
+
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
 
@@ -442,6 +457,28 @@ class Vipps {
         }
     }
 
+    // Correct Express master toggle from the suboptions/overrides (Though this should be handled in the ui). LP 2026-09-28
+    private function correct_express_enabled_option() {
+        $gw = $this->gateway();
+        // All overrides was turned off
+        if ('yes' === $gw->get_option('express_enabled') && (
+                    'no' === $gw->get_option('cartexpress') &&
+                    'no' === $gw->get_option('express_show_in_checkout') &&
+                    'no' === $gw->get_option('singleproductexpressarchives') &&
+                    'no' === $gw->get_option('express_singleproduct_enabled')
+                    )) {
+            $gw->update_option('express_enabled', 'off');
+        } 
+        // Any of the overrides was turned on
+        else if ('no' === $gw->get_option('express_enabled') && (
+                    'yes' === $gw->get_option('cartexpress') ||
+                    'yes' === $gw->get_option('express_show_in_checkout') ||
+                    'yes' === $gw->get_option('singleproductexpressarchives') ||
+                    'yes' === $gw->get_option('express_singleproduct_enabled')
+                    )) {
+            $gw->update_option('express_enabled', 'yes');
+        }
+    }
     
     /** Ensure we have a special page for payment flows
      *
@@ -953,7 +990,11 @@ jQuery('a.webhook-adder').click(function (e) {
             }
         }
         update_option('vipps_button_options2', $new);
-        wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu"));
+        $express_context = '';
+        if ($_POST['express-context'] ?? null) {
+            $express_context = '&express-context=' . sanitize_title($_POST['express-context']);
+        }
+        wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu$express_context"));
         exit();
     }
 
@@ -1148,6 +1189,7 @@ EOF;
             <span><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></span>
             <form id="vipps-button-settings-form" class="vipps-button-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
                 <input type="hidden" name="action" value="update_vipps_button_settings" />
+                <input id="vipps-button-menu-express-context" type="hidden" name="express-context" value="<?php echo esc_attr($_GET['context'] ?? ''); ?>" />
                 <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
 
                 <!-- Express section -->
@@ -1177,6 +1219,10 @@ EOF;
             'checkout' => __('Checkout', 'woo-vipps'),
         ];
         $init_context = 'global';
+        // Restore context from url. LP 2026-09-30
+        if ($_GET['express-context'] ?? null) {
+            $init_context = sanitize_title($_GET['express-context']);
+        }
         $init_config = $configs[$init_context] ?? [];
 
         // html button args
@@ -1194,7 +1240,7 @@ EOF;
                 </label>
                 <select id="context" onChange='updateContext()'>
                   <?php foreach($contexts as $key => $label): ?>
-                    <option value="<?php echo $key; ?>" <?php if ('global' === $key) echo " selected "; ?> >
+                    <option value="<?php echo $key; ?>" <?php if ($init_context === $key) echo " selected "; ?> >
                        <?php echo $label ; ?>
                     </option>
                   <?php endforeach; ?>
@@ -1342,6 +1388,10 @@ EOF;
                 // Swap to new context: set all input fields to the stored values if exists. LP 2026-06-25
                 const newContext = jQuery("#context").val();
                 const newConfig = contextConfigs[newContext];
+
+                // Set context in url. LP 2026-09-30
+                const input = document.getElementById('vipps-button-menu-express-context');
+                if (input) input.value = newContext;
 
                 setInputsFromConfig(newContext, newConfig);
                 currentContext = newContext;
@@ -1741,14 +1791,14 @@ EOF;
         add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($this, 'webhook_menu_page'), 10);
     }
 
-    // Just a redirect to the recurring payment settings for the time being. IOK 2025-01-08
+    // The Recurring plugin owns the settings screen and its save endpoint. IOK 2026-10-02
     public function recurring_settings_page () {
         if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions_Plugin')) {
-            wp_safe_redirect(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring'), 302);
+            WC_Vipps_Recurring::get_instance()->render_settings_page();
         } else {
             wp_safe_redirect(admin_url('/admin.php?page=vipps_admin_menu'), 302);
+            exit();
         }
-        exit();
     }
 
     public function add_meta_boxes () {
@@ -2091,21 +2141,24 @@ EOF;
     public function product_options_vipps() {
         $gw = $this->gateway();
         $choice = $gw->get_option('singleproductexpress');
+        $express_for_products = 'yes' === $gw->get_option('express_enabled') &&
+            ('yes' === $gw->get_option('express_singleproduct_enabled')) ||
+            ('yes' === $gw->get_option('singleproductexpressarchives'));
         echo '<div class="options_group">';
         echo "<div class='blurb' style='margin-left:13px'><h4>";
-        echo __("Buy-now button", 'woo-vipps') ;
+        echo self::ExpressName();
         echo "<h4></div>";
-        if ($choice == 'some') {
+        if ($express_for_products && $choice == 'some') {
             $button = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_buy_now_button', true));
             echo "<input type='hidden' name='woo_vipps_add_buy_now_button' value='no' />";
             woocommerce_wp_checkbox( array(
                         'id'      => 'woo_vipps_add_buy_now_button',
                         'value'   => $button,
-                        'label'   => sprintf(__('Add  \'Buy now with %1$s\' button', 'woo-vipps'), $this->get_payment_method_name()),
+                        'label'   => sprintf(__('Support %s', 'woo-vipps'), Vipps::ExpressName()),
                         'desc_tip' => true,
-                        'description' => sprintf(__('Add a \'Buy now with %1$s\'-button to this product','woo-vipps'), $this->get_payment_method_name())
+                        'description' => sprintf(__('Add a %s button to this product','woo-vipps'), Vipps::ExpressName())
                         ) ); 
-        } else if ($choice == "all") {
+        } else if ($express_for_products && $choice == "all") {
           $prod = wc_get_product(get_the_ID());
           $canbebought = false;
           if (is_a($prod, 'WC_Product')) {
@@ -2113,18 +2166,17 @@ EOF;
           }
 
           echo "<p>";
-          echo sprintf(__("The %1\$s settings are currently set up so all products that can be bought with Express Checkout will have a Buy Now button.", 'woo-vipps'), Vipps::CompanyName()); 
+          echo sprintf(__("The %1\$s settings are currently set up so all products that can be bought with %2\$s are supported.", 'woo-vipps'), Vipps::CompanyName(), Vipps::ExpressName()); 
           echo " ";
           if ($canbebought) {
-            echo __("This product supports express checkout, and so will have a Buy Now button." , 'woo-vipps');
+            echo sprintf(__("This product supports %1\$s and will have an %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
           } else {
-            echo __("This product does <b>not</b> support express checkout, and so will <b>not</b> have a Buy Now button." , 'woo-vipps');
+            echo sprintf(__("This product does <b>not</b> support %1\$s, and so will <b>not</b> %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
           } 
           echo "</p>";
-        } else {
-         $settings = esc_attr(admin_url('/admin.php?page=vipps_settings_menu'));
+        } else { // Express for products disabled. LP 2026-09-29
           echo "<p>";
-          echo sprintf(__("The %1\$s settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), Vipps::CompanyName());
+          echo sprintf(__('%s is currently disabled for all products in the %s settings.', 'woo-vipps'), Vipps::ExpressName(), Vipps::CompanyName());
           echo "</p>";
         }
         echo '</div>';
@@ -2925,8 +2977,8 @@ else:
         $this->vippsJSConfig['BuyNowWith'] = __('Buy now with', 'woo-vipps');
         $this->vippsJSConfig['BuyNowWithVipps'] = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->get_payment_method_name());
         $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vmp-logo.png',__FILE__);
-        $this->vippsJSConfig['vippsbuynowbutton'] = sprintf(__( '%1$s Buy Now button', 'woo-vipps' ), $this->get_payment_method_name());
-        $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %1$s Buy Now-button to the product block or choose a product manually', 'woo-vipps'), $this->get_payment_method_name());
+        $this->vippsJSConfig['vippsbuynowbutton'] = $this->get_payment_method_name() . ' ' . Vipps::ExpressName();
+        $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %s %s product button', 'woo-vipps'), $this->get_payment_method_name(), Vipps::ExpressName());
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
         $this->vippsJSConfig['vippslocale'] = get_locale();
         $this->vippsJSConfig['vippsexpressbuttonurl'] = $this->get_payment_method_name();
@@ -4410,7 +4462,6 @@ else:
                 delete_option('woocommerce_vipps_special_page_page_id');
             }
         }
-
     }
 
     // We have added some hooks to wp-cron; remove these. IOK 2020-04-01
@@ -5348,6 +5399,8 @@ else:
     // Display a 'buy now with express checkout' button on the product page IOK 2018-09-27
     public function single_product_buy_now_button () {
         $gw = $this->gateway();
+        $enabled = 'yes' === $gw->get_option('express_singleproduct_enabled');
+        if (!$enabled) return false;
         $how = $gw->get_option('singleproductexpress');
         if ($how == 'none') return;
         if (!$gw->express_checkout_available()) return;
@@ -5372,9 +5425,9 @@ else:
         if (!$showit) return;
 
         $classes = array();
-        $disabled="";
+        // $disabled="";
         if ($product->is_type('variable')) {
-            $disabled="disabled";
+            // $disabled="disabled";
             $classes[] = 'variable-product';
         }
 

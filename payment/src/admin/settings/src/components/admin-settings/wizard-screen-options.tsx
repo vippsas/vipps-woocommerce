@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import fixCheckoutName from '../../lib/fix-checkout-name';
 import { detectPaymentMethodName } from '../../lib/payment-method';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
 import { WPButton, WPFormField, WPLabel, truthToBool } from '../form-elements';
-import { CheckboxFormField, InputFormField, SelectFormField } from '../options-form-fields';
+import { SwitchFormField, InputFormField, SelectFormField } from '../options-form-fields';
 import { UnsafeHtmlText } from '../unsafe-html-text';
 
 /**
@@ -16,24 +15,26 @@ interface Props {
   isLoading: boolean;
 }
 
-// Step flow: Essential => EXPRESS/CHECKOUT => save and quit. 
-// Its EXPRESS unless vipps mobilepay checkout is already enabled and they somehow returned to the wizard. LP 2026-08-13
-type Steps = 'ESSENTIAL' | 'EXPRESS' | 'CHECKOUT';
+// Step flow: Essential => EXPRESS => save and quit. 
+type Steps = 'ESSENTIAL' | 'EXPRESS';
 
 export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Element {
-  const { getOption, setOption, hasOption } = useWP();
+  const { getOption, setOption } = useWP();
   
   const [step, setStep] = useState<Steps>('ESSENTIAL');
   const [prevStep, setPrevStep] = useState<Steps>('ESSENTIAL');
 
+  const expressOverrides = [
+    'cartexpress',
+    'express_show_in_checkout',
+    'singleproductexpressarchives',
+    'express_singleproduct_enabled'
+  ];
 
-  // For the "CHECKOUT" step. LP 03.01.2025
-  const showPorterbuddy = getOption("vcs_porterbuddy") === "yes";
-  const showHelthjem = getOption("vcs_helthjem") === "yes";
-  const showExternalKlarna = hasOption("checkout_external_payments_klarna");
-  const showExternals = showExternalKlarna;
-  
-  const paymentMethod = getOption("payment_method_name");
+  var testSuffix = '';
+  if (truthToBool(getOption('testmode'))) {
+    testSuffix = '_test';
+  }
 
   return (
     <>
@@ -43,6 +44,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
           <p>{gettext('wizard_header.description')}</p>
           <div className="vipps-mobilepay-form-container">
             <div className="vipps-mobilepay-form-col">
+              {/* Select country */}
               <SelectFormField
                 name="country"
                 titleKey="country.title"
@@ -81,27 +83,47 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 ]}
               />
 
+              {/* Toggle test mode */}
+              <SwitchFormField 
+                name="testmode"
+                titleKey="testmode.title"
+                descriptionKey="testmode_wizard.description"
+              />
+
+              {/* Inputs for keys. Uses test keys if testmode is switched on above. LP 2026-09-29 */}
               {/* Renders an input field for the merchant serial number */}
               <InputFormField
                 asterisk
-                name="merchantSerialNumber"
-                titleKey="merchantSerialNumber.title"
-                descriptionKey="merchantSerialNumber.description"
+                name={`merchantSerialNumber${testSuffix}`}
+                titleKey={`merchantSerialNumber${testSuffix}.title`}
+                descriptionKey={`merchantSerialNumber${testSuffix}.description`}
                 required
               />
 
               {/* Renders an input field for the VippsMobilePay client ID */}
-              <InputFormField asterisk name="clientId" titleKey="clientId.title" descriptionKey="clientId.description" required />
+              <InputFormField
+                asterisk
+                name={`clientId${testSuffix}`}
+                titleKey={`clientId${testSuffix}.title`}
+                descriptionKey={`clientId${testSuffix}.description`}
+                required
+              />
 
               {/* Renders an input field for the VippsMobilePay secret */}
-              <InputFormField asterisk name="secret" titleKey="secret.title" descriptionKey="secret.description" required />
+              <InputFormField
+                asterisk
+                name={`secret${testSuffix}`}
+                titleKey={`secret${testSuffix}.title`}
+                descriptionKey={`secret${testSuffix}.description`}
+                required
+              />
 
               {/* Renders an input field for the VippsMobilePay Ocp_Apim_Key_eCommerce */}
               <InputFormField
                 asterisk
-                name="Ocp_Apim_Key_eCommerce"
-                titleKey="Ocp_Apim_Key_eCommerce.title"
-                descriptionKey="Ocp_Apim_Key_eCommerce.description"
+                name={"Ocp_Apim_Key_eCommerce" + testSuffix}
+                titleKey={`Ocp_Apim_Key_eCommerce${testSuffix}.title`}
+                descriptionKey={`Ocp_Apim_Key_eCommerce${testSuffix}.description`}
                 required
               />
 
@@ -121,24 +143,19 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                       ) as HTMLFormElement | null;
                       if (!form) {
                           throw new Error("Form not found");
-                      } 
+                      }
 
                       // Trigger validation and proceed to the next step if valid
                       if (form.reportValidity()) {
                         setPrevStep(step);
-                        // If user did not enable checkout - show checkout confirmation step. LP 30.12.2024
-                        if (truthToBool(getOption('vipps_checkout_enabled'))) {
-                            setStep('CHECKOUT');
-                        } else {
-                            setStep('EXPRESS');
-                        }
+                        setStep('EXPRESS');
                       } else {
                            // no validity reported. 
                       }
                     }}
                   >
                     {/* no next step at this point if no checkout */}
-                    {truthToBool(getOption('vipps_checkout_enabled')) ? gettext("next_step") : fixCheckoutName(gettext('save_changes'), paymentMethod)}
+                    {gettext('save_changes')}
                   </WPButton>
                 </div>
               </WPFormField>
@@ -161,169 +178,6 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
         </>
       )}
 
-      {/* Only shown in checkout is previously enabled, we don't promote checkout anymore, but express. LP 2026-08-13 */}
-      {step === 'CHECKOUT' && (
-        <>
-          <div className="vipps-mobilepay-react-checkout-confirm">
-            <h1 className="vipps-mobilepay-react-tab-description title">
-              {fixCheckoutName(gettext("checkout_options_wizard.title"), paymentMethod)}
-            </h1>
-            <p>{fixCheckoutName(gettext("checkout_options_wizard.description"), paymentMethod)}</p>
-
-            {/* Renders a checkbox to enable the creation of new customers on Checkout */}
-            <CheckboxFormField
-              name="checkoutcreateuser"
-              titleKey={"checkoutcreateuser_wizard.title"}
-              labelKey={"checkoutcreateuser_wizard.label"}
-              descriptionKey={"checkoutcreateuser_wizard.description"}
-            />
-
-            {/* Renders a checkbox to enable dynamic shipping (inverted checkbox from static shipping details) */}
-            <CheckboxFormField
-              name="enablestaticshipping_checkout"
-              titleKey="enablestaticshipping_checkout_wizard.title"
-              labelKey="enablestaticshipping_checkout_wizard.label"
-              descriptionKey="enablestaticshipping_checkout_wizard.description"
-              inverted
-            />
-
-            {/* Renders a checkbox to enable address fields (inverted checkbox from dropping address fields) */}
-            <CheckboxFormField
-              name="noAddressFields"
-              titleKey="noAddressFields_wizard.title"
-              labelKey="noAddressFields_wizard.label"
-              descriptionKey="noAddressFields_wizard.description"
-              inverted
-            />
-
-            <h3 className="vipps-mobilepay-react-tab-description">
-              {fixCheckoutName(gettext("checkout_shipping_wizard.title"), paymentMethod)}
-            </h3>
-            <p>{fixCheckoutName(gettext("checkout_shipping_wizard.description"), paymentMethod)}</p>
-
-            {/* Renders a checkbox to enable Posten Norge  */}
-            <CheckboxFormField
-              name="vcs_posten"
-              titleKey="vcs_posten_wizard.title"
-              labelKey="vcs_posten_wizard.label"
-              descriptionKey="vcs_posten_wizard.description"
-            />
-
-            {/* Renders a checkbox to enable Posten Nord */}
-            <CheckboxFormField
-              name="vcs_postnord"
-              titleKey="vcs_postnord_wizard.title"
-              labelKey="vcs_postnord_wizard.label"
-              descriptionKey="vcs_postnord_wizard.description"
-            />
-
-            {/* Render a checkbox to enable Porterbuddy */}
-            <CheckboxFormField
-              name="vcs_porterbuddy"
-              titleKey="vcs_porterbuddy_wizard.title"
-              labelKey="vcs_porterbuddy_wizard.label"
-              descriptionKey="vcs_porterbuddy_wizard.description"
-            />
-
-            {/* Display Porterbuddy input fields if Porterbuddy is enabled */}
-            {showPorterbuddy && (
-              <>
-                {/* Renders a text input field for the Porterbuddy public token */}
-                <InputFormField
-                  asterisk
-                  name="vcs_porterbuddy_publicToken"
-                  titleKey="vcs_porterbuddy_publicToken.title"
-                  descriptionKey="vcs_porterbuddy_publicToken.description"
-                />
-
-                {/* Renders a text input field for the Porterbuddy API key */}
-                <InputFormField
-                  asterisk
-                  name="vcs_porterbuddy_apiKey"
-                  titleKey="vcs_porterbuddy_apiKey.title"
-                  descriptionKey="vcs_porterbuddy_apiKey.description"
-                />
-
-                {/* Renders a text input field for the Porterbuddy phone number */}
-                <InputFormField
-                  name="vcs_porterbuddy_phoneNumber"
-                  titleKey="vcs_porterbuddy_phoneNumber.title"
-                  descriptionKey="vcs_porterbuddy_phoneNumber.description"
-                />
-              </>
-            )}
-
-            {/* Renders a checkbox to enable Helthjem */}
-            <CheckboxFormField
-              name="vcs_helthjem"
-              titleKey="vcs_helthjem_wizard.title"
-              labelKey="vcs_helthjem_wizard.label"
-              descriptionKey="vcs_helthjem_wizard.description"
-            />
-
-            {/* Display Helthjem input fields if Helthjem is enabled */}
-            {showHelthjem && (
-              <>
-                {/* Renders a text input field for the Helthjem Shop Id */}
-                <InputFormField
-                  type="number"
-                  name="vcs_helthjem_shopId"
-                  titleKey="vcs_helthjem_shopId.title"
-                  descriptionKey="vcs_helthjem_shopId.description"
-                />
-
-                {/* Renders a text input field for the Helthjem Username */}
-                <InputFormField
-                  name="vcs_helthjem_username"
-                  titleKey="vcs_helthjem_username.title"
-                  descriptionKey="vcs_helthjem_username.description"
-                />
-
-                {/* Renders a text input field for the Helthjem Password */}
-                <InputFormField
-                  asterisk
-                  name="vcs_helthjem_password"
-                  titleKey="vcs_helthjem_password.title"
-                  descriptionKey="vcs_helthjem_password.description"
-                />
-              </>
-            )}
-
-            {/* External payment methods */}
-            {showExternals && (
-              <>
-                <h3 className="vipps-mobilepay-react-trab-description">
-                  {fixCheckoutName(gettext("checkout_external_payment_title.title"), paymentMethod)}
-                </h3>
-                <p>{fixCheckoutName(gettext("checkout_external_payment_title.description"), paymentMethod)}</p>
-                {showExternalKlarna && (
-                  <CheckboxFormField
-                    name="checkout_external_payments_klarna"
-                    titleKey="checkout_external_payments_klarna.title"
-                    labelKey="checkout_external_payments_klarna.label"
-                    descriptionKey="checkout_external_payments_klarna.description"
-                  />
-                )}
-              </>
-            )}
-            <div className="vipps-mobilepay-react-button-actions">
-              <WPButton variant="secondary" 
-              type="button" 
-              onClick={() => {
-                setStep(prevStep);
-                setPrevStep('ESSENTIAL');
-              }}
-              >
-                {fixCheckoutName(gettext('previous_step'), paymentMethod)}
-              </WPButton>
-              <WPButton variant="primary" isLoading={isLoading}>
-                {fixCheckoutName(gettext('save_changes'), paymentMethod)}
-              </WPButton>
-            </div>
-          </div>
-        </>
-      )}
-
       {step === 'EXPRESS' && (
         <>
           <div className="vipps-mobilepay-react-express-confirm">
@@ -333,37 +187,14 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             <p>{gettext("express_options_wizard.description")}</p>
             <p><a href="https://vippsmobilepay.com/nb-NO/express">{gettext("express_options_wizard.readmore")}</a></p>
 
-            {/* Checkbox to enable express in cart. LP 2026-08-13 */}
-            <CheckboxFormField
-              name="cartexpress"
-              titleKey={"cartexpress.title"}
-              labelKey={"cartexpress.label"}
-            />
-            {/* Checkbox to enable express in checkout. LP 2026-08-13 */}
-            <CheckboxFormField
-              name="express_show_in_checkout"
-              titleKey={"express_show_in_checkout.title"}
-              labelKey={"express_show_in_checkout.label"}
-            />
-            {/* Select to express on single product templates. LP 2026-08-13*/}
-            <SelectFormField
-              name="singleproductexpress"
-              titleKey="singleproductexpress.title"
-              descriptionKey="singleproductexpress.description"
-              required
-              includeEmptyOption={false}
-              options={
-                /* @ts-ignore */
-                Object.entries(gettext('singleproductexpress')?.options ?? {})
-                .map(([k, v]) => ({value: k, label: v as string}))
-              }
-              />
-            {/* Checkbox to enable express on catalog pages. LP 2026-08-13 */}
-            <CheckboxFormField
-              name="singleproductexpressarchives"
-              titleKey={"singleproductexpressarchives_wizard.title"}
-              labelKey={"singleproductexpressarchives_wizard.label"}
-              descriptionKey={"singleproductexpressarchives.description"}
+            {/* Checkbox to enable express. LP 2026-08-13 */}
+            <SwitchFormField
+              name="express_enabled"
+              titleKey={"express_enabled.title"}
+              labelKey={"express_enabled.label"}
+              descriptionKey={"express_enabled.description"}
+              // Sync master toggle to overrides. LP 2026-09-29
+              onChange={(value) => expressOverrides.forEach(option => setOption(option, value))}
             />
 
             <div className="vipps-mobilepay-react-button-actions">

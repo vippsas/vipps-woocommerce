@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import fixCheckoutName from '../lib/fix-checkout-name';
 import { gettext } from '../lib/wp-data';
 import { useWP } from '../wp-options-provider';
-import { invertTruth, WPCheckbox, WPFormField, WPInput, WPLabel, WPOption, WPSelect, WPTextarea } from './form-elements';
+import { invertTruth, WPCheckbox, WPSwitchToggle, WPFormField, WPInput, WPLabel, WPOption, WPSelect, WPTextarea } from './form-elements';
 import { UnsafeHtmlText } from './unsafe-html-text';
 
 /**
  * Represents the props for the options form fields component.
  */
-interface Props {
+interface CheckboxFormFieldProps {
   /**
    * The name of the field.
    */
@@ -33,6 +33,9 @@ interface Props {
    * Whether to invert the option toggle. Meaning, the checkbox will instead be checked when the option is false, and vice versa. LP 03.01.2025
    */
   inverted?: boolean;
+
+  /* Whether the checkbox is disabled */
+  disabled?: boolean;
 }
 
 /**
@@ -40,7 +43,7 @@ interface Props {
  *
  * Reads and updates the WP data available in the WPOptionsProvider.
  */
-export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, inverted = false }: Props) {
+export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, inverted = false }: CheckboxFormFieldProps) {
   const { getOption, setOption } = useWP();
   const paymentMethod = getOption("payment_method_name");
 
@@ -66,12 +69,91 @@ export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, in
           )}
         </div>
         {descriptionKey && (
-          <UnsafeHtmlText
-            className="vipps-mobilepay-react-field-description"
-            htmlString={fixCheckoutName(gettext(descriptionKey), paymentMethod)}
-          />
+          <WPLabel htmlFor={name} className="vipps-mobilepay-react-secondary-label">
+            <UnsafeHtmlText
+              className="vipps-mobilepay-react-field-description"
+              htmlString={fixCheckoutName(gettext(descriptionKey), paymentMethod)}
+            />
+          </WPLabel>
         )}
       </div>
+    </WPFormField>
+  );
+}
+
+interface SwitchFormFieldProps {
+  /**
+   * The n
+   * ame of the field.
+   */
+  name: string;
+
+  /**
+   * The key for the title of the field.
+   */
+  titleKey: string;
+
+  /**
+   * The key for the label of the field.
+   */
+  labelKey?: string;
+
+  /**
+   * The optional key for the description of the field.
+   */
+  descriptionKey?: string;
+
+  /**
+   * Whether to invert the option toggle. Meaning, the checkbox will instead be checked when the option is false, and vice versa. LP 03.01.2025
+   */
+  inverted?: boolean;
+
+  /* Whether the checkbox is disabled */
+  disabled?: boolean;
+
+  /** Optional control displayed at the right edge of a switch field. */
+  trailingAction?: ReactNode;
+
+  /** Optional callback after a switch changes. */
+  onChange?: (value: string) => void;
+}
+/** A settings field that presents a yes/no option as a switch. */
+export function SwitchFormField({ name, titleKey, labelKey, descriptionKey, inverted = false, disabled = false, trailingAction, onChange }: SwitchFormFieldProps) {
+  const { getOption, setOption } = useWP();
+  const paymentMethod = getOption("payment_method_name");
+  const title = fixCheckoutName(gettext(titleKey), paymentMethod);
+  const label = labelKey ? fixCheckoutName(gettext(labelKey), paymentMethod) : null;
+
+  return (
+    <WPFormField className="vipps-mobilepay-react-switch-field">
+      <WPSwitchToggle
+        disabled={disabled}
+        id={name}
+        name={name}
+        checked={inverted ? invertTruth(getOption(name)) : getOption(name)}
+        onChange={(value) => {
+          const optionValue = inverted ? invertTruth(value) : value;
+          setOption(name, optionValue);
+          onChange?.(optionValue);
+        }}
+      />
+      <div className="vipps-mobilepay-react-switch-info">
+        <WPLabel htmlFor={name}>{title}</WPLabel>
+        {label && label !== title && (
+          <WPLabel htmlFor={name} className="vipps-mobilepay-react-secondary-label">
+            <UnsafeHtmlText className="vipps-mobilepay-react-field-label" htmlString={label} />
+          </WPLabel>
+        )}
+        {descriptionKey && (
+          <WPLabel htmlFor={name} className="vipps-mobilepay-react-secondary-label">
+            <UnsafeHtmlText
+              className="vipps-mobilepay-react-field-description"
+              htmlString={fixCheckoutName(gettext(descriptionKey), paymentMethod)}
+            />
+          </WPLabel>
+        )}
+      </div>
+      {trailingAction}
     </WPFormField>
   );
 }
@@ -123,6 +205,9 @@ interface SelectFormFieldProps {
    * The error message for the select form field.
    */
   error?: string;
+
+  /** Optional control displayed at the right edge of a switch field. */
+  trailingAction?: ReactNode;
 }
 
 /**
@@ -140,14 +225,18 @@ export function SelectFormField({
   onChange,
   required = false,
   includeEmptyOption = false,
-  error
+  error,
+  trailingAction,
 }: SelectFormFieldProps): JSX.Element {
   const { getOption, setOption } = useWP();
   const paymentMethod = getOption("payment_method_name");
 
   return (
     <WPFormField>
-      <WPLabel htmlFor={name}>{fixCheckoutName(gettext(titleKey), paymentMethod)}</WPLabel>
+      <div className="vipps-mobilepay-react-form-field-header">
+        <WPLabel htmlFor={name}>{fixCheckoutName(gettext(titleKey), paymentMethod)}</WPLabel>
+        {trailingAction}
+      </div>
       <div className="vipps-mobilepay-react-col">
         <WPSelect
           id={name}
@@ -167,8 +256,16 @@ export function SelectFormField({
             </WPOption>
           ))}
         </WPSelect>
-        <div>{labelKey && <UnsafeHtmlText htmlString={fixCheckoutName(gettext(labelKey), paymentMethod)} />}</div>
-        {descriptionKey && <UnsafeHtmlText className="vipps-mobilepay-react-field-description" htmlString={fixCheckoutName(gettext(descriptionKey), paymentMethod)} />}
+        {labelKey && (
+          <WPLabel htmlFor={name} className="vipps-mobilepay-react-secondary-label">
+            <UnsafeHtmlText htmlString={fixCheckoutName(gettext(labelKey), paymentMethod)} />
+          </WPLabel>
+        )}
+        {descriptionKey && (
+          <WPLabel htmlFor={name} className="vipps-mobilepay-react-secondary-label">
+            <UnsafeHtmlText className="vipps-mobilepay-react-field-description" htmlString={fixCheckoutName(gettext(descriptionKey), paymentMethod)} />
+          </WPLabel>
+        )}
       </div>
     </WPFormField>
   );
@@ -248,8 +345,16 @@ export function InputFormField({
           onBlur={() => setIsFocused(false)}
           type={shouldHideValue ? 'password' : type}
         />
-        <div>{labelKey && <UnsafeHtmlText htmlString={fixCheckoutName(gettext(labelKey), paymentMethod)} />}</div>
-        {descriptionKey && <UnsafeHtmlText className="vipps-mobilepay-react-field-description" htmlString={fixCheckoutName(gettext(descriptionKey), paymentMethod)} />}
+        {labelKey && (
+          <WPLabel htmlFor={name} className="vipps-mobilepay-react-secondary-label">
+            <UnsafeHtmlText htmlString={fixCheckoutName(gettext(labelKey), paymentMethod)} />
+          </WPLabel>
+        )}
+        {descriptionKey && (
+          <WPLabel htmlFor={name} className="vipps-mobilepay-react-secondary-label">
+            <UnsafeHtmlText className="vipps-mobilepay-react-field-description" htmlString={fixCheckoutName(gettext(descriptionKey), paymentMethod)} />
+          </WPLabel>
+        )}
       </div>
     </WPFormField>
   );
@@ -300,8 +405,16 @@ export function TextareaFormField({ name, titleKey, labelKey, descriptionKey, ro
       <WPLabel htmlFor={name}>{fixCheckoutName(gettext(titleKey), paymentMethod)}</WPLabel>
       <div className="vipps-mobilepay-react-col">
         <WPTextarea id={name} name={name} onChange={(e) => setOption(name, e.target.value)} value={getOption(name)} rows={rows} />
-        <div>{labelKey && <UnsafeHtmlText htmlString={fixCheckoutName(gettext(labelKey), paymentMethod)} />}</div>
-        {descriptionKey && <UnsafeHtmlText className="vipps-mobilepay-react-field-description" htmlString={fixCheckoutName(gettext(descriptionKey), paymentMethod)} />}
+        {labelKey && (
+          <WPLabel htmlFor={name} className="vipps-mobilepay-react-secondary-label">
+            <UnsafeHtmlText htmlString={fixCheckoutName(gettext(labelKey), paymentMethod)} />
+          </WPLabel>
+        )}
+        {descriptionKey && (
+          <WPLabel htmlFor={name} className="vipps-mobilepay-react-secondary-label">
+            <UnsafeHtmlText className="vipps-mobilepay-react-field-description" htmlString={fixCheckoutName(gettext(descriptionKey), paymentMethod)} />
+          </WPLabel>
+        )}
       </div>
     </WPFormField>
   );

@@ -1,9 +1,6 @@
 /**
  * Props for the Tabs component.
  */
-/**
- * Props for the Tabs component.
- */
 interface Props {
   /**
    * An array of tab names.
@@ -28,19 +25,20 @@ interface Props {
  */
 export function Tabs({ tabs, onTabChange, activeTab }: Props): JSX.Element {
   return (
-    <div className="vippstabholder" id="vippstabholder">
+    <div className="vippstabholder" role="tablist">
       {tabs.map((tab, index) => (
-        <h3
-          key={index}
-          id={`woocommerce_vipps_${tab}_options`}
-          aria-selected={tab === activeTab ? 'true' : 'false'}
-          className={`wc-settings-sub-title tab ${tab === activeTab ? 'active' : ''}`}
-          title={tab}
+        <button
+          key={tab}
+          id={`vipps-settings-tab-${index}`}
+          type="button"
+          role="tab"
+          aria-selected={tab === activeTab}
+          aria-controls="vipps-settings-tab-panel"
+          className={`vipps-mobilepay-react-tab ${tab === activeTab ? 'active' : ''}`}
           onClick={() => onTabChange(tab)}
-          style={{ cursor: 'pointer' }}
         >
           {tab}
-        </h3>
+        </button>
       ))}
     </div>
   );
