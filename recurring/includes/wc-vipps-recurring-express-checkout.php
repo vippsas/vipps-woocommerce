@@ -139,7 +139,12 @@ class WC_Vipps_Recurring_Express_Checkout {
 			$markup->set_attribute( 'brand', $this->gateway()->brand );
 		}
 		$button = $markup->get_updated_html();
-		$classes = [ 'vipps-recurring-express', 'button', 'vipps-buy-now', $this->gateway()->title ];
+		$classes = [ 'vipps-recurring-express', $this->gateway()->title ];
+		// Match payment's markup: only product buttons are theme buttons. Elsewhere a
+		// theme's inline-block .button would stop stretched buttons filling the cart.
+		if ( $product_id ) {
+			array_push( $classes, 'button', 'vipps-buy-now' );
+		}
 		$button_args = Vipps::instance()->get_html_button_attrs_for_context( $context );
 
 		if ( ( $button_args['compact'] ?? 'false' ) === 'true' ) {
