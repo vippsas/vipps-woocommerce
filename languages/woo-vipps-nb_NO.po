@@ -6416,3 +6416,7 @@ msgstr ""
 #~ "Finn salgsstedet ditt under «Utvikler» på https://"
 #~ "portal.vippsmobilepay.com/, og velg «Show keys». Kopier verdien for «Ocp-"
 #~ "Apim-Subscription-Key»."
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php:492
+msgid "Fill in the form below, then try again."
+msgstr "Fyll ut skjemaet nedenfor, og prøv igjen."

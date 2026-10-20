@@ -5557,3 +5557,7 @@ msgstr ""
 
 
 
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php:492
+msgid "Fill in the form below, then try again."
+msgstr ""
