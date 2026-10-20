@@ -70,6 +70,7 @@ class VippsRecurringAdminSettings {
 		$section = 'general';
 		$titles = [
 			'title_brand' => 'general',
+			'title_express_checkout' => 'express',
 			'title_checkout' => 'checkout',
 			'title_api' => 'keys',
 			'title_orders' => 'orders',
@@ -78,11 +79,23 @@ class VippsRecurringAdminSettings {
 			// Test credentials belong in the same API keys tab as production keys.
 			'title_test_api' => 'keys',
 		];
+		// Short tab names matching the Payment settings screen; the WooCommerce
+		// settings page keeps the longer "... settings" headings.
+		$tab_titles = [
+			'general' => __( 'Main options', 'woo-vipps' ),
+			'express' => __( 'Express Checkout', 'woo-vipps' ),
+			// Payment leaves "Checkout" untranslated too.
+			'checkout' => 'Checkout',
+			'orders' => __( 'Orders', 'woo-vipps' ),
+			'cron' => __( 'Background checks', 'woo-vipps' ),
+			'keys' => __( 'API keys', 'woo-vipps' ),
+			'advanced' => __( 'Advanced', 'woo-vipps' ),
+		];
 		foreach ( $gateway->get_form_fields() as $key => $field ) {
 			if ( isset( $titles[ $key ] ) ) {
 				$section = $titles[ $key ];
 				if ( ! isset( $sections[ $section ] ) ) {
-					$title = $section === 'general' ? __( 'Main options', 'woo-vipps' ) : ( $section === 'keys' ? __( 'API keys', 'woo-vipps' ) : ( $field['title'] ?? '' ) );
+					$title = $tab_titles[ $section ] ?? ( $field['title'] ?? '' );
 					$sections[ $section ] = [ 'id' => $section, 'title' => wp_strip_all_tags( $title ), 'description' => wp_kses_post( $field['description'] ?? '' ), 'fields' => [] ];
 				}
 				continue;
@@ -117,7 +130,14 @@ class VippsRecurringAdminSettings {
 				'brands' => self::BRAND_FIELDS[ $key ] ?? [],
 			];
 		}
-		return array_values( $sections );
+		// Use the navigation order above rather than the gateway field order.
+		$ordered_sections = [];
+		foreach ( $tab_titles as $id => $title ) {
+			if ( isset( $sections[ $id ] ) ) {
+				$ordered_sections[ $id ] = $sections[ $id ];
+			}
+		}
+		return array_values( $ordered_sections + $sections );
 	}
 
 	/** Reads effective values from the one WooCommerce gateway option. */
@@ -142,6 +162,8 @@ class VippsRecurringAdminSettings {
 				'page_title' => __( 'Recurring Payments', 'woo-vipps' ),
 				'production_keys_section' => __( 'Production environment', 'woo-vipps' ),
 				'test_keys_section' => __( 'Test environment', 'woo-vipps' ),
+				'express_placement' => __( 'Configure placement', 'woo-vipps' ),
+				'express_advanced_section' => __( 'Advanced settings', 'woo-vipps' ),
 				'save_changes' => __( 'Save changes', 'woo-vipps' ),
 				'settings_saved' => __( 'Settings saved', 'woo-vipps' ),
 				'save_failed' => __( 'Could not save settings. Please try again.', 'woo-vipps' ),

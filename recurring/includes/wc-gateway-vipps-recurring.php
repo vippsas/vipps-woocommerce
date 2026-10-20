@@ -2189,6 +2189,24 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * Load settings and normalize the former product placement choice.
+	 */
+	public function init_settings() {
+		parent::init_settings();
+
+		// Split the former no/all/some setting without enabling new placements.
+		// WooCommerce persists these normalized values on the next settings save.
+		if ( ! isset( $this->settings['express_product_page_button'] ) && isset( $this->settings['express_product_button'] ) ) {
+			$products_enabled = in_array( $this->settings['express_product_button'], [ 'all', 'some' ], true );
+			$this->settings['express_product_page_button'] = $products_enabled ? 'yes' : 'no';
+			if ( ! $products_enabled ) {
+				$this->settings['express_product_button'] = 'all';
+				$this->settings['express_archive_button'] = 'no';
+			}
+		}
+	}
+
+	/**
 	 * Initialise Gateway Settings Form Fields
 	 */
 	public function init_form_fields(): void {

@@ -239,7 +239,7 @@ class WC_Vipps_Recurring_Express_Checkout {
 	public function product_button(): void {
 		global $product;
 
-		if ( $this->product_enabled( $product ) ) {
+		if ( $this->gateway()->get_option( 'express_product_page_button' ) === 'yes' && $this->product_enabled( $product ) ) {
 			echo $this->button_html( 'product', $product->get_id() );
 		}
 	}

@@ -4620,3 +4620,226 @@ msgstr "Rydd opp i avbrutte kjøp fra hurtigkassen"
 #: recurring/includes/admin/vipps-recurring-settings.php
 msgid "Move unpaid, cancelled or expired purchases to the trash after seven days. Runs hourly. Purchases with billing details, a payment or an unresolved status are kept."
 msgstr "Flytt ubetalte, avbrutte eller utløpte kjøp til papirkurven etter sju dager. Kjøres hver time. Kjøp med faktureringsopplysninger, en betaling eller uavklart status beholdes."
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:90
+msgid "Orders"
+msgstr "Ordrer"
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:91
+msgid "Cron"
+msgstr "Cron"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payment method settings"
+msgstr "Innstillinger for betalingsmåte"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Choose Vipps or MobilePay."
+msgstr "Velg Vipps eller MobilePay."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Automatically collect reserved MobilePay payments before the reservations expire."
+msgstr "Trekk reserverte MobilePay-betalinger automatisk før reservasjonene utløper."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Checkout description"
+msgstr "Beskrivelse i kassen"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The payment method description customers see at checkout. Use {brand} to insert Vipps or MobilePay."
+msgstr "Beskrivelsen av betalingsmåten som kundene ser i kassen. Bruk {brand} for å sette inn Vipps eller MobilePay."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Enable Express checkout"
+msgstr "Aktiver hurtigkasse"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Supported products"
+msgstr "Støttede produkter"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "For selected products, enable Express checkout in the product's Vipps/MobilePay Recurring Payments tab."
+msgstr "For utvalgte produkter aktiverer du hurtigkasse i produktets fane for faste betalinger med Vipps/MobilePay."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Catalog pages"
+msgstr "Katalogsider"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show buttons on shop and category pages for the supported products above. Customers must open products with options before purchase."
+msgstr "Vis knapper på butikk- og kategorisider for de støttede produktene over. Kunder må åpne produkter med valgmuligheter før kjøp."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Other cart items"
+msgstr "Andre varer i handlekurven"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Include other cart items"
+msgstr "Inkluder andre varer i handlekurven"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Include items already in the cart when customers buy from a product page."
+msgstr "Inkluder varer som allerede ligger i handlekurven når kunder kjøper fra en produktside."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Require terms acceptance"
+msgstr "Krev godkjenning av vilkår"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Always request an address"
+msgstr "Be alltid om adresse"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Also request an address for products that do not need shipping."
+msgstr "Be også om adresse for produkter som ikke trenger frakt."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Abandoned orders"
+msgstr "Forlatte bestillinger"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Clean up abandoned orders"
+msgstr "Rydd opp i forlatte bestillinger"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Move cancelled or expired orders to the trash after seven days. Orders with payments, customer details or an unconfirmed payment status are kept."
+msgstr "Flytt kansellerte eller utløpte bestillinger til papirkurven etter sju dager. Bestillinger med betalinger, kundeopplysninger eller ubekreftet betalingsstatus beholdes."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Clean up changed or abandoned orders"
+msgstr "Rydd opp i endrede eller forlatte bestillinger"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Move abandoned Checkout orders and orders with changed contents to the trash. Checks run every hour."
+msgstr "Flytt forlatte Checkout-bestillinger og bestillinger med endret innhold til papirkurven. Kontrollen kjøres hver time."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Find your Merchant Serial Number in the Vipps/MobilePay developer portal."
+msgstr "Finn ditt Merchant Serial Number i utviklerportalen til Vipps/MobilePay."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Order ID prefix"
+msgstr "Prefiks for bestillings-ID"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Add letters or numbers before each payment reference to keep references unique across stores."
+msgstr "Legg til bokstaver eller tall foran hver betalingsreferanse for å holde referansene unike på tvers av butikker."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Order status on payment reservation"
+msgstr "Bestillingsstatus ved reservert betaling"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The order status when the first payment is reserved but not yet collected. Renewal orders use the setting below."
+msgstr "Bestillingsstatusen når den første betalingen er reservert, men ennå ikke trukket. Fornyelsesbestillinger bruker innstillingen under."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Renewal order status while awaiting payment"
+msgstr "Status for fornyelsesbestillinger som venter på betaling"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The status for renewal orders while waiting for payment. Payment can take a few days."
+msgstr "Statusen for fornyelsesbestillinger mens de venter på betaling. Betalingen kan ta noen dager."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Automatically complete paid renewal orders"
+msgstr "Fullfør betalte fornyelsesbestillinger automatisk"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Set renewal orders to \"Completed\" when Vipps/MobilePay confirms payment."
+msgstr "Sett fornyelsesbestillinger til «Fullført» når Vipps/MobilePay bekrefter betalingen."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Background checks"
+msgstr "Bakgrunnskontroller"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Check payment status in the background to keep orders up to date."
+msgstr "Kontroller betalingsstatus i bakgrunnen for å holde bestillingene oppdatert."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payments per check"
+msgstr "Betalinger per kontroll"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The number of payments to check at a time. Use 5 to 100. Higher values can slow down your store."
+msgstr "Antall betalinger som kontrolleres om gangen. Bruk 5 til 100. Høyere verdier kan gjøre butikken tregere."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payment check order"
+msgstr "Rekkefølge for betalingskontroll"
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Choose which payments to check first. Random suits most stores. Use Oldest first if your subscriptions renew on the same date."
+msgstr "Velg hvilke betalinger som skal kontrolleres først. Tilfeldig passer for de fleste butikker. Bruk Eldste først hvis abonnementene fornyes på samme dato."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Save messages to the WooCommerce logs to help with troubleshooting."
+msgstr "Lagre meldinger i WooCommerce-loggene for å hjelpe med feilsøking."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Use the Vipps MobilePay test environment to try payments."
+msgstr "Bruk testmiljøet til Vipps MobilePay for å prøve betalinger."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Test mode is controlled by WC_VIPPS_RECURRING_TEST_MODE."
+msgstr "Testmodus styres av WC_VIPPS_RECURRING_TEST_MODE."
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Replace the WooCommerce checkout with Vipps MobilePay Checkout. Customers share their billing and shipping details from the app. <br><br><strong>Important!</strong> Checkout for recurring payments <strong>only supports static shipping</strong> at the moment."
+msgstr "Erstatt WooCommerce-kassen med Vipps MobilePay Checkout. Kundene deler faktura- og leveringsopplysninger fra appen. <br><br><strong>Viktig!</strong> Checkout for faste betalinger <strong>støtter kun statisk frakt</strong> for øyeblikket."
+
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php
+msgid "Product pages"
+msgstr "Produktsider"
+
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php
+msgid "Configure placement"
+msgstr "Konfigurer plassering"
+
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php
+msgid "Advanced settings"
+msgstr "Avanserte innstillinger"

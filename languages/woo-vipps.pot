@@ -5338,3 +5338,226 @@ msgstr ""
 #: recurring/includes/admin/vipps-recurring-settings.php
 msgid "Move unpaid, cancelled or expired purchases to the trash after seven days. Runs hourly. Purchases with billing details, a payment or an unresolved status are kept."
 msgstr ""
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:90
+msgid "Orders"
+msgstr ""
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:91
+msgid "Cron"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payment method settings"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Choose Vipps or MobilePay."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Automatically collect reserved MobilePay payments before the reservations expire."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Checkout description"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The payment method description customers see at checkout. Use {brand} to insert Vipps or MobilePay."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Enable Express checkout"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Supported products"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "For selected products, enable Express checkout in the product's Vipps/MobilePay Recurring Payments tab."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Catalog pages"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show buttons on shop and category pages for the supported products above. Customers must open products with options before purchase."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Other cart items"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Include other cart items"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Include items already in the cart when customers buy from a product page."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Require terms acceptance"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Always request an address"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Also request an address for products that do not need shipping."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Abandoned orders"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Clean up abandoned orders"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Move cancelled or expired orders to the trash after seven days. Orders with payments, customer details or an unconfirmed payment status are kept."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Clean up changed or abandoned orders"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Move abandoned Checkout orders and orders with changed contents to the trash. Checks run every hour."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Find your Merchant Serial Number in the Vipps/MobilePay developer portal."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Order ID prefix"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Add letters or numbers before each payment reference to keep references unique across stores."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Order status on payment reservation"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The order status when the first payment is reserved but not yet collected. Renewal orders use the setting below."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Renewal order status while awaiting payment"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The status for renewal orders while waiting for payment. Payment can take a few days."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Automatically complete paid renewal orders"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Set renewal orders to \"Completed\" when Vipps/MobilePay confirms payment."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Background checks"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Check payment status in the background to keep orders up to date."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payments per check"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The number of payments to check at a time. Use 5 to 100. Higher values can slow down your store."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payment check order"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Choose which payments to check first. Random suits most stores. Use Oldest first if your subscriptions renew on the same date."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Save messages to the WooCommerce logs to help with troubleshooting."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Use the Vipps MobilePay test environment to try payments."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Test mode is controlled by WC_VIPPS_RECURRING_TEST_MODE."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Replace the WooCommerce checkout with Vipps MobilePay Checkout. Customers share their billing and shipping details from the app. <br><br><strong>Important!</strong> Checkout for recurring payments <strong>only supports static shipping</strong> at the moment."
+msgstr ""
+
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php
+msgid "Product pages"
+msgstr ""
+
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php
+msgid "Configure placement"
+msgstr ""
+
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php
+msgid "Advanced settings"
+msgstr ""

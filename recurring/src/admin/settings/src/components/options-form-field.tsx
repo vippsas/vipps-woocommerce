@@ -1,12 +1,13 @@
+import { ReactNode } from 'react';
 import { FormField, gettext } from '../lib/wp-data';
 import { useWP } from '../wp-options-provider';
 import { WPFormField, WPInput, WPLabel, WPOption, WPSelect } from './form-elements';
 import { UnsafeHtmlText } from './unsafe-html-text';
 
-interface Props { name: string; field: FormField }
+interface Props { name: string; field: FormField; trailingAction?: ReactNode }
 
 /** Render the field type supplied by the Recurring gateway's WooCommerce schema. */
-export function OptionsFormField({ name, field }: Props): JSX.Element {
+export function OptionsFormField({ name, field, trailingAction }: Props): JSX.Element {
   const { settings, values, setOption } = useWP();
   const value = String(values[name] ?? field.default ?? '');
   const id = `vipps-recurring-${name}`;
@@ -29,6 +30,7 @@ export function OptionsFormField({ name, field }: Props): JSX.Element {
       <div className="vipps-mobilepay-react-switch-info">
         <WPLabel htmlFor={id}>{field.label || field.title}</WPLabel>{description}
       </div>
+      {trailingAction}
     </WPFormField>;
   }
 

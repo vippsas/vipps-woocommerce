@@ -56,14 +56,24 @@ redirect until their Store API support is verified separately.
 Configure the feature under the recurring gateway's "Express checkout for
 subscriptions" section. `express_enabled` defaults to `no`; enable it explicitly.
 `express_cart_button` and `express_checkout_button` control cart/mini-cart and
-checkout placement. `express_product_button` selects no/all/selected subscription
-products; selected products use `_vipps_recurring_express_button` in the recurring
-product tab, independently of one-time product opt-in. `express_archive_button`
-controls listing buttons. `express_include_cart` controls cart inclusion for
+checkout placement. `express_product_page_button` controls product-page buttons;
+`express_archive_button` controls listing buttons independently.
+`express_product_button` selects all/selected subscription products for both
+placements. Selected products use `_vipps_recurring_express_button` in the recurring
+product tab, independently of one-time product opt-in. The settings UI groups the
+four placements under "Configure placement". Changing the master switch changes
+all placements; changing a placement enables the master if any placement is on.
+The old `no` product selection becomes `all` with product and listing placements
+off. Existing `all`/`some` selections retain their previous placements. This
+normalization is saved through WooCommerce on the next settings save.
+`express_include_cart` controls cart inclusion for
 product purchases. `express_terms` defaults to `yes` and uses WooCommerce's terms
 checkbox/page. `express_always_address` defaults to `no`; shipping still requires
 address scope. New direct endpoint requests enforce the main switch; saved
 purchases and background recovery remain available when it is disabled.
+The UI groups cart inclusion, terms acceptance and abandoned-order cleanup under
+"Advanced settings" within Express. Additional options are shown only while
+Express is enabled, matching Payment's settings UI.
 
 `express_cleanup_abandoned_orders` defaults to `no`. The independent
 `WC_Vipps_Recurring_Express_Cleanup` policy feeds the existing hourly deletion
