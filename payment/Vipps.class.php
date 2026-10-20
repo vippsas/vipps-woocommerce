@@ -2441,6 +2441,11 @@ else:
         }
         print __("API", 'woo-vipps') .": " . esc_html($order->get_meta('_vipps_api')) . "</br>";
 
+        if ($details['captureGuaranteedUntil'] ?? '') {
+            $capture_expiry_local = wp_date('Y-m-d H:i:s', strtotime($details['captureGuaranteedUntil'])) ?: $details['captureGuaranteedUntil'];
+            printf(__('Capture guaranteed until: %s'), $capture_expiry_local);
+        }
+
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
             print "<h3>" . __('Transaction summary', 'woo-vipps') . "</h3>";

@@ -1,4 +1,9 @@
 == Changelog ==
+= 2026-10-20 version 6.3.3 =
+Fix: dont allow WooCommerce-disallowed countries in purchase/shipping.
+Reintroduce order locking for error-logging purposes.
+Show info from Vipps MobilePay for how long the capture is guaranteed.
+
 = 2026-10-12 version 6.3.2 =
 Fix issue with some buttons getting wrong language
 Fix duplicate order confirmation emails being sent
