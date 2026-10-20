@@ -70,6 +70,12 @@ class WC_Vipps_Recurring_Express_Checkout {
 			wc_load_cart();
 		}
 
+		// WooCommerce does not load the cart session for REST requests, and helpers such as
+		// WC_Subscriptions_Cart::cart_contains_subscription() read cart_contents directly.
+		if ( WC()->cart ) {
+			WC()->cart->get_cart();
+		}
+
 		$nonce = $request->get_header( 'X-Vipps-Recurring-Nonce' );
 
 		if ( ! WC()->session || ! wp_verify_nonce( $nonce, 'vipps_recurring_express_' . WC()->session->get_customer_id() ) ) {
@@ -292,7 +298,8 @@ class WC_Vipps_Recurring_Express_Checkout {
 		$customer = WC()->customer;
 		if ( wc_tax_enabled() && get_option( 'woocommerce_tax_based_on' ) !== 'base' ) {
 			$prefix = get_option( 'woocommerce_tax_based_on' ) === 'shipping' ? 'shipping' : 'billing';
-			if ( ! $this->has_location( $prefix === 'shipping' ? $customer->get_shipping() : $customer->get_billing() ) ) { return false; }
+			$tax_address = $prefix === 'shipping' ? $customer->get_shipping() : $customer->get_billing();
+			if ( ! $this->has_location( $tax_address ) && ! $this->tax_follows_country( (string) ( $tax_address['country'] ?? '' ) ) ) { return false; }
 		}
 
 		if ( $cart->needs_shipping() ) {
@@ -314,6 +321,27 @@ class WC_Vipps_Recurring_Express_Checkout {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Whether the country alone fixes the tax: no rate for it, or for all countries,
+	 * depends on state, postcode or city, and no extension adjusts rates by address.
+	 */
+	private function tax_follows_country( string $country ): bool {
+		global $wpdb;
+
+		if ( $country === '' || has_filter( 'woocommerce_find_rates' ) || has_filter( 'woocommerce_matched_tax_rates' ) ) {
+			return false;
+		}
+
+		$located = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM {$wpdb->prefix}woocommerce_tax_rates r
+			WHERE r.tax_rate_country IN ('', %s) AND ( r.tax_rate_state <> ''
+				OR EXISTS ( SELECT 1 FROM {$wpdb->prefix}woocommerce_tax_rate_locations l WHERE l.tax_rate_id = r.tax_rate_id ) )",
+			$country
+		) );
+
+		return $located === 0;
 	}
 
 	private function has_location( array $address ): bool {
@@ -465,6 +493,11 @@ class WC_Vipps_Recurring_Express_Checkout {
 			}
 
 			if ( ! $this->eligibility() ) {
+				// Redirecting to the checkout would only reload it when already there.
+				if ( ! $product_request && is_string( $context ) && strpos( $context, 'checkout' ) === 0 ) {
+					return new WP_Error( 'vipps_recurring_express_ineligible', __( 'Fill in the form below, then try again.', 'woo-vipps' ), [ 'status' => 409 ] );
+				}
+
 				return [ 'redirect' => wc_get_checkout_url() ];
 			}
 
