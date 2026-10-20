@@ -1072,6 +1072,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $default_ask_address_for_express = 'no';
         $default_status_on_fail = 'failed';
         $default_express_show_in_checkout = 'yes';
+        $default_terms_in_app = 'no';
         if ($current) {
             $default_static_shipping_for_checkout = (isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
             $default_ask_address_for_express = (isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
@@ -1087,6 +1088,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $default_express_show_in_checkout = 'yes';
             if (!isset($current['express_show_in_checkout']) && isset($current['cartexpress'])) {
                 $default_express_show_in_checkout = $current['cartexpress'];
+            }
+
+            // Migrate new terms option. LP 2026-10-20
+            if (isset($current['expresscheckout_termscheckbox']) == 'yes') {
+                $default_terms_in_app = 'yes';
             }
         }
 
@@ -1459,6 +1465,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'description' => __('Phone numbers from Express or Checkout are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'),
                 'default'     => 'none',
             ),
+            'terms_in_app' => [
+                    'title'       => __('Accept terms and conditions in the app', 'woo-vipps'),
+                    'label' => __('Ask the customer to accept the terms and conditions in the app before purchase', 'woo-vipps'),
+                    'type'        => 'checkbox',
+                    'description' => __('Ask the user to accept the terms and conditions in the app before purchase.', 'woo-vipps'),
+                    'default'     => $default_terms_in_app,
+            ],
+            'privacy_in_app' => [
+                    'title'       => __('Accept privacy policy in the app', 'woo-vipps'),
+                    'label' => __('Ask the customer to accept the privacy policy in the app before purchase', 'woo-vipps'),
+                    'type'        => 'checkbox',
+                    'description' => __('Ask the user to accept the privacy policy in the app before purchase.', 'woo-vipps'),
+                    'default'     => 'no',
+            ],
         );
 
          $expressfields = array(
@@ -1506,13 +1526,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => sprintf(__('If %1$s is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => 'no',
                         ),
-                'expresscheckout_termscheckbox' => array(
-                        'title'       => sprintf(__('Add terms and conditions checkbox on %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                        'label'       => sprintf(__('Always ask for confirmation on %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                'express_legacy_terms_override' => array(
+                        'title'       => sprintf(__('Confirm terms and conditions in the store', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                        'label'       => sprintf(__('Confirm terms and conditions in the store', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('When using %1$s, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                        'description' => sprintf(__('When using %1$s, ask the user to confirm that they have read and accepted the terms and conditons before proceeding to the app.<br>This overrides the main setting to confirm this in the app instead, so they won\'t be asked twice.', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => 'no',
-                        ),
+                ),
 
                 'expresscheckout_always_address' => array(
                         'title'       => __('Always ask for address, even if products don\'t need shipping', 'woo-vipps'),
