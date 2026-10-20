@@ -2202,6 +2202,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			if ( ! $products_enabled ) {
 				$this->settings['express_product_button'] = 'all';
 				$this->settings['express_archive_button'] = 'no';
+			} elseif ( ! isset( $this->settings['express_archive_button'] ) ) {
+				// Keep the former default instead of the current one.
+				$this->settings['express_archive_button'] = 'no';
 			}
 		}
 	}

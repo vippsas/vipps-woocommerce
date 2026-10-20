@@ -80,14 +80,14 @@ return apply_filters(
 			'title'   => __( 'Product pages', 'woo-vipps' ),
 			'label'   => __( 'Product pages', 'woo-vipps' ),
 			'type'    => 'checkbox',
-			'default' => 'no',
+			'default' => 'yes',
 		],
 		'express_archive_button'            => [
 			'title'       => __( 'Catalog pages', 'woo-vipps' ),
 			'label'       => __( 'Catalog pages', 'woo-vipps' ),
 			'type'        => 'checkbox',
 			'description' => __( 'Show buttons on shop and category pages for the supported products above. Customers must open products with options before purchase.', 'woo-vipps' ),
-			'default'     => 'no',
+			'default'     => 'yes',
 		],
 		'express_include_cart'              => [
 			'title'       => __( 'Other cart items', 'woo-vipps' ),
@@ -101,7 +101,7 @@ return apply_filters(
 			'label'       => __( 'Require terms acceptance', 'woo-vipps' ),
 			'type'        => 'checkbox',
 			'description' => __( 'Set your terms and conditions page in WooCommerce settings.', 'woo-vipps' ),
-			'default'     => 'yes',
+			'default'     => 'no',
 		],
 		'express_always_address'            => [
 			'title'       => __( 'Customer address', 'woo-vipps' ),

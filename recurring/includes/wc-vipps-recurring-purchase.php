@@ -274,7 +274,8 @@ class WC_Vipps_Recurring_Purchase {
 		$is_order        = $object instanceof WC_Order;
 		$confirmed       = $is_order && ( $object->get_meta( self::META_CONFIRMED_ADDRESSES ) || $object->is_paid() );
 		$replace         = $is_order && ! $confirmed && $source === self::ADDRESS_SOURCE_SELECTED;
-		$compatible      = ! $confirmed;
+		// Confirmed addresses that priced the order stay locked; others may still be filled.
+		$compatible      = ! $confirmed || ! in_array( $type, $this->priced_address_types( $object ), true );
 
 		// Do not combine a profile street with another address's city/postcode.
 		if ( ! $replace && $compatible ) {
@@ -314,5 +315,42 @@ class WC_Vipps_Recurring_Purchase {
 				$object->{ 'set_' . $type . '_' . $field }( $incoming );
 			}
 		}
+	}
+
+	/**
+	 * Address types whose location determined the order's shipping or tax, following
+	 * WC_Abstract_Order::get_tax_location(). Filling one of these, even an empty one,
+	 * could change what a recalculation charges.
+	 */
+	private function priced_address_types( WC_Order $order ): array {
+		$types      = [];
+		$method_ids = array_map( static function ( $method ) {
+			return $method->get_method_id();
+		}, $order->get_shipping_methods() );
+
+		if ( $method_ids ) {
+			$types[] = 'shipping';
+		}
+
+		$pickup_methods = apply_filters( 'woocommerce_local_pickup_methods', [ 'legacy_local_pickup', 'local_pickup' ] );
+		$base_pickup    = true === apply_filters( 'woocommerce_apply_base_tax_for_local_pickup', true )
+		                  && array_intersect( $method_ids, $pickup_methods );
+
+		if ( wc_tax_enabled() && ! $base_pickup ) {
+			$tax_based_on = get_option( 'woocommerce_tax_based_on' );
+
+			if ( $tax_based_on === 'shipping' ) {
+				// WooCommerce falls back to billing while the shipping country is empty.
+				$types[] = 'shipping';
+
+				if ( ! $order->get_shipping_country() ) {
+					$types[] = 'billing';
+				}
+			} elseif ( $tax_based_on === 'billing' ) {
+				$types[] = 'billing';
+			}
+		}
+
+		return array_unique( $types );
 	}
 }
