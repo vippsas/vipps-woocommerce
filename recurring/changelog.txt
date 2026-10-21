@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.2.20 =
+* Fix: Ordering by random to check order statuses via cron does not work with HPOS enabled. Change this behaviour.
+
 = 2.2.19 =
 * Fix: Add a class existence check for Checkout's classes during recurring payments
 
