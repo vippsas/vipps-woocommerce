@@ -1091,7 +1091,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
             // Migrate new terms option. LP 2026-10-20
-            if (isset($current['expresscheckout_termscheckbox']) == 'yes') {
+            if (($current['expresscheckout_termscheckbox'] ?? null) == 'yes') {
                 $default_express_legacy_terms_override = 'yes';
             }
         }
