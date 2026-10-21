@@ -749,7 +749,7 @@ class VippsApi {
                 $data['merchantLegalLinks'] = [];
                 $data['merchantLegalLinks']['termsOfSaleUrl'] = $terms_url;
             } else {
-                $this->gateway->log(__('The option to show terms and conditions in the customer\'s app is enabled, but there is no terms page set up. Set it in WooCommerce advanced settings.', 'woo-vipps'), 'warning');
+                $this->gateway->log(__('The option to show terms and conditions in the customer\'s app is enabled, but there is no terms page published. Set it in WooCommerce advanced settings.', 'woo-vipps'), 'warning');
             }
         }
         $privacy_in_app = $this->gateway->get_option('privacy_in_app') == 'yes';
@@ -762,7 +762,7 @@ class VippsApi {
                 }
                 $data['merchantLegalLinks']['privacyPolicyUrl'] = $privacy_url;
             } else {
-                $this->gateway->log(__('The option to show privacy policy in the customer\'s app is enabled, but there is no privacy page set up. Set it in WordPress privacy settings.', 'woo-vipps'), 'warning');
+                $this->gateway->log(__('The option to show privacy policy in the customer\'s app is enabled, but there is no privacy page published. Set it in WordPress privacy settings.', 'woo-vipps'), 'warning');
             }
         }
 
