@@ -62,11 +62,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public int $check_charges_amount;
 
 	/**
-	 * The sort order in which we check charges in wp-cron
-	 */
-	public string $check_charges_sort_order;
-
-	/**
 	 * The reference the *Singleton* instance of this class
 	 */
 	private static ?WC_Gateway_Vipps_Recurring $instance = null;
@@ -140,7 +135,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$this->default_reserved_charge_status   = $this->get_option( 'default_reserved_charge_status' );
 		$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' ) === "yes";
 		$this->check_charges_amount             = $this->get_option( 'check_charges_amount' );
-		$this->check_charges_sort_order         = $this->get_option( 'check_charges_sort_order' );
 		$this->auto_capture_mobilepay           = $this->get_option( 'auto_capture_mobilepay' ) === "yes";
 		$this->continue_shopping_link_page      = $this->get_option( 'continue_shopping_link_page' );
 
@@ -564,6 +558,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_locked_for_update_time', time() );
+		// The cron check picks the least recently checked orders first, so stamp before anything can bail out.
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_LAST_CHECKED, time() );
 		$order->save();
 
 		$order_status = $order->get_status();

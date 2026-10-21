@@ -707,22 +707,56 @@ class WC_Vipps_Recurring {
 			$limit = $this->gateway()->check_charges_amount;
 		}
 
-		$options = [
-			'limit'          => $limit,
-			'payment_method' => $this->gateway()->id
+		$limit = (int) $limit;
+
+		$pending_clause = [
+			'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
+			'compare' => '=',
+			'value'   => 1,
 		];
 
-		$options = WC_Vipps_Recurring_Helper::add_meta_query_to_args( $options, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, '=', 1, $this->gateway()->use_high_performance_order_storage() );
+		remove_all_filters( 'posts_orderby' );
 
-		if ( $this->gateway()->check_charges_sort_order === 'rand' ) {
-			$options['orderby'] = 'rand';
-		} else {
-			$options['orderby'] = 'post_date';
-			$options['order']   = $this->gateway()->check_charges_sort_order;
+		// Orders that have never been checked go first, newest first so fresh renewals are not stuck behind a backlog.
+		$orders = WC_Vipps_Recurring_Helper::get_orders_with_meta_query( [
+			'limit'          => $limit,
+			'payment_method' => $this->gateway()->id,
+			'meta_query'     => [
+				$pending_clause,
+				[
+					'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_LAST_CHECKED,
+					'compare' => 'NOT EXISTS',
+				],
+			],
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		] );
+
+		// Fill the rest of the batch with the least recently checked orders, so every pending order gets its turn.
+		// We can't do this in one query, because HPOS only orders by meta through an INNER JOIN.
+		$remaining = $limit < 0 ? $limit : $limit - count( $orders );
+		if ( $remaining !== 0 ) {
+			$orders = array_merge( $orders, WC_Vipps_Recurring_Helper::get_orders_with_meta_query( [
+				'limit'          => $remaining,
+				'payment_method' => $this->gateway()->id,
+				'meta_query'     => [
+					$pending_clause,
+					'last_checked' => [
+						'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_LAST_CHECKED,
+						'compare' => 'EXISTS',
+						'type'    => 'NUMERIC',
+					],
+				],
+				'orderby'        => [ 'last_checked' => 'ASC' ],
+			] ) );
 		}
 
-		remove_all_filters( 'posts_orderby' );
-		$orders = wc_get_orders( $options );
+		if ( ! empty( $orders ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "Checking charge status for orders: %s", implode( ', ', array_map( [
+				WC_Vipps_Recurring_Helper::class,
+				'get_id'
+			], $orders ) ) ) );
+		}
 
 		foreach ( $orders as $order ) {
 			$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
