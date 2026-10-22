@@ -369,8 +369,8 @@ class WC_Vipps_Recurring_Checkout {
 			$session_poll = WC_Gateway_Vipps_Recurring::get_instance()->api->checkout_poll( $session->polling_url );
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION_ID, $session_poll['sessionId'] );
 
-			$order->add_order_note( __( 'Vipps/MobilePay recurring checkout payment initiated', 'woo-vipps' ) );
-			$order->add_order_note( __( 'Customer passed to Vipps/MobilePay checkout', 'woo-vipps' ) );
+			$order->add_order_note( sprintf( /* translators: %s: Vipps or MobilePay */ __( '%s recurring checkout payment initiated', 'woo-vipps' ), $this->gateway()->title ) );
+			$order->add_order_note( sprintf( /* translators: %s: Vipps or MobilePay */ __( 'Customer passed to %s checkout', 'woo-vipps' ), $this->gateway()->title ) );
 			$order->save();
 
 			$token = $session->token;
@@ -401,7 +401,7 @@ class WC_Vipps_Recurring_Checkout {
 
 		return [
 			'success'      => false,
-			'msg'          => __( 'Could not start Vipps/MobilePay checkout session', 'woo-vipps' ),
+			'msg'          => sprintf( /* translators: %s: Vipps or MobilePay */ __( 'Could not start %s checkout session', 'woo-vipps' ), $this->gateway()->title ),
 			'src'          => $url,
 			'redirect_url' => $redirect_url,
 			'order_id'     => $partial_order_id
@@ -524,8 +524,8 @@ class WC_Vipps_Recurring_Checkout {
 		if ( $i < $count ) {
 			array_splice( $settings, $i, 0, [
 				[
-					'title'    => __( 'Vipps/MobilePay Recurring Checkout Page', 'woo-vipps' ),
-					'desc'     => __( 'This page is used for the alternative Vipps/MobilePay checkout page, which you can choose to use instead of the normal WooCommerce checkout page. ', 'woo-vipps' ) . sprintf( __( 'Page contents: [%1$s]', 'woocommerce' ), 'vipps_recurring_checkout' ),
+					'title'    => sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Checkout Page', 'woo-vipps' ), Vipps::CompanyName() ),
+					'desc'     => sprintf( /* translators: %s: Vipps MobilePay */ __( 'This page is used for the alternative %s checkout page, which you can choose to use instead of the normal WooCommerce checkout page. ', 'woo-vipps' ), Vipps::CompanyName() ) . sprintf( __( 'Page contents: [%1$s]', 'woocommerce' ), 'vipps_recurring_checkout' ),
 					'id'       => 'woocommerce_vipps_recurring_checkout_page_id',
 					'type'     => 'single_select_page_with_search',
 					'default'  => '',

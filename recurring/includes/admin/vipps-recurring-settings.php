@@ -125,7 +125,7 @@ return apply_filters(
 		],
 		'checkout_enabled'                 => [
 			'title'   => __( 'Enable/Disable', 'woo-vipps' ),
-			'label'   => __( 'Enable Vipps/MobilePay Checkout', 'woo-vipps' ),
+			'label'   => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Enable %s Checkout', 'woo-vipps' ), Vipps::CompanyName() ),
 			'type'    => 'checkbox',
 			'default' => 'no',
 		],
