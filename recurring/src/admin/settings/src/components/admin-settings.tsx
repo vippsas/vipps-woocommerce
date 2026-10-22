@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { gettext, isFieldVisibleForBrand } from '../lib/wp-data';
 import { useHash } from '../hooks/use-hash';
-import { useWP } from '../wp-options-provider';
+import { expressPlacements, useWP } from '../wp-options-provider';
 import { WPButton, WPForm } from './form-elements';
 import { NotificationBanner, NotificationBannerProps } from './notification-banner';
 import { OptionsFormField } from './options-form-field';
@@ -14,6 +14,7 @@ export function AdminSettings(): JSX.Element {
   const [activeTab, setActiveTab] = useHash('general');
   const [isLoading, setIsLoading] = useState(false);
   const [banner, setBanner] = useState<NotificationBannerProps | null>(null);
+  const [expressPlacementOpen, setExpressPlacementOpen] = useState(false);
   const saving = useRef(false);
   const notice = useRef<HTMLDivElement>(null);
   // The brand option updates in provider state as soon as its select changes.
@@ -34,6 +35,7 @@ export function AdminSettings(): JSX.Element {
   );
   const productionKeys = visibleFields.filter(([key]) => !key.startsWith('test_'));
   const testKeys = visibleFields.filter(([key]) => key.startsWith('test_'));
+  const expressAdvanced = ['express_include_cart', 'express_terms', 'express_cleanup_abandoned_orders'];
 
   async function handleSave(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -86,7 +88,34 @@ export function AdminSettings(): JSX.Element {
                   {testKeys.map(([key, field]) => <OptionsFormField key={key} name={key} field={field} />)}
                 </fieldset>
               </Collapsible>}
-            </div> : <fieldset className="vipps-recurring-fields">
+            </div> : selected.id === 'express' ? <fieldset className="vipps-recurring-fields">
+              <div className="vipps-mobilepay-react-express-group">
+                {visibleFields.filter(([key]) => key === 'express_enabled').map(([key, field]) =>
+                  <OptionsFormField key={key} name={key} field={field} trailingAction={
+                    <button type="button" className="vipps-mobilepay-react-overrides-toggle"
+                      aria-label={gettext('express_placement')} title={gettext('express_placement')}
+                      aria-expanded={expressPlacementOpen} aria-controls="vipps-recurring-express-overrides"
+                      onClick={() => setExpressPlacementOpen((open) => !open)}>
+                      <span className="vipps-mobilepay-react-overrides-chevron" aria-hidden="true" />
+                    </button>
+                  } />)}
+                <div id="vipps-recurring-express-overrides" className="vipps-mobilepay-react-express-overrides" hidden={!expressPlacementOpen}>
+                  <div className="vipps-mobilepay-react-express-overrides-heading">{gettext('express_placement')}</div>
+                  {expressPlacements.map((key) => {
+                    const field = selected.fields[key];
+                    return field && <OptionsFormField key={key} name={key} field={field} />;
+                  })}
+                </div>
+              </div>
+              {values.express_enabled === 'yes' && <>
+                {visibleFields.filter(([key]) => key !== 'express_enabled' && !expressPlacements.includes(key) && !expressAdvanced.includes(key))
+                  .map(([key, field]) => <OptionsFormField key={key} name={key} field={field} />)}
+                <Collapsible title={gettext('express_advanced_section')}>
+                  {visibleFields.filter(([key]) => expressAdvanced.includes(key))
+                    .map(([key, field]) => <OptionsFormField key={key} name={key} field={field} />)}
+                </Collapsible>
+              </>}
+            </fieldset> : <fieldset className="vipps-recurring-fields">
               {visibleFields.map(([key, field]) => <OptionsFormField key={key} name={key} field={field} />)}
             </fieldset>}
           </section>

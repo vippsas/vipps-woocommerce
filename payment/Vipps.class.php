@@ -1870,6 +1870,11 @@ else:
         }
         print __("API", 'woo-vipps') .": " . esc_html($order->get_meta('_vipps_api')) . "</br>";
 
+        if ($details['captureGuaranteedUntil'] ?? '') {
+            $capture_expiry_local = wp_date('Y-m-d H:i:s', strtotime($details['captureGuaranteedUntil'])) ?: $details['captureGuaranteedUntil'];
+            printf(__('Capture guaranteed until: %s'), $capture_expiry_local);
+        }
+
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
             print "<h3>" . __('Transaction summary', 'woo-vipps') . "</h3>";
@@ -3007,6 +3012,23 @@ else:
             $vippsdata['postCode'] = $order->get_shipping_postcode();
             $vippsdata['city'] = $order->get_shipping_city();
             $vippsdata['country'] = $order->get_shipping_country();
+        }
+
+        // First, check if we support selling to this country at all IOK 2026-10-14
+        if (class_exists('WC_Countries')) {
+            $countries = new WC_Countries();
+            $allowed = $countries->get_allowed_countries();
+            if (! array_key_exists($vippsdata['country'], $allowed)) {
+               $this->log(sprintf(__("Order $vippsorderid wants shipping options for disallowed country %1\$s - allowed countries are %2\$s. Shipping will fail.", 'woo-vipps'), $vippsdata['country'], join(", ", array_keys($allowed))));
+
+               // Early exit here.
+               if ($ischeckout) {
+                  return ['shippingDetails' => []];
+               } else {
+                  return [];
+               }
+
+            }
         }
 
        // Since we have legacy users that may have filters defined on these values, we will translate newer apis to the older ones.
@@ -4168,6 +4190,24 @@ else:
     }
 
 
+    // Reuse the terms template without starting a purchase. Recurring can supply its own setting.
+    public function get_express_checkout_terms_html(?bool $enabled = null): ?string {
+        $gw = $this->gateway();
+        $askForTerms = function_exists('wc_terms_and_conditions_checkbox_enabled') ? wc_terms_and_conditions_checkbox_enabled() : true;
+        $askForTerms = $askForTerms && ($enabled ?? ($gw->get_option('expresscheckout_termscheckbox') == 'yes'));
+        $askForTerms = apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $askForTerms);
+        if (!$askForTerms) return null;
+
+        ob_start();
+        try {
+            wc_get_template('checkout/terms.php');
+            $termsHTML = ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
+        return apply_filters('woo_vipps_express_checkout_terms_and_conditions_html', $termsHTML);
+    }
+
     // This method may provide HTML form elements to ask a user questions after starting
     // express checkout. It is used to detect duplicate orders, possibly for terms and conditions, and user-definiable customizations. IOK 2026-09-09
     // NULL productinfo means use the cart; the "current hash" is used to detect duplicates, and is calculated by the caller.
@@ -4194,18 +4234,8 @@ else:
             }
         }
 
-        $gw = $this->gateway();
-        $askForTerms = function_exists('wc_terms_and_conditions_checkbox_enabled') ?  wc_terms_and_conditions_checkbox_enabled() : true;
-        $askForTerms = $askForTerms && ($gw->get_option('expresscheckout_termscheckbox') == 'yes');
-        $askForTerms = apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $askForTerms);
-
-        if ($askForTerms) {
-            $termsHTML = '';
-            // Include shop terms 
-            ob_start();
-            wc_get_template('checkout/terms.php');
-            $termsHTML = ob_get_clean();
-            $termsHTML = apply_filters('woo_vipps_express_checkout_terms_and_conditions_html',$termsHTML);
+        $termsHTML = $this->get_express_checkout_terms_html();
+        if (null !== $termsHTML) {
             $elements['terms'] = $termsHTML;
         }
 

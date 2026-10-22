@@ -52,7 +52,11 @@ final class WC_Vipps_Recurring_Blocks_Support extends AbstractPaymentMethodType 
 		$version      = filemtime( WC_VIPPS_RECURRING_PLUGIN_PATH . "/assets/js/vipps-recurring-payment-method-block.js" );
 		$path         = WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/js/vipps-recurring-payment-method-block.js';
 		$handle       = 'wc-payment-method-vipps_recurring';
-		$dependencies = [ 'wp-hooks', 'wp-i18n' ];
+
+		// The payment integration owns the reusable SDK controller, even when its gateway is disabled.
+		wp_register_script( 'wc-payment-method-vipps', plugins_url( 'Blocks/Payment/js/wc-payment-method-vipps.js', WC_VIPPS_PAYMENT_MAIN_FILE ),
+			[ 'wp-hooks', 'wp-element', 'vipps-gw' ], filemtime( dirname( WC_VIPPS_PAYMENT_MAIN_FILE ) . '/Blocks/Payment/js/wc-payment-method-vipps.js' ), true );
+		$dependencies = [ 'wp-hooks', 'wp-i18n', 'wc-payment-method-vipps', 'vipps-recurring-express' ];
 
 		wp_register_script( $handle, $path, $dependencies, $version, true );
 
@@ -78,6 +82,9 @@ final class WC_Vipps_Recurring_Blocks_Support extends AbstractPaymentMethodType 
 				$this->gateway()->brand
 			),
 			'brand'       => $this->gateway()->brand,
+			'language'    => Vipps::instance()->resolve_html_button_language( Vipps::instance()->get_html_button_attrs_for_context( 'checkout_gutenberg' )['language'] ?? 'store' ),
+			'expressbutton' => WC_Vipps_Recurring_Express_Checkout::get_instance()->button_html( is_cart() ? 'cart_gutenberg' : 'checkout_gutenberg' ),
+			'show_express_checkout' => WC_Vipps_Recurring_Express_Checkout::get_instance()->show_cart_button( is_cart() ? 'cart' : 'checkout' ),
 			'supports'    => $this->get_supported_features(),
 		];
 	}

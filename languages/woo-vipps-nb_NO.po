@@ -1158,7 +1158,7 @@ msgstr "Betaling belastet"
 #: recurring/includes/wc-gateway-vipps-recurring.php:868
 #, php-format
 msgid "Charge completed (Charge ID: %s)"
-msgstr "Beatling fullført (Betalings-ID: %s)"
+msgstr "Betaling fullført (Betalings-ID: %s)"
 
 #: payment/admin/settings/VippsAdminSettings.class.php:321
 msgid "Charge failed"
@@ -2336,8 +2336,9 @@ msgstr ""
 #: payment/WC_Gateway_Vipps.class.php:1459
 #: payment/WC_Gateway_Vipps.class.php:1491
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal."
-"vippsmobilepay.com/ and choose \"Show keys\". Copy the value of \"client_id\""
+"Find your account under the \"Developer\" tab on https://"
+"portal.vippsmobilepay.com/ and choose \"Show keys\". Copy the value of "
+"\"client_id\""
 msgstr ""
 "Finn ditt salgssted under “Utvikler” på https://portal.vippsmobilepay.com/ "
 "og trykk på “Show keys”, kopier verdien til “client_id”"
@@ -2345,8 +2346,8 @@ msgstr ""
 #: payment/WC_Gateway_Vipps.class.php:1467
 #: payment/WC_Gateway_Vipps.class.php:1499
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal."
-"vippsmobilepay.com/ and choose \"show keys\". Copy the value of "
+"Find your account under the \"Developer\" tab on https://"
+"portal.vippsmobilepay.com/ and choose \"show keys\". Copy the value of "
 "\"client_secret\""
 msgstr ""
 "Finn ditt salgssted under “Utvikler” på https://portal.vippsmobilepay.com/ "
@@ -2356,9 +2357,9 @@ msgstr ""
 #: payment/WC_Gateway_Vipps.class.php:1507
 #, fuzzy
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal."
-"vippsmobilepay.com/ and choose \"show keys\". Copy the value of \"Ocp-Apim-"
-"Subscription-Key\""
+"Find your account under the \"Developer\" tab on https://"
+"portal.vippsmobilepay.com/ and choose \"show keys\". Copy the value of \"Ocp-"
+"Apim-Subscription-Key\""
 msgstr ""
 "Finn ditt salgssted under “Utvikler” på https://portal.vippsmobilepay.com/ "
 "og trykk på “Show keys”, kopier verdien til “client_secret”"
@@ -4492,8 +4493,8 @@ msgstr ""
 #: payment/lib/recurring-translations.php:51
 #: recurring/includes/admin/vipps-recurring-settings.php:116
 msgid ""
-"The status to give orders when the charge is reserved in Vipps/MobilePay (i."
-"e. tangible goods). Notice: This option only counts for newly signed "
+"The status to give orders when the charge is reserved in Vipps/MobilePay "
+"(i.e. tangible goods). Notice: This option only counts for newly signed "
 "agreements by the customer. Use the setting below to set the default status "
 "for renewal orders."
 msgstr ""
@@ -5629,11 +5630,11 @@ msgstr "Du blir snart omdirigert."
 #: payment/WC_Gateway_Vipps.class.php:1451
 #: payment/WC_Gateway_Vipps.class.php:1483
 msgid ""
-"Your \"Merchant Serial Number\" from the Developer tab on https://portal."
-"vippsmobilepay.com"
+"Your \"Merchant Serial Number\" from the Developer tab on https://"
+"portal.vippsmobilepay.com"
 msgstr ""
-"Ditt “Merchant Serial Number” under “Utvikler” fanen på https://portal."
-"vippsmobilepay.com"
+"Ditt “Merchant Serial Number” under “Utvikler” fanen på https://"
+"portal.vippsmobilepay.com"
 
 #: payment/WC_Gateway_Vipps.class.php:4364
 msgid "Your client key or secret is wrong."
@@ -5738,9 +5739,897 @@ msgstr ""
 "WordPress-nettadressen din samsvarer ikke med kravene til nettadresse i "
 "forhandleravtalen. Er nettsiden din offentlig tilgjengelig?"
 
+#: payment/WC_Gateway_Vipps.class.php:1311
+msgid ""
+"Choose a transformation to apply to phone numbers for %1$s and Express "
+"Checkout"
+msgstr "Velg en transformasjon for telefonnumre for %1$s og Hurtigkassen"
+
+#: payment/Vipps.class.php:991
+msgid "Catalog page"
+msgstr "Katalogsider"
+
+#: payment/Vipps.class.php:985
+msgid "Product page"
+msgstr "Produktside"
+
+#: payment/Vipps.class.php:2367
+msgid "Pickup location"
+msgstr "Hentested"
+
+#: payment/admin/settings/VippsAdminSettings.class.php:235
+msgid "Get started"
+msgstr "Kom i gang"
+
+#: recurring/includes/wc-vipps-recurring.php:947
+msgid "Every One Minute"
+msgstr "Hvert minutt"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php:1633
+msgid "Your early renewal order was successful."
+msgstr "Din tidlige fornyelsesordre er gjennomført."
+
+#: recurring/includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:103
+msgid "No pending charges found."
+msgstr "Ingen ventende betalinger funnet."
+
+#. translators: php date format
+#: recurring/includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:282
+#: recurring/includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:286
+msgctxt "post date"
+msgid "Y/m/d g:i:s A"
+msgstr "m.d.Y H:i"
+
+#. translators: %s: Order ID.
+#: recurring/includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:218
+#: recurring/includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:218
+msgid "Select order %s"
+msgstr "Velg ordre %s"
+
+#: payment/admin/blocks/dist/product-shareable-link/block.json
+#: payment/src/admin/blocks/src/product-shareable-link/block.json
+msgctxt "block title"
+msgid "Blocks"
+msgstr "Blokker"
+
+#: payment/admin/blocks/dist/product-shareable-link/index.js:1
+msgid "Actions"
+msgstr "Handlinger"
+
+#: payment/admin/blocks/dist/product-shareable-link/index.js:1
+msgid "Variation"
+msgstr "Variant"
+
+#: payment/WC_Gateway_Vipps.class.php:3505
+msgid "Callback: Payment cancelled at %1$s"
+msgstr "Tilbakekall: Betalingen er kansellert hos %1$s"
+
+#: payment/VippsCheckout.class.php:563
+msgid "Could not start %1$s session"
+msgstr "Kunne ikke starte %1$s-sesjon"
+
+#: payment/Vipps.class.php:5283
+msgid "%1$s Express Checkout"
+msgstr "%1$s Hurtigkasse"
+
+#: payment/WC_Gateway_Vipps.class.php:1440
+msgid ""
+"Turn this on to add support for Woos Order Attribution API for Checkout and "
+"Express Checkout. Some stores have reported problems when using this API "
+"together with Vipps, so be sure to test this if you turn it on."
+msgstr ""
+"Slå på denne for å legge til støtte for Woos ordretilordnings-API for kassen "
+"og hurtigkassen. Noen butikker har rapportert om problemer ved bruk av dette "
+"API-et sammen med Vipps, så husk å teste dette hvis du slår det på."
+
+#: payment/VippsCheckoutShippingMethods.php:212
+msgctxt "Tax status"
+msgid "None"
+msgstr "Ingen"
+
+#: payment/VippsCheckoutShippingMethods.php:211
+msgid "Taxable"
+msgstr "Mva. avgiftsbelagt"
+
+#: payment/VippsCheckoutShippingMethods.php:206
+msgid "Tax status"
+msgstr "Mva status"
+
+#: payment/VippsCheckoutShippingMethods.php:195
+msgid "Delivery method"
+msgstr "Leveringsmåte"
+
+#: payment/VippsCheckoutShippingMethods.php:103
+msgid ""
+"If checked, free shipping would be available based on pre-discount order "
+"amount."
+msgstr "Hvis avhuket, så er gratis frakt basert på ordresummen før rabatter."
+
+#: payment/VippsCheckoutShippingMethods.php:101
+msgid "Apply minimum order rule before coupon discount"
+msgstr "Bruk minstebestillingsregel før kupongrabatt"
+
+#: payment/VippsCheckoutShippingMethods.php:100
+msgid "Coupons discounts"
+msgstr "Kupongrabatter"
+
+#: payment/VippsCheckoutShippingMethods.php:94
+msgid ""
+"Users will need to spend this amount to get free shipping (if enabled above)."
+msgstr ""
+"Kunder vil måtte bruke denne summen for å få gratis frakt (hvis skrudd på "
+"over)."
+
+#: payment/VippsCheckoutShippingMethods.php:91
+msgid "Minimum order amount"
+msgstr "Minste ordrebeløp"
+
+#: payment/VippsCheckoutShippingMethods.php:87
+msgid "A minimum order amount AND a coupon"
+msgstr "Minimums ordredum OG en kupong"
+
+#: payment/VippsCheckoutShippingMethods.php:86
+msgid "A minimum order amount OR a coupon"
+msgstr "Minste ordresum ELLER en kupong"
+
+#: payment/VippsCheckoutShippingMethods.php:85
+msgid "A minimum order amount"
+msgstr "Minste ordrebeløp"
+
+#: payment/VippsCheckoutShippingMethods.php:84
+msgid "A valid free shipping coupon"
+msgstr "En gyldig fri-frakt kupong"
+
+#: payment/VippsCheckoutShippingMethods.php:83
+msgid "N/A"
+msgstr "Ikke relevant"
+
+#: payment/VippsCheckoutShippingMethods.php:78
+msgid "Free shipping requires..."
+msgstr "Fri frakt krever..."
+
+#: payment/Vipps.class.php:733
+msgid "%1$s On-Site Messaging"
+msgstr "%1$s On-Site Messaging"
+
+#: payment/VippsQRCodeController.class.php:350
+msgid "Search for a product&hellip;"
+msgstr "Søk etter et produkt&hellip;"
+
+#: payment/VippsCheckout.class.php:1383
+#: recurring/includes/wc-vipps-recurring-checkout.php:525
+msgid "Page contents: [%1$s]"
+msgstr "Sideinnhold: [%1$s]"
+
+#: payment/Vipps.class.php:226
+msgid "Once every 5 minutes"
+msgstr "Én gang hvert 5 minutt"
+
+#: payment/Blocks/Products/js/editor.js:26
+msgid "WooCommerce"
+msgstr "WooCommerce"
+
+#: payment/Vipps.class.php:5193
+msgid ""
+"Please read and accept the terms and conditions to proceed with your order."
+msgstr ""
+"Vennligst les og godta salgsvilkårene for å fortsette med din bestilling"
+
+#: payment/WC_Gateway_Vipps.class.php:1269
+msgid ""
+"Find your account under the \"Developer\" tab on https://"
+"portal.vippsmobilepay.com/ and choose \"show keys\". Copy the value of "
+"\"Vipps-Subscription-Key\""
+msgstr ""
+"Finn ditt salgssted under “Utvikler” på https://portal.vippsmobilepay.com/ "
+"og trykk på “Show keys”, kopier verdien til “Vipps-Subscription-Key”"
+
+#: payment/WC_Gateway_Vipps.class.php:835
+msgid ""
+"Order does not need processing, but payment could not be captured at %1$s:"
+msgstr ""
+"Ordren trenger ikke behandling, men betalingen kunne ikke belastes hos %1$s:"
+
+#: payment/WC_Gateway_Vipps.class.php:833
+msgid "Payment automatically captured at %1$s for order not needing processing"
+msgstr ""
+"Betaling automatisk belastet hos %1$s for ordre som ikke trenger behandling"
+
+#: payment/WC_Gateway_Vipps.class.php:3866
+msgid "Gateway disabled"
+msgstr "Betalingsport slått av"
+
+#: payment/WC_Gateway_Vipps.class.php:3373
+msgid "Message in callback from %1$s for order"
+msgstr "Feilmelding i tilbakekall fra %1$s for ordren"
+
+#: payment/WC_Gateway_Vipps.class.php:2427
+msgid "Order failed or rejected at %1$s"
+msgstr "Ordre mislyktes eller ble avvist hos %1$s"
+
+#: payment/WC_Gateway_Vipps.class.php:1887
+msgid "on-hold"
+msgstr "på vent"
+
+#: payment/WC_Gateway_Vipps.class.php:1297
+msgid "This controls the description which the user sees during checkout."
+msgstr "Dette styrer beskrivelsen som brukeren ser i kassen"
+
+#: payment/VippsCheckoutShippingMethods.php:73
+msgid "This controls the title which the user sees during checkout."
+msgstr "Dette styrer tittelen som brukeren ser i kassen"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Express checkout for subscriptions"
+msgstr "Hurtigkasse for abonnementer"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Customers can start a subscription without filling in the standard checkout "
+"form. The Recurring API creates the agreement, and Userinfo supplies "
+"customer details with consent. Shipping is calculated in your store, not "
+"selected in the Vipps/MobilePay app."
+msgstr ""
+"Kunder kan starte et abonnement uten å fylle ut det vanlige kasseskjemaet. "
+"Recurring API oppretter avtalen, og Userinfo henter kundeopplysninger med "
+"kundens samtykke. Frakt beregnes i nettbutikken og velges ikke i Vipps/"
+"MobilePay-appen."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s: Express checkout for subscriptions"
+msgstr "%s: Hurtigkasse for abonnementer"
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid "Could not start Express checkout. Check your order before trying again."
+msgstr ""
+"Kunne ikke starte hurtigkassen. Kontroller bestillingen før du prøver igjen."
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid ""
+"Could not start Express checkout. Reload this page to check the existing "
+"purchase before trying again."
+msgstr ""
+"Kunne ikke starte hurtigkassen. Last inn siden på nytt for å kontrollere det "
+"eksisterende kjøpet før du prøver igjen."
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid "This product is not available for Express checkout."
+msgstr "Dette produktet er ikke tilgjengelig i hurtigkassen."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Enable Express checkout for subscriptions"
+msgstr "Aktiver hurtigkasse for abonnementer"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Controls new Express purchases. Existing purchases can still complete when "
+"this is disabled."
+msgstr ""
+"Gjelder nye kjøp i hurtigkassen. Påbegynte kjøp kan fortsatt fullføres når "
+"dette er deaktivert."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Cart and mini-cart"
+msgstr "Handlekurv og minihandlekurv"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show the Express checkout button in the cart and supported mini-carts"
+msgstr "Vis hurtigkasseknappen i handlekurven og støttede minihandlekurver"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Checkout page"
+msgstr "Kasseside"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show the Express checkout button on the checkout page"
+msgstr "Vis hurtigkasseknappen på kassesiden"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Subscription product buttons"
+msgstr "Knapper for abonnementsprodukter"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"For selected products, enable the button in the product's Vipps/MobilePay "
+"Recurring Payments tab."
+msgstr ""
+"For utvalgte produkter aktiverer du knappen i produktfanen Vipps/MobilePay "
+"Recurring Payments."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Do not show"
+msgstr "Ikke vis"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "All subscription products"
+msgstr "Alle abonnementsprodukter"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Selected subscription products"
+msgstr "Utvalgte abonnementsprodukter"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Product listings"
+msgstr "Produktlister"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show subscription buttons in shop and category listings"
+msgstr "Vis abonnementsknapper i butikk- og kategorilister"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Uses the product selection above. Variable subscriptions require customers "
+"to select options on the product page."
+msgstr ""
+"Bruker produktutvalget ovenfor. For variable abonnementer må kunden velge "
+"alternativer på produktsiden."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Existing cart"
+msgstr "Eksisterende handlekurv"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Include the existing cart when using a subscription product button"
+msgstr ""
+"Ta med den eksisterende handlekurven ved bruk av en abonnementsknapp på et "
+"produkt"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"When disabled, only the selected product is purchased and the previous cart "
+"is saved for restoration."
+msgstr ""
+"Når dette er deaktivert, kjøpes bare det valgte produktet. Den tidligere "
+"handlekurven lagres slik at den kan gjenopprettes."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Require terms acceptance before starting an Express purchase"
+msgstr "Krev aksept av vilkårene før et kjøp startes i hurtigkassen"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Uses the WooCommerce terms checkbox and terms page."
+msgstr "Bruker avmerkingsboksen og vilkårssiden fra WooCommerce."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Customer address"
+msgstr "Kundeadresse"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Request an address through Userinfo even when shipping is not required"
+msgstr "Be om adresse via Userinfo også når frakt ikke er nødvendig"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Shipping purchases always request an address. Userinfo does not provide "
+"shipping selection in the app."
+msgstr ""
+"Ved kjøp som krever frakt, bes det alltid om adresse. Userinfo gir ikke valg "
+"av frakt i appen."
+
+#: recurring/includes/wc-vipps-recurring.php
+msgid ""
+"Show the product button when recurring Express checkout is enabled for "
+"selected products."
+msgstr ""
+"Vis produktknappen når hurtigkasse for abonnementer er aktivert for utvalgte "
+"produkter."
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid ""
+"Express checkout for subscriptions is disabled. Please use the checkout page."
+msgstr "Hurtigkasse for abonnementer er deaktivert. Bruk kassesiden."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Let customers start a subscription from a product page, the cart or checkout "
+"using their details from Vipps/MobilePay."
+msgstr ""
+"La kunder starte et abonnement fra en produktside, handlekurven eller kassen "
+"med opplysningene sine fra Vipps/MobilePay."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Important! Express checkout for subscriptions currently supports only static "
+"shipping."
+msgstr ""
+"Viktig! Hurtigkasse for abonnementer støtter foreløpig bare statisk frakt."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Use fixed-price or free shipping. Customers cannot choose shipping in the "
+"Vipps/MobilePay app."
+msgstr ""
+"Bruk fastpris eller gratis frakt. Kunden kan ikke velge frakt i Vipps/"
+"MobilePay-appen."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Turning this off hides the buttons. Purchases already started can still "
+"finish."
+msgstr ""
+"Når dette slås av, skjules knappene. Påbegynte kjøp kan fortsatt fullføres."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Uses the product selection above. Products with options must be opened "
+"before purchase."
+msgstr ""
+"Bruker produktutvalget ovenfor. Produkter med valgmuligheter må åpnes før "
+"kjøp."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"When turned off, customers buy only the selected product. Their other cart "
+"items are kept for later."
+msgstr ""
+"Når dette er slått av, kjøper kunden bare det valgte produktet. Andre varer "
+"i handlekurven beholdes til senere."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Ask customers to accept the terms before payment"
+msgstr "Be kunden godta vilkårene før betaling"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Set your terms and conditions page in WooCommerce settings."
+msgstr "Velg vilkårssiden i innstillingene for WooCommerce."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Ask for an address even for purchases that do not need shipping"
+msgstr "Be om adresse også ved kjøp som ikke krever frakt"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "An address is always requested when shipping is needed."
+msgstr "Det bes alltid om adresse når kjøpet krever frakt."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Abandoned purchases"
+msgstr "Avbrutte kjøp"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Clean up abandoned Express purchases"
+msgstr "Rydd opp i avbrutte kjøp fra hurtigkassen"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Move unpaid, cancelled or expired purchases to the trash after seven days. "
+"Runs hourly. Purchases with billing details, a payment or an unresolved "
+"status are kept."
+msgstr ""
+"Flytt ubetalte, avbrutte eller utløpte kjøp til papirkurven etter sju dager. "
+"Kjøres hver time. Kjøp med faktureringsopplysninger, en betaling eller "
+"uavklart status beholdes."
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:90
+msgid "Orders"
+msgstr "Ordrer"
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:91
+msgid "Cron"
+msgstr "Cron"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payment method settings"
+msgstr "Innstillinger for betalingsmåte"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Choose Vipps or MobilePay."
+msgstr "Velg Vipps eller MobilePay."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Automatically collect reserved MobilePay payments before the reservations "
+"expire."
+msgstr ""
+"Trekk reserverte MobilePay-betalinger automatisk før reservasjonene utløper."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"The payment method description customers see at checkout. Use {brand} to "
+"insert Vipps or MobilePay."
+msgstr ""
+"Beskrivelsen av betalingsmåten som kundene ser i kassen. Bruk {brand} for å "
+"sette inn Vipps eller MobilePay."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Enable Express checkout"
+msgstr "Aktiver hurtigkasse"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"For selected products, enable Express checkout in the product's Vipps/"
+"MobilePay Recurring Payments tab."
+msgstr ""
+"For utvalgte produkter aktiverer du hurtigkasse i produktets fane for faste "
+"betalinger med Vipps/MobilePay."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Show buttons on shop and category pages for the supported products above. "
+"Customers must open products with options before purchase."
+msgstr ""
+"Vis knapper på butikk- og kategorisider for de støttede produktene over. "
+"Kunder må åpne produkter med valgmuligheter før kjøp."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Other cart items"
+msgstr "Andre varer i handlekurven"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Include other cart items"
+msgstr "Inkluder andre varer i handlekurven"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Include items already in the cart when customers buy from a product page."
+msgstr ""
+"Inkluder varer som allerede ligger i handlekurven når kunder kjøper fra en "
+"produktside."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Require terms acceptance"
+msgstr "Krev godkjenning av vilkår"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Always request an address"
+msgstr "Be alltid om adresse"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Also request an address for products that do not need shipping."
+msgstr "Be også om adresse for produkter som ikke trenger frakt."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Abandoned orders"
+msgstr "Forlatte bestillinger"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Clean up abandoned orders"
+msgstr "Rydd opp i forlatte bestillinger"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Move cancelled or expired orders to the trash after seven days. Orders with "
+"payments, customer details or an unconfirmed payment status are kept."
+msgstr ""
+"Flytt kansellerte eller utløpte bestillinger til papirkurven etter sju "
+"dager. Bestillinger med betalinger, kundeopplysninger eller ubekreftet "
+"betalingsstatus beholdes."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Clean up changed or abandoned orders"
+msgstr "Rydd opp i endrede eller forlatte bestillinger"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Move abandoned Checkout orders and orders with changed contents to the "
+"trash. Checks run every hour."
+msgstr ""
+"Flytt forlatte Checkout-bestillinger og bestillinger med endret innhold til "
+"papirkurven. Kontrollen kjøres hver time."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Find your Merchant Serial Number in the Vipps/MobilePay developer portal."
+msgstr ""
+"Finn ditt Merchant Serial Number i utviklerportalen til Vipps/MobilePay."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Add letters or numbers before each payment reference to keep references "
+"unique across stores."
+msgstr ""
+"Legg til bokstaver eller tall foran hver betalingsreferanse for å holde "
+"referansene unike på tvers av butikker."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"The order status when the first payment is reserved but not yet collected. "
+"Renewal orders use the setting below."
+msgstr ""
+"Bestillingsstatusen når den første betalingen er reservert, men ennå ikke "
+"trukket. Fornyelsesbestillinger bruker innstillingen under."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Renewal order status while awaiting payment"
+msgstr "Status for fornyelsesbestillinger som venter på betaling"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"The status for renewal orders while waiting for payment. Payment can take a "
+"few days."
+msgstr ""
+"Statusen for fornyelsesbestillinger mens de venter på betaling. Betalingen "
+"kan ta noen dager."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Automatically complete paid renewal orders"
+msgstr "Fullfør betalte fornyelsesbestillinger automatisk"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Set renewal orders to \"Completed\" when Vipps/MobilePay confirms payment."
+msgstr ""
+"Sett fornyelsesbestillinger til «Fullført» når Vipps/MobilePay bekrefter "
+"betalingen."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Background checks"
+msgstr "Bakgrunnskontroller"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Check payment status in the background to keep orders up to date."
+msgstr ""
+"Kontroller betalingsstatus i bakgrunnen for å holde bestillingene oppdatert."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payments per check"
+msgstr "Betalinger per kontroll"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"The number of payments to check at a time. Use 5 to 100. Higher values can "
+"slow down your store."
+msgstr ""
+"Antall betalinger som kontrolleres om gangen. Bruk 5 til 100. Høyere verdier "
+"kan gjøre butikken tregere."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payment check order"
+msgstr "Rekkefølge for betalingskontroll"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Choose which payments to check first. Random suits most stores. Use Oldest "
+"first if your subscriptions renew on the same date."
+msgstr ""
+"Velg hvilke betalinger som skal kontrolleres først. Tilfeldig passer for de "
+"fleste butikker. Bruk Eldste først hvis abonnementene fornyes på samme dato."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Save messages to the WooCommerce logs to help with troubleshooting."
+msgstr "Lagre meldinger i WooCommerce-loggene for å hjelpe med feilsøking."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Use the Vipps MobilePay test environment to try payments."
+msgstr "Bruk testmiljøet til Vipps MobilePay for å prøve betalinger."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Test mode is controlled by WC_VIPPS_RECURRING_TEST_MODE."
+msgstr "Testmodus styres av WC_VIPPS_RECURRING_TEST_MODE."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid ""
+"Replace the WooCommerce checkout with Vipps MobilePay Checkout. Customers "
+"share their billing and shipping details from the app. "
+"<br><br><strong>Important!</strong> Checkout for recurring payments "
+"<strong>only supports static shipping</strong> at the moment."
+msgstr ""
+"Erstatt WooCommerce-kassen med Vipps MobilePay Checkout. Kundene deler "
+"faktura- og leveringsopplysninger fra appen. <br><br><strong>Viktig!</"
+"strong> Checkout for faste betalinger <strong>støtter kun statisk frakt</"
+"strong> for øyeblikket."
+
 #~ msgid ""
-#~ "Find your account under the \"Developer\" tab on https://portal."
-#~ "Subscription-Key\""
+#~ "Find your account under the \"Developer\" tab on https://"
+#~ "portal.Subscription-Key\""
 #~ msgstr ""
-#~ "Finn salgsstedet ditt under «Utvikler» på https://portal.vippsmobilepay."
-#~ "com/, og velg «Show keys». Kopier verdien for «Ocp-Apim-Subscription-Key»."
+#~ "Finn salgsstedet ditt under «Utvikler» på https://"
+#~ "portal.vippsmobilepay.com/, og velg «Show keys». Kopier verdien for «Ocp-"
+#~ "Apim-Subscription-Key»."
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php:492
+msgid "Fill in the form below, then try again."
+msgstr "Fyll ut skjemaet nedenfor, og prøv igjen."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "The agreement was cancelled or expired in %s"
+msgstr "Denne avtalen ble avbrutt eller utløp i %s"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s payment cancelled."
+msgstr "%s-betaling kansellert."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s payment failed."
+msgstr "%s-betaling mislyktes."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "A temporary error occurred when refunding a payment through %s. Please ensure the order is refunded manually or reset the order to \"Processing\" and try again."
+msgstr "En midlertidig feil oppsto ved refusjon gjennom %s. Sørg for at ordren er refundert manuelt eller tilbakestill ordren til \"Behandler\" og forsøk på nytt."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "An unexpected error occurred while refunding a payment in %s."
+msgstr "En uforventet feil oppstod ved refusjon av betaling i %s."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%1$s charge created: %2$s. The charge will be complete %3$s."
+msgstr "%1$s-betaling opprettet: %2$s. Betalingen vil være fullført %3$s."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s is temporarily unavailable."
+msgstr "%s er midlertidig utilgjengelig."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not capture %1$s charge (HTTP 400): %2$s"
+msgstr "Kunne ikke trekke %1$s-betaling (HTTP 400): %2$s"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Payment gateway change request cancelled in %s"
+msgstr "Forespørsel om bytte av betalingsmåte avbrutt i %s"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "This subscription is already active in %s. You can leave this page."
+msgstr "Dette abonnementet har allerede en aktiv betalingsavtale i %s. Du kan forlate denne siden."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Request to change gateway to %1$s with agreement ID: %2$s."
+msgstr "Forespørsel om å bytte til %1$s med avtale-ID: %2$s."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Agreement created: %1$s. Customer sent to %2$s for confirmation."
+msgstr "Avtale opprettet: %1$s. Kunden sendt til %2$s for bekreftelse."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Cancelled due charge in %s."
+msgstr "Kansellerte ventende betaling i %s."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not cancel charge in %s. Please manually check the status of this order if you plan to process a new renewal order!"
+msgstr "Kunne ikke kansellere betaling i %s. Sjekk statusen på denne ordren manuelt dersom du skal behandle en ny fornyelsesordre!"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Subscription cancelled by the customer via the %s app."
+msgstr "Abonnementet ble avsluttet av kunden fra %s-appen."
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "No response from %s"
+msgstr "Intet svar fra %s"
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "%s is temporarily unavailable. Please try again."
+msgstr "%s er midlertidig utilgjengelig. Vennligst prøv igjen."
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "We hit the rate limit at %s. Please try again shortly."
+msgstr "Vi har nådd trafikkgrensen hos %s. Vennligst prøv igjen om kort tid."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Successfully authenticated with the %s API"
+msgstr "Autentisert med %s API-et"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not authenticate with the %1$s API: %2$s"
+msgstr "Kunne ikke autentisere med %1$s API-et: %2$s"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s agreement ID"
+msgstr "%s avtale-ID"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "This %s agreement ID is invalid."
+msgstr "Denne %s betalingsavtale-ID-en er ugyldig."
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+#, php-format
+msgid "Recurring agreement creation could not be confirmed. Check the API configuration and reconcile this purchase with %s before creating another agreement or payment."
+msgstr "Opprettelsen av betalingsavtalen kunne ikke bekreftes. Kontroller API-konfigurasjonen og avstem dette kjøpet med %s før du oppretter en ny avtale eller betaling."
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php
+#, php-format
+msgid "Settings saved, but the %s API could not be authenticated."
+msgstr "Innstillingene ble lagret, men kunne ikke autentiseres mot %s-API-et."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Let customers start a subscription from a product page, the cart or checkout using their details from %s."
+msgstr "La kunder starte et abonnement fra en produktside, handlekurven eller kassen med opplysningene sine fra %s."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Use fixed-price or free shipping. Customers cannot choose shipping in the %s app."
+msgstr "Bruk fastpris eller gratis frakt. Kunden kan ikke velge frakt i %s-appen."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "For selected products, enable Express checkout in the product's %s tab."
+msgstr "For utvalgte produkter aktiverer du hurtigkasse i produktets fane %s."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "These settings control the connection between your store and %s."
+msgstr "Disse innstillingene er for tilkoblingen mellom butikken din og %s."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Find your Merchant Serial Number in the %s developer portal."
+msgstr "Finn ditt Merchant Serial Number i utviklerportalen til %s."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Get your API keys from your %s developer portal."
+msgstr "Hent API-nøklene dine fra utviklerportalen hos %s."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Set renewal orders to \"Completed\" when %s confirms payment."
+msgstr "Sett fornyelsesbestillinger til «Fullført» når %s bekrefter betalingen."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Use the %s test environment to try payments."
+msgstr "Bruk testmiljøet til %s for å prøve betalinger."
+
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "Where we should source the agreement description from. Displayed in the %s app."
+msgstr "Hvor beskrivelsen som brukes til betalingsavtalen skal komme fra. Vist i %s-appen."
+
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#, php-format
+msgid "If you have a lot of %s subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it's job."
+msgstr "Om du har mange faste betalinger med %s som foreløpig er på vent kan det hende du vil til å kontrollere status på alle ordrene i stedet for å vente på at kjøring av en planlagt oppgave skal gjøre seg ferdig."
+
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#, php-format
+msgid "Check status of all %s subscription orders now"
+msgstr "Kontroller status på alle %s faste betalinger-ordre nå"
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "%s Recurring Payments"
+msgstr "%s faste betalinger"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%1$s Recurring Payments works by redirecting your customers to %1$s for confirmation. It creates a payment plan and charges your users on the intervals you specify."
+msgstr "%1$s faste betalinger virker ved å omdirigere kundene dine til %1$s for bekreftelse. Den oppretter en betalingsplan og belaster brukerne dine på de intervallene du angir."
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "Your %s Recurring Payments gateway is not correctly configured."
+msgstr "Din %s faste betalinger-løsning er ikke konfigurert riktig."
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Enable %s Recurring Payments"
+msgstr "Slå på %s faste betalinger"
+
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "%s Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!"
+msgstr "%s faste betalinger er foreløpig i testmodus - ingen ekte betalinger vil finne sted. Slå av testmodus når du er klar til å gå live!"
+
+#: recurring/includes/wc-vipps-recurring-profile.php
+#, php-format
+msgid "%s profile completion needs attention. Check the API configuration, assign a customer and complete the billing details, then use the order action to retry recurring completion with saved billing details. Do not create another payment."
+msgstr "Fullføring av %s-profilen krever oppfølging. Kontroller API-konfigurasjonen, tilordne en kunde og fyll ut fakturaopplysningene, og bruk deretter ordrehandlingen for å prøve å fullføre den faste betalingen på nytt med de lagrede fakturaopplysningene. Ikke opprett en ny betaling."
+
+#: recurring/includes/wc-vipps-recurring-profile.php
+#, php-format
+msgid "Waiting for %s profile/customer completion. Automatic status checks will retry the existing purchase."
+msgstr "Venter på fullføring av %s-profil/kunde. Automatiske statuskontroller prøver det eksisterende kjøpet på nytt."

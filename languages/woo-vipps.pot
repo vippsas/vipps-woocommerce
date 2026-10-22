@@ -5193,3 +5193,584 @@ msgid ""
 "Your WordPress URL is not passing Merchant Agreement URL validation. Is your "
 "website publicly accessible?"
 msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Express checkout for subscriptions"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Customers can start a subscription without filling in the standard checkout form. The Recurring API creates the agreement, and Userinfo supplies customer details with consent. Shipping is calculated in your store, not selected in the Vipps/MobilePay app."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s: Express checkout for subscriptions"
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid "Could not start Express checkout. Check your order before trying again."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid "Could not start Express checkout. Reload this page to check the existing purchase before trying again."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid "This product is not available for Express checkout."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Enable Express checkout for subscriptions"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Controls new Express purchases. Existing purchases can still complete when this is disabled."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Cart and mini-cart"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show the Express checkout button in the cart and supported mini-carts"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Checkout page"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show the Express checkout button on the checkout page"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Subscription product buttons"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "For selected products, enable the button in the product's Vipps/MobilePay Recurring Payments tab."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Do not show"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "All subscription products"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Selected subscription products"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Product listings"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show subscription buttons in shop and category listings"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Uses the product selection above. Variable subscriptions require customers to select options on the product page."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Existing cart"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Include the existing cart when using a subscription product button"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "When disabled, only the selected product is purchased and the previous cart is saved for restoration."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Require terms acceptance before starting an Express purchase"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Uses the WooCommerce terms checkbox and terms page."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Customer address"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Request an address through Userinfo even when shipping is not required"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Shipping purchases always request an address. Userinfo does not provide shipping selection in the app."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring.php
+msgid "Show the product button when recurring Express checkout is enabled for selected products."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+msgid "Express checkout for subscriptions is disabled. Please use the checkout page."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Let customers start a subscription from a product page, the cart or checkout using their details from Vipps/MobilePay."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Important! Express checkout for subscriptions currently supports only static shipping."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Use fixed-price or free shipping. Customers cannot choose shipping in the Vipps/MobilePay app."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Turning this off hides the buttons. Purchases already started can still finish."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Uses the product selection above. Products with options must be opened before purchase."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "When turned off, customers buy only the selected product. Their other cart items are kept for later."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Ask customers to accept the terms before payment"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Set your terms and conditions page in WooCommerce settings."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Ask for an address even for purchases that do not need shipping"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "An address is always requested when shipping is needed."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Abandoned purchases"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Clean up abandoned Express purchases"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Move unpaid, cancelled or expired purchases to the trash after seven days. Runs hourly. Purchases with billing details, a payment or an unresolved status are kept."
+msgstr ""
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:90
+msgid "Orders"
+msgstr ""
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:91
+msgid "Cron"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payment method settings"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Choose Vipps or MobilePay."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Automatically collect reserved MobilePay payments before the reservations expire."
+msgstr ""
+
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The payment method description customers see at checkout. Use {brand} to insert Vipps or MobilePay."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Enable Express checkout"
+msgstr ""
+
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "For selected products, enable Express checkout in the product's Vipps/MobilePay Recurring Payments tab."
+msgstr ""
+
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Show buttons on shop and category pages for the supported products above. Customers must open products with options before purchase."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Other cart items"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Include other cart items"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Include items already in the cart when customers buy from a product page."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Require terms acceptance"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Always request an address"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Also request an address for products that do not need shipping."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Abandoned orders"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Clean up abandoned orders"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Move cancelled or expired orders to the trash after seven days. Orders with payments, customer details or an unconfirmed payment status are kept."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Clean up changed or abandoned orders"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Move abandoned Checkout orders and orders with changed contents to the trash. Checks run every hour."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Find your Merchant Serial Number in the Vipps/MobilePay developer portal."
+msgstr ""
+
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Add letters or numbers before each payment reference to keep references unique across stores."
+msgstr ""
+
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The order status when the first payment is reserved but not yet collected. Renewal orders use the setting below."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Renewal order status while awaiting payment"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The status for renewal orders while waiting for payment. Payment can take a few days."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Automatically complete paid renewal orders"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Set renewal orders to \"Completed\" when Vipps/MobilePay confirms payment."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Background checks"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Check payment status in the background to keep orders up to date."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payments per check"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "The number of payments to check at a time. Use 5 to 100. Higher values can slow down your store."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Payment check order"
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Choose which payments to check first. Random suits most stores. Use Oldest first if your subscriptions renew on the same date."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Save messages to the WooCommerce logs to help with troubleshooting."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Use the Vipps MobilePay test environment to try payments."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Test mode is controlled by WC_VIPPS_RECURRING_TEST_MODE."
+msgstr ""
+
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+msgid "Replace the WooCommerce checkout with Vipps MobilePay Checkout. Customers share their billing and shipping details from the app. <br><br><strong>Important!</strong> Checkout for recurring payments <strong>only supports static shipping</strong> at the moment."
+msgstr ""
+
+
+
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php:492
+msgid "Fill in the form below, then try again."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "The agreement was cancelled or expired in %s"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s payment cancelled."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s payment failed."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "A temporary error occurred when refunding a payment through %s. Please ensure the order is refunded manually or reset the order to \"Processing\" and try again."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "An unexpected error occurred while refunding a payment in %s."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%1$s charge created: %2$s. The charge will be complete %3$s."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s is temporarily unavailable."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not capture %1$s charge (HTTP 400): %2$s"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Payment gateway change request cancelled in %s"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "This subscription is already active in %s. You can leave this page."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Request to change gateway to %1$s with agreement ID: %2$s."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Agreement created: %1$s. Customer sent to %2$s for confirmation."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Cancelled due charge in %s."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not cancel charge in %s. Please manually check the status of this order if you plan to process a new renewal order!"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Subscription cancelled by the customer via the %s app."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "No response from %s"
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "%s is temporarily unavailable. Please try again."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "We hit the rate limit at %s. Please try again shortly."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Successfully authenticated with the %s API"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "Could not authenticate with the %1$s API: %2$s"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%s agreement ID"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "This %s agreement ID is invalid."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-express-checkout.php
+#, php-format
+msgid "Recurring agreement creation could not be confirmed. Check the API configuration and reconcile this purchase with %s before creating another agreement or payment."
+msgstr ""
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php
+#, php-format
+msgid "Settings saved, but the %s API could not be authenticated."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Let customers start a subscription from a product page, the cart or checkout using their details from %s."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Use fixed-price or free shipping. Customers cannot choose shipping in the %s app."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "For selected products, enable Express checkout in the product's %s tab."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "These settings control the connection between your store and %s."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Find your Merchant Serial Number in the %s developer portal."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Get your API keys from your %s developer portal."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Set renewal orders to \"Completed\" when %s confirms payment."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Use the %s test environment to try payments."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "Where we should source the agreement description from. Displayed in the %s app."
+msgstr ""
+
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#, php-format
+msgid "If you have a lot of %s subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it's job."
+msgstr ""
+
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#, php-format
+msgid "Check status of all %s subscription orders now"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#: recurring/includes/pages/admin/vipps-recurring-admin-menu-page.php
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "%s Recurring Payments"
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php
+#, php-format
+msgid "%1$s Recurring Payments works by redirecting your customers to %1$s for confirmation. It creates a payment plan and charges your users on the intervals you specify."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-api.php
+#, php-format
+msgid "Your %s Recurring Payments gateway is not correctly configured."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php
+#, php-format
+msgid "Enable %s Recurring Payments"
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring.php
+#, php-format
+msgid "%s Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!"
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-profile.php
+#, php-format
+msgid "%s profile completion needs attention. Check the API configuration, assign a customer and complete the billing details, then use the order action to retry recurring completion with saved billing details. Do not create another payment."
+msgstr ""
+
+#: recurring/includes/wc-vipps-recurring-profile.php
+#, php-format
+msgid "Waiting for %s profile/customer completion. Automatic status checks will retry the existing purchase."
+msgstr ""

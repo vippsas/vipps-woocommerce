@@ -75,21 +75,21 @@ class WC_Vipps_Recurring_Kc_Support {
 	 */
 	public static function form_fields( $settings ) {
 		$settings['epm_vipps_recurring_settings_title'] = [
-			'title' => __( 'External Payment Method - Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
+			'title' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'External Payment Method - %s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
 			'type'  => 'title',
 		];
 
 		$settings['epm_vipps_recurring_activate'] = [
 			'title'       => __( 'Activate', 'woo-vipps' ),
 			'type'        => 'checkbox',
-			'description' => __( 'Activate Vipps/MobilePay Recurring Payments as an external payment method for Klarna Checkout', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Activate %s Recurring Payments as an external payment method for Klarna Checkout', 'woo-vipps' ), Vipps::CompanyName() ),
 			'default'     => 'yes',
 		];
 
 		$settings['epm_vipps_recurring_description'] = [
 			'title'       => __( 'Description', 'woo-vipps' ),
 			'type'        => 'textarea',
-			'description' => __( 'Description for Vipps/MobilePay Recurring Payments method. This controls the description which the user sees in the checkout form.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Description for %s Recurring Payments method. This controls the description which the user sees in the checkout form.', 'woo-vipps' ), Vipps::CompanyName() ),
 			// translators: {brand}: brand name, Vipps or MobilePay
 			'default'     => __( 'Remember: {brand} is always has no fees when paying businesses.', 'woo-vipps' ),
 		];

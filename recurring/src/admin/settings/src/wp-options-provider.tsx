@@ -1,6 +1,13 @@
 import { PropsWithChildren, createContext, useContext, useEffect, useState } from 'react';
 import { initialSettings, SettingsData, gettext, isFieldVisibleForBrand } from './lib/wp-data';
 
+export const expressPlacements = [
+  'express_cart_button',
+  'express_checkout_button',
+  'express_archive_button',
+  'express_product_page_button',
+];
+
 interface WPContext {
   settings: SettingsData;
   values: Record<string, string | number>;
@@ -28,7 +35,15 @@ export function WPOptionsProvider({ children }: PropsWithChildren): JSX.Element 
   }, [isDirty]);
 
   function setOption(key: string, value: string) {
-    setValues((current) => ({ ...current, [key]: value }));
+    setValues((current) => {
+      const updated = { ...current, [key]: value };
+      if (key === 'express_enabled') {
+        expressPlacements.forEach((placement) => { updated[placement] = value; });
+      } else if (expressPlacements.includes(key)) {
+        updated.express_enabled = expressPlacements.some((placement) => updated[placement] === 'yes') ? 'yes' : 'no';
+      }
+      return updated;
+    });
   }
 
   async function submitChanges(): Promise<SettingsData> {

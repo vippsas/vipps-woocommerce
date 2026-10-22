@@ -228,7 +228,7 @@ class WC_Vipps_Recurring {
 		] );
 
 		if ( $this->gateway()->test_mode ) {
-			$notice = __( 'Vipps/MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!', 'woo-vipps' );
+			$notice = sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!', 'woo-vipps' ), Vipps::CompanyName() );
 			$this->notices->warning( $notice );
 		}
 
@@ -245,7 +245,13 @@ class WC_Vipps_Recurring {
 				if ( empty( get_option( WC_Vipps_Recurring_Helper::OPTION_WEBHOOKS ) ) ) {
 					$this->gateway()->webhook_initialize();
 				} else {
-					$ok = $this->gateway()->webhook_ensure_this_site();
+					try {
+						$ok = $this->gateway()->webhook_ensure_this_site();
+					} catch ( Exception $e ) {
+						// Don't break the admin page over this, we check again in 30 minutes
+						WC_Vipps_Recurring_Logger::log( sprintf( 'Failed to check webhooks. Error: %s', $e->getMessage() ) );
+						$ok = true;
+					}
 
 					if ( ! $ok ) {
 						$this->gateway()->webhook_initialize();
@@ -487,8 +493,8 @@ class WC_Vipps_Recurring {
 	 */
 	public function admin_menu() {
 		add_options_page(
-			__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
-			__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
+			sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
+			sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
 			'manage_options',
 			'woo-vipps-recurring',
 			[ $this, 'admin_menu_page_html' ]
@@ -585,7 +591,7 @@ class WC_Vipps_Recurring {
 	 */
 	public function woocommerce_product_data_tabs( $tabs ) {
 		$tabs['wc_vipps_recurring'] = [
-			'label'    => __( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
+			'label'    => sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
 			'target'   => 'wc_vipps_recurring_product_data',
 			'priority' => 100,
 		];
@@ -600,6 +606,14 @@ class WC_Vipps_Recurring {
 		echo '<div id="wc_vipps_recurring_product_data" class="panel woocommerce_options_panel hidden">';
 
 		woocommerce_wp_checkbox( [
+			'id'          => WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON,
+			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON, true ),
+			'label'       => __( 'Express checkout for subscriptions', 'woo-vipps' ),
+			'description' => __( 'Show the product button when recurring Express checkout is enabled for selected products.', 'woo-vipps' ),
+			'desc_tip'    => true,
+		] );
+
+		woocommerce_wp_checkbox( [
 			'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE,
 			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, true ),
 			'label'       => __( 'Capture payment instantly', 'woo-vipps' ),
@@ -611,7 +625,7 @@ class WC_Vipps_Recurring {
 			'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE,
 			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE, true ) ?: 'title',
 			'label'       => __( 'Description source', 'woo-vipps' ),
-			'description' => __( 'Where we should source the agreement description from. Displayed in the Vipps/MobilePay app.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Where we should source the agreement description from. Displayed in the %s app.', 'woo-vipps' ), Vipps::CompanyName() ),
 			'desc_tip'    => true,
 			'options'     => [
 				'none'              => __( 'None', 'woo-vipps' ),
@@ -638,6 +652,9 @@ class WC_Vipps_Recurring {
 	 * @param $post_id
 	 */
 	public function woocommerce_process_product_meta( $post_id ) {
+		update_post_meta( $post_id, WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON,
+			isset( $_POST[ WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON ] ) ? 'yes' : 'no' );
+
 		$capture_instantly = isset( $_POST[ WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ] ) ? 'yes' : 'no';
 		update_post_meta( $post_id, WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, $capture_instantly );
 
@@ -718,28 +735,69 @@ class WC_Vipps_Recurring {
 			$limit = $this->gateway()->check_charges_amount;
 		}
 
-		$options = [
-			'limit'          => $limit,
-			'payment_method' => $this->gateway()->id
+		$limit = (int) $limit;
+
+		$pending_clause = [
+			'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
+			'compare' => '=',
+			'value'   => 1,
 		];
 
-		$options = WC_Vipps_Recurring_Helper::add_meta_query_to_args( $options, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, '=', 1, $this->gateway()->use_high_performance_order_storage() );
+		remove_all_filters( 'posts_orderby' );
 
-		if ( $this->gateway()->check_charges_sort_order === 'rand' ) {
-			$options['orderby'] = 'rand';
-		} else {
-			$options['orderby'] = 'post_date';
-			$options['order']   = $this->gateway()->check_charges_sort_order;
+		// Orders that have never been checked go first, newest first so fresh renewals are not stuck behind a backlog.
+		$orders = WC_Vipps_Recurring_Helper::get_orders_with_meta_query( [
+			'limit'          => $limit,
+			'payment_method' => $this->gateway()->id,
+			'meta_query'     => [
+				$pending_clause,
+				[
+					'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_LAST_CHECKED,
+					'compare' => 'NOT EXISTS',
+				],
+			],
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		] );
+
+		// Fill the rest of the batch with the least recently checked orders, so every pending order gets its turn.
+		// We can't do this in one query, because HPOS only orders by meta through an INNER JOIN.
+		$remaining = $limit < 0 ? $limit : $limit - count( $orders );
+		if ( $remaining !== 0 ) {
+			$orders = array_merge( $orders, WC_Vipps_Recurring_Helper::get_orders_with_meta_query( [
+				'limit'          => $remaining,
+				'payment_method' => $this->gateway()->id,
+				'meta_query'     => [
+					$pending_clause,
+					'last_checked' => [
+						'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_LAST_CHECKED,
+						'compare' => 'EXISTS',
+						'type'    => 'NUMERIC',
+					],
+				],
+				'orderby'        => [ 'last_checked' => 'ASC' ],
+			] ) );
 		}
 
-		remove_all_filters( 'posts_orderby' );
-		$orders = wc_get_orders( $options );
+		if ( ! empty( $orders ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "Checking charge status for orders: %s", implode( ', ', array_map( [
+				WC_Vipps_Recurring_Helper::class,
+				'get_id'
+			], $orders ) ) ) );
+		}
 
 		foreach ( $orders as $order ) {
 			$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
 
 			do_action( 'wc_vipps_recurring_before_cron_check_order_status', $order_id );
-			$this->gateway()->check_charge_status( $order_id );
+
+			try {
+				$this->gateway()->check_charge_status( $order_id );
+			} catch ( Exception $e ) {
+				// One order must not stop the rest of the batch. It has been stamped as checked, so the next run moves on.
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error checking charge status: %s', $order_id, $e->getMessage() ) );
+			}
+
 			do_action( 'wc_vipps_recurring_after_cron_check_order_status', $order_id );
 		}
 
@@ -798,6 +856,12 @@ class WC_Vipps_Recurring {
 		foreach ( $subscriptions as $subscription ) {
 			$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
 
+			$parent_order = $subscription->get_parent();
+			if ( $parent_order && $parent_order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_ATTEMPT ) ) {
+				( new WC_Vipps_Recurring_Express_Cleanup( $this->gateway() ) )->delete_if_abandoned( $subscription );
+				continue;
+			}
+
 			// Check the status of this subscription's latest order charge just in case.
 			$latest_order    = $subscription->get_last_order( 'all' );
 			$latest_order_id = WC_Vipps_Recurring_Helper::get_id( $latest_order );
@@ -809,6 +873,10 @@ class WC_Vipps_Recurring {
 			// Hydrate objects
 			$latest_order = wc_get_order( $latest_order_id );
 			$subscription = wcs_get_subscription( $subscription_id );
+
+			if ( WC_Vipps_Recurring_Profile::protect_from_cleanup( $latest_order ) ) {
+				continue;
+			}
 
 			// If this subscription has been manually updated in the mean-time, we no longer want to delete it.
 			// Similarly, if it has a billing email we don't want to delete it.
@@ -996,7 +1064,7 @@ class WC_Vipps_Recurring {
 			return;
 		}
 
-		$local_webhooks = $this->gateway()->webhook_get_local()[ $this->gateway()->merchant_serial_number ];
+		$local_webhooks = $this->gateway()->webhook_get_local()[ $this->gateway()->merchant_serial_number ] ?? [];
 		$local_webhook  = array_pop( $local_webhooks );
 		$secret         = $local_webhook ? ( $local_webhook['secret'] ?? false ) : false;
 
