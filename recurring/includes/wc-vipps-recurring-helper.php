@@ -26,6 +26,8 @@ class WC_Vipps_Recurring_Helper {
 	public const META_CHARGE_ID = '_charge_id';
 	public const META_CHARGE_LATEST_STATUS = '_vipps_recurring_latest_api_status';
 	public const META_CHARGE_LAST_CHECKED = '_vipps_recurring_last_checked';
+	public const META_CHARGE_UNCONFIRMED = '_vipps_recurring_charge_unconfirmed';
+	public const META_CHARGE_REQUEST = '_vipps_recurring_charge_request';
 
 	/**
 	 * Agreements

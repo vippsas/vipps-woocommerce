@@ -240,7 +240,13 @@ class WC_Vipps_Recurring {
 				if ( empty( get_option( WC_Vipps_Recurring_Helper::OPTION_WEBHOOKS ) ) ) {
 					$this->gateway()->webhook_initialize();
 				} else {
-					$ok = $this->gateway()->webhook_ensure_this_site();
+					try {
+						$ok = $this->gateway()->webhook_ensure_this_site();
+					} catch ( Exception $e ) {
+						// Don't break the admin page over this, we check again in 30 minutes
+						WC_Vipps_Recurring_Logger::log( sprintf( 'Failed to check webhooks. Error: %s', $e->getMessage() ) );
+						$ok = true;
+					}
 
 					if ( ! $ok ) {
 						$this->gateway()->webhook_initialize();
@@ -762,7 +768,14 @@ class WC_Vipps_Recurring {
 			$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
 
 			do_action( 'wc_vipps_recurring_before_cron_check_order_status', $order_id );
-			$this->gateway()->check_charge_status( $order_id );
+
+			try {
+				$this->gateway()->check_charge_status( $order_id );
+			} catch ( Exception $e ) {
+				// One order must not stop the rest of the batch. It has been stamped as checked, so the next run moves on.
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error checking charge status: %s', $order_id, $e->getMessage() ) );
+			}
+
 			do_action( 'wc_vipps_recurring_after_cron_check_order_status', $order_id );
 		}
 
@@ -1019,7 +1032,7 @@ class WC_Vipps_Recurring {
 			return;
 		}
 
-		$local_webhooks = $this->gateway()->webhook_get_local()[ $this->gateway()->merchant_serial_number ];
+		$local_webhooks = $this->gateway()->webhook_get_local()[ $this->gateway()->merchant_serial_number ] ?? [];
 		$local_webhook  = array_pop( $local_webhooks );
 		$secret         = $local_webhook ? ( $local_webhook['secret'] ?? false ) : false;
 

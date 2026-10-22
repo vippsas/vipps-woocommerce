@@ -182,7 +182,7 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 * @throws Exception
 	 */
-	public function create_charge( WC_Vipps_Agreement $agreement, string $idempotency_key, string $order_id, string $vipps_order_id, ?int $amount = null ): array {
+	public function create_charge( WC_Vipps_Agreement $agreement, string $idempotency_key, string $order_id, string $vipps_order_id, ?int $amount = null, ?string $due_at = null ): array {
 		$token = $this->get_access_token();
 
 		$headers = [
@@ -195,7 +195,9 @@ class WC_Vipps_Recurring_Api {
 		}
 
 		// minimum of 1 days
-		$due_at = date( 'Y-m-d', time() + 3600 * 24 );
+		if ( $due_at === null ) {
+			$due_at = date( 'Y-m-d', time() + 3600 * 24 );
+		}
 
 		$charge = ( new WC_Vipps_Charge() )->set_order_id( $vipps_order_id )
 		                                   ->set_external_id( $order_id )
