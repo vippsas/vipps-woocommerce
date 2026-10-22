@@ -491,6 +491,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return $this->api->get_agreement( $primary_id );
 		} catch ( WC_Vipps_Recurring_Exception $e ) {
 			if ( $e->response_code !== 404 || ! $fallback_id ) {
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Could not get agreement %s: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $primary_id, $e->getMessage() ) );
+
 				return false;
 			}
 
@@ -588,6 +590,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$agreement = $this->get_agreement_from_order( $order );
 
 		if ( ! $agreement ) {
+			// Without this an order can stop being checked with no trace, for instance when the API keys are wrong
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Could not get the agreement (%s) for this order, so its charge status was not checked', WC_Vipps_Recurring_Helper::get_id( $order ), WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order ) ?: 'no agreement id' ) );
+
 			// If there is no agreement we can't complete Checkout orders. Let Checkout deal with this through an action.
 			$order_initial = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL );
 
