@@ -223,17 +223,6 @@ return apply_filters(
 			'description' => __( 'The number of payments to check at a time. Use 5 to 100. Higher values can slow down your store.', 'woo-vipps' ),
 			'default'     => 10,
 		],
-		'check_charges_sort_order'         => [
-			'type'        => 'select',
-			'title'       => __( 'Payment check order', 'woo-vipps' ),
-			'description' => __( 'Choose which payments to check first. Random suits most stores. Use Oldest first if your subscriptions renew on the same date.', 'woo-vipps' ),
-			'default'     => 'rand',
-			'options'     => [
-				'rand' => __( 'Random', 'woo-vipps' ),
-				'asc'  => __( 'Oldest first', 'woo-vipps' ),
-				'desc' => __( 'Newest first', 'woo-vipps' )
-			]
-		],
 		'title_developer'                  => [
 			'type'        => 'title',
 			'title'       => __( 'Developer settings', 'woo-vipps' ),

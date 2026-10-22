@@ -1,5 +1,17 @@
 == Changelog ==
 
+= 2.2.20 =
+* Fix: The periodic charge status check now goes through all pending orders in turn, also with HPOS enabled. The "Status checking sort order for charges" setting has been removed.
+* Fix: A timeout or temporary error from Vipps MobilePay while creating a renewal charge no longer fails the renewal order. The order stays pending until the charge is confirmed, or created again with the same request. After three days without confirmation the order is failed. This limit can be changed with the `wc_vipps_recurring_unconfirmed_charge_max_age` filter.
+* Fix: A failed renewal order is now completed if Vipps MobilePay charges it anyway. If its charge is still waiting, the charge is cancelled.
+* Fix: When a renewal order is paid with another payment method, its pending Vipps MobilePay charge is now cancelled, so the customer is not charged twice.
+* Fix: Cancelling a charge no longer reuses the idempotency key of the request that created the charge.
+* Fix: An error while checking one order no longer stops the periodic charge status check for the remaining orders.
+* Fix: A webhook that no longer exists in Vipps MobilePay, for instance because its endpoint was unresponsive for two weeks, is now registered again.
+* Fix: On sites without pretty permalinks the webhook now has its own callback URL, so the Vipps MobilePay payment gateway no longer deletes it.
+* Fix: Saving the settings now registers the webhook with the new merchant serial number and keys, and shows an error if registering it fails.
+* Fix: The order note for a new renewal charge now shows the date the customer will be charged and how long a failed charge is retried, instead of a countdown that suggested an exact time.
+
 = 2.2.19 =
 * Fix: Add a class existence check for Checkout's classes during recurring payments
 
