@@ -89,6 +89,12 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
         descriptionKey="Ocp_Apim_Key_eCommerce.description"
       />
 
+      {/* Show terms confirm in app. LP 2026-10-20 */}
+      <CheckboxFormField name="terms_in_app" titleKey="terms_in_app.title" labelKey="terms_in_app.label" />
+
+      {/* Show privacy policy confirm in app. LP 2026-10-20 */}
+      <CheckboxFormField name="privacy_in_app" titleKey="privacy_in_app.title" labelKey="privacy_in_app.label" />
+
       {/* Renders a select field for the result status (On-Hold or Processing) */}
       <SelectFormField
         name="result_status"

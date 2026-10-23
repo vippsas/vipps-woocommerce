@@ -47,7 +47,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         descriptionKey="singleproductexpressarchives.description"
       />
 
-      {/* Renders a checkbox to enable whether or not users should be asked if they've read the store's terms and conditions */}
+      {/* Use the legacy terms confirm in store popup (they might wanna use the new confirm in the app itself, in main options). LP 2026-10-20 */}
       <CheckboxFormField
         name="expresscheckout_termscheckbox"
         titleKey="expresscheckout_termscheckbox.title"
