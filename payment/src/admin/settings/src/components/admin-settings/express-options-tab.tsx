@@ -73,10 +73,10 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
 
       {/* Use the legacy terms confirm in store popup (they might wanna use the new confirm in the app itself, in main options). LP 2026-10-20 */}
       <CheckboxFormField
-        name="express_legacy_terms_override"
-        titleKey="express_legacy_terms_override.title"
-        labelKey="express_legacy_terms_override.label"
-        descriptionKey="express_legacy_terms_override.description"
+        name="expresscheckout_termscheckbox"
+        titleKey="expresscheckout_termscheckbox.title"
+        labelKey="expresscheckout_termscheckbox.label"
+        descriptionKey="expresscheckout_termscheckbox.description"
       />
 
       {/* Renders a checkbox to enable compatibility mode for the "Buy now" button */}

@@ -737,7 +737,7 @@ class VippsApi {
         // option to use override with the legacy terms confirm in the store popup. LP 2026-10-20
         $terms_in_store = false;
         if ($express) {
-            $terms_in_store = $this->gateway->get_option('express_legacy_terms_override') == 'yes';
+            $terms_in_store = $this->gateway->get_option('expresscheckout_termscheckbox') == 'yes';
             // filter for backward compatiblity. LP 2026-10-20
             $terms_in_store = (bool) apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $terms_in_store);
         }
