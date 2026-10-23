@@ -47,6 +47,14 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         descriptionKey="singleproductexpressarchives.description"
       />
 
+      {/* Use the legacy terms confirm in store popup (they might wanna use the new confirm in the app itself, in main options). LP 2026-10-20 */}
+      <CheckboxFormField
+        name="expresscheckout_termscheckbox"
+        titleKey="expresscheckout_termscheckbox.title"
+        labelKey="expresscheckout_termscheckbox.label"
+        descriptionKey="expresscheckout_termscheckbox.description"
+      />
+
       {/* Renders a checkbox to enable whether or not the users should always be asked for an address */}
       <CheckboxFormField
         name="expresscheckout_always_address"
@@ -69,14 +77,6 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         titleKey="expresscreateuser.title"
         labelKey="expresscreateuser.label"
         descriptionKey="expresscreateuser.description"
-      />
-
-      {/* Use the legacy terms confirm in store popup (they might wanna use the new confirm in the app itself, in main options). LP 2026-10-20 */}
-      <CheckboxFormField
-        name="expresscheckout_termscheckbox"
-        titleKey="expresscheckout_termscheckbox.title"
-        labelKey="expresscheckout_termscheckbox.label"
-        descriptionKey="expresscheckout_termscheckbox.description"
       />
 
       {/* Renders a checkbox to enable compatibility mode for the "Buy now" button */}
