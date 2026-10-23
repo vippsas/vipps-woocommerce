@@ -1520,7 +1520,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => sprintf(__('If %1$s is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => 'no',
                         ),
-                /* With the new terms of sale options 'terms_in_app' and 'privacy_in_app', this setting below will be an override for express only.
+                /* With the new terms of sale options 'terms_in_app' and 'privacy_in_app', this setting below will be an override for express only, to continue legacy functionality.
                  * We will keep the new options default off for a time before we feel confident most users have updated their app. LP 2026-10-23 */
                 'expresscheckout_termscheckbox' => array(
                         'title'       => sprintf(__('Confirm terms and conditions in the store', 'woo-vipps'), Vipps::ExpressCheckoutName()),
