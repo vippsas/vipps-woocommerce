@@ -49,12 +49,12 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
 
       {/* Dropdown for terms in express. LP 2026-10-26 */}
       <SelectFormField
-        name="expresscheckout_terms"
-        titleKey="expresscheckout_terms.title"
-        labelKey="expresscheckout_terms.label"
-        descriptionKey="expresscheckout_terms.description"
+        name="expresscheckout_termscheckbox"
+        titleKey="expresscheckout_termscheckbox.title"
+        labelKey="expresscheckout_termscheckbox.label"
+        descriptionKey="expresscheckout_termscheckbox.description"
         options={
-          Object.entries(gettext('expresscheckout_terms.options') ?? {})
+          Object.entries(gettext('expresscheckout_termscheckbox.options') ?? {})
           .map(([k, v]) => ({value: k, label: v as string}))
         }
       />

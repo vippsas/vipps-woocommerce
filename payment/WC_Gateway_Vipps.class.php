@@ -1072,7 +1072,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $default_ask_address_for_express = 'no';
         $default_status_on_fail = 'failed';
         $default_express_show_in_checkout = 'yes';
-        $default_expresscheckout_terms = 'no';
         if ($current) {
             $default_static_shipping_for_checkout = (isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
             $default_ask_address_for_express = (isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
@@ -1088,11 +1087,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $default_express_show_in_checkout = 'yes';
             if (!isset($current['express_show_in_checkout']) && isset($current['cartexpress'])) {
                 $default_express_show_in_checkout = $current['cartexpress'];
-            }
-
-            // Migrate new terms select option. LP 2026-10-26
-            if ('yes' == ($current['expresscheckout_termscheckbox'] ?? null)) {
-                $default_expresscheckout_terms = 'store';
             }
         }
 
@@ -1512,17 +1506,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => sprintf(__('If %1$s is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => 'no',
                         ),
-                'expresscheckout_terms' => array(
+                'expresscheckout_termscheckbox' => array(
                         'title'       => sprintf(__('Always ask for confirmation on %1$s', 'woo-vipps'), __('Express Checkout', 'woo-vipps')),
                         'label' => '',
                         'description' => sprintf(__('When using %1$s, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'), __('Express Checkout', 'woo-vipps')),
                         'type'        => 'select',
                         'options' => array(
                             'no' => __('No','woo-vipps'),
-                            'store' => __('In the store', 'woo-vipps'),
+                            'yes' => __('In the store', 'woo-vipps'),
                             'app' => __('In the app','woo-vipps')
                             ), 
-                        'default'     => $default_expresscheckout_terms,
+                        'default'     => 'no',
                 ),
 
                 'expresscheckout_always_address' => array(
