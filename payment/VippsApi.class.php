@@ -734,7 +734,7 @@ class VippsApi {
         // The new terms of sale params. LP 2026-10-20
         $terms_in_app = $this->gateway->get_option('terms_in_app') == 'yes';
 
-        // option to use override with the legacy terms confirm in the store popup. LP 2026-10-20
+        // option to use override with the legacy terms+privacy confirm in the store popup. LP 2026-10-20
         $terms_in_store = false;
         if ($express) {
             $terms_in_store = $this->gateway->get_option('expresscheckout_termscheckbox') == 'yes';
@@ -753,7 +753,7 @@ class VippsApi {
             }
         }
         $privacy_in_app = $this->gateway->get_option('privacy_in_app') == 'yes';
-        if ($privacy_in_app) {
+        if (!$terms_in_store && $privacy_in_app) {
             $privacy_url = get_privacy_policy_url();
             if ($privacy_url) {
                 $privacy_url = apply_filters('woo_vipps_privacy_app_url', $privacy_url, $orderid, $express);

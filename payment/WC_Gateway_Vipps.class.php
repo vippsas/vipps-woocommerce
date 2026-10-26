@@ -1526,7 +1526,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => sprintf(__('Confirm terms and conditions in the store', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'label'       => sprintf(__('Confirm terms and conditions in the store', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('When using %1$s, ask the user to confirm that they have read and accepted the terms and conditons before proceeding to the app.<br>This overrides the main setting to confirm this in the app instead, so they won\'t be asked twice.', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                        'description' => sprintf(__('When using %1$s, ask the user to confirm that they have read and accepted the terms and conditions before proceeding to the app.<br>This overrides the main setting to confirm this in the app instead, so they won\'t be asked twice.', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => 'no',
                 ),
 
