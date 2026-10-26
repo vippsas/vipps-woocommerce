@@ -989,7 +989,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return true;
         } 
 
-        if ($amount*100 > $to_refund) {
+        // $amount is a float (or decimal string); 1266.90*100 evaluates to 126690.00000000001, so a full refund of
+        // exactly the remaining amount is rejected as "too large" and the order ends up refunded in WooCommerce
+        // without the money being refunded through Vipps MobilePay. Compare in whole minor units instead.
+        if (intval(round($amount*100)) > $to_refund) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
         }
         $ok = 0;
