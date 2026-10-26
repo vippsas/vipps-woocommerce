@@ -1,4 +1,9 @@
 == Changelog ==
+= 2026-10-26 version 6.3.4 =
+Fix: refunds failing due to float error.
+Suppress warnings for undeclared class properties.
+Various recurring fixes, see recurring/changelog.txt
+
 = 2026-10-20 version 6.3.3 =
 Fix: dont allow WooCommerce-disallowed countries in purchase/shipping.
 Reintroduce order locking for error-logging purposes.
