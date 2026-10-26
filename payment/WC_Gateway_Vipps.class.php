@@ -1092,7 +1092,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Migrate new terms select option. LP 2026-10-26
             if ('yes' == ($current['expresscheckout_termscheckbox'] ?? null)) {
-                $default_expresscheckout_terms = 'yes';
+                $default_expresscheckout_terms = 'store';
             }
         }
 
@@ -1519,7 +1519,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'type'        => 'select',
                         'options' => array(
                             'no' => __('No','woo-vipps'),
-                            'yes' => __('In the store', 'woo-vipps'),
+                            'store' => __('In the store', 'woo-vipps'),
                             'app' => __('In the app','woo-vipps')
                             ), 
                         'default'     => $default_expresscheckout_terms,
