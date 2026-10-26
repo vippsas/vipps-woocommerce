@@ -731,39 +731,34 @@ class VippsApi {
            $data['metadata'] = $metadata;
         }
 
-        // The new terms of sale params. LP 2026-10-20
-        $terms_in_app = $this->gateway->get_option('terms_in_app') == 'yes';
-
-        // option to use override with the legacy terms+privacy confirm in the store popup. LP 2026-10-20
-        $terms_in_store = false;
+        // terms of sale (+privacy) for express. LP 2026-10-20
         if ($express) {
-            $terms_in_store = $this->gateway->get_option('expresscheckout_termscheckbox') == 'yes';
-            // filter for backward compatiblity. LP 2026-10-20
-            $terms_in_store = (bool) apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $terms_in_store);
-        }
-        if (!$terms_in_store && $terms_in_app) {
-            $terms_post_id = wc_terms_and_conditions_page_id();
-            $terms_url = $terms_post_id ? get_permalink($terms_post_id) : null;
-            if ($terms_url) {
-                $terms_url = apply_filters('woo_vipps_terms_app_url', $terms_url, $orderid, $express);
-                $data['merchantLegalLinks'] = [];
-                $data['merchantLegalLinks']['termsOfSaleUrl'] = $terms_url;
-            } else {
-                $this->gateway->log(__('The option to show terms and conditions in the customer\'s app is enabled, but there is no terms page published. Set it in WooCommerce advanced settings.', 'woo-vipps'), 'warning');
-            }
-        }
-        $privacy_in_app = $this->gateway->get_option('privacy_in_app') == 'yes';
-        if (!$terms_in_store && $privacy_in_app) {
-            $privacy_url = get_privacy_policy_url();
-            if ($privacy_url) {
-                $privacy_url = apply_filters('woo_vipps_privacy_app_url', $privacy_url, $orderid, $express);
-                if (!isset($data['merchantLegalLinks'])) {
+            if ('app' == $this->gateway->get_option('expresscheckout_terms')) {
+                // Terms
+                $terms_post_id = wc_terms_and_conditions_page_id();
+                $terms_url = $terms_post_id ? get_permalink($terms_post_id) : null;
+                if ($terms_url) {
+                    $terms_url = apply_filters('woo_vipps_express_terms_app_url', $terms_url, $orderid, $express);
                     $data['merchantLegalLinks'] = [];
+                    $data['merchantLegalLinks']['termsOfSaleUrl'] = $terms_url;
+                } else {
+                    $this->gateway->log(__('The option to show terms and conditions in the customer\'s app is enabled, but there is no terms page published. Set it in WooCommerce advanced settings.', 'woo-vipps'), 'warning');
                 }
-                $data['merchantLegalLinks']['privacyPolicyUrl'] = $privacy_url;
-            } else {
-                $this->gateway->log(__('The option to show privacy policy in the customer\'s app is enabled, but there is no privacy page published. Set it in WordPress privacy settings.', 'woo-vipps'), 'warning');
-            }
+
+                // Privacy policy
+                $privacy_in_app = apply_filters('woo_vipps_express_show_privacy_in_app', true, $orderid);
+                if ($privacy_in_app) {
+                    $privacy_url = get_privacy_policy_url();
+                    $privacy_url = apply_filters('woo_vipps_express_privacy_app_url', $privacy_url, $orderid, $express);
+                    if ($privacy_url) {
+                        if (!isset($data['merchantLegalLinks'])) {
+                            $data['merchantLegalLinks'] = [];
+                        }
+                        $data['merchantLegalLinks']['privacyPolicyUrl'] = $privacy_url;
+                    } else {
+                        $this->gateway->log(__('The option to show privacy policy in the customer\'s app is enabled, but there is no privacy page published. Set it in WordPress privacy settings.', 'woo-vipps'), 'warning');
+                    }
+                }
         }
 
         $this->log("Initiating Vipps MobilePay epayment session for $vippsorderid", 'debug');
