@@ -47,12 +47,16 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         descriptionKey="singleproductexpressarchives.description"
       />
 
-      {/* Use the legacy terms confirm in store popup (they might wanna use the new confirm in the app itself, in main options). LP 2026-10-20 */}
-      <CheckboxFormField
-        name="expresscheckout_termscheckbox"
-        titleKey="expresscheckout_termscheckbox.title"
-        labelKey="expresscheckout_termscheckbox.label"
-        descriptionKey="expresscheckout_termscheckbox.description"
+      {/* Dropdown for terms in express. LP 2026-10-26 */}
+      <SelectFormField
+        name="expresscheckout_terms"
+        titleKey="expresscheckout_terms.title"
+        labelKey="expresscheckout_terms.label"
+        descriptionKey="expresscheckout_terms.description"
+        options={
+          Object.entries(gettext('expresscheckout_terms.options') ?? {})
+          .map(([k, v]) => ({value: k, label: v as string}))
+        }
       />
 
       {/* Renders a checkbox to enable whether or not the users should always be asked for an address */}

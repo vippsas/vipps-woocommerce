@@ -732,8 +732,7 @@ class VippsApi {
         }
 
         // terms of sale (+privacy) for express. LP 2026-10-20
-        if ($express) {
-            if ('app' == $this->gateway->get_option('expresscheckout_terms')) {
+        if ($express && 'app' == $this->gateway->get_option('expresscheckout_terms')) {
                 // Terms
                 $terms_post_id = wc_terms_and_conditions_page_id();
                 $terms_url = $terms_post_id ? get_permalink($terms_post_id) : null;

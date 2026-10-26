@@ -1513,14 +1513,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no',
                         ),
                 'expresscheckout_terms' => array(
-                        'title'       => sprintf(__('Add terms and conditions checkbox on %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                        'label'       => sprintf(__('Always ask for confirmation on %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                        'description' => sprintf(__('When using %1$s, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                        'title'       => sprintf(__('Always ask for confirmation on %1$s', 'woo-vipps'), __('Express Checkout', 'woo-vipps')),
+                        'label' => '',
+                        'description' => sprintf(__('When using %1$s, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'), __('Express Checkout', 'woo-vipps')),
                         'type'        => 'select',
                         'options' => array(
                             'no' => __('No','woo-vipps'),
-                            'yes' => __('Yes', 'woo-vipps'),
-                            'app' => __('In customer\'s app','woo-vipps')
+                            'yes' => __('In the store', 'woo-vipps'),
+                            'app' => __('In the app','woo-vipps')
                             ), 
                         'default'     => $default_expresscheckout_terms,
                 ),
