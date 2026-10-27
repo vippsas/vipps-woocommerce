@@ -1,3 +1,15 @@
+<!-- START_METADATA
+---
+sidebar_label: Development
+sidebar_position: 100
+draft: true
+hide_table_of_contents: true
+pagination_next: null
+pagination_prev: null
+section: Plugins
+---
+END_METADATA -->
+
 # Vipps MobilePay Recurring - Development docs
 
 ## Updating language files

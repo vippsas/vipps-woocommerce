@@ -1,3 +1,15 @@
+<!-- START_METADATA
+---
+sidebar_label: Contributing
+sidebar_position: 100
+draft: true
+hide_table_of_contents: true
+pagination_next: null
+pagination_prev: null
+section: Plugins
+---
+END_METADATA -->
+
 # Contributing to Pay with Vipps and MobilePay for WooCommerce
 
 If you want to contribute: Great! No issue or pull request is too small!
