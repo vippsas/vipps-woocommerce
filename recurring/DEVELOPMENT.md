@@ -1,3 +1,9 @@
+<!-- START_METADATA
+---
+draft: true
+---
+END_METADATA -->
+
 # Vipps MobilePay Recurring - Development docs
 
 ## Updating language files

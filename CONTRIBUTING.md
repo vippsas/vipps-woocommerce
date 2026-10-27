@@ -1,3 +1,9 @@
+<!-- START_METADATA
+---
+draft: true
+---
+END_METADATA -->
+
 # Contributing to Pay with Vipps and MobilePay for WooCommerce
 
 If you want to contribute: Great! No issue or pull request is too small!
