@@ -292,15 +292,21 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				// Production servers
 				'api.vipps.no',
 				'api.mobilepay.dk',
+				'api.vipps.dk',
 				'api.mobilepay.fi',
+				'api.vipps.fi',
 				'pay.vipps.no',
 				'pay.mobilepay.dk',
+				'pay.vipps.dk',
 				'pay.mobilepay.fi',
+				'pay.vipps.fi',
 				// MT servers
 				'apitest.vipps.no',
 				'pay-mt.vipps.no',
 				'pay-mt.mobilepay.dk',
-				'pay-mt.mobilepay.fi'
+				'pay-mt.vipps.dk',
+				'pay-mt.mobilepay.fi',
+				'pay-mt.vipps.fi',
 			] );
 		} );
 	}
