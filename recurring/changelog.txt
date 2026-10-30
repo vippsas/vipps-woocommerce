@@ -1,5 +1,10 @@
 == Changelog ==
 
+= 2.3.0 =
+* Added: A new look and feel for settings
+* Added: An "express" way to use recurring payments via the userinfo API.
+* Added: Widget SDK support, which means faster checkouts for all your customers.
+
 = 2.2.20 =
 * Fix: The periodic charge status check now goes through all pending orders in turn, also with HPOS enabled. The "Status checking sort order for charges" setting has been removed.
 * Fix: A timeout or temporary error from Vipps MobilePay while creating a renewal charge no longer fails the renewal order. The order stays pending until the charge is confirmed, or created again with the same request. After three days without confirmation the order is failed. This limit can be changed with the `wc_vipps_recurring_unconfirmed_charge_max_age` filter.

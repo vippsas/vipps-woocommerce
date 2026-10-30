@@ -3,7 +3,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '2.2.20' );
+define( 'WC_VIPPS_RECURRING_VERSION', '2.3.0' );
 
 /**
  * Polyfills
@@ -29,6 +29,10 @@ if ( ! function_exists( 'array_key_last' ) ) {
 require_once __DIR__ . '/includes/wc-vipps-recurring-helper.php';
 require_once __DIR__ . '/includes/wc-vipps-recurring-logger.php';
 require_once __DIR__ . '/includes/wc-vipps-recurring-admin-notices.php';
+require_once __DIR__ . '/includes/wc-vipps-recurring-purchase.php';
+require_once __DIR__ . '/includes/wc-vipps-recurring-profile.php';
+require_once __DIR__ . '/includes/wc-vipps-recurring-express-checkout.php';
+require_once __DIR__ . '/includes/wc-vipps-recurring-express-cleanup.php';
 require_once __DIR__ . '/includes/wc-vipps-recurring.php';
 
 /*
@@ -72,6 +76,9 @@ if ( ! defined( 'WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION' ) ) {
 }
 
 WC_Vipps_Recurring::register_hooks();
+WC_Vipps_Recurring_Profile::register_hooks();
+WC_Vipps_Recurring_Express_Checkout::register_hooks();
+WC_Vipps_Recurring_Express_Cleanup::register_hooks();
 if ( get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false ) ) {
     require_once __DIR__ . '/includes/wc-vipps-recurring-checkout.php';
     WC_Vipps_Recurring_Checkout::register_hooks();

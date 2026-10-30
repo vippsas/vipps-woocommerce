@@ -519,6 +519,38 @@ class WC_Vipps_Recurring_Helper {
 		return 'order_lock_' . self::get_id( $order );
 	}
 
+	/** Atomic insertion and token-conditional deletion for independent purchase workers. */
+	public static function acquire_purchase_lock( string $key, int $seconds = 120 ): ?array {
+		global $wpdb;
+
+		$previous = maybe_unserialize( $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $key ) ) );
+		if ( is_array( $previous ) && ( $previous['expires'] ?? 0 ) < time() ) {
+			self::release_purchase_lock( $key, $previous );
+		}
+
+		$value = [ 'token' => wp_generate_uuid4(), 'expires' => time() + $seconds ];
+
+		// add_option() has an upsert path, so it cannot provide an atomic lease.
+		$inserted = $wpdb->query( $wpdb->prepare(
+			"INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'no')",
+			$key, maybe_serialize( $value )
+		) );
+
+		if ( $inserted !== 1 ) { return null; }
+		wp_cache_delete( $key, 'options' );
+		wp_cache_delete( 'notoptions', 'options' );
+
+		return $value;
+	}
+
+	public static function release_purchase_lock( string $key, array $value ): void {
+		global $wpdb;
+
+		$wpdb->delete( $wpdb->options, [ 'option_name' => $key, 'option_value' => maybe_serialize( $value ) ], [ '%s', '%s' ] );
+		wp_cache_delete( $key, 'options' );
+		wp_cache_delete( 'notoptions', 'options' );
+	}
+
 	public static function lock_order( $order ): bool {
 		if ( get_transient( self::get_order_lock_name( $order ) ) ) {
 			return false;

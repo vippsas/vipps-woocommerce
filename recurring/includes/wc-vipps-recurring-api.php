@@ -70,7 +70,14 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function create_agreement( WC_Vipps_Agreement $agreement, string $idempotency_key ): array {
+	public function create_agreement( WC_Vipps_Agreement $agreement, string $idempotency_key, ?WC_Order $order = null ): array {
+		$context = [ 'test_mode' => $this->gateway->test_mode, 'merchant' => $this->gateway->merchant_serial_number ];
+
+		if ( $order && $order->get_meta( '_vipps_recurring_express_request_context' )
+			&& $order->get_meta( '_vipps_recurring_express_request_context' ) !== $context ) {
+			throw new WC_Vipps_Recurring_Config_Exception( 'The purchase belongs to another merchant or API environment' );
+		}
+
 		$token = $this->get_access_token();
 
 		$headers = [
@@ -78,9 +85,30 @@ class WC_Vipps_Recurring_Api {
 			'Idempotency-Key' => $idempotency_key,
 		];
 
-		$data = apply_filters( 'wc_vipps_recurring_create_agreement_data', $agreement->to_array( true ) );
+		$data = $order ? $order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_REQUEST ) : null;
+		if ( ! is_array( $data ) || ! $data ) {
+			$data = apply_filters( 'wc_vipps_recurring_create_agreement_data', $agreement->to_array( true ) );
+			if ( $order ) {
+				$order->update_meta_data( WC_Vipps_Recurring_Express_Checkout::META_REQUEST, $data );
+				$order->update_meta_data( '_vipps_recurring_express_request_context', $context );
+				$order->update_meta_data( '_vipps_recurring_express_request_time', time() );
+				$order->save();
+			}
+		}
 
-		return $this->http_call( 'recurring/v3/agreements', 'POST', $data, $headers );
+		if ( $order && ! wp_next_scheduled( 'wc_vipps_recurring_resume_express_purchase', [ $order->get_id() ] ) ) {
+			wp_schedule_single_event( time() + 60, 'wc_vipps_recurring_resume_express_purchase', [ $order->get_id() ] );
+		}
+
+		try {
+			return $this->http_call( 'recurring/v3/agreements', 'POST', $data, $headers );
+		} catch ( WC_Vipps_Recurring_Exception $error ) {
+			if ( $order && (int) $error->response_code === 400 ) {
+				$order->update_meta_data( '_vipps_recurring_express_request_rejected', true );
+				$order->save();
+			}
+			throw $error;
+		}
 	}
 
 	/**
@@ -301,15 +329,23 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function get_userinfo( WC_Vipps_Agreement $agreement ): array {
+		if ( empty( $agreement->sub ) ) {
+			throw new WC_Vipps_Recurring_Temporary_Exception( 'Agreement profile subject is not available yet' );
+		}
 		$token = $this->get_access_token();
 
 		$headers = [
 			'Authorization' => 'Bearer ' . $token,
 		];
 
-		$endpoint = str_replace( $this->get_base_url(), '', $agreement->userinfo_url );
+		// Build the endpoint on our own API host; never send credentials to a returned URL.
+		$endpoint = 'vipps-userinfo-api/userinfo/' . rawurlencode( $agreement->sub );
 
-		return $this->http_call( $endpoint, 'GET', [], $headers );
+		$profile = $this->http_call( $endpoint, 'GET', [], $headers, 'json', true );
+		if ( ! is_array( $profile ) ) {
+			throw new WC_Vipps_Recurring_Temporary_Exception( 'Userinfo response is not a profile object' );
+		}
+		return $profile;
 	}
 
 	/**
@@ -434,7 +470,7 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	private function http_call( string $endpoint, string $method, array $data = [], array $headers = [], $encoding = 'json' ) {
+	private function http_call( string $endpoint, string $method, array $data = [], array $headers = [], $encoding = 'json', bool $userinfo = false ) {
 //		WC_Vipps_Recurring_Logger::log( sprintf( "Calling Vipps API endpoint: [%s] %s", $method, $endpoint ) );
 
 		$url = $endpoint;
@@ -455,7 +491,7 @@ class WC_Vipps_Recurring_Api {
 		}
 
 		if ( ! $subscription_key || ! $secret_key || ! $client_id ) {
-			throw new WC_Vipps_Recurring_Config_Exception( __( 'Your Vipps/MobilePay Recurring Payments gateway is not correctly configured.', 'woo-vipps' ) );
+			throw new WC_Vipps_Recurring_Config_Exception( sprintf( /* translators: %s: Vipps MobilePay */ __( 'Your %s Recurring Payments gateway is not correctly configured.', 'woo-vipps' ), Vipps::CompanyName() ) );
 		}
 
 		$system_plugin_version = WC_VIPPS_RECURRING_VERSION;
@@ -475,6 +511,9 @@ class WC_Vipps_Recurring_Api {
 			'Vipps-System-Plugin-Name'    => 'woo-vipps-recurring',
 			'Vipps-System-Plugin-Version' => $system_plugin_version
 		], $headers );
+		if ( $userinfo ) {
+			unset( $headers['Ocp-Apim-Subscription-Key'], $headers['client_id'], $headers['client_secret'] );
+		}
 
 		if ( $encoding === 'url' || $method === 'GET' ) {
 			$data_encoded = http_build_query( $data );
@@ -493,6 +532,9 @@ class WC_Vipps_Recurring_Api {
 		$args            = [];
 		$args['method']  = $method;
 		$args['headers'] = $headers;
+		if ( $userinfo ) {
+			$args['redirection'] = 0;
+		}
 
 		if ( $method !== 'GET' ) {
 			$args['body'] = $data_encoded;
@@ -527,7 +569,7 @@ class WC_Vipps_Recurring_Api {
 	private function handle_http_response( $response, $request_body, $endpoint, $default_error ) {
 		// no response from Vipps
 		if ( ! $response ) {
-			$error_msg = __( 'No response from Vipps/MobilePay', 'woo-vipps' );
+			$error_msg = sprintf( /* translators: %s: Vipps or MobilePay */ __( 'No response from %s', 'woo-vipps' ), $this->gateway->title );
 			WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Temporary Error: %s with request body: %s', $error_msg, $request_body ) );
 
 			throw new WC_Vipps_Recurring_Temporary_Exception( $error_msg );
@@ -554,9 +596,9 @@ class WC_Vipps_Recurring_Api {
 				$error_msg = sprintf( 'HTTP %d', $status );
 			}
 
-			$localized_msg = __( 'Vipps/MobilePay is temporarily unavailable. Please try again.', 'woo-vipps' );
+			$localized_msg = sprintf( /* translators: %s: Vipps or MobilePay */ __( '%s is temporarily unavailable. Please try again.', 'woo-vipps' ), $this->gateway->title );
 			if ( $status === 429 ) {
-				$localized_msg = __( "We hit Vipps/MobilePay's rate limit. Please try again shortly.", 'woo-vipps' );
+				$localized_msg = sprintf( /* translators: %s: Vipps or MobilePay */ __( 'We hit the rate limit at %s. Please try again shortly.', 'woo-vipps' ), $this->gateway->title );
 			}
 
 			$log_body = is_array( $body ) ? json_encode( $body ) : $body;

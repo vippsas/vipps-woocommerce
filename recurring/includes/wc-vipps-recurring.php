@@ -228,7 +228,7 @@ class WC_Vipps_Recurring {
 		] );
 
 		if ( $this->gateway()->test_mode ) {
-			$notice = __( 'Vipps/MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!', 'woo-vipps' );
+			$notice = sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!', 'woo-vipps' ), Vipps::CompanyName() );
 			$this->notices->warning( $notice );
 		}
 
@@ -493,8 +493,8 @@ class WC_Vipps_Recurring {
 	 */
 	public function admin_menu() {
 		add_options_page(
-			__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
-			__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
+			sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
+			sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
 			'manage_options',
 			'woo-vipps-recurring',
 			[ $this, 'admin_menu_page_html' ]
@@ -591,7 +591,7 @@ class WC_Vipps_Recurring {
 	 */
 	public function woocommerce_product_data_tabs( $tabs ) {
 		$tabs['wc_vipps_recurring'] = [
-			'label'    => __( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
+			'label'    => sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
 			'target'   => 'wc_vipps_recurring_product_data',
 			'priority' => 100,
 		];
@@ -606,6 +606,14 @@ class WC_Vipps_Recurring {
 		echo '<div id="wc_vipps_recurring_product_data" class="panel woocommerce_options_panel hidden">';
 
 		woocommerce_wp_checkbox( [
+			'id'          => WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON,
+			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON, true ),
+			'label'       => __( 'Express checkout for subscriptions', 'woo-vipps' ),
+			'description' => __( 'Show the product button when recurring Express checkout is enabled for selected products.', 'woo-vipps' ),
+			'desc_tip'    => true,
+		] );
+
+		woocommerce_wp_checkbox( [
 			'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE,
 			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, true ),
 			'label'       => __( 'Capture payment instantly', 'woo-vipps' ),
@@ -617,7 +625,7 @@ class WC_Vipps_Recurring {
 			'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE,
 			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE, true ) ?: 'title',
 			'label'       => __( 'Description source', 'woo-vipps' ),
-			'description' => __( 'Where we should source the agreement description from. Displayed in the Vipps/MobilePay app.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Where we should source the agreement description from. Displayed in the %s app.', 'woo-vipps' ), Vipps::CompanyName() ),
 			'desc_tip'    => true,
 			'options'     => [
 				'none'              => __( 'None', 'woo-vipps' ),
@@ -644,6 +652,9 @@ class WC_Vipps_Recurring {
 	 * @param $post_id
 	 */
 	public function woocommerce_process_product_meta( $post_id ) {
+		update_post_meta( $post_id, WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON,
+			isset( $_POST[ WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON ] ) ? 'yes' : 'no' );
+
 		$capture_instantly = isset( $_POST[ WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ] ) ? 'yes' : 'no';
 		update_post_meta( $post_id, WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, $capture_instantly );
 
@@ -845,6 +856,12 @@ class WC_Vipps_Recurring {
 		foreach ( $subscriptions as $subscription ) {
 			$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
 
+			$parent_order = $subscription->get_parent();
+			if ( $parent_order && $parent_order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_ATTEMPT ) ) {
+				( new WC_Vipps_Recurring_Express_Cleanup( $this->gateway() ) )->delete_if_abandoned( $subscription );
+				continue;
+			}
+
 			// Check the status of this subscription's latest order charge just in case.
 			$latest_order    = $subscription->get_last_order( 'all' );
 			$latest_order_id = WC_Vipps_Recurring_Helper::get_id( $latest_order );
@@ -856,6 +873,10 @@ class WC_Vipps_Recurring {
 			// Hydrate objects
 			$latest_order = wc_get_order( $latest_order_id );
 			$subscription = wcs_get_subscription( $subscription_id );
+
+			if ( WC_Vipps_Recurring_Profile::protect_from_cleanup( $latest_order ) ) {
+				continue;
+			}
 
 			// If this subscription has been manually updated in the mean-time, we no longer want to delete it.
 			// Similarly, if it has a billing email we don't want to delete it.

@@ -4194,6 +4194,24 @@ else:
     }
 
 
+    // Reuse the terms template without starting a purchase. Recurring can supply its own setting.
+    public function get_express_checkout_terms_html(?bool $enabled = null): ?string {
+        $gw = $this->gateway();
+        $askForTerms = function_exists('wc_terms_and_conditions_checkbox_enabled') ? wc_terms_and_conditions_checkbox_enabled() : true;
+        $askForTerms = $askForTerms && ($enabled ?? ($gw->get_option('expresscheckout_termscheckbox') == 'yes'));
+        $askForTerms = apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $askForTerms);
+        if (!$askForTerms) return null;
+
+        ob_start();
+        try {
+            wc_get_template('checkout/terms.php');
+            $termsHTML = ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
+        return apply_filters('woo_vipps_express_checkout_terms_and_conditions_html', $termsHTML);
+    }
+
     // This method may provide HTML form elements to ask a user questions after starting
     // express checkout. It is used to detect duplicate orders, possibly for terms and conditions, and user-definiable customizations. IOK 2026-09-09
     // NULL productinfo means use the cart; the "current hash" is used to detect duplicates, and is calculated by the caller.
@@ -4220,18 +4238,8 @@ else:
             }
         }
 
-        $gw = $this->gateway();
-        $askForTerms = function_exists('wc_terms_and_conditions_checkbox_enabled') ?  wc_terms_and_conditions_checkbox_enabled() : true;
-        $askForTerms = $askForTerms && ($gw->get_option('expresscheckout_termscheckbox') == 'yes');
-        $askForTerms = apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $askForTerms);
-
-        if ($askForTerms) {
-            $termsHTML = '';
-            // Include shop terms 
-            ob_start();
-            wc_get_template('checkout/terms.php');
-            $termsHTML = ob_get_clean();
-            $termsHTML = apply_filters('woo_vipps_express_checkout_terms_and_conditions_html',$termsHTML);
+        $termsHTML = $this->get_express_checkout_terms_html();
+        if (null !== $termsHTML) {
             $elements['terms'] = $termsHTML;
         }
 
