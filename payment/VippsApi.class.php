@@ -685,6 +685,10 @@ class VippsApi {
                 $shippingoptions = ['callbackUrl' => $shippingcallback, 'callbackAuthorizationToken' => $authtoken];
                 $data['shipping']['dynamicOptions'] = $shippingoptions;
             }
+            // ISO-3166 Alpha 2 country list
+           $countries = array_keys((new WC_Countries())->get_allowed_countries());
+           $allowed_countries = apply_filters('woo_vipps_checkout_countries', $countries, $orderid);
+           $shipping['allowedCountries'] = $allowed_countries;
         }
 
         if ($data['receipt'] ?? false) {

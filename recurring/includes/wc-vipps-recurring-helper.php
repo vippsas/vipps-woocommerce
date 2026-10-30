@@ -25,6 +25,9 @@ class WC_Vipps_Recurring_Helper {
 	public const META_CHARGE_PENDING = '_vipps_recurring_pending_charge';
 	public const META_CHARGE_ID = '_charge_id';
 	public const META_CHARGE_LATEST_STATUS = '_vipps_recurring_latest_api_status';
+	public const META_CHARGE_LAST_CHECKED = '_vipps_recurring_last_checked';
+	public const META_CHARGE_UNCONFIRMED = '_vipps_recurring_charge_unconfirmed';
+	public const META_CHARGE_REQUEST = '_vipps_recurring_charge_request';
 
 	/**
 	 * Agreements
@@ -583,5 +586,25 @@ class WC_Vipps_Recurring_Helper {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Run wc_get_orders() with a full meta_query on both order storages. HPOS reads 'meta_query' directly,
+	 * but the posts data store drops it, so we hand it to WP_Query through the CPT query filter.
+	 */
+	public static function get_orders_with_meta_query( array $args ): array {
+		$pass_meta_query = static function ( $wp_query_args, $query_vars ) {
+			if ( ! empty( $query_vars['meta_query'] ) ) {
+				$wp_query_args['meta_query'][] = $query_vars['meta_query'];
+			}
+
+			return $wp_query_args;
+		};
+
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $pass_meta_query, 10, 2 );
+		$orders = wc_get_orders( $args );
+		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $pass_meta_query, 10 );
+
+		return $orders;
 	}
 }
