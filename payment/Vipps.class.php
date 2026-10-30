@@ -1153,9 +1153,11 @@ EOF;
 
         add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $logo, 58);
 
-        add_submenu_page( 'vipps_admin_menu', __('Settings', 'woo-vipps'),   __('Settings', 'woo-vipps'),   'manage_woocommerce', 'vipps_settings_menu', array($adminSettings, 'init_admin_settings_page_react_ui'), 1);
+        $show_recurring = class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions_Plugin');
+        $settings_title = $show_recurring ? __('Single payments', 'woo-vipps') : __('Settings', 'woo-vipps');
+        add_submenu_page( 'vipps_admin_menu', $settings_title,   $settings_title,   'manage_woocommerce', 'vipps_settings_menu', array($adminSettings, 'init_admin_settings_page_react_ui'), 1);
 
-        if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions_Plugin')) {
+        if ($show_recurring) {
             add_submenu_page( 'vipps_admin_menu', __('Recurring Payments', 'woo-vipps'),   __('Recurring Payments', 'woo-vipps'),   'manage_woocommerce', 'vipps_recurring__settings_menu', array($this, 'recurring_settings_page'), 2);
         }
 
