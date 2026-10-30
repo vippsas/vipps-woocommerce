@@ -1572,15 +1572,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         /* translators: %s is an option for this setting */
                         'description' => sprintf(__('If you choose %s, enable it individually in product edit.', 'woo-vipps'), __('Selected products', 'woo-vipps')),
                         'default'     => 'all',
-                ),
-
+                        ),
                 'expresscheckout_termscheckbox' => array(
                         'title'       => __('Require terms and conditions confirmation', 'woo-vipps'),
-                        'label'       => __('Require terms and conditions confirmation', 'woo-vipps'),
-                        'type'        => 'checkbox',
+                        'label'       => '',
                         'description' => __('Ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'),
+                        'type'        => 'select',
+                        'options' => array(
+                            'no' => __('No','woo-vipps'),
+                            'yes' => __('In the store', 'woo-vipps'),
+                            'app' => __('In the app','woo-vipps')
+                            ), 
                         'default'     => 'no',
-                        ),
+                ),
+
                 'expresscheckout_always_address' => array(
                         'title'       => __('Always ask for address', 'woo-vipps'),
                         'label'       => __('Always ask for address', 'woo-vipps'),
