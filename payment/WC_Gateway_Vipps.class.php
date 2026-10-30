@@ -1088,13 +1088,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
             // Migrate removed alternative 'none' for option 'singleproductexpress' to the new option 'express_singleproduct_enabled'.
-            // 'singleproductexpress' now specifies which products that support express generally, and  'express_singleproduct_enabled'
+            // 'singleproductexpress' now specifies which products that support express generally, and 'express_singleproduct_enabled'
             // is whether to show Express button on single product page/context specifically. LP 2026-09-29
             if ('none' === ($current['singleproductexpress'] ?? null)) {
                 $current['singleproductexpress'] = 'all';
                 $this->update_option('singleproductexpress', 'all');
 
                 $default_express_singleproduct_enabled = 'no';
+                // Need to save the option here too, cause next time this method runs, this branch won't run because we move the option away from 'none'. LP 2026-10-30
+                if (!isset($current['express_singleproduct_enabled'])) {
+                    $this->update_option('express_singleproduct_enabled', $default_express_singleproduct_enabled);
+                }
 
                 $current['singleproductexpressarchives'] = 'no';
                 $this->update_option('singleproductexpressarchives', 'no');
