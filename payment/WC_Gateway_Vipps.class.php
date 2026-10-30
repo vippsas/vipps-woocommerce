@@ -989,7 +989,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return true;
         } 
 
-        if ($amount*100 > $to_refund) {
+        // $amount is float, round to int. Thanks to @Razko90 for finding (https://github.com/vippsas/vipps-woocommerce/pull/423)
+        if (intval(round($amount*100)) > $to_refund) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
         }
         $ok = 0;

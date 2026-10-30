@@ -62,11 +62,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public int $check_charges_amount;
 
 	/**
-	 * The sort order in which we check charges in wp-cron
-	 */
-	public string $check_charges_sort_order;
-
-	/**
 	 * The reference the *Singleton* instance of this class
 	 */
 	private static ?WC_Gateway_Vipps_Recurring $instance = null;
@@ -140,7 +135,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$this->default_reserved_charge_status   = $this->get_option( 'default_reserved_charge_status' );
 		$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' ) === "yes";
 		$this->check_charges_amount             = $this->get_option( 'check_charges_amount' );
-		$this->check_charges_sort_order         = $this->get_option( 'check_charges_sort_order' );
 		$this->auto_capture_mobilepay           = $this->get_option( 'auto_capture_mobilepay' ) === "yes";
 		$this->continue_shopping_link_page      = $this->get_option( 'continue_shopping_link_page' );
 
@@ -281,6 +275,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		add_action( 'woocommerce_payment_complete', [ $this, 'after_renew_early_from_another_gateway' ] );
+		add_action( 'woocommerce_order_status_changed', [ $this, 'maybe_cancel_due_charge_after_other_payment' ] );
 
 		add_filter( 'woocommerce_payment_complete_order_status', [
 			$this,
@@ -496,6 +491,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return $this->api->get_agreement( $primary_id );
 		} catch ( WC_Vipps_Recurring_Exception $e ) {
 			if ( $e->response_code !== 404 || ! $fallback_id ) {
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Could not get agreement %s: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $primary_id, $e->getMessage() ) );
+
 				return false;
 			}
 
@@ -564,20 +561,38 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_locked_for_update_time', time() );
+		// The cron check picks the least recently checked orders first, so stamp before anything can bail out.
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_LAST_CHECKED, time() );
 		$order->save();
 
 		$order_status = $order->get_status();
 
-		if ( $order_status === 'failed' ) {
-			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
+		// A manual retry runs on a failed order, so an unconfirmed charge takes precedence over the failed status.
+		if ( $order_status === 'failed' && ! WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED ) ) {
+			try {
+				$result = $this->settle_failed_order( $order );
+			} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+				// Try again on the next check
+				$this->unlock_order( $order );
+
+				return 'SUCCESS';
+			}
+
+			if ( $result === 'SETTLED' ) {
+				WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
+			}
+
 			$this->unlock_order( $order );
 
-			return 'CANCELLED';
+			return $result === 'SETTLED' ? 'CANCELLED' : 'SUCCESS';
 		}
 
 		$agreement = $this->get_agreement_from_order( $order );
 
 		if ( ! $agreement ) {
+			// Without this an order can stop being checked with no trace, for instance when the API keys are wrong
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Could not get the agreement (%s) for this order, so its charge status was not checked', WC_Vipps_Recurring_Helper::get_id( $order ), WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order ) ?: 'no agreement id' ) );
+
 			// If there is no agreement we can't complete Checkout orders. Let Checkout deal with this through an action.
 			$order_initial = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL );
 
@@ -588,6 +603,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this->unlock_order( $order );
 
 			return 'INVALID';
+		}
+
+		// The charge was never confirmed, so we can't trust the charge id on the order yet.
+		if ( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED ) ) {
+			$unconfirmed_result = $this->confirm_unconfirmed_charge( $order, $agreement );
+			if ( $unconfirmed_result !== null ) {
+				$this->unlock_order( $order );
+
+				return $unconfirmed_result;
+			}
 		}
 
 		$zero_amount_result = $this->handle_zero_amount_order( $order, $agreement, $is_renewal );
@@ -796,9 +821,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Charge::STATUS_DUE,
 				WC_Vipps_Charge::STATUS_PENDING
 			], true ) ) {
-			$idempotency_key = $this->get_idempotency_key( $order );
-
-			$this->api->cancel_charge( $agreement->id, $charge->id, $idempotency_key );
+			// The order's own key belongs to the charge request, and reusing a key on another request gives a 409
+			$this->api->cancel_charge( $agreement->id, $charge->id, $this->api->generate_idempotency_key() );
 		}
 	}
 
@@ -1010,8 +1034,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function scheduled_subscription_payment( $amount_to_charge, $order ): bool {
 		try {
 			return $this->process_subscription_payment( $amount_to_charge, $order );
+		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+			// We can't tell whether Vipps/MobilePay created the charge. The order is still marked as pending, so the
+			// status check will confirm the charge, or create it again with the same request and idempotency key.
+			/* translators: Error message */
+			$order->add_order_note( sprintf( __( 'Could not confirm the charge with Vipps/MobilePay: %s. We will keep checking the status of this order.', 'woo-vipps' ), $e->getMessage() ) );
+			$order->save();
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Temporary error in process_subscription_payment: %s', $order->get_id(), $e->getMessage() ) );
+
+			return false;
 		} catch ( Exception $e ) {
 			// if we reach this point we consider the error to be completely unrecoverable.
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED );
 			$order->update_status( 'failed' );
 
 			/* translators: Error message */
@@ -1116,9 +1151,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		} catch ( WC_Vipps_Recurring_Exception $e ) {
 			// attempt to cancel charge instead
 			if ( (float) $order->get_remaining_refund_amount() === 0.00 ) {
-				$idempotency_key = $this->get_idempotency_key( $order );
-
-				$this->api->cancel_charge( $agreement_id, $charge_id, $idempotency_key );
+				// The order's own key belongs to the charge request, and reusing a key on another request gives a 409
+				$this->api->cancel_charge( $agreement_id, $charge_id, $this->api->generate_idempotency_key() );
 
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
 				$order->save();
@@ -1188,6 +1222,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		WC_Vipps_Recurring_Helper::lock_order( $renewal_order );
 
+		// Until Vipps/MobilePay has confirmed the charge, a lost response must not leave us without a way back to it.
+		// Marking the order as pending as well lets the status check pick it up, even if this request dies halfway.
+		// We store when this started, so we know when to stop trying.
+		WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED, time() );
+		WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
+		$renewal_order->save();
+
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment attempting to create charge', $renewal_order->get_id() ) );
 
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $renewal_order );
@@ -1216,7 +1257,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$renewal_order->set_transaction_id( 0 );
 			$renewal_order = $this->delete_renewal_meta( $renewal_order );
 
-			$this->generate_idempotency_key( $renewal_order );
+			$this->reset_charge_request( $renewal_order );
 
 			// clean the post cache for the renewal order to force Woo to fetch meta again.
 			if ( ! $this->use_high_performance_order_storage() ) {
@@ -1224,17 +1265,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 		}
 
-		$idempotency_key = $this->get_idempotency_key( $renewal_order );
+		$charge_id = $this->create_renewal_charge( $renewal_order, $agreement, $amount );
 
-		$vipps_order_id = WC_Vipps_Recurring_Helper::generate_vipps_order_id( $renewal_order, $this->order_prefix );
-		$charge         = $this->api->create_charge( $agreement, $idempotency_key, $renewal_order_id, $vipps_order_id, $amount );
+		WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge_id );
+		WC_Vipps_Recurring_Helper::set_order_as_pending( $renewal_order, $charge_id );
+		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED );
 
-		WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['chargeId'] );
-		WC_Vipps_Recurring_Helper::set_order_as_pending( $renewal_order, $charge['chargeId'] );
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment created charge: %s', $renewal_order->get_id(), $charge_id ) );
 
-		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment created charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
-
-		$charge = $this->api->get_charge( $agreement->id, $charge['chargeId'] );
+		$charge = $this->api->get_charge( $agreement->id, $charge_id );
 
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment fetched charge: %s', $renewal_order->get_id(), json_encode( $charge->to_array() ) ) );
 
@@ -1246,12 +1285,313 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		return true;
 	}
 
-	private function get_due_charge_note( WC_Vipps_Charge $charge ): string {
-		$timestamp_gmt   = WC_Vipps_Recurring_Helper::rfc_3999_date_to_unix( $charge->due );
-		$date_to_display = ucfirst( wcs_get_human_time_diff( $timestamp_gmt ) );
+	/**
+	 * Create the charge for a renewal order, or find the one an earlier attempt created without us getting the response.
+	 * The request is stored with the idempotency key, so a repeat sends the exact same request.
+	 *
+	 * @param WC_Order $renewal_order
+	 * @param WC_Vipps_Agreement $agreement
+	 * @param int $amount
+	 * @param bool $allow_create Whether to create the charge when no earlier attempt created it
+	 *
+	 * @return string|null The charge id, or null when there is no charge and we were not allowed to create one
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	private function create_renewal_charge( $renewal_order, WC_Vipps_Agreement $agreement, int $amount, bool $allow_create = true ): ?string {
+		$request            = WC_Vipps_Recurring_Helper::get_meta( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_REQUEST );
+		$requested_order_id = $this->get_requested_charge_id( $renewal_order );
+		$is_repeat          = $requested_order_id !== null;
 
-		// translators: Vipps/MobilePay Charge ID, human diff timestamp
-		return sprintf( __( 'Vipps/MobilePay charge created: %1$s. The charge will be complete %2$s.', 'woo-vipps' ), $charge->id, strtolower( $date_to_display ) );
+		if ( $is_repeat ) {
+			// Vipps/MobilePay uses our order id as the charge id, so we can look up a charge from an earlier attempt directly.
+			$charge = $this->find_charge( $agreement->id, $requested_order_id );
+			if ( $charge ) {
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Found existing charge %s from an earlier attempt', WC_Vipps_Recurring_Helper::get_id( $renewal_order ), $charge->id ) );
+
+				return $charge->id;
+			}
+		}
+
+		if ( ! $allow_create ) {
+			return null;
+		}
+
+		// The due date must be at least one day ahead, so a request from an earlier day can't be repeated.
+		if ( $is_repeat && $request['due'] <= date( 'Y-m-d' ) ) {
+			$this->reset_charge_request( $renewal_order );
+			$request = null;
+		}
+
+		if ( ! is_array( $request ) || empty( $request['order_id'] ) ) {
+			// Make sure the key exists before we store the request that belongs to it.
+			$this->get_idempotency_key( $renewal_order );
+
+			$request = [
+				'order_id' => WC_Vipps_Recurring_Helper::generate_vipps_order_id( $renewal_order, $this->order_prefix ),
+				'due'      => date( 'Y-m-d', time() + 3600 * 24 ),
+				'amount'   => $amount,
+			];
+
+			WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_REQUEST, $request );
+			$renewal_order->save();
+		}
+
+		try {
+			$charge = $this->api->create_charge( $agreement, $this->get_idempotency_key( $renewal_order ), WC_Vipps_Recurring_Helper::get_id( $renewal_order ), $request['order_id'], $request['amount'], $request['due'] );
+		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+			throw $e;
+		} catch ( WC_Vipps_Recurring_Exception $e ) {
+			// The order id is unique, so a conflict on a repeat can mean the charge exists after all.
+			$charge = $is_repeat && $e->response_code === 409 ? $this->find_charge( $agreement->id, $request['order_id'] ) : null;
+			if ( ! $charge ) {
+				throw $e;
+			}
+
+			return $charge->id;
+		}
+
+		return $charge['chargeId'];
+	}
+
+	/**
+	 * The charge id we asked Vipps/MobilePay to use, if we have sent a charge request for this order
+	 *
+	 * @param WC_Order $order
+	 *
+	 * @return string|null
+	 */
+	private function get_requested_charge_id( $order ): ?string {
+		$request = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_REQUEST );
+
+		return is_array( $request ) && ! empty( $request['order_id'] ) ? $request['order_id'] : null;
+	}
+
+	/**
+	 * @param string $agreement_id
+	 * @param string $charge_id
+	 *
+	 * @return WC_Vipps_Charge|null null when Vipps/MobilePay has no such charge
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	private function find_charge( string $agreement_id, string $charge_id ): ?WC_Vipps_Charge {
+		try {
+			return $this->api->get_charge( $agreement_id, $charge_id );
+		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+			throw $e;
+		} catch ( WC_Vipps_Recurring_Exception $e ) {
+			if ( $e->response_code === 404 ) {
+				return null;
+			}
+
+			throw $e;
+		}
+	}
+
+	/**
+	 * Start over with a new idempotency key and charge request
+	 *
+	 * @param WC_Order $order
+	 */
+	private function reset_charge_request( $order ): void {
+		WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_REQUEST );
+		$this->generate_idempotency_key( $order );
+	}
+
+	/**
+	 * Find or create the charge for a renewal order whose charge creation was never confirmed by Vipps/MobilePay.
+	 *
+	 * @param WC_Order $order
+	 * @param WC_Vipps_Agreement $agreement
+	 *
+	 * @return string|null null when the charge is confirmed and the order can be checked as usual, otherwise the status to return
+	 */
+	private function confirm_unconfirmed_charge( $order, WC_Vipps_Agreement $agreement ): ?string {
+		$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
+
+		// The scheduled payment is still waiting for Vipps/MobilePay
+		if ( WC_Vipps_Recurring_Helper::order_locked( $order ) ) {
+			return 'SUCCESS';
+		}
+
+		// Once the order no longer needs payment, for instance because it was marked as paid by hand,
+		// we keep a charge an earlier attempt created, but we never create a new one.
+		$allow_create = $order->needs_payment();
+
+		try {
+			$charge_id = $this->create_renewal_charge( $order, $agreement, WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ), $allow_create );
+		} catch ( WC_Vipps_Recurring_Temporary_Exception | WC_Vipps_Recurring_Config_Exception $e ) {
+			$unconfirmed_since = (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED );
+			$max_age           = (int) apply_filters( 'wc_vipps_recurring_unconfirmed_charge_max_age', 3 * DAY_IN_SECONDS, $order );
+
+			if ( time() - $unconfirmed_since < $max_age ) {
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Could not confirm charge yet: %s', $order_id, $e->getMessage() ) );
+
+				return 'SUCCESS';
+			}
+
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED );
+
+			if ( $allow_create ) {
+				// The order is still pending, so failing it cancels a charge an earlier attempt may have created.
+				/* translators: Error message */
+				$order->update_status( 'failed', sprintf( __( 'Gave up creating a charge, because Vipps/MobilePay has not confirmed it for too long. The last error was: %s', 'woo-vipps' ), $e->getMessage() ) );
+			} else {
+				WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
+
+				/* translators: Error message */
+				$order->add_order_note( sprintf( __( 'Gave up looking up the charge in Vipps/MobilePay. Please check this order in the Vipps/MobilePay portal. The last error was: %s', 'woo-vipps' ), $e->getMessage() ) );
+				$order->save();
+			}
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Gave up confirming charge after %d seconds: %s', $order_id, time() - $unconfirmed_since, $e->getMessage() ) );
+
+			return 'CANCELLED';
+		} catch ( WC_Vipps_Recurring_Exception $e ) {
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED );
+
+			if ( $allow_create ) {
+				// Leave the order pending, so failing it cancels a charge an earlier attempt may have created.
+				/* translators: Error message */
+				$order->update_status( 'failed', sprintf( __( 'Failed creating a charge: %s', 'woo-vipps' ), $e->getMessage() ) );
+			} else {
+				WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
+
+				/* translators: Error message */
+				$order->add_order_note( sprintf( __( 'Could not look up the charge in Vipps/MobilePay: %s', 'woo-vipps' ), $e->getMessage() ) );
+				$order->save();
+			}
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error confirming unconfirmed charge: %s', $order_id, $e->getMessage() ) );
+
+			return 'CANCELLED';
+		}
+
+		if ( $charge_id === null ) {
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED );
+			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
+
+			$order->add_order_note( __( 'The order no longer needs payment, so no charge was created in Vipps/MobilePay.', 'woo-vipps' ) );
+			$order->save();
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Order no longer needs payment, did not create a charge', $order_id ) );
+
+			return 'CANCELLED';
+		}
+
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge_id );
+		WC_Vipps_Recurring_Helper::set_order_as_pending( $order, $charge_id );
+		WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED );
+
+		/* translators: Vipps/MobilePay Charge ID */
+		$order->add_order_note( sprintf( __( 'Vipps/MobilePay confirmed the charge (Charge ID: %s)', 'woo-vipps' ), $charge_id ) );
+		$order->save();
+
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Confirmed charge: %s', $order_id, $charge_id ) );
+
+		return null;
+	}
+
+	/**
+	 * A failed order must end up either paid, or with nothing left in Vipps/MobilePay that can charge it. Its charge can
+	 * still go through, for instance when Vipps/MobilePay answered too late for us to keep the order. Complete the order
+	 * when its own charge was charged, and cancel the charge while it is still waiting.
+	 *
+	 * @param WC_Order $order
+	 *
+	 * @return string COMPLETED when the order was paid, PROCESSING when the charge is being processed and we should check
+	 *                again, or SETTLED when nothing more can happen to it
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	private function settle_failed_order( $order ): string {
+		$order_id     = WC_Vipps_Recurring_Helper::get_id( $order );
+		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
+		$charge_id    = $this->get_requested_charge_id( $order ) ?: WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
+
+		if ( ! $agreement_id || ! $charge_id ) {
+			return 'SETTLED';
+		}
+
+		try {
+			$charge = $this->find_charge( $agreement_id, $charge_id );
+		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+			throw $e;
+		} catch ( Exception $e ) {
+			return 'SETTLED';
+		}
+
+		if ( ! $charge || ! $this->charge_belongs_to_order( $order, $charge ) ) {
+			return 'SETTLED';
+		}
+
+		if ( $charge->status === WC_Vipps_Charge::STATUS_CHARGED ) {
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
+			$order->add_order_note( __( 'Vipps/MobilePay charged this order after it was marked as failed.', 'woo-vipps' ) );
+
+			$this->process_order_charge( $order, $charge );
+
+			return 'COMPLETED';
+		}
+
+		if ( $charge->status === WC_Vipps_Charge::STATUS_PROCESSING ) {
+			return 'PROCESSING';
+		}
+
+		if ( in_array( $charge->status, [ WC_Vipps_Charge::STATUS_DUE, WC_Vipps_Charge::STATUS_PENDING ], true ) ) {
+			try {
+				$this->api->cancel_charge( $agreement_id, $charge->id, $this->api->generate_idempotency_key() );
+				$order->add_order_note( __( 'Cancelled due charge in Vipps/MobilePay.', 'woo-vipps' ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelled DUE charge with ID: %s for agreement with ID: %s', $order_id, $charge->id, $agreement_id ) );
+			} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+				throw $e;
+			} catch ( Exception $e ) {
+				$order->add_order_note( __( 'Could not cancel charge in Vipps/MobilePay. Please manually check the status of this order if you plan to process a new renewal order!', 'woo-vipps' ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed cancelling DUE charge with ID: %s for agreement with ID: %s. Error: %s', $order_id, $charge->id, $agreement_id, $e->getMessage() ) );
+			}
+		}
+
+		return 'SETTLED';
+	}
+
+	/**
+	 * Renewal orders can carry a charge id copied from elsewhere, so only trust a charge that was created for this order.
+	 *
+	 * @param WC_Order $order
+	 * @param WC_Vipps_Charge $charge
+	 *
+	 * @return bool
+	 */
+	private function charge_belongs_to_order( $order, WC_Vipps_Charge $charge ): bool {
+		$request = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_REQUEST );
+
+		if ( ! empty( $request['order_id'] ) && $request['order_id'] === $charge->id ) {
+			return true;
+		}
+
+		if ( $charge->id === WC_Vipps_Recurring_Helper::generate_vipps_order_id( $order, $this->order_prefix ) ) {
+			return true;
+		}
+
+		return $charge->external_id !== null && $charge->external_id === (string) WC_Vipps_Recurring_Helper::get_id( $order );
+	}
+
+	private function get_due_charge_note( WC_Vipps_Charge $charge ): string {
+		// The due date is the day Vipps/MobilePay processes the charge, at a time of its choosing, so we show the date.
+		$due_date = $charge->due instanceof DateTime ? $charge->due->format( 'Y-m-d' ) : (string) $charge->due;
+		$due_date = date_i18n( wc_date_format(), strtotime( $due_date ) );
+
+		// translators: %1$s: Vipps/MobilePay Charge ID, %2$s: the date the charge is due
+		$note = sprintf( __( 'Vipps/MobilePay charge created: %1$s. The customer will be charged on %2$s.', 'woo-vipps' ), $charge->id, $due_date );
+
+		if ( $charge->retry_days > 0 ) {
+			// translators: %d: the number of days Vipps/MobilePay keeps retrying a failed charge
+			$note .= ' ' . sprintf( _n( 'If the charge fails, Vipps/MobilePay retries it for up to %d day.', 'If the charge fails, Vipps/MobilePay retries it for up to %d days.', $charge->retry_days, 'woo-vipps' ), $charge->retry_days );
+		}
+
+		return $note;
 	}
 
 	/**
@@ -2195,13 +2535,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$this->init_form_fields();
 
 		if ( $this->get_option( 'enabled' ) === "yes" ) {
-			$this->webhook_initialize();
+			// The settings were just saved, so the MSN may have changed. A fresh token is fetched before we register
+			// webhooks, so we never register them with a token for the old keys.
+			$this->test_mode              = $this->get_option( 'test_mode' ) === "yes" || WC_VIPPS_RECURRING_TEST_MODE;
+			$this->merchant_serial_number = $this->get_option( $this->test_mode ? 'test_merchant_serial_number' : 'merchant_serial_number' );
 
 			try {
 				$this->api->get_access_token( true );
 				update_option( WC_Vipps_Recurring_Helper::OPTION_CONFIGURED, 1, true );
 
 				$this->admin_notify( __( 'Successfully authenticated with the Vipps/MobilePay API', 'woo-vipps' ) );
+
+				if ( ! $this->webhook_initialize() ) {
+					$this->admin_error( __( 'Could not register the webhook with the Vipps/MobilePay API. Payments are still checked periodically, but updates will be slower. Check the log for details, and save the settings again to retry.', 'woo-vipps' ) );
+				}
 			} catch ( Exception $e ) {
 				update_option( WC_Vipps_Recurring_Helper::OPTION_CONFIGURED, 0, true );
 
@@ -2413,12 +2760,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$has_failed_previously = WC_Vipps_Recurring_Helper::get_meta( $renewal_order, '_failed_renewal_order' );
 		if ( $has_failed_previously !== "yes" ) {
 			WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_REQUEST );
 		}
 
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_DESCRIPTION );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_REASON );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_LATEST_STATUS );
+		// A copied timestamp would keep a new renewal out of the status check's "never checked" queue
+		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_LAST_CHECKED );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED );
@@ -2443,39 +2793,111 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return;
 		}
 
-		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
-		$charge_id    = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
+		$this->cancel_due_charge( $order );
+	}
 
-		if ( $agreement_id === null || $charge_id === null ) {
-			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
+	/**
+	 * A renewal order can be paid with another payment method while its charge is still waiting in Vipps/MobilePay,
+	 * for instance while we wait for Vipps/MobilePay to confirm it. Cancel the charge so the customer doesn't pay twice.
+	 * Runs on every status change, as not every payment method completes the payment, bank transfers for instance.
+	 *
+	 * @param $order_id
+	 */
+	public function maybe_cancel_due_charge_after_other_payment( $order_id ): void {
+		$order = wc_get_order( $order_id );
 
+		if ( ! $order || WC_Vipps_Recurring_Helper::get_payment_method( $order ) === $this->id ) {
 			return;
+		}
+
+		if ( ! WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING ) ) {
+			return;
+		}
+
+		$charge = $this->cancel_due_charge( $order, true );
+
+		if ( $charge && $charge->status === WC_Vipps_Charge::STATUS_CHARGED ) {
+			/* translators: Vipps/MobilePay Charge ID */
+			$order->add_order_note( sprintf( __( 'This order was paid with another payment method, but Vipps/MobilePay has already charged it (Charge ID: %s). You may need to refund one of the payments.', 'woo-vipps' ), $charge->id ) );
+
+			// The merchant knows now, so don't tell them again on the next status change
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED );
+			$order->save();
+		}
+	}
+
+	/**
+	 * Cancel the order's charge in Vipps/MobilePay while it is still due
+	 *
+	 * @param WC_Order $order
+	 * @param bool $only_own Only touch a charge that was created for this order
+	 *
+	 * @return WC_Vipps_Charge|null The charge as we found it before cancelling, if there is one
+	 */
+	private function cancel_due_charge( $order, bool $only_own = false ): ?WC_Vipps_Charge {
+		$order_id     = WC_Vipps_Recurring_Helper::get_id( $order );
+		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
+		// The id we asked for is this order's own. The charge id meta can be copied from the subscription, and an
+		// unconfirmed charge doesn't have it yet.
+		$charge_id = $this->get_requested_charge_id( $order ) ?: WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID );
+
+		// The transaction id only refers to our charge while the order is paid with us
+		if ( empty( $charge_id ) && WC_Vipps_Recurring_Helper::get_payment_method( $order ) === $this->id ) {
+			$charge_id = $order->get_transaction_id();
+		}
+
+		if ( empty( $agreement_id ) || empty( $charge_id ) ) {
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED );
+			$order->save();
+
+			return null;
 		}
 
 		$pending_charge = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
 
-		if ( $pending_charge ) {
-			try {
-				if ( get_transient( 'maybe_cancel_due_charge_lock' . $order_id ) ) {
-					return;
-				}
+		if ( ! $pending_charge || get_transient( 'maybe_cancel_due_charge_lock' . $order_id ) ) {
+			return null;
+		}
 
-				set_transient( 'maybe_cancel_due_charge_lock' . $order_id, uniqid( '', true ), 30 );
+		set_transient( 'maybe_cancel_due_charge_lock' . $order_id, uniqid( '', true ), 30 );
 
-				$charge = $this->api->get_charge( $agreement_id, $charge_id );
-				if ( in_array( $charge->status, [
+		try {
+			$charge = $this->find_charge( $agreement_id, $charge_id );
+
+			if ( $charge && $only_own && ! $this->charge_belongs_to_order( $order, $charge ) ) {
+				// The charge belongs to another order, so this order has nothing waiting in Vipps/MobilePay
+				WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
+				WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED );
+				$order->save();
+
+				return null;
+			}
+
+			if ( ! $charge || in_array( $charge->status, [
 					WC_Vipps_Charge::STATUS_DUE,
 					WC_Vipps_Charge::STATUS_PENDING
 				], true ) ) {
-					$idempotency_key = $this->get_idempotency_key( $order );
-					$this->api->cancel_charge( $agreement_id, $charge_id, $idempotency_key );
+				if ( $charge ) {
+					// The order's own key belongs to the charge request, and reusing a key on another request gives a 409
+					$this->api->cancel_charge( $agreement_id, $charge_id, $this->api->generate_idempotency_key() );
 					$order->add_order_note( __( 'Cancelled due charge in Vipps/MobilePay.', 'woo-vipps' ) );
 					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelled DUE charge with ID: %s for agreement with ID: %s', $order_id, $charge_id, $agreement_id ) );
 				}
-			} catch ( Exception $e ) {
-				$order->add_order_note( __( 'Could not cancel charge in Vipps/MobilePay. Please manually check the status of this order if you plan to process a new renewal order!', 'woo-vipps' ) );
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed cancelling DUE charge with ID: %s for agreement with ID: %s. Error: %s', $order_id, $charge_id, $agreement_id, $e->getMessage() ) );
+
+				// There is nothing left in Vipps/MobilePay that can charge this order
+				WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
+				WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_UNCONFIRMED );
+				$order->save();
 			}
+
+			return $charge;
+		} catch ( Exception $e ) {
+			$order->add_order_note( __( 'Could not cancel charge in Vipps/MobilePay. Please manually check the status of this order if you plan to process a new renewal order!', 'woo-vipps' ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed cancelling DUE charge with ID: %s for agreement with ID: %s. Error: %s', $order_id, $charge_id, $agreement_id, $e->getMessage() ) );
+
+			return null;
 		}
 	}
 
@@ -2614,8 +3036,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	/**
-	 * Check that our local webhooks point to this site.
-	 * If they don't we should delete them, otherwise we end up with hitting the limit of 5.
+	 * Check that our local webhooks point to this site, and that they still exist in Vipps/MobilePay.
+	 * If they don't point here we should delete them, otherwise we end up with hitting the limit.
+	 * Vipps/MobilePay deletes a webhook whose endpoint has been unresponsive for two weeks, and a webhook can also be
+	 * deleted by others, so one that only exists locally must be registered again.
 	 *
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
@@ -2633,33 +3057,32 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$callback_url      = $this->webhook_callback_url();
 		$callback_url_base = strtok( $callback_url, "?" );
 
-		// Make sure we don't do this more than once every 30 minutes, and only if the callback url base changes.
+		// Make sure we don't do this more than once every 30 minutes, unless the MSN or the callback url base changes.
 		$webhook_transient = "vipps-recurring-webhooks-site";
-		if ( get_transient( $webhook_transient ) === $callback_url_base ) {
+		$webhook_site      = "$msn|$callback_url_base";
+		if ( get_transient( $webhook_transient ) === $webhook_site ) {
 			return true;
 		}
 
-		set_transient( $webhook_transient, $callback_url_base, 1800 );
+		set_transient( $webhook_transient, $webhook_site, 1800 );
 
 		if ( empty( $local_webhooks[ $msn ] ) ) {
 			return false;
 		}
 
-		$remote_webhooks = $this->api->get_webhooks( $msn );
+		$remote_webhooks    = $this->api->get_webhooks( $msn );
+		$remote_webhook_ids = array_column( $remote_webhooks['webhooks'] ?? [], 'id' );
 
 		$ok = true;
 		foreach ( $local_webhooks[ $msn ] as $webhook_id => $webhook ) {
+			$webhook_exists   = in_array( $webhook_id, $remote_webhook_ids, true );
 			$webhook_base_url = strtok( $webhook['url'], "?" );
 
-			if ( $webhook_base_url === $callback_url_base ) {
+			if ( $webhook_exists && $webhook_base_url === $callback_url_base ) {
 				continue;
 			}
 
-			// Check that this webhookId indeed exists in $remote_webhooks before we attempt to delete it
-			$webhook_exists = ! empty( array_filter( $remote_webhooks['webhooks'], function ( $remote_webhook ) use ( $webhook_id ) {
-				return $remote_webhook['id'] === $webhook_id;
-			} ) );
-
+			// It either points somewhere else, or it no longer exists in Vipps/MobilePay
 			if ( $webhook_exists ) {
 				$this->api->delete_webhook( $msn, $webhook_id );
 			}
@@ -2719,12 +3142,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		return get_option( WC_Vipps_Recurring_Helper::OPTION_WEBHOOKS, [ $this->merchant_serial_number => [] ] );
 	}
 
-	public function webhook_initialize() {
+	/**
+	 * @return bool Whether the webhooks were initialized
+	 */
+	public function webhook_initialize(): bool {
 		try {
 			$this->webhook_ensure_this_site();
 			$this->webhook_initialize_initial();
+
+			return true;
 		} catch ( Exception $e ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( 'Failed to initialize webhooks. Error: %s', $e->getMessage() ) );
+
+			return false;
 		}
 	}
 
@@ -2735,6 +3165,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$action = 'wc_gateway_vipps_recurring';
 
 		if ( ! get_option( 'permalink_structure' ) ) {
+			// Without pretty permalinks every wc-api callback shares the bare home URL. The Vipps MobilePay payment gateway
+			// compares webhook URLs without their query and deletes the ones it does not know, so ours gets its own path.
+			$base_url       = home_url( '/index.php', 'https' );
 			$args['wc-api'] = $action;
 		} else {
 			$base_url = trailingslashit( home_url( "wc-api/$action", 'https' ) );

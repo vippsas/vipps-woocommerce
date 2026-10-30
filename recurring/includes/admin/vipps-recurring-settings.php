@@ -146,17 +146,6 @@ return apply_filters(
 			'description' => __( 'The amount of charges to check the status for in wp-cron per scheduled event. It is recommended to keep this between 5 and 100. The higher the value, the more performance issues you may run into.', 'woo-vipps' ),
 			'default'     => 10,
 		],
-		'check_charges_sort_order'         => [
-			'type'        => 'select',
-			'title'       => __( 'Status checking sort order for charges', 'woo-vipps' ),
-			'description' => __( 'The sort order we use when checking charges in wp-cron. Random sort order is the best for most use cases. Oldest first may be useful if you use synchronized renewals.', 'woo-vipps' ),
-			'default'     => 'rand',
-			'options'     => [
-				'rand' => __( 'Random', 'woo-vipps' ),
-				'asc'  => __( 'Oldest first', 'woo-vipps' ),
-				'desc' => __( 'Newest first', 'woo-vipps' )
-			]
-		],
 		'title_developer'                  => [
 			'type'        => 'title',
 			'title'       => __( 'Developer settings', 'woo-vipps' ),

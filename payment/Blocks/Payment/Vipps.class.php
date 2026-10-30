@@ -13,6 +13,7 @@ final class Vipps extends AbstractPaymentMethodType {
 	private static $store_api_payment_processor = null;
 	protected $name = 'vipps';
 	protected $payment_method_name = 'Vipps';
+	public $vippsJSConfig = [];
 
 	/**
 	 * Load gateway settings and register the Store API bridge when Blocks initializes this integration.

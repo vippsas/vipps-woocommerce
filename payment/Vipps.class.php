@@ -43,6 +43,8 @@ class Vipps {
 
     private static $instance = null;
 
+    public $payment_method_name = "";
+
     /* Used to interact with other payment gateways if neccessary (for 'external payment gateways') IOK 2024-05-27 */
     public static $installed_gateways = [];
 
