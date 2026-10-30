@@ -4732,3 +4732,7 @@ msgstr ""
 msgctxt "block title"
 msgid "Vipps MobilePay Express"
 msgstr ""
+
+#: payment/admin/settings/VippsAdminSettings.class.php:429
+msgid "Find your keys at the %s portal"
+msgstr ""

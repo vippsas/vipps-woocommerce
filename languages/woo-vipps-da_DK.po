@@ -4849,3 +4849,7 @@ msgstr ""
 #: recurring/includes/wc-gateway-vipps-recurring.php:2823
 msgid "This order was paid with another payment method, but Vipps/MobilePay has already charged it (Charge ID: %s). You may need to refund one of the payments."
 msgstr ""
+
+#: payment/admin/settings/VippsAdminSettings.class.php:429
+msgid "Find your keys at the %s portal"
+msgstr "Find dine nøgler på %s-portalen"
