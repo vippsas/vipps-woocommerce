@@ -12,7 +12,7 @@ import {
 export function AdminSettingsKeysOptionsTab(): JSX.Element {
   return (
     <div>
-      <a href={gettext("keys_info.link")}>{gettext("keys_info.body")}</a>
+      <a target="_blank" href={gettext("keys_info.link")}>{gettext("keys_info.body")}</a>
 
       {/* Prod keys section */}
       <Collapsible title={gettext("production_keys_section")}>
