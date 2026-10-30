@@ -119,12 +119,16 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
 
         {/* Advanced section */ }
         <Collapsible title={gettext('express_advanced_section')}>
-          {/* Toggle whether or not users should be asked if they've read the store's terms and conditions */}
-          <SwitchFormField
+          {/* Dropdown for terms config for express. LP 2026-10-26 */}
+          <SelectFormField
             name="expresscheckout_termscheckbox"
             titleKey="expresscheckout_termscheckbox.title"
             labelKey="expresscheckout_termscheckbox.label"
             descriptionKey="expresscheckout_termscheckbox.description"
+            options={
+              Object.entries(gettext('expresscheckout_termscheckbox.options') ?? {})
+              .map(([k, v]) => ({value: k, label: v as string}))
+            }
           />
 
           {/* Toggle whether or not failed Express Checkout orders should be deleted */}

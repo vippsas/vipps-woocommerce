@@ -62,7 +62,7 @@ export function WebhooksPage() {
                 {gettext("merchant").replace("%1$s", merchant.msn)}{" "}
                 {merchant.testmode && `(${gettext("testMode")})`}
               </h2>
-              <WPButton type="button" disabled={pending !== null} onClick={() => openAdd(merchant.msn)}>
+              <WPButton variant="primary" type="button" disabled={pending !== null} onClick={() => openAdd(merchant.msn)}>
                 {gettext("addForMsn")}
               </WPButton>
             </div>

@@ -1,3 +1,9 @@
+<!-- START_METADATA
+---
+draft: true
+---
+END_METADATA -->
+
 # Contributing to Pay with Vipps and MobilePay for WooCommerce
 
 If you want to contribute: Great! No issue or pull request is too small!
@@ -5,7 +11,7 @@ If you want to contribute: Great! No issue or pull request is too small!
 ## Getting started
 
 1. Make sure you have a GitHub account
-1. See the [GitHub help pages](https://help.github.com) if you have questions.
+1. See the [GitHub help pages](https://docs.github.com) if you have questions.
 
 ## Contributing
 
@@ -18,7 +24,7 @@ Contributing is easy. The steps below are intended to be helpful. Please help us
 1. Implement/fix your feature, comment your code.
 1. Follow the code style of the project, including indentation.
 1. Add or change the documentation as needed.
-1. Squash your commits into a single commit with git's [interactive rebase](https://help.github.com/articles/interactive-rebase). Create a new branch if necessary.
+1. Squash your commits into a single commit with git's [interactive rebase](https://docs.github.com/en/get-started/using-git/about-git-rebase). Create a new branch if necessary.
 1. Push your branch to your fork on GitHub.
 1. From your fork open a pull request in the correct branch.
 1. Once the pull request is approved and merged, you can pull the changes from `master` to your local repo and delete your extra branch(es).

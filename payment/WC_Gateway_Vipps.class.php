@@ -989,7 +989,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return true;
         } 
 
-        if ($amount*100 > $to_refund) {
+        // $amount is float, round to int. Thanks to @Razko90 for finding (https://github.com/vippsas/vipps-woocommerce/pull/423)
+        if (intval(round($amount*100)) > $to_refund) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
         }
         $ok = 0;
@@ -1087,13 +1088,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
             // Migrate removed alternative 'none' for option 'singleproductexpress' to the new option 'express_singleproduct_enabled'.
-            // 'singleproductexpress' now specifies which products that support express generally, and  'express_singleproduct_enabled'
+            // 'singleproductexpress' now specifies which products that support express generally, and 'express_singleproduct_enabled'
             // is whether to show Express button on single product page/context specifically. LP 2026-09-29
             if ('none' === ($current['singleproductexpress'] ?? null)) {
                 $current['singleproductexpress'] = 'all';
                 $this->update_option('singleproductexpress', 'all');
 
                 $default_express_singleproduct_enabled = 'no';
+                // Need to save the option here too, cause next time this method runs, this branch won't run because we move the option away from 'none'. LP 2026-10-30
+                if (!isset($current['express_singleproduct_enabled'])) {
+                    $this->update_option('express_singleproduct_enabled', $default_express_singleproduct_enabled);
+                }
 
                 $current['singleproductexpressarchives'] = 'no';
                 $this->update_option('singleproductexpressarchives', 'no');
@@ -1571,15 +1576,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         /* translators: %s is an option for this setting */
                         'description' => sprintf(__('If you choose %s, enable it individually in product edit.', 'woo-vipps'), __('Selected products', 'woo-vipps')),
                         'default'     => 'all',
-                ),
+                        ),
 
+                // Was previously a checkbox, now that we also support terms in app its a dropdown. LP 2026-10-30
                 'expresscheckout_termscheckbox' => array(
                         'title'       => __('Require terms and conditions confirmation', 'woo-vipps'),
-                        'label'       => __('Require terms and conditions confirmation', 'woo-vipps'),
-                        'type'        => 'checkbox',
+                        'label'       => '',
                         'description' => __('Ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'),
+                        'type'        => 'select',
+                        'options' => array(
+                            'no' => __('No','woo-vipps'),
+                            'yes' => __('In the store', 'woo-vipps'),
+                            'app' => __('In the app','woo-vipps'),
+                            ), 
                         'default'     => 'no',
-                        ),
+                ),
+
                 'expresscheckout_always_address' => array(
                         'title'       => __('Always ask for address', 'woo-vipps'),
                         'label'       => __('Always ask for address', 'woo-vipps'),
