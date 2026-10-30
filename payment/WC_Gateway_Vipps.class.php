@@ -1573,6 +1573,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => sprintf(__('If you choose %s, enable it individually in product edit.', 'woo-vipps'), __('Selected products', 'woo-vipps')),
                         'default'     => 'all',
                         ),
+
+                // Was previously a checkbox, now that we also support terms in app its a dropdown. LP 2026-10-30
                 'expresscheckout_termscheckbox' => array(
                         'title'       => __('Require terms and conditions confirmation', 'woo-vipps'),
                         'label'       => '',
@@ -1581,7 +1583,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'options' => array(
                             'no' => __('No','woo-vipps'),
                             'yes' => __('In the store', 'woo-vipps'),
-                            'app' => __('In the app','woo-vipps')
+                            'app' => __('In the app','woo-vipps'),
                             ), 
                         'default'     => 'no',
                 ),
