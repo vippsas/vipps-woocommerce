@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 6.3.4
-Stable tag: 6.3.4
+Version: 6.4.0
+Stable tag: 6.4.0
 Requires at least: 6.3
 Tested up to: 7.1.3
 Requires PHP: 8.0
@@ -117,6 +117,11 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 6.4.0
+New settings redesign.
+Express now supports showing terms and conditions in the app.
+Recurring now supports "express" through the userinfo API.
+Added recurring support for the new popup-style purchase flow.
 Version 6.3.4
 Fix: refunds failing due to float error.
 Suppress warnings for undeclared class properties.
@@ -309,6 +314,12 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ===
+= 2026-11-02 version 6.4.0 =
+New settings redesign.
+Express now supports terms and conditions in the app, check the settings.
+Recurring now supports "express" through the userinfo API.
+Added recurring support for the new popup-style purchase flow (Vipps widgetSDK).
+
 = 2026-10-26 version 6.3.4 =
 Fix: refunds failing due to float error.
 Suppress warnings for undeclared class properties.
