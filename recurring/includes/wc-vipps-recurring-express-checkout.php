@@ -539,8 +539,6 @@ class WC_Vipps_Recurring_Express_Checkout {
 			$order->update_meta_data( self::META_ATTEMPT, $args['attempt'] );
 			$order->update_meta_data( '_vipps_recurring_terms_accepted_at', $terms_required ? time() : 0 );
 			$order->update_meta_data( WC_Vipps_Recurring_Profile::META_REQUIRED, true );
-			$order->set_address( WC()->customer->get_billing(), 'billing' );
-			$order->set_address( WC()->customer->get_shipping(), 'shipping' );
 			$token = wp_generate_password( 64, false );
 			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN, $token );
 			$order->save();

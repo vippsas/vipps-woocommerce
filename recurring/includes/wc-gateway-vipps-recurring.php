@@ -3501,6 +3501,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_NEEDS_SHIPPING, $needs_shipping );
 
 			$order->set_customer_id( $customer_id );
+
+			if ( ! $checkout ) {
+				// Express has no later address step, so taxes must use the customer's location rather than the store base.
+				$order->set_address( WC()->customer->get_billing(), 'billing' );
+				$order->set_address( WC()->customer->get_shipping(), 'shipping' );
+			}
+
 			$order->set_currency( get_woocommerce_currency() );
 			$order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
 			$order->set_customer_ip_address( WC_Geolocation::get_ip_address() );
