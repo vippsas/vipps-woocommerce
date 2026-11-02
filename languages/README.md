@@ -1,6 +1,12 @@
+<!-- START_METADATA
+---
+draft: true
+---
+END_METADATA -->
+
 # Updating translations
 
-Run these commands from the this directory with WP-CLI installed.
+Run these commands from this directory with WP-CLI installed.
 
 1. Extract source strings and update the language catalogs:
 
