@@ -1,4 +1,10 @@
 == Changelog ==
+= 2026-11-02 version 6.4.0 =
+New settings redesign.
+Express now supports terms and conditions in the app, check the settings.
+Recurring now supports 'express' through the userinfo API.
+Added recurring support for the new popup-style purchase flow (Vipps widgetSDK).
+
 = 2026-10-26 version 6.3.4 =
 Fix: refunds failing due to float error.
 Suppress warnings for undeclared class properties.
