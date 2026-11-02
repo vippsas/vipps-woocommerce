@@ -580,7 +580,7 @@ class VippsAdminSettings
 
         $link = sprintf('<a href="%s" target="_blank">%s</a>', 'https://wordpress.org/plugins/login-with-vipps/', Vipps::LoginName());
         /* translators: placeholder is name of plugin Login with Vipps with a link */
-        $intro_text = sprintf(__('%s offers super-easy registration and login from the leading smart-payment app in the Nordic countries, there is no easier login! No more usernames or passwords.'), $link);
+        $intro_text = sprintf(__('%s offers super-easy registration and login from the leading smart-payment app in the Nordic countries, there is no easier login! No more usernames or passwords.', 'woo-vipps'), $link);
         echo "<p class='vipps-login-plugin-intro'>$intro_text</p>";
 
         $installed = file_exists(WP_PLUGIN_DIR . '/' . $plugin);
