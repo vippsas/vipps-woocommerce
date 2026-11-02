@@ -10,6 +10,7 @@ class WC_Vipps_Recurring_Purchase {
 	public const ADDRESS_SOURCE_PROFILE = 'profile';
 	public const ADDRESS_SOURCE_SELECTED = 'selected';
 	public const META_CONFIRMED_ADDRESSES = '_vipps_recurring_addresses_confirmed';
+	public const META_SKIP_LOGIN = '_vipps_recurring_skip_login';
 
 	private WC_Gateway_Vipps_Recurring $gateway;
 
@@ -78,6 +79,8 @@ class WC_Vipps_Recurring_Purchase {
 	/**
 	 * Complete an API-confirmed purchase without reading the browser session.
 	 * Contacts use WooCommerce address keys, e.g. first_name, address_1, postcode.
+	 * Set email_verified to false for an unverified email; an existing customer
+	 * with that email is then assigned, but never logged in on the return.
 	 * Call record_agreement() before this method to store the order identifiers.
 	 * Use SELECTED only for an address selected for this purchase, not a profile
 	 * default. Confirm shop-calculated addresses before requesting approval.
@@ -87,11 +90,9 @@ class WC_Vipps_Recurring_Purchase {
 		$this->validate_address_source( $address_source );
 		$new_customer_id       = null;
 		$order_id              = WC_Vipps_Recurring_Helper::get_id( $order );
+		// Never match on the order's billing email: for guests it comes from the browser session.
 		$email                 = sanitize_email( $billing['email'] ?? '' );
-		$order_email           = sanitize_email( $order->get_billing_email() );
-		if ( $order_email && $order_email !== WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) {
-			$email = $order_email;
-		}
+		$email_verified        = ( $billing['email_verified'] ?? true ) !== false;
 		$customer_id           = (int) $order->get_customer_id( 'edit' );
 		$anonymous_customer_id = (int) get_option( WC_Vipps_Recurring_Helper::OPTION_ANONYMOUS_SYSTEM_CUSTOMER_ID );
 		$user                  = $customer_id ? get_user_by( 'ID', $customer_id ) : false;
@@ -107,6 +108,7 @@ class WC_Vipps_Recurring_Purchase {
 			if ( $user ) {
 				$has_real_user = true;
 				$order->set_customer_id( $user->ID );
+				$this->maybe_skip_login( $order, $email_verified );
 				$order->save();
 			}
 		}
@@ -131,6 +133,7 @@ class WC_Vipps_Recurring_Purchase {
 					return false;
 				}
 				$user_id = $user->ID;
+				$this->maybe_skip_login( $order, $email_verified );
 			}
 
 			$order->set_customer_id( $user_id );
@@ -172,6 +175,16 @@ class WC_Vipps_Recurring_Purchase {
 		return true;
 	}
 
+	/** An unverified email does not prove the buyer owns the existing account it matched. */
+	private function maybe_skip_login( WC_Order $order, bool $email_verified ): void {
+		if ( $email_verified ) {
+			return;
+		}
+
+		$order->update_meta_data( self::META_SKIP_LOGIN, true );
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Assigned the recurring order to an existing customer by an unverified email; the customer will not be logged in', $order->get_id() ) );
+	}
+
 	public function maybe_login_customer( int $order_id, ?string $key = null ): void {
 		if ( ! $key ) {
 			return;
@@ -210,6 +223,15 @@ class WC_Vipps_Recurring_Purchase {
 				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Assigned the recurring order to returning logged-in customer %s instead of customer %s', $order_id, $current_user_id, $order_user_id ) );
 			}
 
+			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
+			$order->delete_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
+			$order->save();
+
+			return;
+		}
+
+		if ( $order->get_meta( self::META_SKIP_LOGIN ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Not logging in the customer on the recurring return because their email is unverified', $order_id ) );
 			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
 			$order->delete_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
 			$order->save();
