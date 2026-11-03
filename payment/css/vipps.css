@@ -198,7 +198,6 @@ li.wc_payment_method.payment_method_vipps img {
 }
 
 .woocommerce-checkout #payment ul.payment_methods li.wc_payment_method.payment_method_vipps img {
-   margin-top:.5rem;
    float: right;
 }  
 .woocommerce-checkout #payment ul.payment_methods li.wc_payment_method.payment_method_vipps_card img {
@@ -672,3 +671,12 @@ div.vipps-qr-purchase a.single-product.vipps-buy-now {
     text-decoration: none !important;
 }
 
+/* Defeat certain themes adding css to type=button IOK 2026-11-03 */
+vipps-mobilepay-button[type="button"], vipps-mobilepay-button[type="button"]:active, vipps-mobilepay-button[type="button"]:hover {
+    background:transparent;
+    border:0;
+}
+/* The same themes use a reset that sets the label to inline-block IOK 2026-11-03 */
+#payment .payment_methods li[class*=payment_method_vipps] label {
+    display: inline;
+}
