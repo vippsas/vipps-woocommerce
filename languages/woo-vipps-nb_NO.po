@@ -644,7 +644,7 @@ msgstr "kjøp-nå"
 #: payment/src/Blocks/src/buy-now/block.json
 msgctxt "block keyword"
 msgid "Express"
-msgstr "Hurtigkasse"
+msgstr "Ekspress"
 
 #: payment/Blocks/dist/buy-now-cart/block.json
 #: payment/Blocks/dist/buy-now/block.json
@@ -660,7 +660,7 @@ msgstr "Vipps"
 #: payment/src/Blocks/src/buy-now/block.json
 msgctxt "block keyword"
 msgid "Vipps Express"
-msgstr "Vipps Hurtigkasse"
+msgstr "Vipps Ekspress"
 
 #: payment/Blocks/dist/buy-now-cart/block.json
 #: payment/Blocks/dist/buy-now/block.json
@@ -903,7 +903,7 @@ msgstr "Kan ikke bruke %1$s som status for ikke automatisk belastbare ordre: Bet
 #: payment/Vipps.class.php:3341
 #, php-format
 msgid "Cannot use shipping method %2$s in %1$s Express checkout: the shipping method isn't serializable."
-msgstr "Kan ikke bruke fraktmetode %2$s i %1$s Hurtigkasse: Fraktmetoden er ikke serialiserbar"
+msgstr "Kan ikke bruke fraktmetode %2$s i %1$s Ekspress: Fraktmetoden er ikke serialiserbar"
 
 #: payment/Vipps.class.php:2603
 #, php-format
@@ -1539,7 +1539,7 @@ msgstr "Opprett nye kunder og logg dem inn i %s."
 
 #: payment/Vipps.class.php:250
 msgid "Create and log in new customers during Express checkout."
-msgstr "Opprett nye kunder og logg dem inn i hurtigkassen."
+msgstr "Opprett nye kunder og logg dem inn under Ekspress-kjøp."
 
 #: payment/WC_Gateway_Vipps.class.php:1134
 #: payment/WC_Gateway_Vipps.class.php:1135
@@ -1982,27 +1982,27 @@ msgstr "Express"
 #: payment/WC_Gateway_Vipps.class.php:1520
 #: recurring/admin/settings/VippsRecurringAdminSettings.class.php:86
 msgid "Express Checkout"
-msgstr "Hurtigkasse"
+msgstr "Ekspress"
 
 #: payment/Vipps.class.php:1270
 msgid "Express checkout failed"
-msgstr "Hurtigkassen mislyktes"
+msgstr "Ekspress-kjøp mislyktes"
 
 #: payment/Vipps.class.php:5449
 msgid "Express pill"
-msgstr "Hurtigkasse avrundet"
+msgstr "Ekspress avrundet"
 
 #: payment/Vipps.class.php:5451
 msgid "Express pill mini"
-msgstr "Hurtigkasse avrundet mini"
+msgstr "Ekspress avrundet mini"
 
 #: payment/Vipps.class.php:5448
 msgid "Express rectangular"
-msgstr "Hurtigkasse rektangulær"
+msgstr "Ekspress rektangulær"
 
 #: payment/Vipps.class.php:5450
 msgid "Express rectangular mini"
-msgstr "Hurtigkasse rektangulær mini"
+msgstr "Ekspress rektangulær mini"
 
 #: payment/VippsKCSupport.class.php:51
 #, php-format
@@ -4241,7 +4241,7 @@ msgstr "Bruk det nye frakt-tilbakekallet"
 
 #: payment/WC_Gateway_Vipps.class.php:1637
 msgid "Use old-style shipping callback for express checkout"
-msgstr "Bruk den gamle frakt-tilbakekall-metoden for hurtigkassen"
+msgstr "Bruk den gamle frakttilbakekall-metoden for Ekspress"
 
 #: payment/WC_Gateway_Vipps.class.php:1670
 #, php-format
@@ -4328,7 +4328,7 @@ msgstr "Vipps-kassen kan ikke brukes for ordre mindre enn %1$s %2$s"
 
 #: payment/WC_Gateway_Vipps.class.php:3933
 msgid "Vipps Express Checkout"
-msgstr "Vipps Hurtigkasse"
+msgstr "Vipps Ekspress"
 
 #: payment/Vipps.class.php:67
 #: payment/WC_Gateway_Vipps.class.php:169
@@ -4351,7 +4351,7 @@ msgstr "Vipps MobilePay Checkout erstatter den normale WooCommerce utsjekkingen 
 
 #: payment/Vipps.class.php:77
 msgid "Vipps MobilePay Express Checkout"
-msgstr "Vipps MobilePay Hurtigkasse"
+msgstr "Vipps MobilePay Ekspress"
 
 #: payment/VippsDismissibleAdminBanners.class.php:131
 #, php-format
@@ -4688,7 +4688,7 @@ msgstr "Din støtte for gjentalknde betalinger med %1$s bruker den foreldede, fr
 #: payment/Vipps.class.php:480
 #, php-format
 msgid "Your theme or a plugin is currently overriding the <code>'woo_vipps_shipping_methods'</code> filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href=\"%1$s\">settings page</a>"
-msgstr "Temaet ditt eller en utvidelse overstyrer for øyeblikket filteret <code>'woo_vipps_shipping_methods'</code> for å tilpasse dine fraktalternativer. Dette virker, men vil skru av den nyere Hurtigkasse-fraktmodulen, som er nødvendig hvis fraktmetodene dine skal inneholde metadata. Du kan gjøre dette, eller slå av denne meldingen, fra <a href=\"%1$s\">siden for innstillinger</a>"
+msgstr "Temaet ditt eller en utvidelse overstyrer for øyeblikket filteret <code>'woo_vipps_shipping_methods'</code> for å tilpasse dine fraktalternativer. Dette virker, men vil skru av den nyere Ekspress-fraktmodulen, som er nødvendig hvis fraktmetodene dine skal inneholde metadata. Du kan gjøre dette, eller slå av denne meldingen, fra <a href=\"%1$s\">siden for innstillinger</a>"
 
 #: payment/lib/recurring-translations.php:124
 msgid "Your Vipps/MobilePay Recurring Payments gateway is not correctly configured."
@@ -5042,7 +5042,7 @@ msgstr "Bruk fastpris eller gratis frakt. Kunden kan ikke velge frakt i %s-appen
 #: recurring/includes/admin/vipps-recurring-settings.php:72
 #, php-format
 msgid "For selected products, enable Express checkout in the product's %s tab."
-msgstr "For utvalgte produkter aktiverer du hurtigkasse i produktets fane %s."
+msgstr "For utvalgte produkter aktiverer du Ekspress i produktets fane %s."
 
 #. translators: %s: Vipps MobilePay
 #: recurring/includes/admin/vipps-recurring-settings.php:142
