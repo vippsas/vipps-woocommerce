@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.3.1 =
+* Fix: Deny webhooks when no webhook secret is set.
+
 = 2.3.0 =
 * Added: A new look and feel for settings
 * Added: An "express" way to use recurring payments via the userinfo API.
