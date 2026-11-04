@@ -1082,7 +1082,7 @@ class WC_Vipps_Recurring {
 		}
 
 		if ( ! $this->verify_webhook( $raw_input, $secret ) ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( "Rejected webhook callback for order %s - invalid signature.", $order_id ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( "Rejected webhook callback for order %s - invalid signature or date.", $order_id ) );
 
 			return;
 		}
@@ -1101,6 +1101,10 @@ class WC_Vipps_Recurring {
 		$expected_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ( $_SERVER['HTTP_X_VIPPS_AUTHORIZATION'] ?? "" );
 		$expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
 
+		if ( ! $this->is_webhook_date_valid( $expected_date ) ) {
+			return false;
+		}
+
 		$hashed_payload = base64_encode( hash( 'sha256', $serialized, true ) );
 		$path_and_query = $_SERVER['REQUEST_URI'] ?? '';
 		$host           = $_SERVER['HTTP_HOST'] ?? '';
@@ -1109,6 +1113,18 @@ class WC_Vipps_Recurring {
 		$auth           = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature=$signature";
 
 		return hash_equals( $auth, (string) $expected_auth );
+	}
+
+	/**
+	 * Reject webhooks whose x-ms-date is more than five minutes away from now, like the payment module does.
+	 */
+	private function is_webhook_date_valid( string $date_header ): bool {
+		$header_time = strtotime( $date_header );
+		if ( $header_time === false ) {
+			return false;
+		}
+
+		return abs( time() - $header_time ) <= 300;
 	}
 
 	public function generate_order_prefix(): string {
