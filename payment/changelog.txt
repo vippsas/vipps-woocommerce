@@ -1,4 +1,8 @@
 == Changelog ==
+= 2026-11-03 version 6.4.1 =
+Fix for handling webhooks in recurring
+Fix for CSS in certain themes for the payment button
+
 = 2026-11-02 version 6.4.0 =
 New settings redesign.
 Express now supports terms and conditions in the app, check the settings.
