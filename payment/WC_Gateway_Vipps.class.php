@@ -140,25 +140,45 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return null;
         }
     }
+
+    // Various setting migrations. LP 2026-11-05
+    private function maybe_migrate_settings() {
+        $current = get_option('woocommerce_vipps_settings', array());
+        $settings = $this->migrate_keyset_with_country_detection($current);
+
+        // Migrate removed alternative 'none' for option 'singleproductexpress' to the new option 'express_singleproduct_enabled'.
+        // 'singleproductexpress' now specifies which products that support express generally, and 'express_singleproduct_enabled'
+        // is whether to show Express button on single product page/context specifically. LP 2026-09-29
+        if ('none' === ($settings['singleproductexpress'] ?? null)) {
+            $settings['singleproductexpress'] = 'all';
+            if (!isset($settings['singleproductexpressarchives'])) {
+                $settings['singleproductexpressarchives'] = 'no';
+            }
+            if (!isset($settings['express_singleproduct_enabled'])) {
+                $settings['express_singleproduct_enabled'] = 'no';
+            }
+        }
+
+        update_option('woocommerce_vipps_settings', $settings);
+        delete_transient('_vipps_keyset');
+    }
+
     // Migrates the keysets to include the country setting if it's missing
     // This is an initial migration step to ensure the country setting is explicitly set.
     // We do this because we no longer want to automatically guess payment method name. NT-2024-10-15
-    private function migrate_keyset_with_country_detection() {
-        $settings = get_option('woocommerce_vipps_settings', array());
-        if ($settings['country'] ?? false) return; // Already set, do nothing IOK 2024-10-17
+    private function migrate_keyset_with_country_detection($settings) {
+        if ($settings['country'] ?? false) return $settings; // Already set, do nothing IOK 2024-10-17
 
         // Now we are only wanting to do this with people who have already configured the plugin. These will have at least this value set:
         if ($settings['payment_method_name'] ?? false) {
             // This assumes that EUR == FI which will be correct for all users reaching this branch IOK 2024-10-17
             $detected_country = $this->detect_country_from_currency();
             // If we can't detect the country, there's nothing to migrate. "this cannot happen" etc. 
-            if (!$detected_country) return;
-
-            $settings['country'] = $detected_country;
-            update_option('woocommerce_vipps_settings', $settings);
-            delete_transient('_vipps_keyset');
-            return;
+            if ($detected_country) {
+                $settings['country'] = $detected_country;
+            }
         }
+        return $settings;
     }
 
     public function __construct() {
@@ -170,7 +190,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->title = __('Vipps MobilePay','woo-vipps');
 
         $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
-        $this->migrate_keyset_with_country_detection();
+        $this->maybe_migrate_settings();
         $this->init_form_fields();
         $this->init_settings();
 
@@ -1085,23 +1105,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Therefore, set new one equal to 'cartexpress' IF it isn't set yet, so that the functionality stays the same for users. LP 2026-07-02
             if (!isset($current['express_show_in_checkout']) && isset($current['cartexpress'])) {
                 $default_express_show_in_checkout = $current['cartexpress'];
-            }
-
-            // Migrate removed alternative 'none' for option 'singleproductexpress' to the new option 'express_singleproduct_enabled'.
-            // 'singleproductexpress' now specifies which products that support express generally, and 'express_singleproduct_enabled'
-            // is whether to show Express button on single product page/context specifically. LP 2026-09-29
-            if ('none' === ($current['singleproductexpress'] ?? null)) {
-                $current['singleproductexpress'] = 'all';
-                $this->update_option('singleproductexpress', 'all');
-
-                $default_express_singleproduct_enabled = 'no';
-                // Need to save the option here too, cause next time this method runs, this branch won't run because we move the option away from 'none'. LP 2026-10-30
-                if (!isset($current['express_singleproduct_enabled'])) {
-                    $this->update_option('express_singleproduct_enabled', $default_express_singleproduct_enabled);
-                }
-
-                $current['singleproductexpressarchives'] = 'no';
-                $this->update_option('singleproductexpressarchives', 'no');
             }
         }
 
