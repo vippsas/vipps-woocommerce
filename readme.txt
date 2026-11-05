@@ -117,6 +117,10 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 6.4.2
+Fix for 100% cpu-causing spin on the gutenberg checkout block
+Improved handling of migration of certain settings
+Fix for telephone-number transforms not working
 Version 6.4.1
 CSS fix for certain themes
 Fix for webhook handling in recurring
@@ -300,6 +304,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 = 2026-11-05 version 6.4.2  =
 Fix for 100% cpu-causing spin on the gutenberg checkout block - thanks to @svejor-gd on github for reporting
 Improved handling of migration of certain settings
+Fix for telephone-number transforms not working
 
 = 2026-11-03 version 6.4.1 =
 Fix for handling webhooks in recurring
