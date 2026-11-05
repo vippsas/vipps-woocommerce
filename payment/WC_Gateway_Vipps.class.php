@@ -3059,20 +3059,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 break;
         }
         $phone = apply_filters('woo_vipps_canonicalize_checkout_phone', $phone, $address, $user);
+        $address['phoneNumber'] = $phone; // checkout
+        $address['mobileNumber'] = $phone; // epayment
 
         if (!isset($address['firstName']) or !$address['firstName']) {
             $address['firstName'] = $firstname;
         }
         if (!isset($address['lastName']) or !$address['lastName']) {
             $address['lastName'] = $lastname;
-        }
-        // checkout uses phonenumber
-        if (!isset($address['phoneNumber']) or !$address['phoneNumber']) {
-            $address['phoneNumber'] = $phone;
-        }
-        // epayment uses mobileNumber
-        if (!isset($address['mobileNumber']) or !$address['mobileNumber']) {
-            $address['mobileNumber'] = $phone;
         }
         if (!isset($address['email']) or !$address['email']) {
             $address['email'] = $email;
