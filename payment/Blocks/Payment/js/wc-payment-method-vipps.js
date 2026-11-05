@@ -1,4 +1,4 @@
-
+console.log("Loading vipps payment method");
 window.registerVippsWidgetPaymentMethod = function (settings, method = 'vipps', filters = {}) {
 
 // Imports
@@ -513,20 +513,19 @@ function getVippsCheckoutController(setBusy) {
  */
 const Content = (props) => {
 	const { eventRegistration, emitResponse } = props;
+	const { onPaymentSetup, onCheckoutSuccess, onCheckoutFail } = eventRegistration || {};
 	const propsRef = useRef(props);
 	const emitResponseRef = useRef(emitResponse);
 
 	propsRef.current = props;
 	emitResponseRef.current = emitResponse;
 
+	// Blocks recreates eventRegistration during rendering. Depend on its stable
+	// functions so subscription updates do not trigger a resubscription loop.
 	useEffect(() => {
-			if (!eventRegistration) {
-				return;
-			}
-
                 // SUCCESS here means payment data is ready, not that payment has been collected.
-                const unsubscribePaymentSetup = eventRegistration.onPaymentSetup
-                        ? eventRegistration.onPaymentSetup(() => {
+                const unsubscribePaymentSetup = onPaymentSetup
+                        ? onPaymentSetup(() => {
 
                         if (
                                 propsRef.current.activePaymentMethod &&
@@ -549,8 +548,8 @@ const Content = (props) => {
                 })
                         : () => {};
 
-                const unsubscribeCheckoutSuccess = eventRegistration.onCheckoutSuccess
-                        ? eventRegistration.onCheckoutSuccess((data) => {
+                const unsubscribeCheckoutSuccess = onCheckoutSuccess
+                        ? onCheckoutSuccess((data) => {
                         const controller = getVippsCheckoutController();
 
                         if (!controller?.hasAttempt()) {
@@ -582,8 +581,8 @@ const Content = (props) => {
                         : () => {};
 
                 // Let WooCommerce display its checkout error; release the waiting SDK resolver.
-                const unsubscribeCheckoutFail = eventRegistration.onCheckoutFail
-                        ? eventRegistration.onCheckoutFail(() => {
+                const unsubscribeCheckoutFail = onCheckoutFail
+                        ? onCheckoutFail(() => {
                         getVippsCheckoutController().reject(new Error('Checkout failed'));
                         return true;
                 })
@@ -594,7 +593,7 @@ const Content = (props) => {
 			unsubscribeCheckoutSuccess();
 			unsubscribeCheckoutFail();
 		};
-	}, [eventRegistration]);
+	}, [onPaymentSetup, onCheckoutSuccess, onCheckoutFail]);
 
         var content = createElement(
 		'div',
