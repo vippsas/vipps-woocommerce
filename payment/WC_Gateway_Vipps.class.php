@@ -143,42 +143,48 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Various setting migrations. LP 2026-11-05
     private function maybe_migrate_settings() {
+        $this->migrate_keyset_with_country_detection();
         $current = get_option('woocommerce_vipps_settings', array());
-        $settings = $this->migrate_keyset_with_country_detection($current);
+        $new = null;
 
         // Migrate removed alternative 'none' for option 'singleproductexpress' to the new option 'express_singleproduct_enabled'.
         // 'singleproductexpress' now specifies which products that support express generally, and 'express_singleproduct_enabled'
         // is whether to show Express button on single product page/context specifically. LP 2026-09-29
-        if ('none' === ($settings['singleproductexpress'] ?? null)) {
-            $settings['singleproductexpress'] = 'all';
-            if (!isset($settings['singleproductexpressarchives'])) {
-                $settings['singleproductexpressarchives'] = 'no';
+        if ('none' === ($current['singleproductexpress'] ?? null)) {
+            $new = $current;
+            $new['singleproductexpress'] = 'all';
+            if (!isset($new['singleproductexpressarchives'])) {
+                $new['singleproductexpressarchives'] = 'no';
             }
-            if (!isset($settings['express_singleproduct_enabled'])) {
-                $settings['express_singleproduct_enabled'] = 'no';
+            if (!isset($new['express_singleproduct_enabled'])) {
+                $new['express_singleproduct_enabled'] = 'no';
             }
         }
 
-        update_option('woocommerce_vipps_settings', $settings);
-        delete_transient('_vipps_keyset');
+        if ($new) {
+            update_option('woocommerce_vipps_settings', $new);
+        }
     }
 
     // Migrates the keysets to include the country setting if it's missing
     // This is an initial migration step to ensure the country setting is explicitly set.
     // We do this because we no longer want to automatically guess payment method name. NT-2024-10-15
-    private function migrate_keyset_with_country_detection($settings) {
-        if ($settings['country'] ?? false) return $settings; // Already set, do nothing IOK 2024-10-17
+    private function migrate_keyset_with_country_detection() {
+        $settings = get_option('woocommerce_vipps_settings', array());
+        if ($settings['country'] ?? false) return; // Already set, do nothing IOK 2024-10-17
 
         // Now we are only wanting to do this with people who have already configured the plugin. These will have at least this value set:
         if ($settings['payment_method_name'] ?? false) {
             // This assumes that EUR == FI which will be correct for all users reaching this branch IOK 2024-10-17
             $detected_country = $this->detect_country_from_currency();
             // If we can't detect the country, there's nothing to migrate. "this cannot happen" etc. 
-            if ($detected_country) {
-                $settings['country'] = $detected_country;
-            }
+            if (!$detected_country) return;
+
+            $settings['country'] = $detected_country;
+            update_option('woocommerce_vipps_settings', $settings);
+            delete_transient('_vipps_keyset');
+            return;
         }
-        return $settings;
     }
 
     public function __construct() {
