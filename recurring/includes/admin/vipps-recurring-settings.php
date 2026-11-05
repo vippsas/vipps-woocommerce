@@ -212,6 +212,16 @@ return apply_filters(
 			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Set renewal orders to "Completed" when %s confirms payment.', 'woo-vipps' ), Vipps::CompanyName() ),
 			'default'     => 'no',
 		],
+		'agreement_stopped_action'         => [
+			'type'        => 'select',
+			'title'       => __( 'When a customer cancels in the app', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'What happens to the subscription when the customer stops their agreement in the %s app. A note is always added to the subscription.', 'woo-vipps' ), Vipps::CompanyName() ),
+			'default'     => WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_MANUAL,
+			'options'     => [
+				WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_CANCEL => __( 'Cancel the subscription', 'woo-vipps' ),
+				WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_MANUAL => __( 'Require manual renewal payments', 'woo-vipps' ),
+			],
+		],
 		'title_cron'                       => [
 			'type'        => 'title',
 			'title'       => __( 'Background checks', 'woo-vipps' ),

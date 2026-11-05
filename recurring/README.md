@@ -147,9 +147,21 @@ Enables someone with access to Vipps/MobilePay developer keys to test the plugin
 
 See the code for an up-to-date list of available actions. Search for `do_action`.
 
+Some actions include:
+
+* `wc_vipps_recurring_agreement_stopped(WC_Subscription $subscription, string $action, array $webhook_data)` - Fires when a customer stops a subscription's agreement in the Vipps or MobilePay app,
+  after the chosen action has been applied.
+  `$action` is `cancel`, `manual` or `none`. `$webhook_data` is the verified webhook payload.
+
 ### Filters
 
 See the code for an up-to-date list of available filters. Search for `apply_filters`.
+
+* `wc_vipps_recurring_agreement_stopped_action(string $action, WC_Subscription $subscription, array $webhook_data)` - Decides what happens to a subscription when the customer stops its agreement in the Vipps or MobilePay app.
+  `$action` starts as the value of the "When a customer cancels in the app" setting. Return `cancel` to cancel the subscription, `manual` to require manual renewal payments,
+  or `none` to leave the subscription unchanged. A note is added to the subscription in every case. Any other value is treated as `manual`.
+  **If you return `none`, you are responsible for the subscription**: it keeps this payment method, and automatic renewals will fail because the agreement is stopped.
+  Use the `wc_vipps_recurring_agreement_stopped` action to run your own handling.
 
 Some filters include:
 

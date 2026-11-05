@@ -5328,3 +5328,35 @@ msgstr ""
 #: recurring/includes/wc-vipps-recurring-profile.php:312
 msgid "The recurring agreement has stopped but its initial payment has a capture or refund. Review this purchase manually; do not delete it or create another payment."
 msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php:217
+msgid "When a customer cancels in the app"
+msgstr "Når en kunde sier opp i appen"
+
+#: recurring/includes/admin/vipps-recurring-settings.php:218
+#, php-format
+msgid "What happens to the subscription when the customer stops their agreement in the %s app. A note is always added to the subscription."
+msgstr "Hva som skjer med abonnementet når kunden stopper avtalen sin i %s-appen. Det legges alltid til et notat på abonnementet."
+
+#: recurring/includes/admin/vipps-recurring-settings.php:221
+msgid "Cancel the subscription"
+msgstr "Avslutt abonnementet"
+
+#: recurring/includes/admin/vipps-recurring-settings.php:222
+msgid "Require manual renewal payments"
+msgstr "Krev manuell betaling av fornyelser"
+
+#: recurring/includes/wc-gateway-vipps-recurring.php:3411
+#, php-format
+msgid "The customer cancelled the subscription in the %s app. The subscription now requires manual renewal payments."
+msgstr "Kunden sa opp abonnementet i %s-appen. Abonnementet krever nå manuell betaling av fornyelser."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php:3404
+#, php-format
+msgid "The customer cancelled the subscription in the %s app. The subscription was cancelled."
+msgstr "Kunden sa opp abonnementet i %s-appen. Abonnementet ble avsluttet."
+
+#: recurring/includes/wc-gateway-vipps-recurring.php:3417
+#, php-format
+msgid "The customer cancelled the subscription in the %s app. The subscription was not changed."
+msgstr "Kunden sa opp abonnementet i %s-appen. Abonnementet ble ikke endret."

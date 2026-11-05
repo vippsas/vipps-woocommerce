@@ -3365,9 +3365,68 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				return;
 			}
 
-			$message = sprintf( /* translators: %s: Vipps or MobilePay */ __( 'Subscription cancelled by the customer via the %s app.', 'woo-vipps' ), $this->title );
-			$subscription->set_status( 'cancelled', $message );
-			$subscription->save();
+			// Webhooks can be delivered more than once, so act on each stopped agreement only once.
+			$agreement_id = $webhook_data['agreementId'];
+			if ( WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_STOPPED_AGREEMENT_ID ) === $agreement_id ) {
+				return;
+			}
+
+			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_STOPPED_AGREEMENT_ID, $agreement_id );
+
+			$action = $this->get_option( 'agreement_stopped_action', WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_MANUAL );
+			if ( $action !== WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_CANCEL ) {
+				$action = WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_MANUAL;
+			}
+
+			/**
+			 * Filters what happens to a subscription when the customer stops its agreement in the Vipps or MobilePay app.
+			 *
+			 * Return 'cancel' to cancel the subscription, 'manual' to require manual renewal payments, or 'none' to leave the
+			 * subscription unchanged. With 'none' you are responsible for the subscription: it keeps this payment method,
+			 * and automatic renewals will fail because the agreement is stopped. Any other value is treated as 'manual'.
+			 *
+			 * @param string $action The action chosen in the gateway settings: 'cancel' or 'manual'.
+			 * @param WC_Subscription $subscription The subscription the stopped agreement belongs to.
+			 * @param array $webhook_data The verified webhook payload.
+			 */
+			$action = apply_filters( 'wc_vipps_recurring_agreement_stopped_action', $action, $subscription, $webhook_data );
+
+			if ( ! in_array( $action, [
+				WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_CANCEL,
+				WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_MANUAL,
+				WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_NONE,
+			], true ) ) {
+				$action = WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_MANUAL;
+			}
+
+			if ( $action === WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_CANCEL ) {
+				/* translators: %s: Vipps or MobilePay */
+				$subscription->set_status( 'cancelled', sprintf( __( 'The customer cancelled the subscription in the %s app. The subscription was cancelled.', 'woo-vipps' ), $this->title ) );
+				$subscription->save();
+			}
+
+			if ( $action === WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_MANUAL ) {
+				$subscription->set_requires_manual_renewal( true );
+				/* translators: %s: Vipps or MobilePay */
+				$subscription->add_order_note( sprintf( __( 'The customer cancelled the subscription in the %s app. The subscription now requires manual renewal payments.', 'woo-vipps' ), $this->title ) );
+				$subscription->save();
+			}
+
+			if ( $action === WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_NONE ) {
+				/* translators: %s: Vipps or MobilePay */
+				$subscription->add_order_note( sprintf( __( 'The customer cancelled the subscription in the %s app. The subscription was not changed.', 'woo-vipps' ), $this->title ) );
+				$subscription->save();
+			}
+
+			/**
+			 * Fires after a customer has stopped a subscription's agreement in the Vipps or MobilePay app,
+			 * and the chosen action has been applied.
+			 *
+			 * @param WC_Subscription $subscription The subscription the stopped agreement belongs to.
+			 * @param string $action The action that was applied: 'cancel', 'manual' or 'none'.
+			 * @param array $webhook_data The verified webhook payload.
+			 */
+			do_action( 'wc_vipps_recurring_agreement_stopped', $subscription, $action, $webhook_data );
 		}
 	}
 
