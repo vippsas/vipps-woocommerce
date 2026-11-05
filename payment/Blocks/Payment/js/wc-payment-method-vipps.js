@@ -1,4 +1,3 @@
-console.log("Loading vipps payment method");
 window.registerVippsWidgetPaymentMethod = function (settings, method = 'vipps', filters = {}) {
 
 // Imports
