@@ -147,11 +147,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $current = get_option('woocommerce_vipps_settings', array());
         $new = null;
 
+        // Previously, certain settings were guarded by a "developermode" setting. We are removing
+        // that, but if it was off, we must turn off testmode too. IOK 2026-11-05
+        if (isset($current['developermode'])) {
+           $previous = $current['developermode'];
+           $new = $new ?: $current;
+           // Turn off testmode if devmode was off.
+           if ('no' === $previous) {
+               $new['testmode'] = 'no';
+           }
+           unset($new['developermode']);
+           $this->log(__("Migrating developermode settings", 'woo-vipps'));
+        }
+
         // Migrate removed alternative 'none' for option 'singleproductexpress' to the new option 'express_singleproduct_enabled'.
         // 'singleproductexpress' now specifies which products that support express generally, and 'express_singleproduct_enabled'
         // is whether to show Express button on single product page/context specifically. LP 2026-09-29
         if ('none' === ($current['singleproductexpress'] ?? null)) {
-            $new = $current;
+            $new = $new ?: $current;
             $new['singleproductexpress'] = 'all';
             if (!isset($new['singleproductexpressarchives'])) {
                 $new['singleproductexpressarchives'] = 'no';
@@ -159,11 +172,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if (!isset($new['express_singleproduct_enabled'])) {
                 $new['express_singleproduct_enabled'] = 'no';
             }
+           $this->log(__("Migrating single product express settings", 'woo-vipps'));
+        }
+    
+        if ($new) {
+           update_option('woocommerce_vipps_settings', $new);
         }
 
-        if ($new) {
-            update_option('woocommerce_vipps_settings', $new);
-        }
     }
 
     // Migrates the keysets to include the country setting if it's missing
