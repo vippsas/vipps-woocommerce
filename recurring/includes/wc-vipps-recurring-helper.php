@@ -69,6 +69,13 @@ class WC_Vipps_Recurring_Helper {
 	public const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_DESCRIPTION = '_vipps_recurring_latest_failed_charge_description';
 	public const META_SUBSCRIPTION_RENEWING_WITH_VIPPS = '_vipps_recurring_renewing_with_vipps';
 	public const META_SUBSCRIPTION_MARKED_FOR_DELETION = '_vipps_recurring_marked_for_deletion';
+	public const META_SUBSCRIPTION_STOPPED_AGREEMENT_ID = '_vipps_recurring_stopped_agreement_id';
+
+	// What to do with a subscription when the customer stops its agreement in the app.
+	public const AGREEMENT_STOPPED_ACTION_CANCEL = 'cancel';
+	public const AGREEMENT_STOPPED_ACTION_MANUAL = 'manual';
+	// Only available through the wc_vipps_recurring_agreement_stopped_action filter, for merchants handling it themselves.
+	public const AGREEMENT_STOPPED_ACTION_NONE = 'none';
 
 	public const OPTION_CONFIGURED = '_woo_vipps_recurring_configured';
 	public const OPTION_CHECKOUT_ENABLED = '_woo_vipps_recurring_checkout_enabled';
