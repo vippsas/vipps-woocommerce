@@ -1,8 +1,11 @@
 == Changelog ==
 
+= 2.4.1 =
+* Fix: Fixed unnecessary order updates during recurring payment status checks, which could cause repeated sync jobs in Mailchimp and other integrations.
+
 = 2.4.0 =
 * Added: We now have a `wc_vipps_recurring_agreement_stopped` action you can use to change the logic for when an agreement is canceled via the app.
-* Added: We also added an acommodating `wc_vipps_recurring_agreement_stopped_action` filter that allows you to set the action to `WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_NONE`, and just run your own code.
+* Added: We also added an accommodating `wc_vipps_recurring_agreement_stopped_action` filter that allows you to set the action to `WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_NONE`, and just run your own code.
 * Added: A setting that allows you to decide what happens when we receive an "agreement stopped" webhook from Vipps. The default is to move it to manual payments.
 
 = 2.3.1 =

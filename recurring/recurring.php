@@ -3,7 +3,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '2.4.0' );
+define( 'WC_VIPPS_RECURRING_VERSION', '2.4.1' );
 
 /**
  * Polyfills
