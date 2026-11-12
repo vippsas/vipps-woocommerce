@@ -519,8 +519,58 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param object|WC_Order $order
 	 */
 	public function unlock_order( $order ): void {
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_locked_for_update_time', 0 );
-		$order->save();
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_LOCKED_FOR_UPDATE_TIME, 0 );
+
+		$this->save_charge_check_order( $order );
+	}
+
+	/**
+	 * Persist polling metadata without notifying integrations of an order update.
+	 * Other metadata changes and order property changes still require a full save.
+	 */
+	private function save_charge_check_order( $order ): void {
+		$business_meta_changed = false;
+		$unchanged_meta_ids = [];
+
+		foreach ( $order->get_meta_data() as $meta ) {
+			$stored = $meta->get_data();
+			// Metadata read from storage uses strings for scalar values, including booleans.
+			if ( $meta->id && $stored['key'] === $meta->key
+			     && (string) maybe_serialize( $stored['value'] ) === (string) maybe_serialize( $meta->value ) ) {
+				$unchanged_meta_ids[] = (int) $meta->id;
+			}
+		}
+
+		$track_meta_change = static function ( $meta_id, $order_id, $meta_key ) use ( $order, $unchanged_meta_ids, &$business_meta_changed ) {
+			if ( (int) $order_id === (int) $order->get_id() && ! in_array( $meta_key, [
+				WC_Vipps_Recurring_Helper::META_ORDER_LOCKED_FOR_UPDATE_TIME,
+				WC_Vipps_Recurring_Helper::META_CHARGE_LAST_CHECKED,
+			], true ) && ! in_array( (int) $meta_id, $unchanged_meta_ids, true ) ) {
+				$business_meta_changed = true;
+			}
+		};
+
+		$skip_hpos_save = static function () { return false; };
+		$meta_hooks = [ 'added_order_meta', 'updated_order_meta', 'deleted_order_meta' ];
+
+		foreach ( $meta_hooks as $hook ) {
+			add_action( $hook, $track_meta_change, 10, 3 );
+		}
+
+		// HPOS can call save() from save_meta_data() to update the modified date.
+		add_filter( 'woocommerce_orders_table_datastore_should_save_after_meta_change', $skip_hpos_save, PHP_INT_MAX );
+		try {
+			$order->save_meta_data();
+		} finally {
+			remove_filter( 'woocommerce_orders_table_datastore_should_save_after_meta_change', $skip_hpos_save, PHP_INT_MAX );
+			foreach ( $meta_hooks as $hook ) {
+				remove_action( $hook, $track_meta_change, 10 );
+			}
+		}
+
+		if ( $business_meta_changed || $order->get_changes() ) {
+			$order->save();
+		}
 	}
 
 	/**
@@ -557,15 +607,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		// hold on to the lock for 30 seconds
-		$lock = (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_locked_for_update_time' );
+		$lock = (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_LOCKED_FOR_UPDATE_TIME );
 		if ( ( $lock && $lock > time() - 30 ) && ! $skip_lock ) {
 			return 'SUCCESS';
 		}
 
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_locked_for_update_time', time() );
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_LOCKED_FOR_UPDATE_TIME, time() );
 		// The cron check picks the least recently checked orders first, so stamp before anything can bail out.
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_LAST_CHECKED, time() );
-		$order->save();
+		$this->save_charge_check_order( $order );
 
 		$order_status = $order->get_status();
 
@@ -749,6 +799,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		if ( $order_status === 'cancelled' ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] This order has not been captured, but has a cancelled status. Skipping capture attempt.', WC_Vipps_Recurring_Helper::get_id( $order ) ) );
 			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
+			$this->unlock_order( $order );
 
 			return 'SUCCESS';
 		}
@@ -758,7 +809,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// MobilePay auto-releases and refunds reservations after 7 days, so we capture eagerly when configured.
 		if ( $is_mobilepay_auto_capture ) {
 			// maybe_capture_payment re-fetches the order, so persist META_CHARGE_ID and META_LATEST_API_STATUS first.
-			$order->save();
+			$this->save_charge_check_order( $order );
 
 			if ( $this->maybe_capture_payment( $order_id ) ) {
 				$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 7 days.', 'woo-vipps' ) );
@@ -775,7 +826,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Capture if direct capture is enabled or the order has already been marked Completed.
 		if ( $is_direct_capture || $has_completed_state ) {
-			$order->save();
+			$this->save_charge_check_order( $order );
 			$this->maybe_capture_payment( $order_id );
 
 			return 'SUCCESS';
@@ -797,8 +848,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$this->unlock_order( $order );
-
-		$order->save();
 
 		if ( ! $this->use_high_performance_order_storage() ) {
 			clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
@@ -888,7 +937,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$order->update_meta_data( WC_Vipps_Recurring_Profile::META_PAYMENT_STATUS, $charge->status );
 			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge->id );
 			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
-			$order->save();
+			$this->save_charge_check_order( $order );
 			return;
 		}
 
@@ -1007,7 +1056,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			WC_Vipps_Recurring_Helper::set_order_charge_not_failed( $order, $charge->id );
 		}
 
-		$order->save();
+		$this->save_charge_check_order( $order );
 	}
 
 	/**
