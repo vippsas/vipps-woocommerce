@@ -1978,16 +1978,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return [];
-        } catch (Exception $e) {
-
+        } catch (VippsAPIDuplicateOrderId $e) {
+            // IOK Prepare to check if this has an active vipps session - in which case this was a double-click. Then we can just return the existing session. IOK 2026-11-12
             // Special case the "duplicate order id" thing to ensure it doesn't happen again, and if it does, at least
             // log some more info IOK 2022-11-02
-            if (preg_match("/Duplicate Order Id/i", $e->getMessage())) {
-               do_action('woo_vipps_duplicate_order_id', $order);
-               $this->log(sprintf(__("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %1\$s Status: %2\$s User agent: %3\$s", 'woo-vipps'), $order->get_meta('_vipps_express_checkout'), $order->get_status(), $order->get_customer_user_agent()), 'error');
-               $order->update_status('cancelled', __('Cannot restart order with same order ID: Must cancel', 'woo-vipps'));
-            }
-
+            do_action('woo_vipps_duplicate_order_id', $order);
+            $this->log(sprintf(__("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %1\$s Status: %2\$s User agent: %3\$s", 'woo-vipps'), $order->get_meta('_vipps_express_checkout'), $order->get_status(), $order->get_customer_user_agent()), 'error');
+            $order->update_status('cancelled', __('Cannot restart order with same order ID: Must cancel', 'woo-vipps'));
+            $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
+            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
+            return [];
+        } catch (Exception $e) {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return [];

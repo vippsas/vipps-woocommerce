@@ -1495,6 +1495,8 @@ class VippsApi {
         // 502's are Bad Gateway which means that Vipps is busy. IOK 2018-05-11
         if (intval($response) == 502) {
             $exception = new TemporaryVippsAPIException($msg);
+        } else if (intval($response) == 409) {
+            $exception = new VippsAPIDuplicateOrderId($msg);
         } else {
             $exception = new VippsApiException($msg);
         }
