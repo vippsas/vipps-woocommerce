@@ -526,8 +526,8 @@ class VippsAdminSettings
                     ],
                 ],
             'express_options_wizard' => array(
-                'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::ExpressName()),
-                'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressName()),
+                'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressCheckoutName()),
                 'readmore' => __('Read more', 'woo-vipps'),
             ),
             'testmode_wizard' => [

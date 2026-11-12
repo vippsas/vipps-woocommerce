@@ -69,12 +69,8 @@ class Vipps {
     public static function CheckoutName($order=null) {
         return "Vipps MobilePay Checkout"; // Do not translate
     }
-    // Seems Vipps is now testing branding it as just Express, Ekpress in norwegian etc. LP 2026-09-24
-    public static function ExpressName() {
-        return __("Express", 'woo-vipps');
-    }
     public static function ExpressCheckoutName($order=null) {
-        return __("Vipps MobilePay Express Checkout", 'woo-vipps');
+        return __("Express", 'woo-vipps');
     }
     public static function LoginName() {
         return __("Login with Vipps", 'woo-vipps');
@@ -241,14 +237,6 @@ class Vipps {
           $this->log(__("Error: Cannot instantiate payment gateway, because WooCommerce is not loaded! This can happen when WooCommerce updates itself; but if it didn't, please activate WooCommerce again", 'woo-vipps'), 'error');
           return null;
         }
-    }
-
-
-    // These are strings that should be available for translation possibly at some future point. Partly to be easier to work with translate.wordpress.org
-    // Other usages are to translate any dynamic strings that may come from APIs etc. IOK 2021-03-18
-    private function translatable_strings() {
-        __("Create and log in new customers during Express checkout.", 'woo-vipps');
-        return false;
     }
 
     // True iff support for HPOS has been activated IOK 2022-12-07
@@ -477,7 +465,7 @@ class Vipps {
         if (has_action('woo_vipps_shipping_methods')) {
             $option = $gw->get_option('newshippingcallback');
             if ($option != 'old' && $option != 'new') {
-                $what = __('Your theme or a plugin is currently overriding the <code>\'woo_vipps_shipping_methods\'</code> filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href="%1$s">settings page</a>', 'woo-vipps');
+                $what = sprintf(__('Your theme or a plugin is currently overriding the <code>\'woo_vipps_shipping_methods\'</code> filter to customize your shipping alternatives.  While this works, this disables the newer %s shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href="%s">settings page</a>', 'woo-vipps'), Vipps::ExpressCheckoutName(), admin_url('/admin.php?page=vipps_settings_menu'));
                 $this->add_vipps_admin_notice($what,'info');
             }
         }
@@ -1267,12 +1255,12 @@ EOF;
                 'cancel'=> __("Cancel", 'woo-vipps'),
                 'close'=> __("Close", 'woo-vipps'),
                 'missingPaymentUrl'=> __("Successful checkout response has no payment URL", 'woo-vipps'),
-                'expressCheckoutFailed'=> __("Express checkout failed", 'woo-vipps'),
-                'unexpectedCheckoutResponse'=> __("Unexpected express checkout response", 'woo-vipps'),
-                'vippsCheckoutFailed'=> __("Vipps Mobilepay checkout failed", 'woo-vipps'),
+                'expressCheckoutFailed'=> sprintf(__("%s failed", 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                'unexpectedCheckoutResponse'=> sprintf(__("Unexpected %s response", 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                'vippsCheckoutFailed'=> sprintf(__("%s failed", 'woo-vipps'), Vipps::CheckoutName()),
                 'correctHighlightedFields'=> __("Please correct the highlighted fields.", 'woo-vipps'),
                 'checkFormBeforeContinuing'=> __("Please check the form before continuing.", 'woo-vipps'),
-                'cartCheckoutUnavailable'=> __("Cannot start express checkout: cart checkout is unavailable", 'woo-vipps'),
+                'cartCheckoutUnavailable'=> sprintf(__("Cannot start %s %s: cart checkout is unavailable", 'woo-vipps'), Vipps::CompanyName(), Vipps::ExpressCheckoutName()),
                 'productIdentifiersMissing'=> __("Cannot buy product: product id, variation id and sku are missing", 'woo-vipps'),
                 'productFormNotFound'=> __("Cannot buy product: product form not found", 'woo-vipps'),
                 'paymentSuccessfulRedirecting' => __("Payment successful. Redirecting…", 'woo-vipps'),
@@ -1384,7 +1372,7 @@ EOF;
 
     public function express_checkout_section_html() {
         $payment_method = $this->get_payment_method_name();
-        $header_text = __('Express Checkout', 'woo-vipps');
+        $header_text = Vipps::ExpressCheckoutName();
         $header = "<legend class='express-header'>$header_text</legend>";
         $div_classes = "legacy-checkout express $payment_method";
         echo "<fieldset class='$div_classes'>$header";
@@ -1527,7 +1515,7 @@ EOF;
             ('yes' === $gw->get_option('singleproductexpressarchives'));
         echo '<div class="options_group">';
         echo "<div class='blurb' style='margin-left:13px'><h4>";
-        echo self::ExpressName();
+        echo self::ExpressCheckoutName();
         echo "<h4></div>";
         if ($express_for_products && $choice == 'some') {
             $button = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_buy_now_button', true));
@@ -1535,9 +1523,9 @@ EOF;
             woocommerce_wp_checkbox( array(
                         'id'      => 'woo_vipps_add_buy_now_button',
                         'value'   => $button,
-                        'label'   => sprintf(__('Support %s', 'woo-vipps'), Vipps::ExpressName()),
+                        'label'   => sprintf(__('Support %s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'desc_tip' => true,
-                        'description' => sprintf(__('Add a %s button to this product','woo-vipps'), Vipps::ExpressName())
+                        'description' => sprintf(__('Add a %s button to this product','woo-vipps'), Vipps::ExpressCheckoutName())
                         ) ); 
         } else if ($express_for_products && $choice == "all") {
           $prod = wc_get_product(get_the_ID());
@@ -1547,17 +1535,17 @@ EOF;
           }
 
           echo "<p>";
-          echo sprintf(__("The %1\$s settings are currently set up so all products that can be bought with %2\$s are supported.", 'woo-vipps'), Vipps::CompanyName(), Vipps::ExpressName()); 
+          echo sprintf(__("The %1\$s settings are currently set up so all products that can be bought with %2\$s are supported.", 'woo-vipps'), Vipps::CompanyName(), Vipps::ExpressCheckoutName()); 
           echo " ";
           if ($canbebought) {
-            echo sprintf(__("This product supports %1\$s and will have an %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
+            echo sprintf(__("This product supports %1\$s and will have an %1\$s button." , 'woo-vipps'), Vipps::ExpressCheckoutName());
           } else {
-            echo sprintf(__("This product does <b>not</b> support %1\$s, and so will <b>not</b> have a %1\$s button." , 'woo-vipps'), Vipps::ExpressName());
+            echo sprintf(__("This product does <b>not</b> support %1\$s, and so will <b>not</b> have a %1\$s button." , 'woo-vipps'), Vipps::ExpressCheckoutName());
           } 
           echo "</p>";
         } else { // Express for products disabled. LP 2026-09-29
           echo "<p>";
-          echo sprintf(__('%s is currently disabled for all products in the %s settings.', 'woo-vipps'), Vipps::ExpressName(), Vipps::CompanyName());
+          echo sprintf(__('%s is currently disabled for all products in the %s settings.', 'woo-vipps'), Vipps::ExpressCheckoutName(), Vipps::CompanyName());
           echo "</p>";
         }
         echo '</div>';
@@ -2128,7 +2116,7 @@ else:
                     break;
                 case 'do_express_checkout':
                 case 'buy_product':
-                    $title = __('Express Checkout', 'woo-vipps');
+                    $title = Vipps::ExpressCheckoutName();
                     break;
             }
         }
@@ -2358,8 +2346,8 @@ else:
         $this->vippsJSConfig['BuyNowWith'] = __('Buy now with', 'woo-vipps');
         $this->vippsJSConfig['BuyNowWithVipps'] = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->get_payment_method_name());
         $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vmp-logo.png',__FILE__);
-        $this->vippsJSConfig['vippsbuynowbutton'] = $this->get_payment_method_name() . ' ' . Vipps::ExpressName();
-        $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %s %s product button', 'woo-vipps'), $this->get_payment_method_name(), Vipps::ExpressName());
+        $this->vippsJSConfig['vippsbuynowbutton'] = $this->get_payment_method_name() . ' ' . Vipps::ExpressCheckoutName();
+        $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %s %s product button', 'woo-vipps'), $this->get_payment_method_name(), Vipps::ExpressCheckoutName());
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
         $this->vippsJSConfig['vippslocale'] = get_locale();
         $this->vippsJSConfig['vippsexpressbuttonurl'] = $this->get_payment_method_name();
@@ -3197,7 +3185,7 @@ else:
         
         if ($chosen && !isset($methods[$chosen]))  {
             $chosen = null; // Actually that isn't available
-            $this->log(sprintf(__("Unavailable shipping method set as default in the %1\$s Express Checkout shipping callback - check the 'woo_vipps_default_shipping_method' filter",'debug'), $this->get_payment_method_name()));
+            $this->log(sprintf(__("Unavailable shipping method set as default in the %1\$s %2\$s shipping callback - check the 'woo_vipps_default_shipping_method' filter",'debug'), $this->get_payment_method_name(), Vipps::ExpressCheckoutName()));
         }
 
         if (!$chosen) {
@@ -3338,7 +3326,7 @@ else:
                 $storedmethods[$key] = $serialized;
             } catch (Exception $e) {
                 $errormethods[] = $key;
-                $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label), 'error');
+                $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s %3\$s: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label, Vipps::ExpressCheckoutName()), 'error');
                 $this->log($rate, 'error');
                 continue;
             }
@@ -4116,9 +4104,9 @@ else:
             return $customer;
         }
         if (is_wp_error($customerid)) {
-            $this->log(__("Error creating customer in express checkout: ", 'woo-vipps') . $customerid->get_error_message());
+            $this->log(sprintf(__("Error creating customer in %s: ", 'woo-vipps'), Vipps::ExpressCheckoutName()) . $customerid->get_error_message());
         } else {
-            $this->log(__("Unknown error customer in express checkout.", 'woo-vipps'));
+            $this->log(sprintf(__("Unknown error customer in %s.", 'woo-vipps'), Vipps::ExpressCheckoutName()));
         }
         return null;
     }
@@ -4267,7 +4255,7 @@ else:
         static::set_locale_if_in_header();
         $args = $request->get_json_params();
         if (!$args) {
-            return new WP_Error('no_data', __('No data passed to express checkout', 'woo-vipps'), ['status' => 400]);
+            return new WP_Error('no_data', sprintf(__('No data passed to %s', 'woo-vipps'), Vipps::ExpressCheckoutName()), ['status' => 400]);
         }
 
         // Since this is the REST api, we need to load the cart manually here. IOK 2026-08-27
@@ -4352,7 +4340,7 @@ else:
         static::set_locale_if_in_header();
         $args = $request->get_json_params();
         if (!$args) {
-            return new WP_Error('no_data', __('No data passed to express checkout', 'woo-vipps'), ['status' => 400]);
+            return new WP_Error('no_data', sprintf(__('No data passed to %s', 'woo-vipps'), Vipps::ExpressCheckoutName()), ['status' => 400]);
         }
         $result = ['ok' => 0, 'msg'=>'', 'orderid'=>0, 'url'=>''];
 
@@ -5270,7 +5258,7 @@ else:
     public function woo_vipps_store_api_cart_schema() {
         return array(
             'cart_hide_express' => array(
-                'description' => sprintf(__( 'Whether to hide the %1$s Express Checkout in the cart', 'woo-vipps' ), $this->get_payment_method_name()),
+                'description' => sprintf(__( 'Whether to hide the %1$s %2$s in the cart', 'woo-vipps' ), Vipps::CompanyName(), Vipps::ExpressCheckoutName()),
                 'type'        => array( 'boolean', 'null' ),
                 'readonly'    => true,
             ),
