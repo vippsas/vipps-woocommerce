@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
 import { Collapsible } from '../collapsible';
@@ -26,7 +25,6 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
     );
     setOption('express_enabled', anyEnabled ? 'yes' : 'no');
   }
-  const [expressEnableShowMore, setExpressEnableShowMore] = useState(false);
 
   return (
     <div>
@@ -41,27 +39,13 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
           descriptionKey="express_enabled.description"
           // Sync master toggle to overrides. LP 2026-09-29
           onChange={(value) => expressOverrides.forEach(option => setOption(option, value))}
-
-          trailingAction={
-            <button
-              type="button"
-              className="vipps-mobilepay-react-overrides-toggle"
-              aria-label={gettext('express_placement')}
-              title={gettext('express_placement')}
-              aria-expanded={expressEnableShowMore}
-              aria-controls="vipps-mobilepay-react-express-overrides"
-              onClick={() => setExpressEnableShowMore((showMore) => !showMore)}
-            >
-              <span className="vipps-mobilepay-react-overrides-chevron" aria-hidden="true" />
-            </button>
-          }
         />
 
-        {/* Don't show the rest of the options unless express is enabled. LP 2026-10-01 */}
-
-        {/* Context/page specific overrides for express. LP 2026-09-28 */}
-        <div id="vipps-mobilepay-react-express-overrides" className="vipps-mobilepay-react-express-overrides" hidden={!expressEnableShowMore}>
-          <div className="vipps-mobilepay-react-express-overrides-heading">{gettext('express_placement')}</div>
+        <Collapsible
+          title={gettext('express_placement')}
+          className="vipps-mobilepay-react-express-overrides"
+        >
+          {/* Context/page specific overrides for express. LP 2026-09-28 */}
           {expressOverrides.map(option => (
             <SwitchFormField
               key={option}
@@ -72,7 +56,7 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
               onChange={(value) => updateMasterFromOverride(option, value)}
             />
           ))}
-        </div>
+        </Collapsible>
       </div>
 
       {/* Only show the rest of the options if express is actually enabled (the options above). LP 2026-09-25 */}
