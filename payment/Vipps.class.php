@@ -1876,7 +1876,7 @@ else:
 
         if ($details['captureGuaranteedUntil'] ?? '') {
             $capture_expiry_local = wp_date('Y-m-d H:i:s', strtotime($details['captureGuaranteedUntil'])) ?: $details['captureGuaranteedUntil'];
-            printf(__('Capture guaranteed until: %s', 'woo-vipps'), $capture_expiry_local) . "<br>";
+            printf(__('Capture guaranteed until: %s' . '<br>', 'woo-vipps'), $capture_expiry_local);
         }
 
         if (!empty(@$details['transactionSummary'])) {
