@@ -2,7 +2,7 @@ export interface VippsBlockConfig {
 	BuyNowWithVipps: string;
 	vippsbuynowbutton: string;
 	vippsbuynowdescription: string;
-	minicartLogo: string;
+	buttonHtml: string;
 }
 
 // Injected config from php. LP 27.11.2024

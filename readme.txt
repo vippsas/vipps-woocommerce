@@ -3,14 +3,14 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 6.0.2
-Stable tag: 6.0.2
+Version: 6.4.2
+Stable tag: 6.4.2
 Requires at least: 6.3
-Tested up to: 7.0.0
+Tested up to: 7.1.4
 Requires PHP: 8.0
 Requires Plugins: woocommerce
 WC requires at least: 8.0.0
-WC tested up to: 10.8.1
+WC tested up to: 11.2.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -117,10 +117,18 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Version 6.0.1
-Fix small problems with tabs in the settings
-Version 6.0.0
-Support payment with credit or debit card as a separate payment method
+Version 6.4.2
+Fix for 100% cpu-causing spin on the gutenberg checkout block
+Improved handling of migration of certain settings
+Fix for telephone-number transforms not working
+Version 6.4.1
+CSS fix for certain themes
+Fix for webhook handling in recurring
+Version 6.4.0
+New settings redesign.
+Express now supports showing terms and conditions in the app.
+Recurring now supports "express" through the userinfo API.
+Added recurring support for the new popup-style purchase flow.
 
 == Frequently Asked Questions ==
 
@@ -292,7 +300,120 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsInit'  - runs when a page with a Vipps MobilePay button is initialzed
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
-== Changelog ==
+== Changelog ===
+= 2026-11-05 version 6.4.2  =
+Fix for 100% cpu-causing spin on the gutenberg checkout block - thanks to @svejor-gd on github for reporting
+Improved handling of migration of certain settings
+Fix for telephone-number transforms not working
+
+= 2026-11-03 version 6.4.1 =
+Fix for handling webhooks in recurring
+Fix for CSS in certain themes for the payment button
+
+= 2026-11-02 version 6.4.0 =
+New settings redesign.
+Express now supports terms and conditions in the app, check the settings.
+Recurring now supports "express" through the userinfo API.
+Added recurring support for the new popup-style purchase flow (Vipps widgetSDK).
+
+= 2026-10-26 version 6.3.4 =
+Fix: refunds failing due to float error.
+Suppress warnings for undeclared class properties.
+Various recurring fixes, see recurring/changelog.txt
+
+= 2026-10-20 version 6.3.3 =
+Fix: dont allow WooCommerce-disallowed countries in purchase/shipping.
+Reintroduce order locking for error-logging purposes.
+Show info from Vipps MobilePay for how long the capture is guaranteed.
+
+= 2026-10-12 version 6.3.2 =
+Fix issue with some buttons getting wrong language
+Fix duplicate order confirmation emails being sent
+
+= 2026-10-06 version 6.3.1 =
+Remove old order locking functionality.
+Fix: incorrect language on express buttons. workaround because of webcomponent library bug.
+Fix: custom non-webcomponent express buttons did not get purchase event attached.
+Fix: shipping rate label could include escaped characters.
+Fix: swedish when using store language for express buttons.
+Fix: express button container was clickable on old shortcode checkout.
+
+= 2026-09-30 version 6.3.0 =
+Implements the new Vipps MobilePay Widget SDK, improving the Express Checkout experience
+Fix crashes with some Express Checkout shipping methods
+
+= 2026-09-30 version 6.2.6 =
+Fix crashes with some Express Checkout shipping methods
+Improve express checkout buttons
+Last version not using the Vipps MobilePay Widget SDK
+
+= 2026-09-24 version 6.2.5 =
+Fix style of express checkout buttons in Gutenberg Checkout and cart
+Security fix for info leakage in "choose other payment method" in Vipps Checkout
+ 
+= 2026-09-22 version 6.2.4 =
+Fix for cart clearance issue in WooCommerce 11.1 with express checkout
+
+= 2026-09-21 version 6.2.3 =
+Fix for compatibility mode
+
+= 2026-09-21 version 6.2.2 =
+Fix for the wait-for-payment page for certain themes
+
+= 2026-09-18 version 6.2.1 =
+Security fix for possible shop-manager level exploit
+Ensure certain events only happens once
+
+= 2026-09-15 version 6.2.0 =
+Replaced the fake-page mechanism with a modern WooCommerce-managed page for these actions
+
+= 2026-09-11 Version 6.1.10 =
+Don't set Vipps as default payment method if Kustom Checkout is installed
+
+= 2026-09-10 version 6.1.9 =
+Minor textual changes
+
+= 2026-09-03 version 6.1.8 =
+Minor textual changes
+
+= 2026-09-01 version 6.1.7 =
+Compatibility fix for Login with Vipps
+
+= 2026-08-31 version 6.1.6 =
+Fix performance issue with order notes with certain configurations of NGINX Helper
+Remove all usage of eCom v2 and userInfo api
+Fix issue where Checkout orders were cancelled early
+
+= 2026-08-20 version 6.1.5 =
+Fix crash in certain situations when checking order status
+
+= 2026-08-18 version 6.1.4 =
+Settings wizard now promotes Express.
+Fix danish and swedish language for badge preview in badge settings
+
+= 2026-08-11 version 6.1.3 =
+Fix language issue with danish buttons and badges
+
+= 2026-08-07 version 6.1.2 =
+Fix buttons not working in cart and checkout
+
+= 2026-08-06 version 6.1.1 =
+Fix warning in settings for uninitialized sites (Thanks to @absdhiten for reporting)
+
+= 2026-08-04 version 6.1.0
+Removed experimental support for beta product editor 
+Changed express checkout buttons to use web components
+Changed callback/webhook handler to use Async Queue to avoid race conditions
+
+= 2026-06-24 version 6.0.5 =
+Fix compatibility when inheriting PayPal gateway order
+
+= 2026-06-17 version 6.0.4 =
+Web component are now hosted locally
+
+= 2026-06-15 version 6.0.3 =
+Minor fixes in handling refunds
+
 = 2026-06-08 version 6.0.2 =
 Make stricter CSS for Express in shortcode checkout
 
@@ -323,7 +444,7 @@ Fix express heckout for woo versions less than 9.2.0
 Vipps Checkout now in legacy mode and available only for existing installs
 
 = 2026-03-26 Version 5.3.2 =
-Improve express checkout banner on legacy checkokut screens
+Improve express checkout banner on legacy checkout screens
 Add new setting for retryable orders
 
 = 2026-03-23 Version 5.3.1 =

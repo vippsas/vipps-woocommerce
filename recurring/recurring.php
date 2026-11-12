@@ -3,7 +3,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '2.2.12' );
+define( 'WC_VIPPS_RECURRING_VERSION', '2.4.0' );
 
 /**
  * Polyfills
@@ -29,6 +29,10 @@ if ( ! function_exists( 'array_key_last' ) ) {
 require_once __DIR__ . '/includes/wc-vipps-recurring-helper.php';
 require_once __DIR__ . '/includes/wc-vipps-recurring-logger.php';
 require_once __DIR__ . '/includes/wc-vipps-recurring-admin-notices.php';
+require_once __DIR__ . '/includes/wc-vipps-recurring-purchase.php';
+require_once __DIR__ . '/includes/wc-vipps-recurring-profile.php';
+require_once __DIR__ . '/includes/wc-vipps-recurring-express-checkout.php';
+require_once __DIR__ . '/includes/wc-vipps-recurring-express-cleanup.php';
 require_once __DIR__ . '/includes/wc-vipps-recurring.php';
 
 /*
@@ -48,7 +52,16 @@ define( 'WC_VIPPS_RECURRING_INTEGRATED', true);
  * Amount of days to retry a payment when creating a charge in the Vipps/MobilePay API
  */
 if ( ! defined( 'WC_VIPPS_RECURRING_RETRY_DAYS' ) ) {
-    define( 'WC_VIPPS_RECURRING_RETRY_DAYS', 2 );
+	$wc_vipps_recurring_retry_days = 2;
+	$wc_vipps_recurring_wcs_retries_enabled = 'yes' === get_option( 'woocommerce_subscriptions_enable_retry', 'no' );
+
+	if ( apply_filters( 'wcs_is_retry_enabled', $wc_vipps_recurring_wcs_retries_enabled ) ) {
+		$wc_vipps_recurring_retry_days = 0;
+	}
+
+	define( 'WC_VIPPS_RECURRING_RETRY_DAYS', $wc_vipps_recurring_retry_days );
+	unset( $wc_vipps_recurring_retry_days );
+	unset( $wc_vipps_recurring_wcs_retries_enabled );
 }
 
 /*
@@ -58,7 +71,14 @@ if ( ! defined( 'WC_VIPPS_RECURRING_TEST_MODE' ) ) {
     define( 'WC_VIPPS_RECURRING_TEST_MODE', false );
 }
 
+if ( ! defined( 'WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION' ) ) {
+    define( 'WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION', false );
+}
+
 WC_Vipps_Recurring::register_hooks();
+WC_Vipps_Recurring_Profile::register_hooks();
+WC_Vipps_Recurring_Express_Checkout::register_hooks();
+WC_Vipps_Recurring_Express_Cleanup::register_hooks();
 if ( get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false ) ) {
     require_once __DIR__ . '/includes/wc-vipps-recurring-checkout.php';
     WC_Vipps_Recurring_Checkout::register_hooks();

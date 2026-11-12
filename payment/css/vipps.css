@@ -32,6 +32,28 @@ vipps-mobilepay-badge {
     width: 90vw;
 }
 
+/* Avoid having the new web component button get outlined IOK 2026-08-07  */
+vipps-mobilepay-button:focus,
+vipps-mobilepay-button:focus-visible {
+    outline: none;
+}
+
+/* Make the express button in checkout match other buttons; aiming for 48px IOK 2026-09-24
+* (https://developer.woocommerce.com/docs/features/payments/ux-guidelines/payment-button-size/?utm_source=chatgpt.com#layout-and-spacing) */
+.wc-block-components-express-payment--checkout #express-payment-method-vippsexpress div.vipps-express-container,
+.wc-block-components-express-payment--checkout #express-payment-method-vipps_recurring_express div.vipps-express-container {
+  scale: calc(48 / 44);
+  transform-origin: top left;
+  width: calc(100%*44/48);
+}
+/* And in the cart. */
+.wc-block-components-express-payment--cart #express-payment-method-vippsexpress div.vipps-express-container,
+.wc-block-components-express-payment--cart #express-payment-method-vipps_recurring_express div.vipps-express-container {
+  scale: calc(48 / 44);
+  transform-origin: top left;
+  width: calc(100%*44/48);
+}
+
 
 /* Vipps Checkout Widgets */
 .vipps_checkout_widget_wrapper {
@@ -171,29 +193,11 @@ h2.confirmVippsExpressCheckoutHeader {
  margin-top: 0;
 }
 
-
-a.button.vipps-express-checkout img {
-    max-width: 100%;
-    width: 13.5rem;
-    max-height: 100%;
-    filter: drop-shadow( 0px 1px 2px #d7d7d7);
-}
-a.button.vipps-express-checkout.short img {
-    width:initial;
-}
-a.button.vipps-express-checkout:hover img {
-    opacity: 0.9;
-}
-a.button.vipps-express-checkout.disabled img {
-    opacity: 0.7;
-}
-
 li.wc_payment_method.payment_method_vipps img {
     max-width: 145px;
 }
 
 .woocommerce-checkout #payment ul.payment_methods li.wc_payment_method.payment_method_vipps img {
-   margin-top:.5rem;
    float: right;
 }  
 .woocommerce-checkout #payment ul.payment_methods li.wc_payment_method.payment_method_vipps_card img {
@@ -210,32 +214,6 @@ a.button.vipps-buy-now:focus {
 }
 .wc-block-grid__products .wc-block-grid__product .wp-block-button__link.vipps-buy-now:hover, .woocommerce ul.products li.product .button.vipps-buy-now:hover, a.button.vipps-buy-now:hover {
     opacity: 0.9;
-}
-
-ul.products li.product a.button.vipps-buy-now img {
- margin:0px;
- display:inline;
-}
-
-a.button.vipps-express-checkout {
- background-color: #fff;
- color: transparent;
- vertical-align: bottom;
- padding: 0;
- margin-left:.5em;
-}
-a.button.vipps-express-checkout:active, a.button.vipps-buy-now:active {
- border: 0;
-}
-a.button.vipps-express-checkout:hover, a.button.vipps-buy-now:hover {
- border: 0;
-}
-
-/* New-style button for Vipps and Mobile Pay is 100% svg */
-a.single-product.button.vipps-buy-now  {
-    padding-left:0;
-    padding-right:0;
-    padding-bottom:0;
 }
 
 body .widget_shopping_cart a.button.vipps-express-checkout, body .widget_shopping_cart a.button.vipps-express-checkout:hover {
@@ -320,6 +298,17 @@ img.inline {
  display:inline;
 }
 
+.vipps-buy-now {
+    padding-left: 0;
+    padding-right: 0;
+}
+.vipps_buy_now_wrapper.noloop {
+    margin-top: .5rem;
+}
+.wp-block-woo-vipps-buy-now-cart.wc-block-button-vipps {
+    margin-bottom: .5rem;
+}
+
 .vippsorange {
  background-color: #fe5b24;
 }
@@ -340,26 +329,22 @@ img.inline {
 }
 
 /* New express section for woo legacy (shortcode) checkout. LP 2026-03-23 */
-.legacy-checkout.vipps-express-checkout {
-    max-width: 20rem;
-    box-sizing: border-box;
-    border: 1px solid lightgrey;
-    border-radius: 4px;
-    min-inline-size: 0;
-    padding: 1.1rem 1.7rem;
-    margin: 1rem auto;
-    text-align: center;
+.legacy-checkout.express {
+    max-width: 20rem !important;
+    box-sizing: border-box !important;
+    border: 1px solid lightgrey !important;
+    border-radius: 4px !important;
+    min-inline-size: 0 !important;
+    padding: 1.1rem 1.7rem !important;
+    margin: 1rem auto !important;
+    text-align: center !important;
 }
-.legacy-checkout.vipps-express-checkout .express-header {
-    display: table;
-    margin: 0 auto;
-    padding: 0 0.75rem;
-    line-height: 1;
-    font-size: var(--wp--preset--font-size--small);
-}
-.legacy-checkout.vipps-express-checkout a, .legacy-checkout.vipps-express-checkout img {
-    padding: 0 !important;
-    border: 0 !important;
+.legacy-checkout.express .express-header {
+    display: table !important;
+    margin: 0 auto !important;
+    padding: 0 0.75rem !important;
+    line-height: 1 !important;
+    font-size: var(--wp--preset--font-size--small) !important;
 }
 
 .vipps_checkout_button_wrapper {
@@ -562,4 +547,136 @@ body.processing {
     100%{
         background-color:rgb(255,255,255);
     }
+}
+
+
+.vipps-mobilepay-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(90vw, 600px);
+    max-height: 90vh;
+    padding: 2.25rem 1.5rem 1.5rem;
+    border: 0;
+    border-radius: 12px;
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+.vipps-mobilepay-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.vipps-mobilepay-dialog .vipps-form-message {
+    color: #b32d2e;
+    font-weight: 600;
+}
+
+.vipps-mobilepay-dialog form {
+    display: grid;
+    gap: 1rem;
+}
+
+.vipps-mobilepay-dialog button {
+    font-size: 1.25rem;
+    border-width: 2px;
+    padding: 0.5rem 1rem;
+}
+
+.vipps-mobilepay-dialog .dialog-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.vipps-mobilepay-dialog .dialog-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 600px) {
+    .vipps-mobilepay-dialog {
+        width: calc(100vw - 2rem);
+        max-height: calc(100vh - 2rem);
+        padding: 3rem 1rem 1rem;
+    }
+}
+
+/* This button will replace the normal pay for order and confirm order button in classic checkout scenarios */
+/* Try to make it look ok for most themes IOK 2026-09-16 */
+.woocommerce-order-pay #vipps-classic-checkout-submit.vipps-submit-wrapper {
+    float:right;
+}
+#vipps-classic-checkout-submit.vipps-submit-wrapper {
+    border:0;padding:0;margin:0;background-color:transparent;
+}
+#vipps-classic-checkout-submit.vipps-submit-wrapper.hidden {
+    display:none !important;
+}
+#place_order.hidden {
+    display:none !important;
+}
+.vipps-classic-checkout-container {
+    width:100%;
+    text-align: center;
+}
+
+body.processing .vippsoverlay.vipps-redirecting {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      opacity: 1;
+}
+
+.vippsoverlay.vipps-redirecting .vipps-redirect-status {
+      box-sizing: border-box;
+      max-width: min(90vw, 28rem);
+      margin: 0;
+      padding: 1rem 1.5rem;
+      border: 1px solid #d8d8d8;
+      border-radius: 0.75rem;
+      background: #fff;
+      color: #222;
+      box-shadow: 0 4px 20px rgb(0 0 0 / 18%);
+      font-size: 1.125rem;
+      font-weight: 700;
+      line-height: 1.4;
+      text-align: center;
+}
+
+body.processing .vippsoverlay.vipps-redirecting #floatingCirclesG {
+      position: relative;
+      inset: auto;
+      margin: 0;
+      transform: none;
+}
+
+/* Sometimes Vipps adds a space in the buttons */
+div.vipps-cart-purchase a.vipps-express-checkout  {
+    text-decoration: none !important;
+}
+div.vipps-qr-purchase a.single-product.vipps-buy-now {
+    text-decoration: none !important;
+}
+
+/* Defeat certain themes adding css to type=button IOK 2026-11-03 */
+vipps-mobilepay-button[type="button"], vipps-mobilepay-button[type="button"]:active, vipps-mobilepay-button[type="button"]:hover {
+    background:transparent;
+    border:0;
+}
+/* The same themes use a reset that sets the label to inline-block IOK 2026-11-03 */
+#payment .payment_methods li[class*=payment_method_vipps] label {
+    display: inline;
 }

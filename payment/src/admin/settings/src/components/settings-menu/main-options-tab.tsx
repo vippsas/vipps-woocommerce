@@ -1,0 +1,124 @@
+import { detectPaymentMethodName, getPaymentMethodSupportedCurrencies, isPaymentMethodCurrencySupported } from '../../lib/payment-method';
+import { useWP } from '../../wp-options-provider';
+import { getMetadata, gettext } from '../../lib/wp-data';
+import { SwitchFormField, InputFormField, SelectFormField, TextareaFormField } from '../options-form-fields';
+import { truthToBool } from '../form-elements';
+import { Collapsible } from '../collapsible';
+import { InfoTooltip } from '../info-tooltip';
+
+/**
+ * A React component that renders the main options tab for the admin settings page.
+ *
+ * @returns The rendered main options tab.
+ */
+export function AdminSettingsMainOptionsTab(): JSX.Element {
+  const { setOption, getOption } = useWP();
+  const gwEnabled = truthToBool(getOption('enabled'));
+
+  return (
+    <div>
+      <p className="vipps-mobilepay-react-tab-description"></p>
+
+      {/* Toggle for whether or not the plugin is enabled  */}
+      <SwitchFormField
+        name="enabled"
+        titleKey="enabled.title"
+        labelKey="enabled.label"
+        descriptionKey="enabled.description"
+      />
+
+      {/* Don't show the rest of the options if the above gw main option is disabled. LP 2026-09-25 */}
+      {gwEnabled && (<>
+        {/* Toggle for whether or not Vipps is the default payment method */}
+        <SwitchFormField
+          name="vippsdefault"
+          titleKey="vippsdefault.title"
+          descriptionKey='vippsdefault.description'
+          labelKey="vippsdefault.label"
+        />
+
+        {/* Renders a select field that specifies the country */}
+        <SelectFormField
+          name="country"
+          titleKey="country.title"
+          labelKey="country.label"
+          descriptionKey="country.description"
+          includeEmptyOption={false}
+          required
+          onChange={(e) => {
+            // Set the payment method name based on the selected country
+            const paymentMethod = detectPaymentMethodName(e.target.value);
+            // Only update the payment method name if it is not already set
+            if (!getOption('payment_method_name')) {
+              setOption('payment_method_name', paymentMethod);
+            }
+          }}
+          options={[
+            { label: gettext('country.options.NO'), value: 'NO' },
+            { label: gettext('country.options.SE'), value: 'SE' },
+            { label: gettext('country.options.FI'), value: 'FI' },
+            { label: gettext('country.options.DK'), value: 'DK' }
+          ]}
+        />
+
+        {/* Renders a select field that specifies the payment method name (Vipps or MobilePay) */}
+        <SelectFormField
+          name="payment_method_name"
+          titleKey="payment_method_name.title"
+          descriptionKey="payment_method_name.description"
+          includeEmptyOption={false}
+          required
+          error={
+            !isPaymentMethodCurrencySupported(getOption('payment_method_name'), getMetadata('currency'))
+              ? `${getOption('payment_method_name')} does not support your store currency (${getMetadata('currency')}). Supported currencies: ${getPaymentMethodSupportedCurrencies(getOption('payment_method_name')).join(', ')}`
+              : undefined
+          }
+          options={[
+            { label: gettext('payment_method_name.options.Vipps'), value: 'Vipps' },
+            { label: gettext('payment_method_name.options.MobilePay'), value: 'MobilePay' }
+          ]}
+        />
+
+        {/* Renders an input field for the order prefix */}
+        <InputFormField
+          name="orderprefix"
+          titleKey="orderprefix.title"
+          descriptionKey="orderprefix.description"
+          pattern="[a-zA-Z0-9]+"
+          required
+        />
+
+
+        {/* Renders a textarea field for the description */}
+        <TextareaFormField name="description" titleKey="description.title" descriptionKey="description.description" rows={5} />
+
+        {/* Order status section */ }
+        <Collapsible title={gettext('order_status_section')}>
+          {/* Renders a select field for the result status (On-Hold or Processing) */}
+          <SelectFormField
+            name="result_status"
+            titleKey="result_status.title"
+            descriptionKey="result_status.description"
+            trailingAction={<InfoTooltip html={gettext('result_status_extra')}/>}
+            options={[
+              { label: gettext('result_status.options.on-hold'), value: 'on-hold' },
+              { label: gettext('result_status.options.processing'), value: 'processing' }
+            ]}
+          />
+
+          {/* Renders a select field for the order status on failed payment. LP 2026-03-26 */}
+          <SelectFormField
+            name="status_on_fail"
+            titleKey="status_on_fail.title"
+            descriptionKey="status_on_fail.description"
+            trailingAction={<InfoTooltip html={gettext('status_on_fail_extra')}/>}
+            options={[
+              { label: gettext('status_on_fail.options.failed'), value: 'failed' },
+              { label: gettext('status_on_fail.options.cancelled'), value: 'cancelled' }
+            ]}
+          />
+        </Collapsible>
+      </>)}
+    </div>
+  );
+}

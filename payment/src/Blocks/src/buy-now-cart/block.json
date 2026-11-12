@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "woo-vipps/buy-now-cart",
 	"version": "1.0.0",
-	"title": "Vipps MobilePay Buy Now (cart)",
+	"title": "Vipps MobilePay Express (cart)",
 	"keywords": [
 		"WooCommerce",
 		"woo-gutenberg-products-block",

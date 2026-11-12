@@ -25,15 +25,13 @@ add_action('enqueue_block_assets', function () {
     if (is_admin()) {
         // Add the on-site-messaging web component if we are in the admin area. 
         wp_enqueue_script('vipps-onsite-messageing');
+        wp_enqueue_script('vipps-button-webcomponent');
     }
 });
 
 // Inject block config variables to block editor assets
 add_action('enqueue_block_editor_assets', function () {
-
-
-
-
+    wp_enqueue_script('vipps-button-webcomponent');
 
     // vipps-badge config
     $vipps = Vipps::instance();
@@ -48,19 +46,19 @@ add_action('enqueue_block_editor_assets', function () {
     if ($store_language == 'nb' || $store_language == 'nn') {
         $store_language = 'no';
     }
-    if ($store_language == 'da') {
-        $store_language = 'dk';
-    }
-    if (!in_array($store_language, ['en', 'no', 'dk', 'fi'])) {
+    if (!in_array($store_language, ['en', 'no', 'dk', 'da', 'fi'])) {
         $store_language = 'en'; // english default fallback
     }
+    // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+    if ('dk' === $store_language) $store_language = 'da';
 
     $languages = [
                 ['label' => __('Default', 'woo-vipps'), 'value' => $store_language],
                 ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                 ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
+                ['label' => __('Swedish', 'woo-vipps'), 'value' => 'sv'],
                 ['label' => __('Finnish', 'woo-vipps'), 'value' => 'fi'],
-                ['label' => __('Danish', 'woo-vipps'), 'value' => 'dk'],
+                ['label' => __('Danish', 'woo-vipps'), 'value' => 'da'],
             ];
 
     $badge_config = [
@@ -83,6 +81,9 @@ add_action('enqueue_block_editor_assets', function () {
     if (version_compare(WC_VERSION, '9.4', '>=')) {
         $payment_method = Vipps::instance()->get_payment_method_name();
         $store_language = Vipps::instance()->get_customer_language();
+        // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+        if ('dk' === $store_language) $store_language = 'da';
+
 
         switch ($payment_method) {
             case 'Vipps':
@@ -90,57 +91,69 @@ add_action('enqueue_block_editor_assets', function () {
                     ['label' => __('Store language', 'woo-vipps'), 'value' => "store"],
                     ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                     ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
-                    ['label' => __('Swedish', 'woo-vipps'), 'value' => 'se'],
+                    ['label' => __('Swedish', 'woo-vipps'), 'value' => 'sv'],
+                    ['label' => __('Danish', 'woo-vipps'), 'value' => 'da'],
                 ];
                 break;
             case 'MobilePay':
                 $buy_now_languages = [
                     ['label' => __('Store language', 'woo-vipps'), 'value' => "store"],
                     ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
+                    ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
+                    ['label' => __('Swedish', 'woo-vipps'), 'value' => 'sv'],
+                    ['label' => __('Danish', 'woo-vipps'), 'value' => 'da'],
                     ['label' => __('Finnish', 'woo-vipps'), 'value' => 'fi'],
-                    ['label' => __('Danish', 'woo-vipps'), 'value' => 'dk'],
                 ];
                 break;
         }
 
-        // Array of associative arrays with keys 'label' and 'value'. LP 2026-01-16
         $buy_now_variants = [
-            ['label' => __('Default', 'woo-vipps'), 'value' => 'default-mini'],
+            ['label' => __('Primary', 'woo-vipps'), 'value' => 'primary'],
+            ['label' => __('Dark', 'woo-vipps'), 'value' => 'dark'],
+            ['label' => __('Light', 'woo-vipps'), 'value' => 'light'],
         ];
-        foreach (Vipps::instance()->get_express_logo_variants() as $value => $label) {
-            $buy_now_variants[] = ['label' => $label, 'value' => $value];
-        }
 
-        // Create array of language => variant => logo_url. LP 2026-01-16
-        $logos = [];
-        foreach ($buy_now_languages as $lang_arr) {
-            $lang_key = $lang_arr['value'];
-            $lang = $lang_key === 'store' ? $store_language : $lang_key;
-            foreach ($buy_now_variants as $variant_arr) {
-                $variant = $variant_arr['value'];
-                $logos[$lang_key][$variant] = Vipps::instance()->get_express_logo($payment_method, $lang, $variant);
-            }
+        $buy_now_verbs = [
+            ['label' => __('Buy', 'woo-vipps'), 'value' => 'buy'],
+            ['label' => __('Pay', 'woo-vipps'), 'value' => 'pay'],
+            ['label' => __('Continue', 'woo-vipps'), 'value' => 'continue'],
+            ['label' => __('Confirm', 'woo-vipps'), 'value' => 'confirm'],
+            ['label' => __('Donate', 'woo-vipps'), 'value' => 'donate'],
+            ['label' => __('Express', 'woo-vipps'), 'value' => 'express'],
+        ];
+
+        // Migrate from old variants to new config array by sending a map. LP 2026-07-01
+        $variant_migration_map = [];
+        foreach(array_keys(Vipps::instance()->get_express_logo_variants()) as $old_variant) {
+            $new_config = Vipps::instance()->migrate_button_variant_to_config($old_variant);
+            unset($new_config['brand']); // brand needs to be dynamic from payment method! LP 2026-07-01
+            unset($new_config['language']);
+            unset($new_config['stretched']);
+            $variant_migration_map[$old_variant] = $new_config;
         }
 
         $buy_now_config = [
             'BuyNowWithVipps' => Vipps::instance()->vippsJSConfig['vippssmileurl'],
-            'logos' => $logos,
             'vippssmileurl' => Vipps::instance()->vippsJSConfig['vippssmileurl'],
             'vippsbuynowbutton' => Vipps::instance()->vippsJSConfig['vippsbuynowbutton'],
             'vippsbuynowdescription' => Vipps::instance()->vippsJSConfig['vippsbuynowdescription'],
             'languages' => $buy_now_languages,
             'variants' => $buy_now_variants,
+            'verbs' => $buy_now_verbs,
             'vippsresturl' => '/woo-vipps/v1',
+            'paymentMethod' => Vipps::instance()->get_payment_method_name(),
+            'storeLanguage' => Vipps::instance()->get_customer_language(),
+            'variantMigrationMap' => $variant_migration_map,
         ];
         wp_add_inline_script('woo-vipps-buy-now-editor-script', 'const vippsBuyNowBlockConfig = ' . json_encode($buy_now_config), 'before');
 
         // Buy now block for the minicart only. LP 2026-02-09
         $buy_now_cart_config = [
-            'vippsbuynowdescription' => sprintf(__( 'Add a %1$s Buy Now-button to the mini-cart', 'woo-vipps'), $vipps->get_payment_method_name()),
-            'vippsbuynowbutton' => $buy_now_config['vippsbuynowbutton'],
+            'vippsbuynowdescription' =>  sprintf(__( 'Add a %s %s button to the mini-cart', 'woo-vipps'), Vipps::instance()->get_payment_method_name(), Vipps::ExpressName()),
+            'vippsbuynowbutton' => $buy_now_config['vippsbuynowbutton'] . ' (' . __('Cart', 'woocommerce') . ')',
             'vippssmileurl' => $buy_now_config['vippssmileurl'],
             'BuyNowWithVipps' => $buy_now_config['BuyNowWithVipps'],
-            'minicartLogo' => $vipps->get_payment_logo('minicart'),
+            'buttonHtml' => $vipps->get_html_button_for_context('minicart'),
         ];
         wp_add_inline_script('woo-vipps-buy-now-cart-editor-script', 'const vippsBuyNowCartBlockConfig = ' . json_encode($buy_now_cart_config), 'before');
     }

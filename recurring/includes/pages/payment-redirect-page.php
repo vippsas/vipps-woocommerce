@@ -2,6 +2,13 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// The SDK's payment iframe can also return here. Only the parent should start polling.
+// Parent handlers add pw=1, including when the shop itself is embedded in an iframe.
+if ( ( $_SERVER['HTTP_SEC_FETCH_DEST'] ?? '' ) === 'iframe' && ( $_GET['pw'] ?? '' ) !== '1' ) {
+	echo 'ok';
+	return;
+}
+
 ?>
 
 <!doctype html>

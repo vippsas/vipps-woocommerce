@@ -19,6 +19,11 @@ const label = decodeEntities(settings.title) || defaultLabel;
 const iconsrc = settings.iconsrc;
 
 
+/**
+ * Card checkout uses WooCommerce's standard order submission and gateway redirect.
+ * Content only renders the description: it must not intercept checkout success
+ * or clear redirectUrl as the Vipps widget method does.
+ */
 const Content = () => {
         var content = React.createElement(
 		'div',
@@ -28,6 +33,7 @@ const Content = () => {
        return applyFilters('woo_vipps_card_checkout_description', content, settings);
 };
 
+/** Render the card title and card-brand logos, preserving merchant/plugin filters. */
 const Label = props => {
         const { PaymentMethodLabel } = props.components;
         let textlabel = React.createElement( 'span', null, decodeEntities(settings.title || ''));
@@ -36,13 +42,16 @@ const Label = props => {
         return applyFilters('woo_vipps_card_checkout_label', label, settings);
 };
 
+/** Allow existing integrations to control visibility after server-side enablement. */
 const canMakePayment = (args) => {
         var candoit = true;
         return applyFilters('woo_vipps_card_checkout_block_show_vipps', candoit, settings);
 };
 
 /**
- * Vipps  payment method config object.
+ * Register vipps_card with a normal WooCommerce place-order button. Only its label
+ * is customized; the legacy Store API adapter calls the card gateway and Blocks
+ * follows its redirect. No widget controller or custom payment events are needed.
  */
 const VippsCardPaymentMethod = {
         name: 'vipps_card',

@@ -24,7 +24,7 @@ For support, contact the
 *Official Vipps/MobilePay payment plugin for WooCommerce.*
 <!-- END_COMMENT -->
 
-Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway and Sweden. One platform gathering more than 11 million users and more than 400,000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.
+One platform gathering more than 11 million users and more than 400,000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.
 
 This is the official Vipps/MobilePay plugin for payments and Express buttons. Increase your conversion rate by letting your customers pay with a fast, secure and convenient payment method. Vipps MobilePay allows users to make quick and easy payments using their mobile phone, without the need for entering credit card details or other sensitive information.
 
@@ -54,7 +54,7 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 
 ![Posten and Checkout shared functionality](./payment/docs/images/Posten_woocommerce_guide.png)
 
-If you use [Posten Bring Checkout plugin for WooCommerce](https://wordpress.org/plugins/posten-bring-checkout/) together with Vipps MobilePay Checkout, you will get a streamlined shipping process tightly integrated with the market leading Vipps MobilePay Checkout. Both plugins are free to use, and easy to install.
+If you use [Posten Bring Checkout plugin for WooCommerce](https://wordpress.org/plugins/posten-bring-checkout/) together with Vipps MobilePay Checkout, you will get a streamlined shipping process tightly integrated with the market-leading Vipps MobilePay Checkout. Both plugins are free to use, and easy to install.
 
 You can offer your customers a variety of delivery methods, track shipments, print shipping labels, and calculate shipping costs automatically at checkout. Both plugins are designed for simple installation and management through the WooCommerce dashboard and support both smaller and larger shops looking to streamline their payments with Vipps MobilePay and logistics with Bring.
 
@@ -83,7 +83,7 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 ## Single payments
 
 When you enable this plugin, your customers will be able to choose Vipps or MobilePay as a payment method directly in the standard WooCommerce checkout.
-There is no need to go via a third party payment method.
+There is no need to go via a third-party payment method.
 When choosing Vipps or MobilePay, the customer fills in the name and address and is then asked to enter phone number on the Vipps/MobilePay landing page.
 They then confirm the payment in the Vipps or MobilePay app.
 
@@ -106,7 +106,7 @@ They then confirm the payment in the Vipps or MobilePay app.
 
 1. Sign in to the [business portal](https://portal.vippsmobilepay.com/).
 2. In the *Developer* section, choose *Production Keys*. Here you can find the merchant serial number (6 figures).
-3. Click on *Show keys* under the API keys column to see *Client ID*, *Client Secret* and *0cp Apim Subscription Key*.
+3. Click on *Show keys* under the API keys column to see *Client ID*, *Client Secret*, and *Ocp-Apim-Subscription-Key*.
 
 See:
 
@@ -127,7 +127,7 @@ Enter your [API keys](/docs/knowledge-base/api-keys/) and configure the plugin.
 
 ### In which countries can I use Vipps MobilePay?
 
-You can get paid by users who have Vipps in Norway and Sweden, or who have MobilePay in Denmark or Finland.
+You can get paid by Vipps MobilePay users in Denmark, Finland, Greenland, Norway, and Sweden.
 
 ### How do I set the default language?
 
@@ -136,15 +136,15 @@ The plugin should use the website language. The default is always English, and i
 ### For how long is an order reserved?
 
 :::note
-Payments initiated in Finland and Denmark have only 14 days to be captured; while
-payments in Norway have 180 days.
+Payments in the Danish and Finnish markets have only 14 days to be captured, while
+payments in the Norwegian market have 180 days.
 If the payments aren't captured within this time, they will be automatically cancelled.
 
 Payments can only be captured up to 14 days (MobilePay) or 180 days (Vipps) after reservation.
 See [Reserve and capture](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/).
 :::
 
-When a payment is completed with Vipps MobilePay, the money will be reserved, but only transferred to the merchant when the order is set to “Complete” or the money is captured manually. For MobilePay, this reservation period is 14 days, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. The reserved period for payments made by credit card in Vipps/MobilePay Checkout can be as short as 7 days.
+When a payment is completed with Vipps MobilePay, the money will be reserved, but only transferred to the merchant when the order is set to “Complete” or the money is captured manually. For MobilePay, this reservation period is 14 days, so you will need to ship and fulfill orders before this, or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. The reserved period for payments made by credit card in Vipps/MobilePay Checkout can be as short as 7 days.
 
 If the order only contains virtual and downloadable products, the plugin will capture the order automatically and set the order to “Completed” as is the standard WooCommerce rule.
 

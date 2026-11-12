@@ -27,7 +27,8 @@ export default function Edit({
 
 	const attrs = {
 		variant: current,
-		language: attributes.language,
+		// Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
+		language: 'dk' === attributes.language ? 'da' : attributes.language,
 		brand: blockConfig.brand,
 	};
 

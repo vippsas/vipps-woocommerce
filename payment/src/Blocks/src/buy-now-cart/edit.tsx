@@ -14,14 +14,10 @@ export default function Edit() {
 		>
 			{/* The buy-now button. LP 2026-01-19 */}
 			<a
-				className="single-product button vipps-buy-now wp-block-button__link"
+				className="single-product button vipps-buy-now wp-block-button__link minicart"
 				title={blockConfig['vippsbuynowbutton']}
+				dangerouslySetInnerHTML={{__html: blockConfig['buttonHtml']}}
 			>
-				<img
-					className="inline vipps-logo-negative"
-					src={blockConfig['minicartLogo']}
-					alt={blockConfig['vippsbuynowbutton']}
-				/>
 			</a>
 		</div>
 	);

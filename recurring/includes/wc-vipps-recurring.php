@@ -213,6 +213,11 @@ class WC_Vipps_Recurring {
 	 */
 	public function admin_init() {
 		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
+		// The Recurring settings app owns its AJAX save action and its screen assets.
+		require_once dirname( __DIR__ ) . '/admin/settings/VippsRecurringAdminSettings.class.php';
+		$settings = VippsRecurringAdminSettings::instance();
+		$settings->register();
+		add_action( 'admin_enqueue_scripts', [ $settings, 'enqueue' ] );
 
 		add_action( 'admin_head', [ $this, 'admin_head' ] );
 
@@ -223,7 +228,7 @@ class WC_Vipps_Recurring {
 		] );
 
 		if ( $this->gateway()->test_mode ) {
-			$notice = __( 'Vipps/MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!', 'woo-vipps' );
+			$notice = sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!', 'woo-vipps' ), Vipps::CompanyName() );
 			$this->notices->warning( $notice );
 		}
 
@@ -240,7 +245,13 @@ class WC_Vipps_Recurring {
 				if ( empty( get_option( WC_Vipps_Recurring_Helper::OPTION_WEBHOOKS ) ) ) {
 					$this->gateway()->webhook_initialize();
 				} else {
-					$ok = $this->gateway()->webhook_ensure_this_site();
+					try {
+						$ok = $this->gateway()->webhook_ensure_this_site();
+					} catch ( Exception $e ) {
+						// Don't break the admin page over this, we check again in 30 minutes
+						WC_Vipps_Recurring_Logger::log( sprintf( 'Failed to check webhooks. Error: %s', $e->getMessage() ) );
+						$ok = true;
+					}
 
 					if ( ! $ok ) {
 						$this->gateway()->webhook_initialize();
@@ -274,6 +285,12 @@ class WC_Vipps_Recurring {
 		require_once( "wc-gateway-vipps-recurring.php" );
 
 		return WC_Gateway_Vipps_Recurring::get_instance();
+	}
+
+	/** Render the existing Vipps MobilePay Recurring submenu using its own controller. */
+	public function render_settings_page(): void {
+		require_once dirname( __DIR__ ) . '/admin/settings/VippsRecurringAdminSettings.class.php';
+		VippsRecurringAdminSettings::instance()->render();
 	}
 
 	/**
@@ -476,8 +493,8 @@ class WC_Vipps_Recurring {
 	 */
 	public function admin_menu() {
 		add_options_page(
-			__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
-			__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
+			sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
+			sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
 			'manage_options',
 			'woo-vipps-recurring',
 			[ $this, 'admin_menu_page_html' ]
@@ -574,7 +591,7 @@ class WC_Vipps_Recurring {
 	 */
 	public function woocommerce_product_data_tabs( $tabs ) {
 		$tabs['wc_vipps_recurring'] = [
-			'label'    => __( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
+			'label'    => sprintf( /* translators: %s: Vipps MobilePay */ __( '%s Recurring Payments', 'woo-vipps' ), Vipps::CompanyName() ),
 			'target'   => 'wc_vipps_recurring_product_data',
 			'priority' => 100,
 		];
@@ -589,6 +606,14 @@ class WC_Vipps_Recurring {
 		echo '<div id="wc_vipps_recurring_product_data" class="panel woocommerce_options_panel hidden">';
 
 		woocommerce_wp_checkbox( [
+			'id'          => WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON,
+			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON, true ),
+			'label'       => __( 'Express checkout for subscriptions', 'woo-vipps' ),
+			'description' => __( 'Show the product button when recurring Express checkout is enabled for selected products.', 'woo-vipps' ),
+			'desc_tip'    => true,
+		] );
+
+		woocommerce_wp_checkbox( [
 			'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE,
 			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, true ),
 			'label'       => __( 'Capture payment instantly', 'woo-vipps' ),
@@ -600,7 +625,7 @@ class WC_Vipps_Recurring {
 			'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE,
 			'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE, true ) ?: 'title',
 			'label'       => __( 'Description source', 'woo-vipps' ),
-			'description' => __( 'Where we should source the agreement description from. Displayed in the Vipps/MobilePay app.', 'woo-vipps' ),
+			'description' => sprintf( /* translators: %s: Vipps MobilePay */ __( 'Where we should source the agreement description from. Displayed in the %s app.', 'woo-vipps' ), Vipps::CompanyName() ),
 			'desc_tip'    => true,
 			'options'     => [
 				'none'              => __( 'None', 'woo-vipps' ),
@@ -627,6 +652,9 @@ class WC_Vipps_Recurring {
 	 * @param $post_id
 	 */
 	public function woocommerce_process_product_meta( $post_id ) {
+		update_post_meta( $post_id, WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON,
+			isset( $_POST[ WC_Vipps_Recurring_Express_Checkout::META_PRODUCT_BUTTON ] ) ? 'yes' : 'no' );
+
 		$capture_instantly = isset( $_POST[ WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ] ) ? 'yes' : 'no';
 		update_post_meta( $post_id, WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, $capture_instantly );
 
@@ -673,6 +701,10 @@ class WC_Vipps_Recurring {
 	public function order_handle_vipps_recurring_action() {
 		check_ajax_referer( 'vipps_recurring_ajax_nonce', 'nonce' );
 
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_die( -1, 403 );
+		}
+
 		$order = wc_get_order( intval( $_REQUEST['orderId'] ) );
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
@@ -703,28 +735,69 @@ class WC_Vipps_Recurring {
 			$limit = $this->gateway()->check_charges_amount;
 		}
 
-		$options = [
-			'limit'          => $limit,
-			'payment_method' => $this->gateway()->id
+		$limit = (int) $limit;
+
+		$pending_clause = [
+			'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
+			'compare' => '=',
+			'value'   => 1,
 		];
 
-		$options = WC_Vipps_Recurring_Helper::add_meta_query_to_args( $options, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, '=', 1, $this->gateway()->use_high_performance_order_storage() );
+		remove_all_filters( 'posts_orderby' );
 
-		if ( $this->gateway()->check_charges_sort_order === 'rand' ) {
-			$options['orderby'] = 'rand';
-		} else {
-			$options['orderby'] = 'post_date';
-			$options['order']   = $this->gateway()->check_charges_sort_order;
+		// Orders that have never been checked go first, newest first so fresh renewals are not stuck behind a backlog.
+		$orders = WC_Vipps_Recurring_Helper::get_orders_with_meta_query( [
+			'limit'          => $limit,
+			'payment_method' => $this->gateway()->id,
+			'meta_query'     => [
+				$pending_clause,
+				[
+					'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_LAST_CHECKED,
+					'compare' => 'NOT EXISTS',
+				],
+			],
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		] );
+
+		// Fill the rest of the batch with the least recently checked orders, so every pending order gets its turn.
+		// We can't do this in one query, because HPOS only orders by meta through an INNER JOIN.
+		$remaining = $limit < 0 ? $limit : $limit - count( $orders );
+		if ( $remaining !== 0 ) {
+			$orders = array_merge( $orders, WC_Vipps_Recurring_Helper::get_orders_with_meta_query( [
+				'limit'          => $remaining,
+				'payment_method' => $this->gateway()->id,
+				'meta_query'     => [
+					$pending_clause,
+					'last_checked' => [
+						'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_LAST_CHECKED,
+						'compare' => 'EXISTS',
+						'type'    => 'NUMERIC',
+					],
+				],
+				'orderby'        => [ 'last_checked' => 'ASC' ],
+			] ) );
 		}
 
-		remove_all_filters( 'posts_orderby' );
-		$orders = wc_get_orders( $options );
+		if ( ! empty( $orders ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "Checking charge status for orders: %s", implode( ', ', array_map( [
+				WC_Vipps_Recurring_Helper::class,
+				'get_id'
+			], $orders ) ) ) );
+		}
 
 		foreach ( $orders as $order ) {
 			$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
 
 			do_action( 'wc_vipps_recurring_before_cron_check_order_status', $order_id );
-			$this->gateway()->check_charge_status( $order_id );
+
+			try {
+				$this->gateway()->check_charge_status( $order_id );
+			} catch ( Exception $e ) {
+				// One order must not stop the rest of the batch. It has been stamped as checked, so the next run moves on.
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error checking charge status: %s', $order_id, $e->getMessage() ) );
+			}
+
 			do_action( 'wc_vipps_recurring_after_cron_check_order_status', $order_id );
 		}
 
@@ -783,6 +856,12 @@ class WC_Vipps_Recurring {
 		foreach ( $subscriptions as $subscription ) {
 			$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
 
+			$parent_order = $subscription->get_parent();
+			if ( $parent_order && $parent_order->get_meta( WC_Vipps_Recurring_Express_Checkout::META_ATTEMPT ) ) {
+				( new WC_Vipps_Recurring_Express_Cleanup( $this->gateway() ) )->delete_if_abandoned( $subscription );
+				continue;
+			}
+
 			// Check the status of this subscription's latest order charge just in case.
 			$latest_order    = $subscription->get_last_order( 'all' );
 			$latest_order_id = WC_Vipps_Recurring_Helper::get_id( $latest_order );
@@ -794,6 +873,10 @@ class WC_Vipps_Recurring {
 			// Hydrate objects
 			$latest_order = wc_get_order( $latest_order_id );
 			$subscription = wcs_get_subscription( $subscription_id );
+
+			if ( WC_Vipps_Recurring_Profile::protect_from_cleanup( $latest_order ) ) {
+				continue;
+			}
 
 			// If this subscription has been manually updated in the mean-time, we no longer want to delete it.
 			// Similarly, if it has a billing email we don't want to delete it.
@@ -981,11 +1064,11 @@ class WC_Vipps_Recurring {
 			return;
 		}
 
-		$local_webhooks = $this->gateway()->webhook_get_local()[ $this->gateway()->merchant_serial_number ];
+		$local_webhooks = $this->gateway()->webhook_get_local()[ $this->gateway()->merchant_serial_number ] ?? [];
 		$local_webhook  = array_pop( $local_webhooks );
 		$secret         = $local_webhook ? ( $local_webhook['secret'] ?? false ) : false;
 
-		$order_id = $body['chargeId'] ?? $body['agreementId'];
+		$order_id = $body['chargeId'] ?? $body['agreementId'] ?? null;
 		if ( ! $order_id ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "Could not find order id in webhook with body %s", json_encode( $body ) ) );
 
@@ -994,9 +1077,13 @@ class WC_Vipps_Recurring {
 
 		if ( ! $secret ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "Cannot verify webhook callback for order %s - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.", $order_id ) );
+
+			return;
 		}
 
 		if ( ! $this->verify_webhook( $raw_input, $secret ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "Rejected webhook callback for order %s - invalid signature or date.", $order_id ) );
+
 			return;
 		}
 
@@ -1007,17 +1094,37 @@ class WC_Vipps_Recurring {
 	}
 
 	public function verify_webhook( $serialized, $secret ): bool {
+		if ( ! is_string( $secret ) || $secret === '' ) {
+			return false;
+		}
+
 		$expected_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ( $_SERVER['HTTP_X_VIPPS_AUTHORIZATION'] ?? "" );
 		$expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
 
+		if ( ! $this->is_webhook_date_valid( $expected_date ) ) {
+			return false;
+		}
+
 		$hashed_payload = base64_encode( hash( 'sha256', $serialized, true ) );
-		$path_and_query = $_SERVER['REQUEST_URI'];
-		$host           = $_SERVER['HTTP_HOST'];
+		$path_and_query = $_SERVER['REQUEST_URI'] ?? '';
+		$host           = $_SERVER['HTTP_HOST'] ?? '';
 		$toSign         = "POST\n{$path_and_query}\n$expected_date;$host;$hashed_payload";
 		$signature      = base64_encode( hash_hmac( 'sha256', $toSign, $secret, true ) );
 		$auth           = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature=$signature";
 
-		return ( $auth == $expected_auth );
+		return hash_equals( $auth, (string) $expected_auth );
+	}
+
+	/**
+	 * Reject webhooks whose x-ms-date is more than five minutes away from now, like the payment module does.
+	 */
+	private function is_webhook_date_valid( string $date_header ): bool {
+		$header_time = strtotime( $date_header );
+		if ( $header_time === false ) {
+			return false;
+		}
+
+		return abs( time() - $header_time ) <= 300;
 	}
 
 	public function generate_order_prefix(): string {

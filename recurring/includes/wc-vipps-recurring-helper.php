@@ -25,6 +25,9 @@ class WC_Vipps_Recurring_Helper {
 	public const META_CHARGE_PENDING = '_vipps_recurring_pending_charge';
 	public const META_CHARGE_ID = '_charge_id';
 	public const META_CHARGE_LATEST_STATUS = '_vipps_recurring_latest_api_status';
+	public const META_CHARGE_LAST_CHECKED = '_vipps_recurring_last_checked';
+	public const META_CHARGE_UNCONFIRMED = '_vipps_recurring_charge_unconfirmed';
+	public const META_CHARGE_REQUEST = '_vipps_recurring_charge_request';
 
 	/**
 	 * Agreements
@@ -48,6 +51,7 @@ class WC_Vipps_Recurring_Helper {
 	public const META_ORDER_IDEMPOTENCY_KEY = '_idempotency_key';
 	public const META_ORDER_CHECKOUT_SESSION = '_vipps_recurring_checkout_session';
 	public const META_ORDER_CHECKOUT_SESSION_ID = '_vipps_recurring_checkout_session_id';
+	public const META_ORDER_CHECKOUT_ORIGINAL_CUSTOMER_ID = '_vipps_recurring_checkout_original_customer_id';
 	public const META_ORDER_IS_CHECKOUT = '_vipps_recurring_is_checkout';
 	public const META_ORDER_IS_EXPRESS = '_vipps_recurring_is_express';
 	public const META_ORDER_EXPRESS_AUTH_TOKEN = '_vipps_recurring_express_auth_token';
@@ -65,6 +69,13 @@ class WC_Vipps_Recurring_Helper {
 	public const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_DESCRIPTION = '_vipps_recurring_latest_failed_charge_description';
 	public const META_SUBSCRIPTION_RENEWING_WITH_VIPPS = '_vipps_recurring_renewing_with_vipps';
 	public const META_SUBSCRIPTION_MARKED_FOR_DELETION = '_vipps_recurring_marked_for_deletion';
+	public const META_SUBSCRIPTION_STOPPED_AGREEMENT_ID = '_vipps_recurring_stopped_agreement_id';
+
+	// What to do with a subscription when the customer stops its agreement in the app.
+	public const AGREEMENT_STOPPED_ACTION_CANCEL = 'cancel';
+	public const AGREEMENT_STOPPED_ACTION_MANUAL = 'manual';
+	// Only available through the wc_vipps_recurring_agreement_stopped_action filter, for merchants handling it themselves.
+	public const AGREEMENT_STOPPED_ACTION_NONE = 'none';
 
 	public const OPTION_CONFIGURED = '_woo_vipps_recurring_configured';
 	public const OPTION_CHECKOUT_ENABLED = '_woo_vipps_recurring_checkout_enabled';
@@ -515,6 +526,38 @@ class WC_Vipps_Recurring_Helper {
 		return 'order_lock_' . self::get_id( $order );
 	}
 
+	/** Atomic insertion and token-conditional deletion for independent purchase workers. */
+	public static function acquire_purchase_lock( string $key, int $seconds = 120 ): ?array {
+		global $wpdb;
+
+		$previous = maybe_unserialize( $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $key ) ) );
+		if ( is_array( $previous ) && ( $previous['expires'] ?? 0 ) < time() ) {
+			self::release_purchase_lock( $key, $previous );
+		}
+
+		$value = [ 'token' => wp_generate_uuid4(), 'expires' => time() + $seconds ];
+
+		// add_option() has an upsert path, so it cannot provide an atomic lease.
+		$inserted = $wpdb->query( $wpdb->prepare(
+			"INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'no')",
+			$key, maybe_serialize( $value )
+		) );
+
+		if ( $inserted !== 1 ) { return null; }
+		wp_cache_delete( $key, 'options' );
+		wp_cache_delete( 'notoptions', 'options' );
+
+		return $value;
+	}
+
+	public static function release_purchase_lock( string $key, array $value ): void {
+		global $wpdb;
+
+		$wpdb->delete( $wpdb->options, [ 'option_name' => $key, 'option_value' => maybe_serialize( $value ) ], [ '%s', '%s' ] );
+		wp_cache_delete( $key, 'options' );
+		wp_cache_delete( 'notoptions', 'options' );
+	}
+
 	public static function lock_order( $order ): bool {
 		if ( get_transient( self::get_order_lock_name( $order ) ) ) {
 			return false;
@@ -582,5 +625,25 @@ class WC_Vipps_Recurring_Helper {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Run wc_get_orders() with a full meta_query on both order storages. HPOS reads 'meta_query' directly,
+	 * but the posts data store drops it, so we hand it to WP_Query through the CPT query filter.
+	 */
+	public static function get_orders_with_meta_query( array $args ): array {
+		$pass_meta_query = static function ( $wp_query_args, $query_vars ) {
+			if ( ! empty( $query_vars['meta_query'] ) ) {
+				$wp_query_args['meta_query'][] = $query_vars['meta_query'];
+			}
+
+			return $wp_query_args;
+		};
+
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $pass_meta_query, 10, 2 );
+		$orders = wc_get_orders( $args );
+		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $pass_meta_query, 10 );
+
+		return $orders;
 	}
 }

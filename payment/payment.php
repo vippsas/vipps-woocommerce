@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '6.0.2');
+define('WOO_VIPPS_VERSION', '6.4.2');
 
 define( 'WC_VIPPS_PAYMENT_MAIN_FILE', __FILE__ );
 
@@ -51,7 +51,7 @@ Vipps::register_hooks();
 require_once(dirname(__FILE__) . '/VippsQRCodeController.class.php');
 VippsQRCodeController::register_hooks();
 
-/* If Vipps Checkout is activated, load its support. It can still be turned on and off. */
+/* If Checkout is activated, load its support. It can still be turned on and off. */
 if (get_option('woo_vipps_checkout_activated', false)) {
     require_once(dirname(__FILE__) . '/VippsCheckout.class.php');
     VippsCheckout::register_hooks();
@@ -62,23 +62,6 @@ require_once __DIR__ . '/Blocks/woo-vipps-blocks.php';
 
 // Helper code for specific plugins, themes etc
 require_once(dirname(__FILE__) . '/woo-vipps-compatibility.php');
-
-// Load code for the new WooCommerce product editor
-add_action('woocommerce_init', function() {
-        // Only load if we're on a version of WooCommerce that supports all the blocks and features we're using.
-        $is_version_supported = version_compare(wc()->version, '8.6.0', '>=');
-        // Only load if the feature flag is enabled.
-        $is_product_editor_v2_enabled = get_option('woocommerce_feature_product_block_editor_enabled');
-        if($is_version_supported && $is_product_editor_v2_enabled) {
-        // Load the new blocks
-        require_once(dirname(__FILE__) . '/admin/blocks/register-woo-blocks.php');
-
-        // Load the V2 product editor
-        require_once(dirname(__FILE__) . '/VippsWCProductEditorV2.class.php');
-        VippsWCProductEditorV2::register_hooks();
-
-        }
-});
 
 
 add_action ('before_woocommerce_init', function () {
@@ -95,7 +78,7 @@ add_action ('before_woocommerce_init', function () {
  }
 },1);
 
-// Load the extra Vipps Checkout Shipping classes only when necessary
+// Load the extra Checkout Shipping classes only when necessary
 add_action( 'woocommerce_shipping_init', function () {
     if (!class_exists('VippsCheckout_Shipping_Method') && get_option('woo_vipps_checkout_activated', false)) {
         require_once(dirname(__FILE__) . '/VippsCheckoutShippingMethods.php');

@@ -58,7 +58,7 @@ jQuery(document).ready(function () {
          // Could be other errors but we"ll treat them the same - assume that we can't find the signal and call the ajax method
          fkey404 = true;
          statusok= true;
-         setTimeout(checkStatus,500);
+         setTimeout(checkStatus,10000);
        }, 
        "method": "GET", // We must use GET because nginx will return 405 for POST to static files
        "success": function (result,statustext, xhr) {
@@ -74,7 +74,7 @@ jQuery(document).ready(function () {
        "timeout": 3000
      });
    } else {
-     // This happens when we've waited for a minute or moe, if we don't have a key and so forth.
+     // This happens when we've waited for a minute or moe, if we don't have a signal file key and so forth.
      statusok=1;
      setTimeout(checkStatus,500);
    }
@@ -131,7 +131,6 @@ jQuery(document).ready(function () {
        var next = jQuery("#continueToOrderFailed").attr("href");
        if (next != '') {
           setTimeout(function () {
-             console.log("Redirecting to  " +next );
              window.location.href = next;
           }, 500);
        }
@@ -178,3 +177,4 @@ jQuery(document).ready(function () {
  checkStatusReady();
 
 });
+

@@ -27,7 +27,7 @@ plugin for
 [WooCommerce](https://woocommerce.com).
 It is owned by [Vipps MobilePay](https://vippsmobilepay.com) and maintained by [Everyday AS](https://everyday.no).
 
-Vipps/MobilePay recurring payments is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
+Vipps/MobilePay recurring payments is perfect for you if you run a web shop with subscription-based services or other products that would benefit from subscriptions.
 
 With Vipps/MobilePay recurring payments you can:
 
@@ -80,7 +80,7 @@ for an overview.
 
 ### Retrieving Vipps MobilePay API keys
 
-Log-in to the [business portal](https://portal.vippsmobilepay.com/) and get your test API keys, as described in
+Log in to the [business portal](https://portal.vippsmobilepay.com/) and get your test API keys, as described in
 [API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/api-keys/).
 
 ### Configuration of the plugin
@@ -119,13 +119,13 @@ While creating your CSV file, make sure that you are mapping the fields as speci
 
 1. The `payment_method` field needs to be set to `vipps_recurring`.
 2. The `_agreement_id` field needs to be set to the agreement ID from Vipps MobilePay.
-3. The `payment_method_post_meta` field in your CSV needs to be mapped to the _`agreement_id` column. ([docs](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#importing-payment-gateway-meta-data)).
+3. The `payment_method_post_meta` field in your CSV needs to be mapped to the `_agreement_id` column. ([docs](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#importing-payment-gateway-meta-data)).
 
 After successfully importing your subscriptions you should now be able to use WooCommerce Subscriptions as normal.
 
 ## Extending the plugin
 
-WooCommerce and WooCommerce Subscriptions has a lot of [default actions](https://docs.woocommerce.com/document/subscriptions/develop/action-reference/) that interact with the payment flow, so there should not be any need to extend this plugin directly,
+WooCommerce and WooCommerce Subscriptions have a lot of [default actions](https://docs.woocommerce.com/document/subscriptions/develop/action-reference/) that interact with the payment flow, so there should not be any need to extend this plugin directly,
 but if you need an action or filter added to the plugin don't hesitate to create an issue on GitHub, and we will look into this as soon as possible.
 
 The plugin is currently in a pre-release phase and will have more filters, actions and features further down the road.
@@ -134,9 +134,9 @@ The plugin is currently in a pre-release phase and will have more filters, actio
 
 Constants can be re-defined by using `define('CONSTANT_NAME', 'value');` in `wp-config.php`.
 
-`WC_VIPPS_RECURRING_RETRY_DAYS`: (integer) default: 2
+`WC_VIPPS_RECURRING_RETRY_DAYS`: (integer) default: 2, or 0 when WooCommerce Subscriptions' retry system is active.
 
-The amount of days Vipps/MobilePay will retry a charge for before it fails.
+The number of days Vipps/MobilePay will retry a charge for before it fails.
 See [Charge retries](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/recurring-api-guide/#charge-retries) for more information.
 
 `WC_VIPPS_RECURRING_TEST_MODE`: (boolean) default: false
@@ -147,9 +147,21 @@ Enables someone with access to Vipps/MobilePay developer keys to test the plugin
 
 See the code for an up-to-date list of available actions. Search for `do_action`.
 
+Some actions include:
+
+* `wc_vipps_recurring_agreement_stopped(WC_Subscription $subscription, string $action, array $webhook_data)` - Fires when a customer stops a subscription's agreement in the Vipps or MobilePay app,
+  after the chosen action has been applied.
+  `$action` is `cancel`, `manual` or `none`. `$webhook_data` is the verified webhook payload.
+
 ### Filters
 
 See the code for an up-to-date list of available filters. Search for `apply_filters`.
+
+* `wc_vipps_recurring_agreement_stopped_action(string $action, WC_Subscription $subscription, array $webhook_data)` - Decides what happens to a subscription when the customer stops its agreement in the Vipps or MobilePay app.
+  `$action` starts as the value of the "When a customer cancels in the app" setting. Return `cancel` to cancel the subscription, `manual` to require manual renewal payments,
+  or `none` to leave the subscription unchanged. A note is added to the subscription in every case. Any other value is treated as `manual`.
+  **If you return `none`, you are responsible for the subscription**: it keeps this payment method, and automatic renewals will fail because the agreement is stopped.
+  Use the `wc_vipps_recurring_agreement_stopped` action to run your own handling.
 
 Some filters include:
 
@@ -216,7 +228,7 @@ You can read about how *WooCommerce Subscriptions* and *WooCommerce Memberships*
 
 ### Where can I use Vipps MobilePay?
 
-Vipps MobilePay is available in Norway, Denmark and Finland. Only users who have Vipps MobilePay will be able to pay with Vipps MobilePay.
+You can get paid by Vipps MobilePay users in Denmark, Finland, Greenland, and Norway.
 
 ### How can I test that the plugin works correctly?
 

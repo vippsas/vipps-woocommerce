@@ -15,6 +15,7 @@ final class VippsCard extends AbstractPaymentMethodType {
         protected $payment_method_name = "";
         protected $description = "";
 
+	/** Read card gateway settings and labels for the Blocks registration. */
 	public function initialize() {
                 $gw = \WC_Gateway_VippsCard::instance();
 		$this->settings = get_option( 'woocommerce_vipps_card_settings', [] );
@@ -23,6 +24,7 @@ final class VippsCard extends AbstractPaymentMethodType {
 	}
 
         // Register this payment method IOK 2020-08-10
+        /** Register the card integration separately from the Vipps widget method. */
         public static function register() {
             add_action( 'woocommerce_blocks_payment_method_type_registration', 
                         function ($registry) {
@@ -30,9 +32,11 @@ final class VippsCard extends AbstractPaymentMethodType {
             });
         }
 
+	/** Only offer the method when the card gateway is enabled. */
 	public function is_active() {
 		return filter_var( $this->get_setting( 'enabled', false ), FILTER_VALIDATE_BOOLEAN );
 	}
+	/** Load the card presentation component after shared gateway code, with cache invalidation. */
 	public function get_payment_method_script_handles() {
 
                 $version = filemtime(dirname(__FILE__) . "/js/wc-payment-method-vipps-card.js");
@@ -52,6 +56,10 @@ final class VippsCard extends AbstractPaymentMethodType {
 		return [ 'wc-payment-method-vipps-card' ];
 	}
 
+	/**
+	 * Supply vipps_card_data to the JS component. Payment processing stays with
+	 * WooCommerce's legacy gateway adapter; this class does not take over redirects.
+	 */
 	public function get_payment_method_data() {
                 $logo =  $src =  plugins_url('../../img/cclogos.svg',__FILE__);
 
@@ -62,4 +70,3 @@ final class VippsCard extends AbstractPaymentMethodType {
 		];
 	}
 }
-

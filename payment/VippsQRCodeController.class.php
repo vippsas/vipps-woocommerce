@@ -209,7 +209,7 @@ class VippsQRCodeController {
                          update_post_meta($ok, '_vipps_qr_url', sanitize_url($url));
                      }
                      if (is_wp_error($ok)) {
-                        Vipps::instance()->log(sprintf(__("Error importing unsynched QR code with id %1\$s: %2\$s", 'woo-vipps'),$vid, $e->get_error_message()), 'error');
+                        Vipps::instance()->log(sprintf(__("Error importing unsynched QR code with id %1\$s: %2\$s", 'woo-vipps'),$vid, $ok->get_error_message()), 'error');
                      }
                  } catch (Exception $e) {
                      Vipps::instance()->log(sprintf(__("Error importing unsynched QR code with id %1\$s: %2\$s", 'woo-vipps'),$vid, $e->getMessage()), 'error');

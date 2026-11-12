@@ -1,5 +1,55 @@
 == Changelog ==
 
+= 2.4.0 =
+* Added: We now have a `wc_vipps_recurring_agreement_stopped` action you can use to change the logic for when an agreement is canceled via the app.
+* Added: We also added an acommodating `wc_vipps_recurring_agreement_stopped_action` filter that allows you to set the action to `WC_Vipps_Recurring_Helper::AGREEMENT_STOPPED_ACTION_NONE`, and just run your own code.
+* Added: A setting that allows you to decide what happens when we receive an "agreement stopped" webhook from Vipps. The default is to move it to manual payments.
+
+= 2.3.1 =
+* Fix: Deny webhooks when no webhook secret is set.
+
+= 2.3.0 =
+* Added: A new look and feel for settings
+* Added: An "express" way to use recurring payments via the userinfo API.
+* Added: Widget SDK support, which means faster checkouts for all your customers.
+
+= 2.2.20 =
+* Fix: The periodic charge status check now goes through all pending orders in turn, also with HPOS enabled. The "Status checking sort order for charges" setting has been removed.
+* Fix: A timeout or temporary error from Vipps MobilePay while creating a renewal charge no longer fails the renewal order. The order stays pending until the charge is confirmed, or created again with the same request. After three days without confirmation the order is failed. This limit can be changed with the `wc_vipps_recurring_unconfirmed_charge_max_age` filter.
+* Fix: A failed renewal order is now completed if Vipps MobilePay charges it anyway. If its charge is still waiting, the charge is cancelled.
+* Fix: When a renewal order is paid with another payment method, its pending Vipps MobilePay charge is now cancelled, so the customer is not charged twice.
+* Fix: Cancelling a charge no longer reuses the idempotency key of the request that created the charge.
+* Fix: An error while checking one order no longer stops the periodic charge status check for the remaining orders.
+* Fix: A webhook that no longer exists in Vipps MobilePay, for instance because its endpoint was unresponsive for two weeks, is now registered again.
+* Fix: On sites without pretty permalinks the webhook now has its own callback URL, so the Vipps MobilePay payment gateway no longer deletes it.
+* Fix: Saving the settings now registers the webhook with the new merchant serial number and keys, and shows an error if registering it fails.
+* Fix: The order note for a new renewal charge now shows the date the customer will be charged and how long a failed charge is retried, instead of a countdown that suggested an exact time.
+
+= 2.2.19 =
+* Fix: Add a class existence check for Checkout's classes during recurring payments
+
+= 2.2.18 =
+* Fix: Restrict permissions on capturing recurring orders.
+
+= 2.2.17 =
+* Fix: No longer load the Checkout SDK on every single page if Checkout is enabled. The actual Checkout page is enough.
+* Fix: Enhance recurring checkout – updated ownership checks, and improved customer assignment logic.
+* Fix: Treat network failures, timeouts, rate limits, and Vipps/MobilePay 5xx responses as temporary errors so subscriptions are not marked as failed during transient API incidents.
+
+= 2.2.16 =
+* Fix: Do not create a campaign or an initial charge for deferred synchronized subscriptions when nothing is due at sign-up, while retaining campaigns for free trials, discounts, and subscription switches.
+
+= 2.2.15 =
+* Fix: Avoid a DivisionByZeroError during checkout when a subscription has a zero initial order line total.
+* Added: An constant that overrides whether we should show the Recurring Checkout setting. `WC_VIPPS_RECURRING_ALLOW_CHECKOUT_OPTION`.
+
+= 2.2.14 =
+* Added: It's now possible to disable retry days completely by setting WC_VIPPS_RECURRING_RETRY_DAYS to 0.
+* Tweak: Default `WC_VIPPS_RECURRING_RETRY_DAYS` to 0 when WooCommerce Subscriptions' retry system is active.
+
+= 2.2.13 =
+* Fix: Treat duplicate recurring capture attempts as successful when Vipps/MobilePay reports that the amount is higher than the remaining capturable amount, provided the charge is confirmed as already captured.
+
 = 2.2.12 =
 * Refactor: Improved readability of charge checking logic.
 * Fix: Run our `wcs_renewal_order_created` before Kustom's hook to address a code smell from their side.

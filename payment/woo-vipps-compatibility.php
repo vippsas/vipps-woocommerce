@@ -95,6 +95,28 @@ add_action('after_setup_theme', function () {
 
     }
 
+    // Default setup of NGINX Helper purges on comment insertion, which includes order notes. 
+    // We'll remove this action in the very last filter before wp_insert_comment is called,
+    // when still adding order notes. IOK 2026-08-25
+    if (class_exists('FastCGI_Purger')) {
+        add_filter('woocommerce_new_order_note_data', function ($data) {
+            global $wp_filter;
+            if (empty($wp_filter['wp_insert_comment'])) return $data;
+            $callbacks = $wp_filter['wp_insert_comment']->callbacks[200] ?? [];
+            $f = null;
+            foreach($callbacks as $callback) {
+                $fun = $callback['function'];
+                if (is_array($fun) && isset( $fun[0], $fun[1]) && $fun[1] == 'purge_post_on_comment') {
+                    $f = $fun; break;
+                }
+            }
+            if ($f) {
+                remove_action('wp_insert_comment', $f, 200);
+            }
+            return $data;
+        });
+    }
+
 }, 20);
 
 // IOK 2020-03-17: Klarna Checkout now supports external payment methods, such as Vipps. This is great, but we need first to check
@@ -178,9 +200,9 @@ add_action('after_setup_theme', function () {
         });
     }
 
-    // Support Woo-Mailerlite in Vipps Checkout
+    // Support Woo-Mailerlite in Checkout
     if (class_exists('MailerLite\Includes\Classes\Settings\MailerLiteSettings')) {
-        // If Mailerlite is active as well as Vipps Checkout, then add support for it
+        // If Mailerlite is active as well as Checkout, then add support for it
         if (get_option('ml_account_authenticated') && (Vipps::instance()->gateway()->get_option('vipps_checkout_enabled') == 'yes')) {
 
             // If checkout is active, don't support saving "lost carts"
@@ -188,7 +210,7 @@ add_action('after_setup_theme', function () {
                 return 1;
             }, 10, 2);
 
-            // Check if the checkout feature is enabled for MailerLite, and if so, add the feature for Vipps Checkout
+            // Check if the checkout feature is enabled for MailerLite, and if so, add the feature for Checkout
             $checkout = MailerLite\Includes\Classes\Settings\MailerLiteSettings::getInstance()->getMlOption('checkout', 'no');
             if ($checkout == 'yes') {
                 add_filter('woo_vipps_checkout_consent_query', function ($text) {
@@ -215,7 +237,7 @@ add_action('after_setup_theme', function () {
         }
     }
 
-    // Support Mailchimp for WooCommerce in Vipps Checkout
+    // Support Mailchimp for WooCommerce in Checkout
     if (function_exists('mailchimp_is_configured') && class_exists('MailChimp_Service')) {
         // If mailchimp is configured and Checkout is on, add actions
         if (mailchimp_is_configured() && (Vipps::instance()->gateway()->get_option('vipps_checkout_enabled') == 'yes')) {

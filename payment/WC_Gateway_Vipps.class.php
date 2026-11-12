@@ -143,6 +143,47 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return null;
         }
     }
+
+    // Various setting migrations. LP 2026-11-05
+    private function maybe_migrate_settings() {
+        $this->migrate_keyset_with_country_detection();
+        $current = get_option('woocommerce_vipps_settings', array());
+        $new = null;
+
+        // Previously, certain settings were guarded by a "developermode" setting. We are removing
+        // that, but if it was off, we must turn off testmode too. IOK 2026-11-05
+        if (isset($current['developermode'])) {
+           $previous = $current['developermode'];
+           $new = $new ?: $current;
+           // Turn off testmode if devmode was off.
+           if ('no' === $previous) {
+               $new['testmode'] = 'no';
+           }
+           unset($new['developermode']);
+           $this->log(__("Migrating developermode settings", 'woo-vipps'));
+        }
+
+        // Migrate removed alternative 'none' for option 'singleproductexpress' to the new option 'express_singleproduct_enabled'.
+        // 'singleproductexpress' now specifies which products that support express generally, and 'express_singleproduct_enabled'
+        // is whether to show Express button on single product page/context specifically. LP 2026-09-29
+        if ('none' === ($current['singleproductexpress'] ?? null)) {
+            $new = $new ?: $current;
+            $new['singleproductexpress'] = 'all';
+            if (!isset($new['singleproductexpressarchives'])) {
+                $new['singleproductexpressarchives'] = 'no';
+            }
+            if (!isset($new['express_singleproduct_enabled'])) {
+                $new['express_singleproduct_enabled'] = 'no';
+            }
+           $this->log(__("Migrating single product express settings", 'woo-vipps'));
+        }
+    
+        if ($new) {
+           update_option('woocommerce_vipps_settings', $new);
+        }
+
+    }
+
     // Migrates the keysets to include the country setting if it's missing
     // This is an initial migration step to ensure the country setting is explicitly set.
     // We do this because we no longer want to automatically guess payment method name. NT-2024-10-15
@@ -174,7 +215,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $this->fulfillments = new VippsFulfillments($this);
         $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
-        $this->migrate_keyset_with_country_detection();
+        $this->maybe_migrate_settings();
         $this->init_form_fields();
         $this->init_settings();
 
@@ -223,6 +264,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Possibly delete orders that never went anywhere
         add_action('woocommerce_order_status_pending_to_cancelled', array($this, 'maybe_delete_order'), 99999, 1);
+
+        // Disable emails for cancelled express orders that never went anywhere IOK 2026-09-09
+        add_filter('woocommerce_email_enabled_cancelled_order', function ( $enabled, $order, $email ) {
+                if ( ! $order instanceof WC_Order ) {
+                    return $enabled;
+                }
+                $pm = $order->get_payment_method();
+                if (! Vipps::is_vipps_order($pm)){
+                    return $enabled;
+                }
+                $is_vipps_express = (bool) $order->get_meta( '_vipps_express_checkout' );
+                $has_billing_email = (bool) $order->get_billing_email();
+                if ( $is_vipps_express) {
+                    return false;
+                }
+                return $enabled;
+        }, 10, 3);
+
         // Handle orders when authorized
         add_action('woocommerce_payment_complete', array($this, 'order_payment_complete'), 10, 1);
 
@@ -244,6 +303,51 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Hide our order item meta data from the admin interface. LP 2025-11-19
         add_filter('woocommerce_hidden_order_itemmeta', [$this, 'woocommerce_hidden_order_itemmeta']);
 
+        // New handling for callbacks in the action scheduler. LP 2026-03-27
+        add_action('woo_vipps_action_process_callback', [$this, 'action_process_callback'], 10, 4);
+
+        // Endpoint for setting shipping data for express checkout orders. LP 2026-03-30
+        add_action('rest_api_init', function() {
+                   register_rest_route(Vipps::get_rest_namespace('v1'), '/order-set-shipping', [
+                        'methods' => 'POST',
+                        'callback' => [$this, 'rest_order_set_shipping'],
+                        'permission_callback' => function($request) {
+                            // Note: permission callbacks run twice, on purpose. LP 2026-04-01
+                            // https://github.com/WP-API/WP-API/issues/2400
+                            $input_token = $request->get_header('X-WooVipps-Token');
+
+                            $order_id = $request->get_param('order_id');
+
+                            $order = wc_get_order($order_id);
+                            if (!is_a($order, 'WC_Order')) {
+                                return new WP_Error('order_not_found', __('Order not found', 'woo-vipps'), ['status' => 404, 'order_id' => $order_id]);
+                            }
+
+                            // a small bit of security
+                            $auth_token = $order->get_meta('_vipps_authtoken');
+                            if (!$input_token || !$auth_token || !hash_equals($input_token, $auth_token)) {
+                                /* translators: endpoint path, order id */
+                                $this->log(sprintf(__('Wrong authtoken for rest endpoint %1$s for order %2$s', 'woo-vipps'), '/order-set-shipping', $order_id), 'warning');
+                                return false;
+                            }
+                            return true;
+
+                        },
+                        'args' => [
+                            'order_id' => [
+                                'required' => true,
+                                'validate_callback' => fn($param, $request, $key) => is_numeric($param),
+                                'sanitize_callback' => fn($param, $request, $key) => intval($param),
+                            ],
+                            /* Data from Vipps callback or api poll. LP 2026-03-30 */
+                            'vipps_order_data' => [
+                                'required' => true,
+                                'validate_callback' => fn($param, $request, $key) => is_array($param),
+                                'sanitize_callback' => fn($param, $request, $key) => map_deep($param, 'sanitize_text_field'),
+                            ],
+                        ],
+                   ]);
+        });
     }
 
     public function woocommerce_hidden_order_itemmeta($meta_keys) {
@@ -306,6 +410,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         if ($remaining > 0) {
             $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
+        } else {
+            // IOK 2026-06-15 Nothing left to cancel, just return
+            return false;
         }
 
         $currency = $order->get_currency();
@@ -357,7 +464,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // True iff this gateway is currently in test mode. IOK 2019-08-30
     public function is_test_mode() {
        if (VIPPS_TEST_MODE) return true;
-       if ($this->get_option('developermode') == 'yes' && $this->get_option('testmode') == 'yes') return true;
+       if ($this->get_option('testmode') == 'yes') return true;
        return false;
     }
     // These abstraction gets the correct client id and so forth based on whether or not test mode is on
@@ -581,7 +688,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function webhook_callback_url () {
         $url = home_url("/", 'https');
         $queryargs = ['callback'=>'webhook'];
-        $forwhat = 'wc_gateway_vipps'; // Same callback as for ecom, checkout, express checkout
+        $forwhat = 'wc_gateway_vipps'; // Same callback as for epayment, checkout, express checkout
         // HTTPS required. IOK 2018-05-18
         // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
         if ( !get_option('permalink_structure')) {
@@ -601,20 +708,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function shipping_details_callback_url($token='',$reference=0) {
         return $this->make_callback_urls('vipps_shipping_details',$token,$reference);
     }
-    // Callback for the consetn removal callback. Must use template redirect directly, because wc-api doesn't handle DELETE.
-    // IOK 2018-05-18
-    public function consent_removal_callback_url () {
-        $queryargs = [];
-        $url = home_url("/", 'https');
-        if ( !get_option('permalink_structure')) {
-            $queryargs['vipps-consent-removal']=1;
-        } else {
-            $url = trailingslashit(home_url('vipps-consent-removal', 'https'));
-        }
-        // And we need to add an empty "callback" query arg as the very last arg to receive the actual callback.
-        // We can't use add_query_arg for that, as an empty argument will remove the equals-sign.
-        return add_query_arg($queryargs, $url) . "&callback=";
-    }
 
     // Allow user to select the template to be used for the special Vipps MobilePay pages. IOK 2020-02-17
     public function get_theme_page_templates() {
@@ -627,20 +720,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         return $this->page_templates;
      }
-
-    // We can't use get_pages to get a default list of pages for our settings, because it triggers
-    // actions that can be used by other plugins. Therefore we must use the database directly and cache the results. IOK 2023-08-22
-    public function get_pagelist () {
-        if (!$this->page_list) {
-            global $wpdb;
-            $page_list = array(''=>__('Use a simulated page (default)', 'woo-vipps'));
-            foreach($wpdb->get_results("SELECT ID,post_title FROM {$wpdb->prefix}posts WHERE post_type='page' and post_status='publish'") as $page) {
-                $page_list[$page->ID] = $page->post_title;
-            }
-            $this->page_list = $page_list;
-        }
-        return $this->page_list;
-    }
 
     // Check to see if the product in question can be bought with express checkout IOK 2018-12-04
     public function product_supports_express_checkout($product) {
@@ -703,11 +782,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // True if "Express checkout" should be displayed IOK 2018-06-18
     public function show_express_checkout() {
         if (!$this->express_checkout_available()) return false;
-        $show = ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
-        $show = $show && $this->cart_supports_express_checkout();
+        $show = 'yes' == $this->enabled && $this->cart_supports_express_checkout();
 
+        if (is_checkout()) {
+            $show = $show && $this->get_option('express_show_in_checkout') == 'yes';
+        } else { // for cart, and all other contexts, since this is how the method functioned before we checked checkout explicitly. LP 2026-07-02
+            $show = $show && $this->get_option('cartexpress') == 'yes';
+        }
         // Earlier, we disabled this if Checkout was active; but we will now respect the setting in all
         // cases. Also, there is a filter. IOK 2026-02-19
+        // Now there is also a separate setting for just checkout, 'express_show_in_checkout'. See above branch. LP 2026-07-01
 
         return apply_filters('woo_vipps_show_express_checkout', $show);
     }
@@ -792,7 +876,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // IOK 2024-09-01 In general, we can refund most Vipps Mobilepay orders through the api,
-    // however, this is not the case for the Bank Transfer method available through Vipps Checkout. 
+    // however, this is not the case for the Bank Transfer method available through Checkout. 
     public function can_refund_order( $order ) {
         $method = $order->get_meta('_vipps_api');
         switch ($method) {
@@ -802,7 +886,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             case 'epayment':
                 return true;
                 break;
-                // Default is old-style ecom v2.
+                // Default is true; but the above are exhaustive IOK 2026-08-18
             default:
                 return true;
                 break;
@@ -850,9 +934,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         error_log('LP the_refund: ' . print_r($the_refund, true));
         wc_restore_locale();
         if (is_wp_error($the_refund)) {
-            $err_msg = $the_refund->get_error_message();
-            $msg = sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $err_msg;
-            $order->add_order_note($msg);
+            $msg = $the_refund->get_error_message();
+            $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $msg);
             $order->save();
             $this->log($msg, 'error');
             $this->adminerr($err_msg);
@@ -1296,7 +1379,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Used for defaults in the admin interface; however this functions is called a loot more often than that.
         $page_templates = $this->get_theme_page_templates();
-        $page_list = $this->get_pagelist();
 
         $orderprefix = $Vipps->generate_order_prefix();
 
@@ -1309,13 +1391,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $woodefault = 'yes' === get_option('woocommerce_enable_signup_and_login_from_checkout');
            if ($woodefault) {
                $expresscreateuserdefault = "yes";
-         //      $vippscreateuserdefault = "yes"; // However, for Vipps Checkout the email address is freetext so we'll treat the default a bit different.
+         //      $vippscreateuserdefault = "yes"; // However, for Checkout the email address is freetext so we'll treat the default a bit different.
            }
         }
-
-        // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
-        $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
-
 
         // This is used for new options,to set reasonable defaults based on older settings. We can't use WC_Settings->get_option for this unfortunately.
         $current = get_option('woocommerce_vipps_settings');
@@ -1323,6 +1401,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $default_static_shipping_for_checkout = 'no';
         $default_ask_address_for_express = 'no';
         $default_status_on_fail = 'failed';
+        $default_express_show_in_checkout = 'yes';
+        $default_express_singleproduct_enabled = 'yes';
         if ($current) {
             $default_static_shipping_for_checkout = (isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
             $default_ask_address_for_express = (isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
@@ -1332,6 +1412,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // For existing installs: set failed payments order status to cancelled to keep same default behaviour.
             // New installs will be set to failed instead of cancelled. LP 2026-03-26
             $default_status_on_fail = 'cancelled';
+
+            // New setting 'express_show_in_checkout', previously 'cartexpress' affected both cart and checkout.
+            // Therefore, set new one equal to 'cartexpress' IF it isn't set yet, so that the functionality stays the same for users. LP 2026-07-02
+            if (!isset($current['express_show_in_checkout']) && isset($current['cartexpress'])) {
+                $default_express_show_in_checkout = $current['cartexpress'];
+            }
         }
 
         // Get the already-set country code. For existing sites, this will guess the country based on the currency; for new sites, use 
@@ -1347,77 +1433,73 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'title' => "Checkout", // Vipps::CheckoutName(), // Don't translate this, but save some space IOK 2024-12-06
                     'type'  => 'title',
                     'class' => 'tab',
-                    'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
+                    'description' => sprintf(__("%1\$s is a service from %2\$s which replaces the usual WooCommerce checkout page with a custom, simplified checkout screen providing payment with %2\$s, card, and some external payment methods.<br>Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
                     ),
 
 
                 'vipps_checkout_enabled' => array(
-                    'title'       => sprintf(__('Activate Alternative %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                    'label'       => sprintf(__('Enable Alternative %1$s screen, replacing the standard checkout page', 'woo-vipps'), Vipps::CheckoutName()),
+                    'title'       => sprintf(__('Enable %s', 'woo-vipps'), Vipps::CheckoutName()),
+                    'label' => '',
                     'type'        => 'checkbox',
-                    'description' => sprintf(__('If activated, this will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy checkout using %1$s or credit card, with no need to type in addresses.', 'woo-vipps'), Vipps::CheckoutName()),
+                    'description' => sprintf(__('This will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy with %2$s, card, and external payment methods - no need to manually type in addresses!', 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
                     'default'     => 'no',
                     ),
 
                 'checkoutcreateuser' => array (
-                        'title'       => sprintf(__('Create new customers on %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                        'label'       => sprintf(__('Create new customers on %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'title'       => __('Create new customers for guest checkouts', 'woo-vipps'),
+                        'label'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Enable this to create and login customers when using %1$s. Otherwise these will all be guest checkouts. If using, you may want to install Login with Vipps too.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => sprintf(__('Create and log in new customers during %s.', 'woo-vipps'), 'Checkout'),
                         'default'     => $vippscreateuserdefault,
                         ),
 
-            'enablestaticshipping_checkout' => array(
-                        'title'       => sprintf(__('Enable static shipping for %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                        'label'       => __('Enable static shipping', 'woo-vipps'),
+                'enablestaticshipping_checkout' => array(
+                        'title'       => __('Static shipping', 'woo-vipps'),
+                        'label'       => __('Static shipping', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('If your shipping options do not depend on the customers address, you can enable \'Static shipping\', which will precompute the shipping options when using %1$s so that this will be much faster. If you do this and the customer isn\'t logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually \'static\', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => sprintf(__('Speed up %s by precalculating shipping options in advance. Should only be used if your shipping options do not depend on the customer\'s address.', 'woo-vipps'), 'Checkout'),
                         'default'     => $default_static_shipping_for_checkout
                         ),
 
-
                 'requireUserInfo_checkout' => array(
-                        'title'       => __('Ask the user to consent to share user information', 'woo-vipps'),
-                        'label'       => __('Ask the user to consent to share user information', 'woo-vipps'),
+                        'title'       => __('Ask customer to share information', 'woo-vipps'),
+                        'label'       => __('Ask customer to share information', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('If using %1$s, ask for the users consent to share user information with the store. This will allow better integration between Login With %1$s but will add another step to first-time buyers.', 'woo-vipps'), Vipps::CompanyName()),
+                        'description' => sprintf(__('Ask for the customer\'s consent to share information with the store. This will allow better integration between %s but will add another step to first-time buyers.', 'woo-vipps'), Vipps::LoginName()),
                         'default'     => 'no'
                         ),
 
                 'noAddressFields' => array(
-                        'title'       => __('Drop the address fields on the Checkout screen', 'woo-vipps'),
-                        'label'       => __('Don\'t require the address fields', 'woo-vipps'),
+                        'title'       => __('Don\'t require address fields', 'woo-vipps'),
+                        'label'       => __('Don\'t require address fields', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('If your products <i>don\'t require shipping</i>, either because they are digital downloads, immaterial products or delivering the products directly on purchase, you can check this box. The user will then not be required to provide an address, which should speed things up a bit. If your products require shipping, this will have no effect. NB: If you have plugins that require shipping information, then this is not going to work very well.','woo-vipps'),
+                        'description' => sprintf(__('Hides the address fields in %1$s, which speeds up the %2$s process if your products <b>don\'t</b> require shipping (e.g virtual products)<br>NB: If you have plugins that require shipping information, then this is not going to work very well.','woo-vipps'), Vipps::CheckoutName(), 'Checkout'),
                         'default'     => 'no'
-                    ),
-
+                        ),
                 'noContactFields' => array(
-                        'title'       => __('Drop the contact fields on the Checkout screen', 'woo-vipps'),
-                        'label'       => __('Don\'t require the contact fields', 'woo-vipps'),
+                        'title'       => __('Don\'t require contact fields', 'woo-vipps'),
+                        'label'       => __('Don\'t require contact fields', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('If your products <i>don\'t require shipping</i> as above, and you also don\'t care about the customers name or contact information, you can drop this too! The customer fields will then be filled with a placeholder. NB: If you have plugins that require contact information, then this is not going to work very well. Also, for this to work you have to check the \'no addresses\' box as well.','woo-vipps'),
+                        'description' => sprintf(__('Only works with \'%3$s\' (see the above option).<br><br>Hides the contact fields in %1$s, which speeds up the %2$s process if you <b>don\'t</b> care about customer/contact information. These will instead be filled with a placeholder.<br>NB: If you have plugins that require contact information, then this is not going to work very well.','woo-vipps'), Vipps::CheckoutName(), 'Checkout', __('Don\'t require address fields', 'woo-vipps')),
                         'default'     => 'no'
-                    ),
-
-      
-                );
+                        ),
+        );
 
         $vipps_checkout_shipping_fields = array(
 
                 'checkout_shipping' => array(
-                    'title' => sprintf(__('%1$s Shipping Methods', 'woo-vipps'), Vipps::CheckoutName()),
+                    'title' => __('Shipping Methods', 'woo-vipps'),
                     'type'  => 'title',
-                    'description' => sprintf(__("When using %1\$s, you have the option to use %1\$s specific shipping methods with extended features for certain carriers. These will add an apropriate logo as well as extended delivery options for certain methods. For some of these, you need to add integration data from the carriers below. You can then add these shipping methods to your shipping zones the normal way, but they will only appear in the %1\$s screen.", 'woo-vipps'), Vipps::CheckoutName())
+                    'description' => sprintf(__('Provide external shipping methods in %s.', 'woo-vipps'), 'Checkout'),
                     ),
 
                 'vcs_posten' => array(
                         'title'       => __('Posten Norge', 'woo-vipps'),
                         'class'       => 'vcs_posten vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posten'),
-                        'label'       => sprintf(__('Support Posten Norge as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Activate this for Posten Norge as a %1$s Shipping method.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => '',
                         'default'     => 'yes'
                     ),
 
@@ -1425,9 +1507,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Posti', 'woo-vipps'),
                         'class'       => 'vcs_posti vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posti'),
-                        'label'       => sprintf(__('Support Posti as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Activate this for Posti as a %1$s Shipping method.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => '',
                         'default'     => 'yes'
                     ),
 
@@ -1435,9 +1517,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('PostNord', 'woo-vipps'),
                         'class'       => 'vcs_postnord vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_postnord'),
-                        'label'       => sprintf(__('Support PostenNord as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Activate this for PostNord as a %1$s Shipping method.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => '',
                         'default'     => 'yes'
                     ),
 
@@ -1445,9 +1527,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Porterbuddy', 'woo-vipps'),
                         'class'       => 'vcs_porterbuddy vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_porterbuddy'),
-                        'label'       => sprintf(__('Support Porterbuddy as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Activate this for Porterbuddy as a %1$s Shipping method. Your store address will be used as the pick-up point and your admin email will be used for booking information from Porterbuddy.' ,'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => '',
                         'default'     => 'no'
                     ),
 
@@ -1473,14 +1555,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => '',
                         ),
 
-                // Vipps checkout *shipping options* - extra shipping options that only work with Vipps Checkout
+                // Vipps checkout *shipping options* - extra shipping options that only work with Checkout
                 'vcs_helthjem' => array(
                         'title'       => __('Helthjem', 'woo-vipps'),
-                        'label'       => sprintf(__('Support Helthjem as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
                         'class' => 'vcs_helthjem vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_helthjem'),
-                        'description' => sprintf(__('Activate this for Helthjem as a %1$s Shipping method.' ,'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => '',
                         'default'     => 'no'
                     ),
 
@@ -1510,7 +1592,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                 );
 
-       /* Support for *certain* external payment methods in Vipps Checkout. IOK 2024-05-27  */
+       /* Support for *certain* external payment methods in Checkout. IOK 2024-05-27  */
        $externals = [];
        $external_payment_fields = [];
        $allow_external_payments = $this->allow_external_payments_in_checkout();
@@ -1521,7 +1603,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                        'label'       => __('Klarna', 'woo-vipps'),
                        'type'        => 'checkbox',
                        'class' => 'external_payments klarna',
-                       'description' => sprintf(__("Allow Klarna as an external payment method in %1\$s",'woo-vipps'), Vipps::CheckoutName()),
+                       'description' => '',
                        'default'     => 'no',
                        );
            }
@@ -1530,7 +1612,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                    'checkout_external_payment_title' => array(
                            'title' => sprintf(__('External Payment Methods', 'woo-vipps'), Vipps::CheckoutName()),
                            'type'  => 'title',
-                           'description' => sprintf(__("Allow certain external payment methods in %1\$s, returning control to WooCommerce for the order", 'woo-vipps'), Vipps::CheckoutName())
+                           'description' => sprintf(__('Allow external payment methods in %s. Selecting one of these returns payment control to WooCommerce.', 'woo-vipps'), 'Checkout')
                    ),
                ];
                foreach($externals as $k => $def)   $external_payment_fields[$k] = $def;
@@ -1539,15 +1621,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
        $vipps_checkout_widgets_fields = [
            'checkout_widgets' => [
-               'title' => sprintf(__('%1$s widgets', 'woo-vipps'), Vipps::CheckoutName()),
+               'title' => __('Widgets', 'woo-vipps'),
                'type'  => 'title',
-               'description' => sprintf(__('Widgets are elements shown above the %1$s frame with extra functionality.', 'woo-vipps'), Vipps::CheckoutName()),
+               'description' => sprintf(__('Widgets are elements shown above the %1$s frame with extra functionality.', 'woo-vipps'), 'Checkout'),
            ],
            'checkout_widget_ordernotes' => [
                'title'       => __('Order notes', 'woo-vipps'),
-               'label'       => __('Enable the order notes widget', 'woo-vipps'),
+               'label'       => '',
                'type'        => 'checkbox',
-               'description' => __('A widget to add customer notes with their order.', 'woo-vipps'),
+               'description' => __('Allows the customer to add a customer note with their order.', 'woo-vipps'),
                'default'     => 'yes'
            ],
        ];
@@ -1555,9 +1637,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 //       if (wc_coupons_enabled()) {
            $vipps_checkout_widgets_fields['checkout_widget_coupon'] = [
                'title'       => __('Coupon code', 'woo-vipps'),
-               'label'       => __('Enable the coupon code widget', 'woo-vipps'),
+               'label'       => '',
                'type'        => 'checkbox',
-               'description' => __('A widget to activate coupon codes.', 'woo-vipps'),
+               'description' => __('Allows the customer to activate coupon codes.', 'woo-vipps'),
                'default'     => 'yes'
            ];
 //       }
@@ -1569,15 +1651,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'class' => 'tab',
             ),
             'enabled' => array(
-                'title'       => __('Enable/Disable', 'woocommerce'),
-                'label'       => sprintf(__('Enable %1$s', 'woo-vipps'), Vipps::CompanyName()),
-                'type'        => 'checkbox',
+                'title'       => sprintf(__('Enable %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                'label' => '',
                 'description' => '',
+                'type'        => 'checkbox',
+                'default'     => 'no',
+            ),
+            'skip_wizard' => array(
+                'title'       => __('Skip wizard and set up manually', 'woo-vipps'),
+                'label' => '',
+                'description' => '',
+                'type'        => 'checkbox',
                 'default'     => 'no',
             ),
             'country' => array(
                 'title' => __('Country', 'woo-vipps'),
-                'label' => __('Country', 'woo-vipps'),
+                'label' => '',
                 'type' => 'select',
                 'options' => array(
                     'NO' => __('Norway', 'woo-vipps'),
@@ -1585,70 +1674,42 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'FI' => __('Finland', 'woo-vipps'),
                     'DK' => __('Denmark', 'woo-vipps'),
                 ),
-                'description' => __('Select the country for this merchant serial number. This will determine the appropriate payment method (Vipps or MobilePay).', 'woo-vipps'),
+                'description' => __('The country of your merchant serial number. This will determine the appropriate payment method below.', 'woo-vipps'),
                 'default' => $country_code,
             ),
 
             'payment_method_name' => array(
                 'title'       => __('Payment method', 'woo-vipps'),
-                'label'       => __('Choose which payment method should be displayed to users at checkout', 'woo-vipps'),
+                'label'       => __('Choose which payment method should be displayed to customers at checkout', 'woo-vipps'),
                 'type'        => 'select',
                 'options' => array(
                     'Vipps' => __('Vipps','woo-vipps'),
                     'MobilePay' => __('MobilePay', 'woo-vipps'),
                 ), 
-                'description' => __('Choose which payment method should be displayed to users at checkout', 'woo-vipps'),
+                'description' => __('Choose which payment method should be displayed to customers at checkout', 'woo-vipps'),
                 'default'     => $payment_method_name,
             ),
 
             'orderprefix' => array(
-                'title' => __('Order-id Prefix', 'woo-vipps'),
-                'label'       => __('Order-id Prefix', 'woo-vipps'),
+                'title' => __('Order ID prefix', 'woo-vipps'),
+                'label'       => __('Order ID prefix', 'woo-vipps'),
                 'type'        => 'string',
                 'description' => __('An alphanumeric textstring to use as a prefix on orders from your shop, to avoid duplicate order-ids','woo-vipps'),
                 'default'     => $orderprefix
             ),
-            'merchantSerialNumber' => array(
-                'title' => __('Merchant Serial Number', 'woo-vipps'),
-                'label'       => __('Merchant Serial Number', 'woo-vipps'),
-                'type'        => 'number',
-                'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
-                'default'     => '',
-            ),
-            'clientId' => array(
-                'title' => __('Client Id', 'woo-vipps'),
-                'class' => 'vippspw',
-                'label'       => __('Client Id', 'woo-vipps'),
-                'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
-                'default'     => '',
-            ),
-            'secret' => array(
-                'title' => __('Client Secret', 'woo-vipps'),
-                'label'       => __('Client Secret', 'woo-vipps'),
-                'class' => 'vippspw',
-                'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
-                'default'     => '',
-            ),
-            'Ocp_Apim_Key_eCommerce' => array(
-                'title' => __('Subscription Key', 'woo-vipps'),
-                'label'       => __('Subscription Key', 'woo-vipps'),
-                'class' => 'vippspw',
-                'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
-                'default'     => '',
-            ),
 
             'result_status' => array(
-                'title'       => sprintf(__('Order status on return from %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                'title'       => __('Order status on payment reservation', 'woo-vipps'),
                 'label'       => __('Choose default order status for reserved (not captured) orders', 'woo-vipps'),
                 'type'        => 'select',
                 'options' => array(
+                    /* translators: woocommerce order status name */
                     'processing' => __('Processing', 'woo-vipps'),
+                    /* translators: woocommerce order status name */
                     'on-hold' => __('On hold','woo-vipps'),
                 ), 
-                'description' => __('By default, orders that are <b>reserved</b> but not <b>yet captured</b> will now have the order status \'Processing\'. You can capture the sum manually, or by changing the status to \'Complete\'. You should ensure that your workflow is such that the order is not shipped until after this capture.<br><br> The status \'On hold\' can be chosen instead for stores using a workflow where orders are shipped when the status is \'Processing\'. In this case, \'On hold\' will mean "order is reserved but not yet captured".  This is a slightly safer solution, and ensures that the order status will reflect the payment status. <br><br>However, in many stores \'On hold\' has the additional meaning "there is a problem with the order"; and an email is often sent to the customer about this problem. The default is \'Processing\' because of this, and because many plugins and integrations expect orders to be \'Processing\' when the customer has completed payment.', 'woo-vipps'),
+                /* translators: placeholders are options for this setting */
+                'description' => __('The order status when the customer\'s payment is reserved (these are <b>not yet captured</b>).', 'woo-vipps'),
                 'default'     => 'processing',
             ),
 
@@ -1657,147 +1718,230 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'label'       => __('Choose default order status for failed payments', 'woo-vipps'),
                 'type'        => 'select',
                 'options' => array(
-                    /* translators: woocommerce status name */
+                    /* translators: woocommerce order status name */
                     'failed' => __('Failed', 'woo-vipps'),
-                    /* translators: woocommerce status name */
+                    /* translators: woocommerce order status name */
                     'cancelled' => __('Cancelled','woo-vipps'),
                 ), 
-                /* translators: company name. cancelled and failed are woocommerce status names! */
-                'description' => sprintf(__('By default, orders where payment is started but not completed at %1$s will be set to failed if they can be restarted. This setting changes this behaviour, but does <strong>not</strong> affect orders that cannot be restarted as these will always be set to cancelled.<br><br>Cancelled orders will keep the customer\'s shopping cart intact.<br>Failed orders can be restarted, possibly with another payment method.', 'woo-vipps'), Vipps::CompanyName()),
+                /* translators: the first placeholder is company name, the rest are woocommerce order statuses */
+                'description' => sprintf(__('The order status when payment fails, this will only affect orders that truly can be restarted at %1$s.', 'woo-vipps'), Vipps::CompanyName()),
                 'default'     => $default_status_on_fail,
             ),
 
-/*
-            'title' => array(
-                'title' => __('Title', 'woocommerce'),
-                'type' => 'text',
-                'description' => __('This controls the title which the user sees during checkout.', 'woocommerce'),
-                'default' => sprintf(__('%1$s','woo-vipps'), $payment_method_name),
-            ),
-*/
-
             'description' => array(
-                'title' => __('Description', 'woocommerce'),
+                'title' => __('Checkout description', 'woo-vipps'),
                 'type' => 'textarea',
-                'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
+                'description' => __('The payment method description the customer sees during checkout', 'woo-vipps'),
                 'default' => __("Pay safely and easily. No fees, no matter the amount.", 'woo-vipps'),
             ),
 
             'vippsdefault' => array(
-                'title'       => sprintf(__('Use %1$s as default payment method on checkout page', 'woo-vipps'), $payment_method_name),
-                'label'       => sprintf(__('%1$s is default payment method', 'woo-vipps'), $payment_method_name),
+                'title'       => __('Default payment method', 'woo-vipps'),
+                'label'       => '',
                 'type'        => 'checkbox',
-                'description' => sprintf(__('Enable this to use %1$s as the default payment method on the checkout page, regardless of order.', 'woo-vipps'), $payment_method_name),
+                'description' => sprintf(__('Use %1$s as the default payment method on the checkout page', 'woo-vipps'), $payment_method_name),
                 'default'     => 'yes',
             ),
 
             'checkout_phone_transformation' => array(
-                'title'       => sprintf(__('Phone number transformation for %1$s and Express Checkout', 'woo-vipps'), 'Checkout'),
-                'label'       => sprintf(__('Choose a transformation to apply to phone numbers for %1$s and Express Checkout', 'woo-vipps'), 'Checkout'),
+                'title'       => sprintf(__('Phone number transformation for %1$s and %2$s', 'woo-vipps'), 'Checkout', Vipps::ExpressName()),
+                'label'       => sprintf(__('Choose a transformation to apply to phone numbers for %1$s and %2$s', 'woo-vipps'), 'Checkout', Vipps::ExpressName()),
                 'type'        => 'select',
                 'options' => array(
                     'none' => __('None', 'woo-vipps'),
                     'ensure_plus' => __('Prepend \'+\'','woo-vipps'),
                     'strip_country_code' => __('Strip country code','woo-vipps'),
                 ), 
-                'description' => __('Phone numbers from Express or Checkout are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'),
+                'description' => sprintf(__('Phone numbers from %1$s or %2$s are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'), 'Checkout', Vipps::ExpressName()),
                 'default'     => 'none',
             ),
         );
 
-        if ($this->fulfillments->is_supported()) {
-            $mainfields['fulfillments_enabled'] = [
-                'title'       => __('Enable support for partial capture of order fulfillments', 'woo-vipps'),
-                'label'       => __('Enable support for partial capture of order fulfillments', 'woo-vipps'),
-                'type'        => 'checkbox',
-                /* translators: %1 = payment method name */
-                'description' => sprintf(__('If you enable this, and are also using WooCommerce Fulfillments, this plugin will perform partial capture of each fulfillment via %1$s. This means that if you complete a fulfillment while the order is in the processing state, the value of that order will be captured and transferred to your account immediately, without waiting for the rest of the order to be set to complete. When set to completed, the entire (rest of the) order will be captured as usual. If you do activate this, you will not be able to delete or remove items from a completed fulfillment, since we can\'t "uncapture" funds. You can then only *add* lines to fulfillments. If you do partial capture via the %1$s portal, this will not work and should not be turned on.', 'woo-vipps'), $payment_method_name),
-                'default'     => 'no',
-            ];
-        }
+        $keysfields = [
+            'keys_options'             => array(
+                    'title' => __('API keys', 'woo-vipps'),
+                    'type'  => 'title',
+                    'class' => 'tab',
+                    ),
 
-         $expressfields = array(  
+            'merchantSerialNumber' => array(
+                    'title' => __('Merchant Serial Number', 'woo-vipps'),
+                    'label'       => __('Merchant Serial Number', 'woo-vipps'),
+                    'type'        => 'number',
+                    'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
+                    'default'     => '',
+                    ),
+            'clientId' => array(
+                    'title' => __('Client Id', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'label'       => __('Client Id', 'woo-vipps'),
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+                    'default'     => '',
+                    ),
+            'secret' => array(
+                    'title' => __('Client Secret', 'woo-vipps'),
+                    'label'       => __('Client Secret', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+                    'default'     => '',
+                    ),
+            'Ocp_Apim_Key_eCommerce' => array(
+                    'title' => __('Subscription Key', 'woo-vipps'),
+                    'label'       => __('Subscription Key', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Ocp-Apim-Subscription-Key"','woo-vipps'),
+                    'default'     => '',
+                    ),
+
+            'merchantSerialNumber_test' => array(
+                    'title' => __('Test merchant Serial Number', 'woo-vipps'),
+                    'label'       => __('Merchant Serial Number', 'woo-vipps'),
+                    'type'        => 'number',
+                    'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
+                    'default'     => '',
+                    ),
+            'clientId_test' => array(
+                    'title' => __('Test client Id', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'label'       => __('Client Id', 'woo-vipps'),
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+                    'default'     => '',
+                    ),
+            'secret_test' => array(
+                    'title' => __('Test client Secret', 'woo-vipps'),
+                    'label'       => __('Client Secret', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+                    'default'     => '',
+                    ),
+            'Ocp_Apim_Key_eCommerce_test' => array(
+                    'title' => __('Test subscription Key', 'woo-vipps'),
+                    'label'       => __('Subscription Key', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Ocp-Apim-Subscription-Key"','woo-vipps'),
+                    'default'     => '',
+                    ),
+
+        ];
+
+         $expressfields = array(
                 'express_options' => array(
-                        'title' => sprintf(__('Express Checkout', 'woo-vipps')),
+                        'title' => __('Express Checkout', 'woo-vipps'),
                         'type'  => 'title',
                         'class' => 'tab',
-                        'description' => sprintf(__("%1\$s allows you to buy products by a single click from the cart page or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately.", 'woo-vipps'), Vipps::ExpressCheckoutName())
+                        'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressName())
                         ),
 
-                'cartexpress' => array(
-                        'title'       => __('Enable Express Checkout in cart', 'woo-vipps'),
-                        'label'       => __('Enable Express Checkout in cart', 'woo-vipps'),
+                // New master toggle for express. See the specific overrides 'cartexpress', 'express_show_in_checkout', 'singleproductexpress' below. LP 2026-09-28
+                'express_enabled' => [
+                        'title'       => sprintf(__('Enable %s', 'woo-vipps'), Vipps::ExpressName()),
+                        'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Enable this to allow customers to shop using %1$s directly from the cart with no login or address input needed', 'woo-vipps'), Vipps::ExpressCheckoutName()) . '.<br>' .
-                        sprintf(__('Please note that for Express Checkout, shipping must be calculated in a callback from the %1$s app, without any knowledge of the customer. This means that Express Checkout may not be compatible with all Shipping plugins or setup. You should test that your setup works if you intend to provide this feature.', 'woo-vipps'), Vipps::CompanyName()),
+                        'description' => '',
+                        'default'     => 'yes',
+                ],
+
+                'cartexpress' => array(
+                        'title'       => sprintf(__('Cart', 'woo-vipps'), Vipps::ExpressName()),
+                        'label'       => '',
+                        'type'        => 'checkbox',
+                        'description' => '',
                         'default'     => 'yes',
                         ),
 
+                'express_show_in_checkout' => array(
+                        'title'       => sprintf(__('Checkout', 'woo-vipps'), Vipps::ExpressName()),
+                        'label'       => '',
+                        'type'        => 'checkbox',
+                        'description' => '',
+                        'default'     => $default_express_show_in_checkout,
+                        ),
+
+                'singleproductexpressarchives' => array(
+                        'title'       => sprintf(__('Catalog pages', 'woo-vipps'), Vipps::ExpressName()),
+                        'label'       => '',
+                        'type'        => 'checkbox',
+                        'description' => sprintf(__('Only shown for %s supported products', 'woo-vipps'), Vipps::ExpressName()),
+                        'default'     => 'yes',
+                        ),
+
+                // New: Whether to show express on single product pages. LP 2026-09-28
+                'express_singleproduct_enabled' => [
+                        'title'       => sprintf(__('Product pages', 'woo-vipps'), Vipps::ExpressName()),
+                        'label'       => '',
+                        'type'        => 'checkbox',
+                        'description' => sprintf(__('Only shown for %s supported products', 'woo-vipps'), Vipps::ExpressName()),
+                        'default'     => $default_express_singleproduct_enabled,
+                ],
+                // Changed option: Which products to support for Express (as long as they are purchasable by Express too). LP 2026-09-28
                 'singleproductexpress' => array(
-                        'title'       => __('Enable Express Checkout for single products', 'woo-vipps'),
-                        'label'       => __('Enable Express Checkout for single products', 'woo-vipps'),
+                        'title'       => __('Supported products', 'woo-vipps'),
+                        'label'       => '',
                         'type'        => 'select',
                         'options' => array(
-                            'none' => __('No products','woo-vipps'),
-                            'some' => __('Some products', 'woo-vipps'),
+                            'some' => __('Selected products', 'woo-vipps'),
                             'all' => __('All products','woo-vipps')
                             ), 
-                        'description' => sprintf(__('Enable this to allow customers to buy a product using %1$s directly from the product page. If you choose \'some\', you must enable this on the relevant products', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                        'default'     => 'none',
-                        ),
-                'singleproductexpressarchives' => array(
-                        'title'       => __('Add \'Buy now\' button on catalog pages too', 'woo-vipps'),
-                        'label'       => __('Add the button for all relevant products on catalog pages', 'woo-vipps'),
-                        'type'        => 'checkbox',
-                        'description' => sprintf(__('If %1$s is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                        'default'     => 'no',
-                        ),
-                'expresscheckout_termscheckbox' => array(
-                        'title'       => sprintf(__('Add terms and conditions checkbox on %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                        'label'       => sprintf(__('Always ask for confirmation on %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                        'type'        => 'checkbox',
-                        'description' => sprintf(__('When using %1$s, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'), Vipps::ExpressCheckoutName()),
-                        'default'     => 'no',
+                        /* translators: %s is an option for this setting */
+                        'description' => sprintf(__('If you choose %s, enable it individually in product edit.', 'woo-vipps'), __('Selected products', 'woo-vipps')),
+                        'default'     => 'all',
                         ),
 
-                'expresscheckout_always_address' => array(
-                        'title'       => __('Always ask for address, even if products don\'t need shipping', 'woo-vipps'),
-                        'label'       => __('Always ask the user for their address, even if you don\'t need it for shipping', 'woo-vipps'),
-                        'type'        => 'checkbox',
-                        'description' => __('If the order contains only "virtual" products that do not need shipping, we do not normally ask the user for their address - but check this box to do so anyway.', 'woo-vipps'),
-                        'default'     => $default_ask_address_for_express,
+                // Was previously a checkbox, now that we also support terms in app its a dropdown. LP 2026-10-30
+                'expresscheckout_termscheckbox' => array(
+                        'title'       => __('Require terms and conditions confirmation', 'woo-vipps'),
+                        'label'       => '',
+                        'description' => __('Ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'),
+                        'type'        => 'select',
+                        'options' => array(
+                            'no' => __('No','woo-vipps'),
+                            'yes' => __('In the store', 'woo-vipps'),
+                            'app' => __('In the app','woo-vipps'),
+                            ), 
+                        'default'     => 'no',
                 ),
 
-                'enablestaticshipping' => array(
-                        'title'       => __('Enable static shipping for Express Checkout', 'woo-vipps'),
-                        'label'       => __('Enable static shipping', 'woo-vipps'),
+                'expresscheckout_always_address' => array(
+                        'title'       => __('Always ask for address', 'woo-vipps'),
+                        'label'       => __('Always ask for address', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('If your shipping options do not depend on the customers address, you can enable \'Static shipping\', which will precompute the shipping options when using Express Checkout so that this will be much faster. If you do this and the customer isn\'t logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually \'static\', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too.', 'woo-vipps'),
+                        'description' => __('Always ask customers for their address even when the order only contains products that don\'t require shipping (e.g "virtual" products)', 'woo-vipps'),
+                        'default'     => $default_ask_address_for_express,
+                ),
+                'enablestaticshipping' => array(
+                        'title'       => __('Static shipping', 'woo-vipps'),
+                        'label'       => __('Static shipping', 'woo-vipps'),
+                        'type'        => 'checkbox',
+                        'description' => sprintf(__('Speed up %s by precalculating shipping options in advance. Should only be used if your shipping options do not depend on the customer\'s address.', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => 'no',
                         ),
 
-
                 'expresscreateuser' => array (
-                        'title'       => __('Create new customers on Express Checkout', 'woo-vipps'),
-                        'label'       => __('Create new customers on Express Checkout', 'woo-vipps'),
+                        'title'       => __('Create new customers for guest checkouts', 'woo-vipps'),
+                        'label'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts. If you have "Login with Vipps" installed, this will be the default (unless you have turned off user creation in WooCommerce itself)', 'woo-vipps'), Vipps::CompanyName()),
+                        'description' => sprintf(__('Create and log in new customers during %1$s checkout.', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => $expresscreateuserdefault,
                         ),
                 'singleproductbuynowcompatmode' => array(
-                        'title'       => __('"Buy now" compatibility mode', 'woo-vipps'),
-                        'label'       => __('Activate compatibility mode for all "Buy now" buttons', 'woo-vipps'),
+                        'title'       => __('Compatibility mode', 'woo-vipps'),
+                        'label'       => __('Compatibility mode', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('Choosing this will use a different method of handling the "Buy now" button on a single product, which will work for more product types and more plugins - while being <i>slightly</i> less smooth. Use this if your product needs more configuration than simple or standard variable products', 'woo-vipps'),
+                        /* translators: this is a description for the %s setting */
+                        'description' => sprintf(__('Use an alternative %s flow for better compatibility with complex product types and plugins.', 'woo-vipps'), Vipps::ExpressName()),
                         'default'     => 'no',
                         ),
-
-
                 'deletefailedexpressorders' => array(
-                        'title'       => __('Delete failed Express Checkout Orders', 'woo-vipps'),
-                        'label'       => __('Delete failed Express Checkout Orders', 'woo-vipps'),
+                        'title'       => __('Delete failed orders', 'woo-vipps'),
+                        'label'       => __('Delete failed orders', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('As Express Checkout orders are anonymous, failed orders will end up as "cancelled" orders with no information in them. Enable this to delete these automatically when cancelled - but test to make sure no other plugin needs them for anything.', 'woo-vipps'),
+                        'description' => sprintf(__('Automatically delete cancelled %s orders that contain no customer or order information. Make sure to test if other plugins needs these orders intact.', 'woo-vipps'), Vipps::ExpressName(), strtolower($mainfields['main_options']['title'])),
                         'default'     => 'no',
                         )
         );
@@ -1829,53 +1973,46 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                    ),
 
                  'vippsorderattribution' => array(
-                     'title'       => __( 'Support WooCommerces Order Attribution API for Checkout and Express Checkout', 'woo-vipps' ),
-                     'label'       => __( 'Add support for Order Attribution', 'woo-vipps' ),
+                     'title'       => sprintf(__( 'Support %s API for %s and %s', 'woo-vipps'), 'WooCommerces Order Attribution', 'Checkout', Vipps::ExpressName()),
+                     'label'       => '',
                      'type'        => 'checkbox',
                      'default'=> 'no',
-                     'description' => __('Turn this on to add support for Woos Order Attribution API for Checkout and Express Checkout. Some stores have reported problems when using this API together with Vipps, so be sure to test this if you turn it on.', 'woo-vipps'),
+                     'description' => sprintf(__('Turn this on to add support for Woos Order Attribution API for %s and %s. Some stores have reported problems when using this API together with %s, so be sure to test this if you turn it on.', 'woo-vipps'), 'Checkout', Vipps::ExpressName(), Vipps::CompanyName()),
 ),
 
                  'vippsspecialpagetemplate' => array(
-                     'title'       => sprintf(__('Override page template used for the special %1$s pages', 'woo-vipps'), Vipps::CompanyName()),
+                     'title'       => sprintf(__('Legacy: Override page template used for the special %1$s page', 'woo-vipps'), Vipps::CompanyName()),
                      'label'       => sprintf(__('Use specific template for %1$s', 'woo-vipps'), Vipps::CompanyName()),
                      'type'        => 'select',
                      'options' =>  $page_templates,
-                     'description' => sprintf(__('Use this template from your theme or child-theme to display all the special %1$s pages. You will probably want a full-width template and it should call \'the_content()\' normally.', 'woo-vipps'), Vipps::CompanyName()),
+                     'description' => sprintf(__('Use this template from your theme or child-theme for the special %1$s page.<br>Legacy: This is not necessary anymore - you should instead choose a template by editing the page like any other page.','woo-vipps'), Vipps::CompanyName()),
                      'default' => ''),
 
+                 // Deprecated, not shown anymore: TODO: remove this option in future. LP 2026-09-01
                  'vippsspecialpageid' =>  array(
                      'title' => sprintf(__('Use a real page ID for the special %1$s pages - neccessary for some themes', 'woo-vipps'), Vipps::CompanyName()),
                      'label' => __('Use a real page ID', 'woo-vipps'),
                      'type'  => 'select',
-                     'options' => $page_list,
+                     'options' => [],
                      'description' => sprintf(__('Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special %1$s pages.', 'woo-vipps'), Vipps::CompanyName()),
-                     'default'=>''),
+                     'default' => ''
+                 ),
 
                 'sendreceipts' => array(
-                     'title' => __("Send receipts and order confirmation info to the customers' app on completed purchases.", 'woo-vipps'),
-                      'label' => sprintf(__("Send receipts to the customers %1\$s app", 'woo-vipps'), Vipps::CompanyName()),
+                     'title' => __("Send receipt to app", 'woo-vipps'),
+                     'label' => __("Send receipt to app", 'woo-vipps'),
                       'type'        => 'checkbox',
-                      'description' => sprintf(__("If this is checked, a receipt will be sent to %1\$s which will be viewable in the users' app, specifying the order items, shipping et cetera", 'woo-vipps'), Vipps::CompanyName()),
+                      'description' => sprintf(__("Sends a receipt to the customer's %1\$s app, specifying the order items, shipping etc.", 'woo-vipps'), Vipps::CompanyName()),
                       'default' => 'yes'
                 ),
 
                 'receiptimage' => array (
-                        'title'       => sprintf(__('Use this image for the order confirmation link uploaded to the customers\' %1$s app', 'woo-vipps'), Vipps::CompanyName()),
-                        'label'       => sprintf(__('Profile image used in the %1$s App', 'woo-vipps'), Vipps::CompanyName()),
+                        'title'       => sprintf(__('Store image', 'woo-vipps'), Vipps::CompanyName()),
+                        'label'       => sprintf(__('Store image', 'woo-vipps'), Vipps::CompanyName()),
                         'type'        => 'woo_vipps_image',
-                        'description' => sprintf(__('If set, this image will be uploaded to %1$s and used to profile your store in the %1$s app for links to the order confirmation etc', 'woo-vipps'), Vipps::CompanyName()),
+                        'description' => sprintf(__('If set, this image will be used to profile your store in the %1$s app, on certain places like link to the order confirmation.', 'woo-vipps'), Vipps::CompanyName()),
                         'default'     => 0,
                         ),
-
-
-                'use_flock' => array (
-                            'title'       => __('Use flock() to lock orders for Express Checkout', 'woo-vipps'),
-                            'label'       => __('Use flock() to lock orders for Express Checkout', 'woo-vipps'),
-                            'type'        => 'checkbox',
-                            'description' => __('Use the flock() system call to ensure orders are only finalized once. You can use this for normal setups, but probably not on Windows with IIS, and possibly not on distributed filesystems like NFS. If you don\t know what it is, probably do not use it. If you get duplicated shipping lines on some express orders, you may try using this', 'woo-vipps'),
-                            'default'     => 'no',
-                            ),
 
                 'delete_settings_on_deactivation' => array (
                             'title'       => __('Delete plugin settings on deactivation', 'woo-vipps'),
@@ -1885,69 +2022,32 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             'default'     => 'no',
                             ),
 
-                 'developermode' => array ( // DEVELOPERS! DEVELOPERS! DEVELOPERS! DEVE
-                     'title'       => __('Enable developer mode', 'woo-vipps'),
-                     'label'       => __('Enable developer mode', 'woo-vipps'),
-                     'type'        => 'checkbox',
-                     'description' => __('Enable this to enter developer mode. This gives you access to the test-api and sometimes other tools not yet ready for general consumption', 'woo-vipps'),
-                     'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
-                     ) 
-
-
-       );
-
-       $developerfields = array(
-            'developertitle' => array(
-                'title' => __('Developer mode', 'woo-vipps'),
-                'type'  => 'title',
-                'class' => 'tab',
-                'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
-                ),
-
             'testmode' => array(
                 'title' => __('Test mode', 'woo-vipps'),
-                'label' => __('Enable test mode', 'woo-vipps'),
+                'label' => __('Test mode', 'woo-vipps'),
                 'type'  => 'checkbox',
-                'description' => sprintf(__('If you enable this, transactions will be made towards the %1$s Test API instead of the live one. No real transactions will be performed. You will need to fill out your test
-                    accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular %1$s app). Contact %1$s\'s technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'), Vipps::CompanyName()),
+                'description' => sprintf(__('Use the %1$s test environment instead of live production environment. No real transactions will be performed.<br><br>You will need to fill out your test environment keys in the <a href="#%2$s">%2$s</a> tab and install a separate app on your phone for the, see <a href="%3$s" target="_blank">%1$s docs</a> for more info.<br>The constant VIPPS_TEST_MODE in your wp-config file will override this option. ', 'woo-vipps'), Vipps::CompanyName(), __('API keys', 'woo-vipps'), 'https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/'),
                 'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
                 ),
-            'merchantSerialNumber_test' => array(
-                'title' => __('Merchant Serial Number', 'woo-vipps'),
-                'class' => 'vippspw',
-                'label'       => __('Merchant Serial Number', 'woo-vipps'),
-                'type'        => 'number',
-                'description' => __('Your test account "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
-                'default'     => '',
-                ),
-            'clientId_test' => array(
-                    'title' => __('Client Id', 'woo-vipps'),
-                    'label'       => __('Client Id', 'woo-vipps'),
-                    'type'        => 'password',
-                    'class' => 'vippspw',
-                    'description' => __('Find your test account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
-                    'default'     => '',
-                    ),
-            'secret_test' => array(
-                    'title' => __('Client Secret', 'woo-vipps'),
-                    'label'       => __('Client Secret', 'woo-vipps'),
-                    'type'        => 'password',
-                    'class' => 'vippspw',
-                    'description' => __('Find your test account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
-                    'default'     => '',
-                    ),
-            'Ocp_Apim_Key_eCommerce_test' => array(
-                    'title' => __('Subscription Key', 'woo-vipps'),
-                    'label'       => __('Subscription Key', 'woo-vipps'),
-                    'type'        => 'password',
-                    'class' => 'vippspw',
-                    'description' => __('Find your test account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
-                    'default'     => '',
-                    ),
-            );
-        
+       );
+
+       if ($this->fulfillments->is_supported()) {
+           $advancedfields['fulfillments_enabled'] = [
+               'title'       => __('Enable support for fulfillments', 'woo-vipps'),
+               'label'       => __('Enable support for fulfillments', 'woo-vipps'),
+               'type'        => 'checkbox',
+               /* translators: %1 = payment method name */
+               'description' => sprintf(__('Perform partial capture of WooCommerce Fulfillments via %1$s.', 'woo-vipps'), $payment_method_name),
+               'default'     => 'no',
+           ];
+       }
+
+
        // Add all the standard fields
        foreach($mainfields as $key=>$field) {
+          $this->form_fields[$key] = $field;
+       }
+       foreach($keysfields as $key=>$field) {
           $this->form_fields[$key] = $field;
        }
        foreach($expressfields as $key=>$field) {
@@ -1972,21 +2072,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
        foreach($advancedfields as $key=>$field) {
           $this->form_fields[$key] = $field;
        }
-
-       // The react UI decides whether or not to show the developer fields, however we always have to send this data to the client
-       // because otherwise the react UI will not be able to show the correct translations, since they would be missing.
-       foreach($developerfields as $key=>$field) {
-          $this->form_fields[$key] = $field;
-       }
-       // Developer mode settings: Only shown when active. IOK 2019-08-30
-       if ($this->get_option('developermode') == 'yes' || VIPPS_TEST_MODE) {
-           if (VIPPS_TEST_MODE) {
-               $this->form_fields['developermode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced', 'woo-vipps') . "</b>";
-               $this->form_fields['testmode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - test mode is forced', 'woo-vipps') . "</b>";
-           }
-       }
-
-
     }
 
 
@@ -2016,7 +2101,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $ok; 
     }
 
-    // True if the alternative Vipps Checkout screen is both available and activated. Returns the page id of the checkout
+    // True if the alternative Checkout screen is both available and activated. Returns the page id of the checkout
     // page for convenience. IOK 2021-10-01
     public function vipps_checkout_available () {
 
@@ -2065,7 +2150,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // True if the express checkout feature should be available 
     public function express_checkout_available() {
        if (! $this->is_available()) return false;
-       $ok = true;
+       $ok = 'yes' === $this->get_option('express_enabled');
        $ok = apply_filters('woo_vipps_express_checkout_available', $ok, $this);
        return $ok;
     }
@@ -2088,7 +2173,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return [];
         }
-
 
         // From the request, get either    [billing_phone] =>  or [vipps phone]
         $phone = '';
@@ -2184,7 +2268,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $returnurl = add_query_arg('ls',$limited_session,$returnurl);
         $returnurl = add_query_arg('id', $order_id, $returnurl);
 
-
         try {
             // If the order was 'failed', it isnt any more! yet!
             if ($order->get_status() == 'failed') {
@@ -2234,17 +2317,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_orderurl', $url);
  
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
-        $order->add_order_note(sprintf(__('%1$s payment initiated','woo-vipps'), $this->get_payment_method_name()));
-        $order->add_order_note(sprintf(__('Awaiting %1$s payment confirmation','woo-vipps'), $this->get_payment_method_name()));
-        $order->save();
 
+        $name = $this->get_payment_method_name();
+        $order->add_order_note(sprintf(__('%1$s payment initiated','woo-vipps'), $name));
+        $order->add_order_note(sprintf(__('Awaiting %1$s payment confirmation','woo-vipps'),$name));
+
+        $order->save();
         // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
         try {
             $Vipps->createCallbackSignal($order);
         } catch (Exception $e) {
             // Could not create a signal file, but that's ok.
         }
-
         do_action('woo_vipps_before_redirect_to_vipps',$order_id);
 
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
@@ -2411,11 +2495,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 // This is an error - we should not ever get to the 'capture' branch if we are a banktransfer payment.
                 // IOK 2024-01-09
                 $content = [];
-            } elseif ($api == 'epayment') {
-                $content =  $this->api->epayment_capture_payment($order,$amount,$requestid);
             } else {
-                error_log('LP actually sending capture to api');
-                $content =  $this->api->capture_payment($order,$amount,$requestid);
+                // Now the only other api is 'epayment' IOK 2026-08-18
+                $content =  $this->api->epayment_capture_payment($order,$amount,$requestid);
             }
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not capture %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
@@ -2607,27 +2689,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // We'll use the same transaction id for all cancel jobs, as we can only do it completely. IOK 2018-05-07
         // For epayment, partial cancellations will be possible. IOK 2022-11-12
+        // IOK 2026-08-18 actually, epayment does *not* support partial cancellation - all remaining funds are cancelled.
         $api = $order->get_meta('_vipps_api');
-        error_log('LP api: ' . print_r($api, true));
         try {
             $requestid = "";
             if ($api == 'banktransfer') {
                 // If we are here, and the order is somehow not captured, just do nothing. IOK 2024-01-09
                 $content = [];
-            } elseif ($api == 'epayment') {
+            } else {
+                // api is here 'epayment'. IOK 2026-07-18
                 $requestid = 1;
                 // This will cancel any remaining, not-captured amount IOK 2026-01-28
                 $content =  $this->api->epayment_cancel_payment($order,$requestid);
                 error_log('LP content: ' . print_r($content, true));
-            } else {
-                // If we have captured the order, we can't cancel it with the ecom API IOK 2018-05-07
-                $captured = intval($order->get_meta('_vipps_captured'));
-                if ($captured>0) {
-                    $msg = sprintf(__('Cannot cancel a captured %1$s transaction - use refund instead', 'woo-vipps'), "ECOM " .  $this->get_payment_method_name());
-                    $this->adminerr($msg);
-                    return false;
-                }
-                $content =  $this->api->cancel_payment($order,$requestid);
             }
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not cancel %1$s payment for order_id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
@@ -2698,11 +2772,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $msg = sprintf(__("Cannot refund bank transfer order %1\$d", 'woo-vipps'), $order->get_id());
             $this->log($msg, 'error');
             throw new Exception($msg);
-        } elseif ($api == 'epayment') {
-            $content =  $this->api->epayment_refund_payment($order,$requestid,$amount,$cents);
         } else {
-            $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
-        }
+            // api is now 'epayment' IOK 2026-08-18
+            $content =  $this->api->epayment_refund_payment($order,$requestid,$amount,$cents);
+        } 
 
         $currency = $order->get_currency();
 
@@ -2794,20 +2867,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
          return "initiated";
     }
 
-    // This does not normally call Vipps, so if you need to refresh status, please use callback_check_order_status first. IOK 2019-01-23
+    // This does not normally call Vipps, so if you need to refresh status, please use poll_and_check_order_status first. IOK 2019-01-23
     public function check_payment_status($order) {
         if (!$order) return 'cancelled';
         $status = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         // This can happen if the vipps status is set from the back end for instance. IOK 2020-08-14
         if ($order->get_status() == 'pending' && $status != 'initiated') {
-           $this->callback_check_order_status($order);
+           $this->poll_and_check_order_status($order);
            $order = wc_get_order($order->get_id()); // refresh to get the new status IOK 2021-01-20
            $status = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         }
         return $status;
     }
 
-    // Called by callback_check_order_status and handle_callback to handle the situation where
+    // Called by poll_and_check_order_status and handle_callback to handle the situation where
     // the payment method has been set to something else *after* Vipps has gotten the order.
     // This happens very rarely for people who use Vipps as an external payment method in Klarna, so
     // we only do it for orders that match this. IOK 2023-02-03
@@ -2824,6 +2897,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->set_payment_method_title('Vipps');
             if ($express) $order->set_payment_method_title('Vipps Express Checkout');
             if ($checkout) $order->set_payment_method_title('Vipps Checkout');
+            // paypal gw resets payment gateway on order save because it has this meta, so delete it before save. LP 2026-06-23
+            $order->delete_meta_data('_ppcp_paypal_order_id');
             $order->save();
 
             $msg = sprintf(__("Payment method reset to %1\$s - it had been set to another payment method while completing the order for %2\$d", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id());
@@ -2834,7 +2909,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
-    public function callback_check_order_status($order, $allow_retry = true) {
+    public function poll_and_check_order_status($order, $allow_retry = true) {
         global $Vipps;
         $orderid = $order->get_id();
 
@@ -2852,6 +2927,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         /* Now read the payment details and update the order with the relevant values, finding the new Vipps status IOK 2021-01-20 */
         $paymentdetails = array();
+
+        if (!static::lockOrder($order)) {
+           $msg = sprintf(__("Order %d is locked when checking order status at %s - the return url or template_redirect may be called repeatedly. This is likely an error", 'woo-vipps'), $orderid, Vipps::CompanyName());
+           $this->log($msg);
+           return $oldstatus;
+        }
+
         try {
             $paymentdetails = $this->get_payment_details($order);
             $newvippsstatus = $paymentdetails['status'];
@@ -2869,13 +2951,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Something changed, so we are now going to sideeffect the order. IOK 2025-10-15
             $this->log(sprintf(__("%1\$s poll: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
 
-            // If we are in the process of getting a callback from vipps, don't update anything. Currently, Woo/WP has no locking mechanism,
-            // and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of races when this method is called 
-            // and callbacks happen at the same time.
-            if (!$Vipps->lockOrder($order)) {
-                return $oldstatus;
-            }
-
             // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
             // IOK 2024-01-09 ensure this is called only when order is complete/authorized
             if ($ready) {
@@ -2883,11 +2958,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
             $order->update_meta_data('_vipps_status',$newvippsstatus);
+            if ($paymentdetails['captureGuaranteedUntil'] ?? 0) {
+                $order->update_meta_data('_vipps_capture_guaranteed_until', strtotime($paymentdetails['captureGuaranteedUntil']));
+            }
 
             // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
             if (!empty($paymentdetails)) {
-
-
                 // checkout has a string, epayment has an array with upper case "type" and apparently, cardBin IOK 2025-08-12
                 $paymentMethod = $paymentdetails['paymentMethod'] ?? "epayment";
                 // After normalization, all APIs will have data here.
@@ -2911,7 +2987,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e) {
             $this->log(sprintf(__("Error getting payment details from %1\$s for order_id:",'woo-vipps'), $this->get_payment_method_name()) . $orderid . "\n" . $e->getMessage(), 'error');
             clean_post_cache($order->get_id());
-            $Vipps->unlockOrder($order);
             return $oldstatus;
         }
         $order->save();
@@ -2946,7 +3021,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     }
                 }
                 clean_post_cache($order->get_id());
-                $Vipps->unlockOrder($order);
                 return $oldstatus; 
             }
         }
@@ -2984,8 +3058,44 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->save();
         clean_post_cache($order->get_id());
         $newstatus = $order->get_status();
-        $Vipps->unlockOrder($order);
         return $newstatus;
+    }
+
+    // Unfortunately, we cannot do any form of portable locking. The new setup should eliminate most race conditions, but in poll_and_check_order_status we do
+    // side-effect the order object, so we want to make as sure as possible that we don't poll twice at the same time (two tabs open, or something). This actually
+    // happened with the new SDK system, because the iframe'd shopping widget still redirected to the store before being closed - before the user in the parent window
+    // was redirected, sometimes. This caused duplicate emails etc. We will now consider this to be a bug so that we'll log it as such . If it should trigger, the customer
+    // will be sent to a waiting page, which should resolve the issue pretty quick. IOK 2026-10-13
+    // Returns true if lock succeeds, or false.
+    // The "lock" is actually a lease, implemented with a 30 second transient. Of course, if two polls arrive *exactly* at the same time, this will still fail.
+    // This should mostly be called in poll_and_check_order_status.
+    public static function lockOrder($order) {
+        if (has_filter('woo_vipps_lock_order')) {
+            $ok = apply_filters('woo_vipps_lock_order', $order);
+            if (!$ok) return false;
+        } else {
+            $orderid = $order->get_id();
+            if(get_transient('order_lock_'.$orderid)) {
+                return false;
+            }
+            $lockKey = uniqid();
+            set_transient('order_lock_' . $orderid, $lockKey, 30);
+        }
+        add_action('shutdown', function () use ($order) { WC_Gateway_Vipps::unlockOrder($order); });
+        return true;
+    }
+    public static function isLocked ($order) {
+        $orderid = $order->get_id();
+        $locked = get_transient('order_lock_'.$orderid);
+        return apply_filters('woo_vipps_order_locked', $locked, $order);
+    }
+    public static function unlockOrder($order) {
+        if (has_action('woo_vipps_unlock_order')) {
+            do_action('woo_vipps_unlock_order', $order); 
+        } else {
+            $orderid = $order->get_id();
+            delete_transient('order_lock_'.$orderid);
+        }
     }
 
     // IOK 2020-01-20 Previously was just a debugging tool, then was used to update postmeta values. Now is used as the main source of info
@@ -3102,71 +3212,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $ready = true;
         }
 
-
-        // if this is *express - not checkout * and there is no user information, this is probably because we only get that when adding the 'address' scope.
-        // if we didn't want the address, we now need to ask for user details using the login get_userinfo api. IOK 2025-08-12
-        // This is also the only way to get "email_verified", so we may want to add a setting that always calls this if neccessary. IOK 2025-08-13
-        // Also we don't get this when the state is different from AUTHORIZED. Especially not ABORTED.
-        // IOK 2025-09-29: This is *no longer the case* . We actually now get userDetails every time we add the relevant scopes,
-        // so this is now probably dead code.
-        if ($ready && $express && !$checkout_session && !isset($result['userDetails'])) {
-
-            $sub = isset($result['profile']) && isset($result['profile']['sub']) ? $result['profile']['sub'] : null;
-            $userinfo = [];
-            if (!$sub) {
-                // This should never happen, but be prepared
-                $message = sprintf(__("Could not get user info for order %1\$d using the userinfo API: %2\$s. Please use the 'get complete transaction details' on the button to try to recover this. ", 'woo-vipps'), $order->get_id(), "No 'sub' passed for user ID" );
-                $order->add_order_note($message);
-                $this->log($message , "error");
-            } else {
-                // If this happens, the merchant *may* be able to retrieve the information from Vipps so add a note for it.
-                try {
-                    $userinfo = $this->api->get_userinfo($sub);
-                } catch (Exception $e) {
-                    $message = sprintf(__("Could not get user info for order %1\$d using the userinfo API: %2\$s. Please use the 'get complete transaction details' on the button to try to recover this. ", 'woo-vipps'), $order->get_id(),  $e->getMessage());
-                    $order->add_order_note($message);
-                    $this->log($message, 'woo-vipps', "error");
-                }
-            }
-            if ($userinfo) {
-                $userDetails = array(
-                    'email_verified' => $userinfo['email_verified'],
-                    'email' => $userinfo['email'],
-                    'firstName' => $userinfo['given_name'] ?? '',
-                    'lastName' => $userinfo['family_name'] ?? '',
-                    'mobileNumber' => $userinfo['phone_number'] ?? '',
-                    'phoneNumber' => $userinfo['phone_number'] ?? '',
-                    'userId' => $userinfo['phone_number'] ?? '',
-                    'sub' => $userinfo['sub']
-                );
-
-                $result['userDetails'] = $userDetails;
-
-                // We may have asked for the address of the customer, so add that too, or a dummy.
-                if (!isset($result['shippingDetails'])) {
-                    $countries=new WC_Countries();
-                    $address =[];
-                    $address['addressLine1'] = "";
-                    $address['addressLine2'] = "";
-                    $address['city']  ="";
-                    $address['postCode'] = "";
-                    $address['country'] = $countries->get_base_country();
-
-                    // This uses other keys than both epayment and checkout, but we'll normalize it later. IOK 2025-08-13
-                    if (isset($userinfo['address'])) {
-                        $address['addressLine1'] = $userinfo['address']['street_address'];
-                        $address['city'] = $userinfo['address']['region'];
-                        $address['country'] = $userinfo['address']['country'];
-                        $address['postCode'] = $userinfo['address']['postal_code'];
-                    }
-                    $result['shippingDetails'] = ['address' => $address];
-                }
-            }
-        }
-
         if ($ready && ($express || $checkout_session)) {
-            // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
-            // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
+            // For Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
+            // This will also normalize userDetails, adding 'sub' where possible and fields for backwards compatibility. 2025-08-12
             $result = $this->ensure_userDetails($result, $order);
 
             // After, we need to normalize shipping details or even add them if e.g. using Checkout without address or contact info IOK 2025-08-13
@@ -3240,7 +3288,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
 
-    // IOK 2024-01-09 If using Vipps Checkout with the BankTransfer method, which is eg. used in Finland,
+    // IOK 2024-01-09 If using Checkout with the BankTransfer method, which is eg. used in Finland,
     //  we are (currently) not receiving any  'state' or 'aggregate', so add this iff the payment is successful.
     // The reason for this is that this payment type does not actually use the epayment API at all (!)
     // Also moved some other compatibility code here - 
@@ -3311,7 +3359,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $result;
     }
 
-    // Vipps Checkout v3 does *not* provide userDetails. Vipps Checkout v2 and epayment *does*. But Checkout additionally allows
+    // Checkout v3 does *not* provide userDetails. Checkout v2 and epayment *does*. But Checkout additionally allows
     // for anonymous purchases, in which case there is *no* user details. In this case we provide an anonymous user so we can actually create an order.
     // To handle this, we provide this utility that ensures we have userDetails no matter the input. For this we use the anonymous filters and "billingDetails" if present
     // if not, we use shippingDetails. IOK 2023-01-10
@@ -3323,6 +3371,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (isset($vippsdata['userDetails'])) {
             $userDetails = $vippsdata['userDetails'];
             // This is the verified user information from the app - this is always the customer for Express Checkout, but not for Checkout IOK 2025-08-12
+            // Also, it may not always be available - it depends on consent and whether scope was added (probably) in epayment_initate_payment. IOK 2026-08-18
             $sub = "";
             if (isset($vippsdata['profile']) && isset($vippsdata['profile']['sub'])) {
                 $sub = $vippsdata['profile']['sub'];
@@ -3518,20 +3567,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 break;
         }
         $phone = apply_filters('woo_vipps_canonicalize_checkout_phone', $phone, $address, $user);
+        $address['phoneNumber'] = $phone; // checkout
+        $address['mobileNumber'] = $phone; // epayment
 
         if (!isset($address['firstName']) or !$address['firstName']) {
             $address['firstName'] = $firstname;
         }
         if (!isset($address['lastName']) or !$address['lastName']) {
             $address['lastName'] = $lastname;
-        }
-        // checkout uses phonenumber
-        if (!isset($address['phoneNumber']) or !$address['phoneNumber']) {
-            $address['phoneNumber'] = $phone;
-        }
-        // epayment uses mobileNumber
-        if (!isset($address['mobileNumber']) or !$address['mobileNumber']) {
-            $address['mobileNumber'] = $phone;
         }
         if (!isset($address['email']) or !$address['email']) {
             $address['email'] = $email;
@@ -3689,7 +3732,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                     if (is_array($shipping_table) && isset($shipping_table[$key])) {
                         $decoded = $is_base64 ? @base64_decode($shipping_table[$key]) : $shipping_table[$key];
-                        $shipping_rate = $decoded ? @unserialize($decoded) : null;
+
+                        // Ensure no shop manager has injected an evil object (that they would have had to add as a plugin) here. IOK 2026-09-18
+                        $allowed_classes = apply_filters('woo_vipps_express_checkout_allowed_shipping_classes', [WC_Shipping_Rate::class, \stdClass::class]);
+                        $shipping_rate = $decoded ? @unserialize($decoded, ['allowed_classes' => $allowed_classes]) : null;
+                        $shipping_rate = is_a($shipping_rate,'WC_Shipping_Rate') ? $shipping_rate : null;
+
                         if (!$shipping_rate) {
                             $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
                             $this->log(sprintf(__("Serialized data was %1\$s", 'woo-vipps'), $decoded),  'error');
@@ -3711,7 +3759,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     }
                 }
 
-                // Possible extra metadata from Vipps Checkout IOK 2023-01-17
+                // Possible extra metadata from Checkout IOK 2023-01-17
                 // Store in the order, but also in the shipping rate so it will be visible in the order screen
                 // along with the shipping ragte
                 if (isset($shipping['pickupPoint'])) {
@@ -3773,7 +3821,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $shipping_method = $methodclass ? new $methodclass($shipping_rate->get_instance_id()) : null;
             $is_vipps_checkout_shipping = $shipping_method && is_a($shipping_method, 'VippsCheckout_Shipping_Method');
 
-            // Some Vipps Checkout-specific shipping methods calculate the cost in the Vipps window.
+            // Some Checkout-specific shipping methods calculate the cost in the Vipps window.
             if ($is_vipps_checkout_shipping && $shipping_method->dynamic_cost) {
                 $vippsamount = intval($order->get_meta('_vipps_amount'));
                 $shipping_tax_rate = floatval($order->get_meta('_vipps_shipping_tax_rates'));
@@ -3811,7 +3859,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->set_total($ordertotal + $total_shipping + $total_shipping_tax);
             $order->update_taxes(); // Necessary for the admin view only; does not recalculate order.
 
-            // Add an early hook for Vipps Checkout orders with special shipping methods
+            // Add an early hook for Checkout orders with special shipping methods
             $metadata = $shipping_rate->get_meta_data();
             if (isset($metadata['type'])) {
                 do_action('woo_vipps_checkout_special_shipping_method', $order, $shipping_rate, $metadata['type']);
@@ -3829,7 +3877,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // If we have the 'expresscreateuser' thing set to true, we will create or assign the order here, as it is the first-ish place where we can.
         // If possible and safe, user will be logged in before being sent to the thankyou screen.  IOK 2020-10-09
-        // Same thing for Vipps Checkout, mutatis mutandis. The function below returns false if no customer exists or gets created.
+        // Same thing for Checkout, mutatis mutandis. The function below returns false if no customer exists or gets created.
         $customer = false;
         if ($assigncustomer) {
             $customer = Vipps::instance()->express_checkout_get_vipps_customer($order);
@@ -3839,6 +3887,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // the same as the 'sub' we get in Login so that must be a future feature. IOK 2020-10-09
             // IOK 2025-08-13 we do get the 'sub' now, at least for express checkout. For Checkout, we would have to compare the email of the user with the verified email
             // after calling get_userinfo, so we'll leave that be.
+            // We *maybe* get the sub - it depends on consent, and *maybe* that a scope has been added in epayment_initate_payment. IOK 2026-08-18
             if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
                 update_user_meta($customer->get_id(), '_vipps_phone', $billing['phoneNumber']);
                 if (isset($user['sub'])) {
@@ -3874,7 +3923,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $shipping_rate;
     }
 
-    // Used by both callback_check_order_status and handle_callback - sets the neccessary order metadata after a successful (or not vipps transaction). IOK 2025-08-13
+    // Used by both poll_and_check_order_status and handle_callback - sets the neccessary order metadata after a successful (or not vipps transaction). IOK 2025-08-13
     public function order_set_transaction_metadata($order, $transaction) {
         // Set Vipps metadata as early as possible
         $vippsstamp = strtotime($transaction['timeStamp']);
@@ -3900,7 +3949,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
     }
 
-    // Handle the callback from Vipps eCom.
+    // Handle the callback from Vipps ePayment
     public function handle_callback($result, $order, $ischeckout=false, $iswebhook=false) {
         global $Vipps;
 
@@ -3910,190 +3959,30 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $keyset = $this->get_keyset(); 
         $me = array_keys($keyset);
 
+        // Validate the callback first
         if (!in_array($merchant, $me)) {
             $this->log(sprintf(__("%1\$s callback with wrong merchantSerialNumber - might be forged",'woo-vipps'), $this->get_payment_method_name()) . " " .  $order->get_id(), 'warning');
             return false;
         }
-
         if (!$order) {
             $this->log(sprintf(__("%1\$s callback for unknown order",'woo-vipps'), $this->get_payment_method_name()) . " " .  $order->get_id(), 'warning');
             return false;
         }
-        $orderid = $order->get_id();
-        // We may need to use poll to get data, depending on the content passed.
-        $express = $order->get_meta('_vipps_express_checkout');
-        $checkout_session = $order->get_meta('_vipps_checkout_session');
-
+        $order_id = $order->get_id();
         if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
-            $this->log(sprintf(__("Wrong %1\$s Orderid - possibly an attempt to fake a callback ", 'woo-vipps'), Vipps::CompanyName()), 'warning');
-            clean_post_cache($order->get_id());
+            $this->log(sprintf(__('Wrong %1$s Orderid - possibly an attempt to fake a callback ', 'woo-vipps'), Vipps::CompanyName()), 'warning');
+            clean_post_cache($order_id);
             exit();
         }
 
+        // Note any errors in the callback early
         $errorInfo = $result['errorInfo'] ?? '';
         if ($errorInfo) {
-            $this->log(sprintf(__("Message in callback from %1\$s for order",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
-            $order->add_order_note(sprintf(__("Message from %1\$s: %2\$s",'woo-vipps'), $this->get_payment_method_name(), $errorInfo['errorMessage']));
+            /* translators: payment method name, order id */
+            $this->log(sprintf(__('Message in callback from %1$s for order %2$s: ','woo-vipps'), $this->get_payment_method_name(), $order_id), $errorInfo['errorMessage'], 'error');
+            /* translators: payment method name, message */
+            $order->add_order_note(sprintf(__('Message from %1$s: %2$s','woo-vipps'), $this->get_payment_method_name(), $errorInfo['errorMessage']));
         }
-
-        // The payment details field is passed in Checkout, not in Express, but none of them are complete, so we fill out the values 
-        // depending on which one we are IOK 2025-08-13
-        $details = [];
-        // Checkout has this as a field, containing *some* of the neccessary data
-        if (isset($result['paymentDetails'])) {
-            // Checkout. The sesssion states are # "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
-            // -- we should only get callbacks for successful sessions actually.
-            $details = $result['paymentDetails'];
-            $result['state'] = $result['sessionState'] == 'PaymentSuccessful' ? 'AUTHORIZED' : ($result['sessionState'] == 'PaymentTerminated' ? 'TERMINATED' : 'CREATED');
-            $details['state']  = $result['state'];
-            $details['paymentMethod'] = $result['paymentMethod'];
-        } else {
-            // This should be an ecom callback; which we need to add a lot of data for to get a valid "paymentDetails".
-            $details = [];
-            $result['state'] = $result['name'];  // The name of the callback - which should be AUTHORIZED, TERMINATED etc
-            $details['state']  = $result['name'];
-            $details['amount'] = $result['amount']; // currency, value
-            $details['paymentMethod'] = 'epayment';
-            $currency = $details['amount']['currency'];
-            $nothing  = [ 'currency' => $currency, 'value' => 0];
-        } 
-
-        // For both callbacks, set 'aggregate' 
-        $currency = $details['amount']['currency'];
-        $nothing  = [ 'currency' => $currency, 'value' => 0];
-        $aggregate = ['authorizedAmount' => $nothing, 'cancelledAmount' => $nothing, 'capturedAmount' => $nothing, 'refundedAmount' => $nothing];
-        if ($details['state'] == 'AUTHORIZED') {
-           $aggregate['authorizedAmount'] = $details['amount'];
-        }
-        $details['aggregate'] = $aggregate;
-        $result['paymentDetails'] = $details;
-
-        $result = $this->normalizePaymentDetails($result);
-        $details = $result['paymentDetails'];
-
-        $vippsstatus = $result['status']; // Will exist now, because of the normalization IOK 2025-08-13
-        $newstatus = $this->interpret_vipps_order_status($vippsstatus);
-
-        // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
-        $transaction = array();
-        $stamp = ($result['timestamp'] ?? false) ? strtotime($result['timestamp']) : time(); 
-        $transaction['timeStamp'] = date('Y-m-d H:i:s', $stamp);
-        $transaction['amount'] = $details['amount']['value'];
-        $transaction['currency'] = $details['amount']['currency'];
-        $transaction['status'] = ($result['state'] ?? $details['state']);
-        $transaction['paymentmethod'] = $details['paymentMethod'] ?? "";
-
-        if (!$transaction) {
-            $this->log(sprintf(__("Anomalous callback from %1\$s, handle errors and clean up",'woo-vipps'), $this->get_payment_method_name()),'warning');
-            clean_post_cache($order->get_id());
-            return false;
-        }
-
-        $order->add_order_note(sprintf(__('%1$s callback received','woo-vipps'), $this->get_payment_method_name()));
-        do_action('woo_vipps_callback_received', $order, $result, $transaction);
-
-        $oldstatus = $order->get_status();
-        if ($oldstatus != 'pending') {
-            // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
-            clean_post_cache($order->get_id());
-            return false;
-        }
-
-        // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
-        // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
-        // when callbacks happen while we are polling for results. IOK 2018-05-30
-        if (!$Vipps->lockOrder($order)) {
-            clean_post_cache($order->get_id());
-            return false;
-        }
-
-        // Ensure we use the same session as for the original order from here on. IOK 2019-10-21
-        // IOK 2023-07-18 but because of the race condition issue, we cannot guarantee that any changes
-        // made to the session here will be saved. Sorry. 
-        $Vipps->callback_restore_session($orderid);
-
-        // Set Vipps metadata as early as possible
-        $this->order_set_transaction_metadata($order, $transaction);
-
-        $this->log(sprintf(__("%1\$s callback: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
-
-      
-        // This order is ready to set order shipping details etc for IOK 2025-09-19
-        $ready = false;
-        if (in_array($newstatus, ['authorized', 'complete'])) {
-            $ready = true;
-        }
-        if ($ready) {
-            // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
-            // IOK 2024-01-09 ensure this is called only when order is complete/authorized
-            $this->reset_erroneous_payment_method($order);
-        }
-
-        if ($ready && ($express || $ischeckout)) {
-            // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
-            // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
-            $result = $this->ensure_userDetails($result, $order);
-
-            // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
-            // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
-            // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
-            // IOK 2025-09-29: This is probably *no longer true* - we now almost certainly *always* get a userDetails field if
-            // we have added a scope of any kind. This is therefore probably dead code.
-            // This being dead code, we'll not try to handle errors gracefully here. IOK 2026-03-18
-            if (!isset($result['userDetails'])) {
-                // This also calls ensure_userDetails and normalizeShippingDetails - but NB: it could fail, so call only when neccessary.
-                try {
-                   $details = $this->get_payment_details($order);
-                   $result = $details;
-                } catch (Exception $e) {
-                  $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
-                  $this->log($e->getMessage());
-                }
-            } 
-
-            // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
-            $result = $this->normalizeShippingDetails($result, $order);
-
-            // We should now always have shipping details.
-            if (isset($result['shippingDetails'])) {
-                $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
-                $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
-            }
-        }
-
-        // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
-        if ($vippsstatus == 'AUTHORIZED') {
-            $this->payment_complete($order);
-        } else if ($vippsstatus == 'SALE') {
-          // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
-          // Actually not supported anymore, but keep logic. IOK 2025-08-13
-          $order->add_order_note(sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
-          $order->payment_complete();
-          $this->update_vipps_payment_details($order);
-        } else {
-            // Not ok status; set to failed/cancelled
-            $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
-            $status_on_fail = $this->get_option('status_on_fail');
-            $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
-            if ($cancel_on_fail || !$order_is_retryable) {
-                $status_on_fail = 'cancelled';
-            }
-            if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
-                /* translators: order status name. Cancelled is woocommerce status name */
-                $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
-                $status_on_fail = 'cancelled';
-            }
-
-            /* translators: company name */
-            $order->update_status($status_on_fail, sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
-        }
-
-        $order->save();
-        clean_post_cache($order->get_id());
-
-        // Restore the session again so that we aren't causing issues with the customer-return branch, which may have to update the session concurrently. IOK 2023-018
-        $Vipps->callback_restore_session($orderid);
-        $Vipps->unlockOrder($order);
 
         // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
         try {
@@ -4102,8 +3991,259 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 // Could not create a signal file, but that's ok.
         }
 
+        // New callback handling: schedule an Action Scheduler job to process it. The purpose of processing callback
+        // is to set finalize the order (set order status, set shipping for express) in the case when customer does
+        // not return to the store, because then poll does not run. LP 2026-03-27
+
+        // Below is separate from '_vipps_callback_timestamp' which is when callback is sent,
+        // but also that meta won't be stored until callback is actually processed. LP 2026-03-30
+        $order->update_meta_data('_vipps_callback_received_at', time());
+        // Store the callback data in the order. We'll do a cleanup of this when the scheduled job runs. IOK 2026-04-21
+        $order->update_meta_data('_vipps_callback_data', $result);
+        $order->save_meta_data();
+
+        // Run callback actions for callback received as soon as it is actually received.
+        $transaction = []; // No longer provided. IOK 2026-05-06
+        do_action('woo_vipps_callback_received', $order, $result, $transaction);
+
+        $action_args = [
+            'order_id' => $order->get_id(),
+            'is_checkout' => $ischeckout,
+            'is_webhook' => $iswebhook,
+        ];
+        // We'll check the status of this order in a minute. At that time, the customer should have been able to return to the store
+        // and have the order finalized the 'normal' way, but if they don't, we'll handle it async. 2026-04-21
+        $scheduled_at = time() + 60;
+        $action_id = as_schedule_single_action($scheduled_at, 'woo_vipps_action_process_callback', $action_args, 'woo-vipps', false);
+        if ($action_id) {
+            /* translators: order id, scheduled time */
+            $this->log(sprintf(__('Callback action scheduled at %2$s for order %1$s', 'woo-vipps'), $order->get_id(), $scheduled_at), 'info');
+        } else {
+            // The action scheduler error is not returned, only sent to error_log (https://github.com/woocommerce/action-scheduler/blob/25c982c3d0f8134389d5b5884082403c4806322f/classes/ActionScheduler_ActionFactory.php#L268). LP 2026-04-23
+            /* translators: order id */
+            $this->log(sprintf(__('Failed to schedule callback process action for order %1$s, check the php error log', 'woo-vipps'), $order->get_id()), 'error');
+           /* We will not delete the callback data here, to facilitate debugging. But return false to indicate that callback handling will fail. */
+           /* NB: The order will still be processed with the periodic job, at a later stage. IOK 2026-05-06 */
+            return false;
+        }
+
         // Signal that we in fact handled the order.
         return true;
+    }
+
+    /** Runs in action scheduler: sync woo status from Vipps callback data. Handle shipping etc. for Express. LP 2026-03-31 */
+    public function action_process_callback($order_id, $is_checkout, $is_webhook) {
+        /* translators: order id */
+        $this->log(sprintf(__('Callback process action running for order %1$s.', 'woo-vipps'), $order_id));
+
+        $order = wc_get_order($order_id);
+        if (!is_a($order, 'WC_Order')) {
+            /* translators: order id */
+            $this->log(sprintf(__('Callback process action failed, could not find order %1$s','woo-vipps'), $order_id), 'error');
+            return false;
+        }
+
+        $oldstatus = $order->get_status();
+        if ($oldstatus != 'pending') {
+            // Actually, we are ok with this order, abort the callback handler. IOK 2018-05-30
+            $order->delete_meta_data('_vipps_callback_data');
+            clean_post_cache($order->get_id());
+            /* translators: order id */
+            $this->log(sprintf(__('Callback process action aborted since %1$s is not pending.','woo-vipps'), $order_id), 'info');
+            return false;
+        }
+        $data = $order->get_meta('_vipps_callback_data');
+
+
+        // The payment details field is passed in Checkout, not in Express, but none of them are complete, so we fill out the values 
+        // depending on which one we are IOK 2025-08-13
+        $details = [];
+        // Checkout has this as a field, containing *some* of the neccessary data
+        if (isset($data['paymentDetails'])) {
+            // Checkout. The sesssion states are # "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
+            // -- we should only get callbacks for successful sessions actually.
+
+            $details = $data['paymentDetails'];
+            $data['state'] = $data['sessionState'] == 'PaymentSuccessful' ? 'AUTHORIZED' : ($data['sessionState'] == 'PaymentTerminated' ? 'TERMINATED' : 'CREATED');
+            $details['state']  = $data['state'];
+            $details['paymentMethod'] = $data['paymentMethod'];
+        } else {
+            // This should be an epayment webhook callback; which we need to add a lot of data for to get a valid "paymentDetails".
+            $details = [];
+            $data['state'] = $data['name'];  // The name of the callback - which should be AUTHORIZED, TERMINATED etc
+            $details['state']  = $data['name'];
+            $details['amount'] = $data['amount']; // currency, value
+            $details['paymentMethod'] = 'epayment';
+        }
+
+        // For both callbacks, set 'aggregate' 
+        $currency = $details['amount']['currency'];
+        $nothing  = [ 'currency' => $currency, 'value' => 0];
+        $aggregate = ['authorizedAmount' => $nothing, 'cancelledAmount' => $nothing, 'capturedAmount' => $nothing, 'refundedAmount' => $nothing];
+        if ($details['state'] == 'AUTHORIZED') {
+            $aggregate['authorizedAmount'] = $details['amount'];
+        }
+        $details['aggregate'] = $aggregate;
+        $data['paymentDetails'] = $details;
+
+        // Do the actual work with a function shared with the periodic job.
+        $this->set_order_status_by_payment_details($order,$data);
+
+        /* translators: payment method name */
+        $order->add_order_note(sprintf(__('%1$s callback processed','woo-vipps'), $this->get_payment_method_name()));
+
+        // We're done, so delete the callback data. IOK 2026-04-22
+        $order->delete_meta_data('_vipps_callback_data');
+    }
+
+
+     // Called either by periodic job or by action_process_callback with the callback data *or* with payment details fetched with poll.
+     // sets order status if neccessary, and will finalize the order for Express via HTTP call if necessary. IOK 2026-05-06
+     public function set_order_status_by_payment_details($order, $data, $allow_retry=true) {
+        $data = $this->normalizePaymentDetails($data);
+        $details = $data['paymentDetails'];
+        $order_id = $order->get_id();
+
+        $vippsstatus = $data['status']; // Will exist now, because of the normalization IOK 2025-08-13
+        $newstatus = $this->interpret_vipps_order_status($vippsstatus);
+
+        // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
+        $transaction = array();
+        $stamp = ($data['timestamp'] ?? false) ? strtotime($data['timestamp']) : time(); 
+        $transaction['timeStamp'] = date('Y-m-d H:i:s', $stamp);
+        $transaction['amount'] = $details['amount']['value'];
+        $transaction['currency'] = $details['amount']['currency'];
+        $transaction['status'] = ($data['state'] ?? $details['state']);
+        $transaction['paymentmethod'] = $details['paymentMethod'] ?? "";
+        $this->order_set_transaction_metadata($order, $transaction);
+
+        // Dont do anything if order is not finalized. LP 2026-08-31
+        if (!in_array($newstatus, ['authorized', 'complete', 'cancelled'])) {
+            return;
+        }
+
+        // This order is ready to set order shipping details etc for IOK 2025-09-19
+        $ready = in_array($newstatus, ['authorized', 'complete']);
+
+        if ($ready) {
+            // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
+            // IOK 2024-01-09 ensure this is called only when order is complete/authorized
+            $this->reset_erroneous_payment_method($order);
+        }
+
+        $is_express_or_checkout = $order->get_meta('_vipps_express_checkout');
+
+        // Handle session and shipping through http, because we dont want to mess with session here in wp cron (action scheduler). LP 2026-03-30
+        // NB: This is and must be a *synchronous call*. When done, the order will have shipping, addresses etc. IOK 2026-05-06.
+        $shipping_set = $order->get_meta('_vipps_shipping_set');
+        if ($ready && $is_express_or_checkout && !$shipping_set) {
+            $token = $order->get_meta('_vipps_authtoken');
+            $args = [
+                'body' => [
+                    'order_id' => $order_id,
+                    'vipps_order_data' => $data,
+                ],
+                'headers' => [
+                    'X-WooVipps-Token' => $token,
+                ],
+            ];
+            $url = Vipps::get_rest_url('v1', '/order-set-shipping');
+            $response = wp_remote_post($url, $args);
+            if (is_wp_error($response)) {
+                /* translators: order id, error message */
+                $error_msg = $response->get_error_message();
+                $this->log(sprintf(__('Process callback action failed to finalize shipping through http rest endpoint for order %1$s: %2$s', 'woo-vipps'), $order->get_id(), $error_msg), 'error');
+            } else if (200 != ($response['response']['code'] ?? -1)) {
+                /* translators: order id */
+                $response_msg = print_r($response['body'] ?? ['Missing response body'], true);
+                $this->log(sprintf(__('Process callback action failed to finalize shipping through http rest endpoint for order %1$s: %2$s', 'woo-vipps'), $order->get_id(), $response_msg), 'error');
+            }
+        }
+
+        // This must happen *after* finalization for Express, as above. IOK 2026-05-06
+        // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
+        if ($vippsstatus == 'AUTHORIZED') {
+            $this->payment_complete($order);
+        } else if ($vippsstatus == 'SALE') {
+          // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
+          // Actually not supported anymore, but keep logic. IOK 2025-08-13
+          // Still supported for finnish direct bank transfer. IOK 2026-04-22
+          $order->add_order_note(sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
+          $order->payment_complete();
+          $this->update_vipps_payment_details($order);
+        } else {
+            // Not ok status; set to failed/cancelled
+            $order_is_retryable = $allow_retry && Vipps::order_is_vipps_retryable($order->get_id());
+            $status_on_fail = $this->get_option('status_on_fail');
+            $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+            if ($cancel_on_fail || !$order_is_retryable) {
+                $status_on_fail = 'cancelled';
+            }
+            if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
+                /* translators: %1 = order status parameter. 'cancelled' is woocommerce order status name */
+                $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
+                $status_on_fail = 'cancelled';
+            }
+
+            /* translators: company name */
+            $order->update_status($status_on_fail, sprintf(__('Callback: Payment cancelled at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
+        }
+
+        $order->save();
+        clean_post_cache($order_id);
+    }
+
+    /* finalize shipping for express/checkout order. LP 2026-03-30 */
+    public function rest_order_set_shipping($request) {
+        $order_id = $request->get_param('order_id');
+        $data = $request->get_param('vipps_order_data');
+
+        $order = wc_get_order($order_id);
+        if (!is_a($order, 'WC_Order')) {
+            return new WP_Error('order_not_found', __('Order not found', 'woo-vipps'), ['status' => 404]);
+        }
+
+        $is_express_or_checkout = $order->get_meta('_vipps_express_checkout');
+        $shipping_set = $order->get_meta('_vipps_shipping_set');
+        if (!$is_express_or_checkout || $shipping_set) {
+            return new WP_Error('order_is_finalized', __('Order does not need to set shipping', 'woo-vipps'), ['status' => 409]);
+        }
+
+        // Ensure we use the same session as for the original order from here on. IOK 2019-10-21
+        // IOK 2023-07-18 but because of the race condition issue, we cannot guarantee that any changes
+        // made to the session here will be saved. Sorry. 
+        // UPDATE: Should be no more race condition since we moved callback into the action scheduler, and this shipping finalization into this rest endpoint. LP 2026-03-30
+        Vipps::instance()->callback_restore_session($order_id);
+
+        // For Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
+        // This will also normalize userDetails, adding 'sub' where possible and fields for backwards compatibility. 2025-08-12
+        $data = $this->ensure_userDetails($data, $order);
+
+        // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
+        // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
+        // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
+        // IOK 2025-09-29: This is probably *no longer true* - we now almost certainly *always* get a userDetails field if
+        // we have added a scope of any kind. This is therefore probably dead code.
+        // This being dead code, we'll not try to handle errors gracefully here. IOK 2026-03-18
+        if (!isset($data['userDetails'])) {
+            // This also calls ensure_userDetails and normalizeShippingDetails - but NB: it could fail, so call only when neccessary.
+            try {
+               $details = $this->get_payment_details($order);
+               $data = $details;
+            } catch (Exception $e) {
+              $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
+              $this->log($e->getMessage());
+            }
+        } 
+
+        // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
+        $data = $this->normalizeShippingDetails($data, $order);
+
+        // We should now always have shipping details.
+        if (isset($data['shippingDetails'])) {
+            $billing = isset($data['billingDetails']) ? $data['billingDetails'] : false;
+            $this->set_order_shipping_details($order,$data['shippingDetails'], $data['userDetails'], $billing, $data);
+        }
     }
 
     // Do the 'payment_complete' logic for non-SALE orders IOK 2020-09-22
@@ -4168,7 +4308,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             do_action('woo_vipps_payment_complete_at_shutdown', $order, $this);
         } catch (Exception $e) {
             // This is/should be non-critical so just log it.
-            $this->log(sprintf(__("Could not do all payment-complete actions on %1\$s order %2\$d: %3\$s ", 'woo-vipps'), Vipps::CompanyName(), $orderid,  $e->etMessage()), "error");
+            $this->log(sprintf(__("Could not do all payment-complete actions on %1\$s order %2\$d: %3\$s ", 'woo-vipps'), Vipps::CompanyName(), $orderid,  $e->getMessage()), "error");
         }
     }
 
@@ -4277,7 +4417,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $contents = WC()->cart->get_cart_contents();
         $contents = apply_filters('woo_vipps_create_express_checkout_cart_contents',$contents);
         try {
-            $cart_hash = md5(json_encode(wc_clean($contents)) . WC()->cart->total);
+            $cart_hash = WC()->cart->get_cart_hash();
             $order = new WC_Order();
             $order->set_status('pending');
             $order->set_payment_method($this);
@@ -4290,6 +4430,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // We use 'checkout' as the created_via key as per requests, but allow merchants to use their own. IOK 2022-09-15
             $created_via = apply_filters('woo_vipps_express_checkout_created_via', 'checkout', $order, $ischeckout);
             $order->set_created_via($created_via);
+            $order->set_cart_hash($cart_hash);
 
             $dummy = sprintf(__('Vipps Express Checkout', 'woo-vipps')); //  this is so gettext will find this string.
             $dummy = sprintf(__('Vipps Checkout', 'woo-vipps')); //  this is so gettext will find this string.
@@ -4453,7 +4594,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 </div>
         <?php endif; ?>
     
-        <?php // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
+        <?php // We will only show the Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
         ?>
  
@@ -4474,8 +4615,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
     function validate_checkbox_field($key,$value) {
         if ($key == 'testmode' && VIPPS_TEST_MODE) {
-              return "yes";    
-        } else if ($key == 'developermode' && VIPPS_TEST_MODE) {
               return "yes";    
         } else if ($key == 'enabled') { 
               if ($value && $this->can_be_activated()) return 'yes';
@@ -4516,6 +4655,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($this->get_option('vipps_checkout_enabled') == 'yes') {
             update_option('woo_vipps_checkout_activated', true, true); // This must be true here, but still, make sure
             Vipps::instance()->maybe_create_vipps_pages();
+        }
+
+        // Ensure special page has the necessary shortcode. LP 2026-09-01
+        $special_page = get_post(Vipps::get_special_page_id());
+        if ($special_page && !has_shortcode($special_page->post_content, 'vipps_special_page')) {
+            $new_content = $special_page->post_content . "\n\n<!-- wp:shortcode -->[vipps_special_page]<!-- /wp:shortcode -->";
+            wp_update_post([
+                    'ID'           => Vipps::get_special_page_id(),
+                    'post_content' => $new_content,
+            ]);
+        } else if (!Vipps::get_special_page_id()) {
+            // We shouldn't really get here, the page should be ensured to exist in init. LP 2026-09-03
+            /* translators: %s is current method name */
+            $this->log(sprintf(__('Missing special page in %s, attempting to fix', 'woo-vipps'), 'process_admin_options'), 'warning');
+            Vipps::instance()->ensure_special_page_exists();
         }
 
         return $saved;
@@ -4729,7 +4883,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return array(false, $msg);
             }
         }
-        return array(false, ''); // No configuration
+        return array(false, __('missing API keys', 'woo-vipps')); // No configuration
     } 
 
     public function log ($what,$type='info') {
@@ -4765,4 +4919,3 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
 }
-
