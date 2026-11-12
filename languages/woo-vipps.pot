@@ -2,14 +2,14 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: Pay with Vipps and MobilePay for WooCommerce 6.3.4\n"
+"Project-Id-Version: Pay with Vipps and MobilePay for WooCommerce 6.4.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woo-vipps\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-02T10:55:25+00:00\n"
+"POT-Creation-Date: 2026-11-12T14:47:59+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: woo-vipps\n"
@@ -42,7 +42,7 @@ msgid "https://www.wp-hosting.no/"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:57
-#: payment/Vipps.class.php:241
+#: payment/Vipps.class.php:237
 msgid "Error: Cannot instantiate payment gateway, because WooCommerce is not loaded! This can happen when WooCommerce updates itself; but if it didn't, please activate WooCommerce again"
 msgstr ""
 
@@ -52,12 +52,12 @@ msgid "You don't have sufficient rights to edit these settings"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:126
-#: payment/WC_Gateway_Vipps.class.php:4141
+#: payment/WC_Gateway_Vipps.class.php:4156
 msgid "Connection to %1$s is OK"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:128
-#: payment/WC_Gateway_Vipps.class.php:4143
+#: payment/WC_Gateway_Vipps.class.php:4158
 msgid "Could not connect to %1$s"
 msgstr ""
 
@@ -114,7 +114,7 @@ msgstr ""
 #: payment/admin/settings/VippsAdminSettings.class.php:285
 #: payment/admin/settings/VippsAdminSettings.class.php:349
 #: payment/admin/settings/VippsAdminSettings.class.php:374
-#: payment/Vipps.class.php:807
+#: payment/Vipps.class.php:795
 #: payment/VippsQRCodeController.class.php:165
 msgid "You don't have sufficient rights to access this page"
 msgstr ""
@@ -135,7 +135,7 @@ msgstr ""
 #: payment/admin/settings/VippsAdminSettings.class.php:307
 #: payment/admin/settings/VippsAdminSettings.class.php:468
 #: payment/lib/recurring-translations.php:119
-#: payment/WC_Gateway_Vipps.class.php:1409
+#: payment/WC_Gateway_Vipps.class.php:1433
 #: recurring/includes/wc-gateway-vipps-recurring.php:2807
 msgid "Cancelled"
 msgstr ""
@@ -195,7 +195,7 @@ msgid "User Checked in"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:330
-#: payment/Vipps.class.php:1166
+#: payment/Vipps.class.php:1154
 msgid "Webhooks"
 msgstr ""
 
@@ -229,9 +229,9 @@ msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:338
 #: payment/lib/recurring-translations.php:70
-#: payment/WC_Gateway_Vipps.class.php:1711
-#: payment/WC_Gateway_Vipps.class.php:1712
-#: recurring/includes/admin/vipps-recurring-settings.php:239
+#: payment/WC_Gateway_Vipps.class.php:1735
+#: payment/WC_Gateway_Vipps.class.php:1736
+#: recurring/includes/admin/vipps-recurring-settings.php:249
 msgid "Test mode"
 msgstr ""
 
@@ -244,7 +244,7 @@ msgid "Webhook"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:339
-#: payment/Vipps.class.php:1665
+#: payment/Vipps.class.php:1653
 msgid "Action"
 msgstr ""
 
@@ -253,8 +253,8 @@ msgid "View"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:340
-#: payment/Vipps.class.php:1646
-#: payment/Vipps.class.php:1674
+#: payment/Vipps.class.php:1634
+#: payment/Vipps.class.php:1662
 msgid "Delete"
 msgstr ""
 
@@ -285,37 +285,37 @@ msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:360
 #: payment/Blocks/woo-vipps-blocks.php:39
-#: payment/Vipps.class.php:1582
+#: payment/Vipps.class.php:1570
 msgid "White"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:360
 #: payment/Blocks/woo-vipps-blocks.php:40
-#: payment/Vipps.class.php:1583
+#: payment/Vipps.class.php:1571
 msgid "Grey"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:360
 #: payment/Blocks/woo-vipps-blocks.php:41
-#: payment/Vipps.class.php:1584
+#: payment/Vipps.class.php:1572
 msgid "Filled"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:360
 #: payment/Blocks/woo-vipps-blocks.php:42
 #: payment/Blocks/woo-vipps-blocks.php:113
-#: payment/Vipps.class.php:1585
+#: payment/Vipps.class.php:1573
 msgid "Light"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:360
 #: payment/Blocks/woo-vipps-blocks.php:43
-#: payment/Vipps.class.php:1586
+#: payment/Vipps.class.php:1574
 msgid "Purple"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:362
-#: payment/Vipps.class.php:1165
+#: payment/Vipps.class.php:1153
 msgid "Badges"
 msgstr ""
 
@@ -329,8 +329,8 @@ msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:365
 #: payment/lib/recurring-translations.php:153
-#: payment/Vipps.class.php:997
-#: payment/Vipps.class.php:1157
+#: payment/Vipps.class.php:985
+#: payment/Vipps.class.php:1145
 #: recurring/includes/wc-vipps-recurring.php:922
 msgid "Settings"
 msgstr ""
@@ -349,7 +349,7 @@ msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:368
 #: payment/admin/settings/VippsAdminSettings.class.php:401
-#: payment/Vipps.class.php:1663
+#: payment/Vipps.class.php:1651
 #: payment/Blocks/dist/buy-now/index.js:1
 #: payment/Blocks/dist/vipps-badge/index.js:1
 msgid "Variant"
@@ -360,14 +360,14 @@ msgid "Choose color variant:"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:386
-#: payment/Vipps.class.php:1164
+#: payment/Vipps.class.php:1152
 msgid "Buttons"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:387
 #: payment/admin/settings/VippsAdminSettings.class.php:401
 #: payment/Blocks/woo-vipps-blocks.php:122
-#: payment/Vipps.class.php:74
+#: payment/Vipps.class.php:73
 msgid "Express"
 msgstr ""
 
@@ -389,7 +389,7 @@ msgid "Catalog"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:389
-#: payment/WC_Gateway_Vipps.class.php:1536
+#: payment/WC_Gateway_Vipps.class.php:1560
 msgid "Cart"
 msgstr ""
 
@@ -398,7 +398,7 @@ msgid "Mini cart"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:390
-#: payment/WC_Gateway_Vipps.class.php:1544
+#: payment/WC_Gateway_Vipps.class.php:1568
 msgid "Checkout"
 msgstr ""
 
@@ -487,7 +487,7 @@ msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:399
 #: payment/Blocks/woo-vipps-blocks.php:119
-#: payment/Vipps.class.php:5230
+#: payment/Vipps.class.php:5218
 msgid "Continue"
 msgstr ""
 
@@ -516,7 +516,7 @@ msgid "Light (WCAG AAA)"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:426
-#: payment/Vipps.class.php:1157
+#: payment/Vipps.class.php:1145
 msgid "Single payments"
 msgstr ""
 
@@ -539,7 +539,7 @@ msgid "Production environment"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:434
-#: payment/Vipps.class.php:1868
+#: payment/Vipps.class.php:1856
 msgid "Order status"
 msgstr ""
 
@@ -550,8 +550,7 @@ msgid "Advanced settings"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:437
-#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:165
-msgid "Configure placement"
+msgid "Advanced placement"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:438
@@ -635,14 +634,14 @@ msgstr ""
 
 #. translators: woocommerce order status name
 #: payment/admin/settings/VippsAdminSettings.class.php:459
-#: payment/WC_Gateway_Vipps.class.php:1392
+#: payment/WC_Gateway_Vipps.class.php:1416
 msgid "Processing"
 msgstr ""
 
 #. translators: woocommerce order status name
 #: payment/admin/settings/VippsAdminSettings.class.php:460
 #: payment/lib/recurring-translations.php:120
-#: payment/WC_Gateway_Vipps.class.php:1394
+#: payment/WC_Gateway_Vipps.class.php:1418
 #: recurring/includes/wc-gateway-vipps-recurring.php:2818
 msgid "On hold"
 msgstr ""
@@ -657,7 +656,7 @@ msgstr ""
 
 #. translators: woocommerce order status name
 #: payment/admin/settings/VippsAdminSettings.class.php:466
-#: payment/WC_Gateway_Vipps.class.php:1407
+#: payment/WC_Gateway_Vipps.class.php:1431
 msgid "Failed"
 msgstr ""
 
@@ -694,7 +693,7 @@ msgid "Get started with %1$s"
 msgstr ""
 
 #: payment/admin/settings/VippsAdminSettings.class.php:530
-#: payment/WC_Gateway_Vipps.class.php:1523
+#: payment/WC_Gateway_Vipps.class.php:1547
 msgid "%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds."
 msgstr ""
 
@@ -846,7 +845,7 @@ msgid "Yes"
 msgstr ""
 
 #: payment/lib/recurring-translations.php:18
-#: payment/WC_Gateway_Vipps.class.php:1588
+#: payment/WC_Gateway_Vipps.class.php:1612
 #: recurring/includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:271
 msgid "No"
 msgstr ""
@@ -875,13 +874,13 @@ msgid "Controls the payment flow brand (Vipps or MobilePay)."
 msgstr ""
 
 #: payment/lib/recurring-translations.php:24
-#: payment/WC_Gateway_Vipps.class.php:1371
+#: payment/WC_Gateway_Vipps.class.php:1395
 #: recurring/includes/admin/vipps-recurring-settings.php:25
 msgid "Vipps"
 msgstr ""
 
 #: payment/lib/recurring-translations.php:25
-#: payment/WC_Gateway_Vipps.class.php:1372
+#: payment/WC_Gateway_Vipps.class.php:1396
 #: recurring/includes/admin/vipps-recurring-settings.php:26
 msgid "MobilePay"
 msgstr ""
@@ -1062,22 +1061,22 @@ msgid "Newest first"
 msgstr ""
 
 #: payment/lib/recurring-translations.php:65
-#: recurring/includes/admin/vipps-recurring-settings.php:228
+#: recurring/includes/admin/vipps-recurring-settings.php:238
 msgid "Developer settings"
 msgstr ""
 
 #: payment/lib/recurring-translations.php:66
-#: recurring/includes/admin/vipps-recurring-settings.php:229
+#: recurring/includes/admin/vipps-recurring-settings.php:239
 msgid "Developer, test, and debugging options."
 msgstr ""
 
 #: payment/lib/recurring-translations.php:67
-#: recurring/includes/admin/vipps-recurring-settings.php:232
+#: recurring/includes/admin/vipps-recurring-settings.php:242
 msgid "Logging"
 msgstr ""
 
 #: payment/lib/recurring-translations.php:68
-#: recurring/includes/admin/vipps-recurring-settings.php:233
+#: recurring/includes/admin/vipps-recurring-settings.php:243
 msgid "Log debug messages"
 msgstr ""
 
@@ -1086,7 +1085,7 @@ msgid "Save debug messages to the WooCommerce System Status log."
 msgstr ""
 
 #: payment/lib/recurring-translations.php:71
-#: recurring/includes/admin/vipps-recurring-settings.php:240
+#: recurring/includes/admin/vipps-recurring-settings.php:250
 msgid "Enable test mode"
 msgstr ""
 
@@ -1421,7 +1420,7 @@ msgid "Where we should source the agreement description from. Displayed in the V
 msgstr ""
 
 #: payment/lib/recurring-translations.php:146
-#: payment/WC_Gateway_Vipps.class.php:1436
+#: payment/WC_Gateway_Vipps.class.php:1460
 #: recurring/includes/wc-vipps-recurring.php:631
 msgid "None"
 msgstr ""
@@ -1452,7 +1451,7 @@ msgid "Max 100 characters"
 msgstr ""
 
 #: payment/lib/recurring-translations.php:152
-#: payment/Vipps.class.php:2531
+#: payment/Vipps.class.php:2519
 #: recurring/includes/wc-vipps-recurring.php:697
 msgid "Capture payment"
 msgstr ""
@@ -1473,8 +1472,8 @@ msgid "Continue with %s"
 msgstr ""
 
 #: payment/lib/recurring-translations.php:157
-#: payment/Vipps.class.php:5197
-#: payment/Vipps.class.php:5233
+#: payment/Vipps.class.php:5185
+#: payment/Vipps.class.php:5221
 #: recurring/assets/build/main.js:1
 #: recurring/src/components/PaymentRedirectPage/PaymentCancelled.jsx:16
 msgid "Order cancelled"
@@ -1487,9 +1486,9 @@ msgid "Your payment has been cancelled."
 msgstr ""
 
 #: payment/lib/recurring-translations.php:159
-#: payment/Vipps.class.php:5198
-#: payment/Vipps.class.php:5226
-#: payment/Vipps.class.php:5234
+#: payment/Vipps.class.php:5186
+#: payment/Vipps.class.php:5214
+#: payment/Vipps.class.php:5222
 #: recurring/assets/build/checkout.js:1
 #: recurring/assets/build/main.js:1
 #: recurring/src/components/PaymentRedirectPage/PaymentCancelled.jsx:28
@@ -1529,892 +1528,878 @@ msgid "Checkout session expired. Please refresh to start a new session."
 msgstr ""
 
 #: payment/Vipps.class.php:67
-#: payment/WC_Gateway_Vipps.class.php:169
-#: payment/WC_Gateway_Vipps.class.php:170
+#: payment/WC_Gateway_Vipps.class.php:210
+#: payment/WC_Gateway_Vipps.class.php:211
 msgid "Vipps MobilePay"
 msgstr ""
 
-#: payment/Vipps.class.php:77
-msgid "Vipps MobilePay Express Checkout"
-msgstr ""
-
-#: payment/Vipps.class.php:80
+#: payment/Vipps.class.php:76
 msgid "Login with Vipps"
 msgstr ""
 
-#: payment/Vipps.class.php:250
-msgid "Create and log in new customers during Express checkout."
-msgstr ""
-
-#: payment/Vipps.class.php:412
+#: payment/Vipps.class.php:400
 msgid "Refunded through %1$s"
 msgstr ""
 
-#: payment/Vipps.class.php:471
+#: payment/Vipps.class.php:459
 msgid "%1$s is currently in test mode - no real transactions will occur"
 msgstr ""
 
-#: payment/Vipps.class.php:480
-msgid "Your theme or a plugin is currently overriding the <code>'woo_vipps_shipping_methods'</code> filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href=\"%1$s\">settings page</a>"
+#: payment/Vipps.class.php:468
+msgid "Your theme or a plugin is currently overriding the <code>'woo_vipps_shipping_methods'</code> filter to customize your shipping alternatives.  While this works, this disables the newer %s shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href=\"%s\">settings page</a>"
 msgstr ""
 
-#: payment/Vipps.class.php:494
+#: payment/Vipps.class.php:482
 msgid "<p>%1$s not yet correctly configured:  please go to <a href='%2$s'>the %1$s settings</a> to complete your setup:<br> %3$s</p>"
 msgstr ""
 
-#: payment/Vipps.class.php:496
+#: payment/Vipps.class.php:484
 msgid "<p>%1$s not yet configured:  please go to <a href='%2$s'>the %1$s settings</a> to complete your setup!</p>"
 msgstr ""
 
-#: payment/Vipps.class.php:546
+#: payment/Vipps.class.php:534
 msgid "Missing id for special page, attempting to fix."
 msgstr ""
 
-#: payment/Vipps.class.php:551
+#: payment/Vipps.class.php:539
 msgid "Migrated old special page setting."
 msgstr ""
 
-#: payment/Vipps.class.php:581
+#: payment/Vipps.class.php:569
 #: payment/VippsCheckout.class.php:1435
 msgid "%1$s Page"
 msgstr ""
 
-#: payment/Vipps.class.php:582
+#: payment/Vipps.class.php:570
 msgid "This page is used for various special pages used by %1$s"
 msgstr ""
 
-#: payment/Vipps.class.php:831
+#: payment/Vipps.class.php:819
 msgid "- very, very simple"
 msgstr ""
 
-#: payment/Vipps.class.php:851
-#: payment/Vipps.class.php:899
+#: payment/Vipps.class.php:839
+#: payment/Vipps.class.php:887
 msgid "%1$s for WordPress and WooCommerce"
 msgstr ""
 
-#: payment/Vipps.class.php:854
+#: payment/Vipps.class.php:842
 msgid "This plugin gives you %1$s in WooCommerce, either as a fully fledged Checkout, or as a flexible payment method."
 msgstr ""
 
-#: payment/Vipps.class.php:855
+#: payment/Vipps.class.php:843
 msgid "With Checkout, you’ll also get access to shipping addresses, shipping selection and other payment options. Currently Checkout supports %1$s and bank transfer; VISA and MasterCard payments will be added later."
 msgstr ""
 
-#: payment/Vipps.class.php:857
+#: payment/Vipps.class.php:845
 msgid "NB! Checkout for MobilePay is currently in beta mode; Bank Transfer has limited availability"
 msgstr ""
 
-#: payment/Vipps.class.php:859
-#: payment/Vipps.class.php:907
+#: payment/Vipps.class.php:847
+#: payment/Vipps.class.php:895
 msgid "Configure the plugin on its <a href='%1$s'>settings page</a> and  get your keys from the <a target='_blank' href='%2$s'>%3$s portal</a>."
+msgstr ""
+
+#: payment/Vipps.class.php:848
+#: payment/Vipps.class.php:896
+msgid "If you experience problems or unexpected results, please check the 'fatal-errors' and 'woo-vipps' logs at <a href='%1$s'>WooCommerce logs page</a>."
+msgstr ""
+
+#: payment/Vipps.class.php:849
+#: payment/Vipps.class.php:897
+msgid "If you need support, please use the <a href='%1$s'>forum page</a> for the plugin. If you cannot post your question publicly, contact WP-Hosting directly at support@wp-hosting.no."
+msgstr ""
+
+#: payment/Vipps.class.php:853
+#: payment/Vipps.class.php:901
+msgid "%1$s is currently in test mode - no real transactions will occur."
+msgstr ""
+
+#: payment/Vipps.class.php:858
+#: payment/Vipps.class.php:906
+msgid "<a href='%1$s'>%2$s configuration</a> is complete."
 msgstr ""
 
 #: payment/Vipps.class.php:860
 #: payment/Vipps.class.php:908
-msgid "If you experience problems or unexpected results, please check the 'fatal-errors' and 'woo-vipps' logs at <a href='%1$s'>WooCommerce logs page</a>."
-msgstr ""
-
-#: payment/Vipps.class.php:861
-#: payment/Vipps.class.php:909
-msgid "If you need support, please use the <a href='%1$s'>forum page</a> for the plugin. If you cannot post your question publicly, contact WP-Hosting directly at support@wp-hosting.no."
+msgid "%1$s configuration is not yet complete - you must get your keys from the %1$s portal and enter them on the <a href='%2$s'>settings page</a>"
 msgstr ""
 
 #: payment/Vipps.class.php:865
 #: payment/Vipps.class.php:913
-msgid "%1$s is currently in test mode - no real transactions will occur."
-msgstr ""
-
-#: payment/Vipps.class.php:870
-#: payment/Vipps.class.php:918
-msgid "<a href='%1$s'>%2$s configuration</a> is complete."
-msgstr ""
-
-#: payment/Vipps.class.php:872
-#: payment/Vipps.class.php:920
-msgid "%1$s configuration is not yet complete - you must get your keys from the %1$s portal and enter them on the <a href='%2$s'>settings page</a>"
-msgstr ""
-
-#: payment/Vipps.class.php:877
-#: payment/Vipps.class.php:925
 msgid "The plugin is <b>active</b> - %1$s is available as a payment method."
 msgstr ""
 
-#: payment/Vipps.class.php:881
-#: payment/Vipps.class.php:929
+#: payment/Vipps.class.php:869
+#: payment/Vipps.class.php:917
 msgid "You are now using <b>%1$s Checkout</b> instead of the standard WooCommerce Checkout page."
 msgstr ""
 
-#: payment/Vipps.class.php:900
+#: payment/Vipps.class.php:888
 msgid "%1$s officially supports WordPress and WooCommerce with a family of plugins implementing a payment gateway for WooCommerce, a system for managing QR-codes that link to your products or landing pages, a plugin for recurring payments, and a system for passwordless logins."
 msgstr ""
 
-#: payment/Vipps.class.php:901
+#: payment/Vipps.class.php:889
 msgid "To order or configure your %1$s account that powers these plugins, log onto <a target='_blank'  href='%2$s'>the %1$s portal</a> and use the keys and data from that to set up your plugins as needed."
 msgstr ""
 
-#: payment/Vipps.class.php:903
+#: payment/Vipps.class.php:891
 msgid "The %1$s plugins"
 msgstr ""
 
-#: payment/Vipps.class.php:905
+#: payment/Vipps.class.php:893
 msgid "Pay with %1$s for WooCommerce"
 msgstr ""
 
-#: payment/Vipps.class.php:906
+#: payment/Vipps.class.php:894
 msgid "This plugin implements a %1$s checkout solution for WooCommerce and an alternate %1$s hosted checkout that supports both %2$s and credit cards. It also supports %1$s's QR-api for creating QR-codes to your landing pages or products."
 msgstr ""
 
-#: payment/Vipps.class.php:939
+#: payment/Vipps.class.php:927
 msgid "Recurring Payments with %1$s"
 msgstr ""
 
-#: payment/Vipps.class.php:941
+#: payment/Vipps.class.php:929
 msgid "%1$s supports recurring payments through the plugin <a href='%2$s' target='_blank'>WooCommerce Subscriptions</a>. This support is written and supported by <a href='%3$s' target='_blank'>Everyday</a>, and is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions."
 msgstr ""
 
-#: payment/Vipps.class.php:946
+#: payment/Vipps.class.php:934
 msgid "Support for recurring payments with %1$s is <b>active</b>. You can configure the plugin at its <a href='%2$s'>settings page</a>."
 msgstr ""
 
-#: payment/Vipps.class.php:951
+#: payment/Vipps.class.php:939
 msgid "This plugins support for recurring payments requires the plugin <a href='%1$s' target='_blank'>WooCommerce Subscriptions</a>. You need to install and activate this first."
 msgstr ""
 
-#: payment/Vipps.class.php:956
+#: payment/Vipps.class.php:944
 msgid "Your support for recurring payments with %1$s uses the legacy stand-alone plugin. This is no longer required, and you should <b><a href='%2$s'>deactivate</a></b> this plugin, since development on this will soon cease."
 msgstr ""
 
-#: payment/Vipps.class.php:966
-#: payment/Vipps.class.php:1154
-#: payment/Vipps.class.php:1211
-#: payment/Vipps.class.php:1262
-#: payment/Vipps.class.php:1508
+#: payment/Vipps.class.php:954
+#: payment/Vipps.class.php:1142
+#: payment/Vipps.class.php:1199
+#: payment/Vipps.class.php:1250
+#: payment/Vipps.class.php:1496
 #: payment/VippsCheckout.class.php:1252
 #: payment/VippsKCSupport.class.php:64
 msgid "%1$s"
 msgstr ""
 
-#: payment/Vipps.class.php:967
+#: payment/Vipps.class.php:955
 msgid "<a href='%1$s' target='_blank'>%3$s</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases."
 msgstr ""
 
-#: payment/Vipps.class.php:969
+#: payment/Vipps.class.php:957
 msgid "Remember, you need to set up %3$s at the <a target='_blank' href='%2$s'>%1$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page."
 msgstr ""
 
-#: payment/Vipps.class.php:975
+#: payment/Vipps.class.php:963
 msgid "%1$s is installed and active. You can configure the plugin at its <a href='%2$s'>settings page</a>"
 msgstr ""
 
-#: payment/Vipps.class.php:979
+#: payment/Vipps.class.php:967
 msgid "%1$s is installed, but not active. Activate it on the <a href='%2$s'>plugins page</a>"
 msgstr ""
 
-#: payment/Vipps.class.php:983
+#: payment/Vipps.class.php:971
 msgid "%1$s is not installed. You can install it <a href='%2$s'>here!</a>"
 msgstr ""
 
-#: payment/Vipps.class.php:1161
+#: payment/Vipps.class.php:1149
 #: recurring/admin/settings/VippsRecurringAdminSettings.class.php:162
 msgid "Recurring Payments"
 msgstr ""
 
-#: payment/Vipps.class.php:1261
+#: payment/Vipps.class.php:1249
 msgid "Continue with %1$s"
 msgstr ""
 
-#: payment/Vipps.class.php:1263
+#: payment/Vipps.class.php:1251
 msgid "Pay with card through %1$s"
 msgstr ""
 
-#: payment/Vipps.class.php:1265
-#: payment/Vipps.class.php:4177
-#: payment/WC_Gateway_Vipps.class.php:1008
-#: payment/WC_Gateway_Vipps.class.php:2141
-#: payment/WC_Gateway_Vipps.class.php:2205
+#: payment/Vipps.class.php:1253
+#: payment/Vipps.class.php:4165
+#: payment/WC_Gateway_Vipps.class.php:1049
+#: payment/WC_Gateway_Vipps.class.php:2165
+#: payment/WC_Gateway_Vipps.class.php:2229
 msgid "%1$s is temporarily unavailable."
 msgstr ""
 
-#: payment/Vipps.class.php:1266
+#: payment/Vipps.class.php:1254
 msgid "To the %1$s app!"
 msgstr ""
 
-#: payment/Vipps.class.php:1267
+#: payment/Vipps.class.php:1255
 msgid "Cancel"
 msgstr ""
 
-#: payment/Vipps.class.php:1268
+#: payment/Vipps.class.php:1256
 msgid "Close"
 msgstr ""
 
-#: payment/Vipps.class.php:1269
+#: payment/Vipps.class.php:1257
 msgid "Successful checkout response has no payment URL"
 msgstr ""
 
-#: payment/Vipps.class.php:1270
-msgid "Express checkout failed"
+#: payment/Vipps.class.php:1258
+#: payment/Vipps.class.php:1260
+msgid "%s failed"
 msgstr ""
 
-#: payment/Vipps.class.php:1271
-msgid "Unexpected express checkout response"
+#: payment/Vipps.class.php:1259
+msgid "Unexpected %s response"
 msgstr ""
 
-#: payment/Vipps.class.php:1272
-msgid "Vipps Mobilepay checkout failed"
-msgstr ""
-
-#: payment/Vipps.class.php:1273
+#: payment/Vipps.class.php:1261
 msgid "Please correct the highlighted fields."
 msgstr ""
 
-#: payment/Vipps.class.php:1274
+#: payment/Vipps.class.php:1262
 msgid "Please check the form before continuing."
 msgstr ""
 
-#: payment/Vipps.class.php:1275
-msgid "Cannot start express checkout: cart checkout is unavailable"
+#: payment/Vipps.class.php:1263
+msgid "Cannot start %s %s: cart checkout is unavailable"
 msgstr ""
 
-#: payment/Vipps.class.php:1276
+#: payment/Vipps.class.php:1264
 msgid "Cannot buy product: product id, variation id and sku are missing"
 msgstr ""
 
-#: payment/Vipps.class.php:1277
+#: payment/Vipps.class.php:1265
 msgid "Cannot buy product: product form not found"
 msgstr ""
 
-#: payment/Vipps.class.php:1278
+#: payment/Vipps.class.php:1266
 msgid "Payment successful. Redirecting…"
 msgstr ""
 
-#: payment/Vipps.class.php:1387
-#: payment/Vipps.class.php:2131
-#: payment/WC_Gateway_Vipps.class.php:1520
-#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:86
-msgid "Express Checkout"
-msgstr ""
-
-#: payment/Vipps.class.php:1423
-#: payment/Vipps.class.php:1434
+#: payment/Vipps.class.php:1411
+#: payment/Vipps.class.php:1422
 msgid "Buy now with %1$s!"
 msgstr ""
 
-#: payment/Vipps.class.php:1538
+#: payment/Vipps.class.php:1526
 msgid "Support %s"
 msgstr ""
 
-#: payment/Vipps.class.php:1540
+#: payment/Vipps.class.php:1528
 msgid "Add a %s button to this product"
 msgstr ""
 
-#: payment/Vipps.class.php:1550
+#: payment/Vipps.class.php:1538
 msgid "The %1$s settings are currently set up so all products that can be bought with %2$s are supported."
 msgstr ""
 
-#: payment/Vipps.class.php:1553
+#: payment/Vipps.class.php:1541
 msgid "This product supports %1$s and will have an %1$s button."
 msgstr ""
 
-#: payment/Vipps.class.php:1555
+#: payment/Vipps.class.php:1543
 msgid "This product does <b>not</b> support %1$s, and so will <b>not</b> have a %1$s button."
 msgstr ""
 
-#: payment/Vipps.class.php:1560
+#: payment/Vipps.class.php:1548
 msgid "%s is currently disabled for all products in the %s settings."
 msgstr ""
 
-#: payment/Vipps.class.php:1571
+#: payment/Vipps.class.php:1559
 msgid "On-site messaging badge"
 msgstr ""
 
-#: payment/Vipps.class.php:1578
+#: payment/Vipps.class.php:1566
 msgid "Override default settings"
 msgstr ""
 
-#: payment/Vipps.class.php:1580
+#: payment/Vipps.class.php:1568
 msgid "Default setting"
 msgstr ""
 
-#: payment/Vipps.class.php:1581
+#: payment/Vipps.class.php:1569
 msgid "No badge"
 msgstr ""
 
-#: payment/Vipps.class.php:1619
+#: payment/Vipps.class.php:1607
 msgid "Shareable links"
 msgstr ""
 
-#: payment/Vipps.class.php:1620
+#: payment/Vipps.class.php:1608
 msgid "Shareable links are links you can share externally on banners or other places that when followed will start %1$s of this product immediately. Maintain these links here for this product."
 msgstr ""
 
-#: payment/Vipps.class.php:1621
+#: payment/Vipps.class.php:1609
 msgid "To create a QR code for your shareable link, we recommend copying the URL and then using the <a href='%2$s'>%1$s QR Api</a>"
 msgstr ""
 
-#: payment/Vipps.class.php:1627
-#: payment/Vipps.class.php:1637
+#: payment/Vipps.class.php:1615
+#: payment/Vipps.class.php:1625
 msgid "Create shareable link"
 msgstr ""
 
-#: payment/Vipps.class.php:1628
+#: payment/Vipps.class.php:1616
 msgid "Select variant"
 msgstr ""
 
-#: payment/Vipps.class.php:1642
-#: payment/Vipps.class.php:1671
-#: payment/Vipps.class.php:1673
+#: payment/Vipps.class.php:1630
+#: payment/Vipps.class.php:1659
+#: payment/Vipps.class.php:1661
 msgid "Click to copy"
 msgstr ""
 
-#: payment/Vipps.class.php:1645
-#: payment/Vipps.class.php:1673
+#: payment/Vipps.class.php:1633
+#: payment/Vipps.class.php:1661
 msgid "Copy"
 msgstr ""
 
-#: payment/Vipps.class.php:1655
+#: payment/Vipps.class.php:1643
 msgid "An error occured while creating a shareable link"
 msgstr ""
 
-#: payment/Vipps.class.php:1658
+#: payment/Vipps.class.php:1646
 msgid "Link(s) will be deleted when you save the product"
 msgstr ""
 
-#: payment/Vipps.class.php:1664
+#: payment/Vipps.class.php:1652
 msgid "Link"
 msgstr ""
 
-#: payment/Vipps.class.php:1674
+#: payment/Vipps.class.php:1662
 msgid "Mark this link for deletion"
 msgstr ""
 
-#: payment/Vipps.class.php:1692
+#: payment/Vipps.class.php:1680
 msgid "You don't have sufficient rights to edit this product"
 msgstr ""
 
-#: payment/Vipps.class.php:1714
+#: payment/Vipps.class.php:1702
 msgid "The product doesn't exist"
 msgstr ""
 
-#: payment/Vipps.class.php:1785
+#: payment/Vipps.class.php:1773
 msgid "Show complete transaction details"
 msgstr ""
 
-#: payment/Vipps.class.php:1836
-#: payment/Vipps.class.php:5112
-#: payment/Vipps.class.php:5190
+#: payment/Vipps.class.php:1824
+#: payment/Vipps.class.php:5100
+#: payment/Vipps.class.php:5178
 msgid "Unknown order"
 msgstr ""
 
-#: payment/Vipps.class.php:1841
+#: payment/Vipps.class.php:1829
 msgid "The order is not a %1$s order"
 msgstr ""
 
-#: payment/Vipps.class.php:1860
+#: payment/Vipps.class.php:1848
 msgid "Transaction details not retrievable: "
 msgstr ""
 
-#: payment/Vipps.class.php:1865
+#: payment/Vipps.class.php:1853
 msgid "Transaction details"
 msgstr ""
 
-#: payment/Vipps.class.php:1867
+#: payment/Vipps.class.php:1855
 msgid "Order id"
 msgstr ""
 
-#: payment/Vipps.class.php:1871
-#: payment/Vipps.class.php:1873
-#: payment/WC_Gateway_Vipps.class.php:1367
+#: payment/Vipps.class.php:1859
+#: payment/Vipps.class.php:1861
+#: payment/WC_Gateway_Vipps.class.php:1391
 #: recurring/includes/admin/vipps-recurring-settings.php:20
 msgid "Payment method"
 msgstr ""
 
-#: payment/Vipps.class.php:1875
+#: payment/Vipps.class.php:1863
 msgid "API"
 msgstr ""
 
-#: payment/Vipps.class.php:1884
+#: payment/Vipps.class.php:1867
+msgid "Capture guaranteed until: %s"
+msgstr ""
+
+#: payment/Vipps.class.php:1872
 msgid "Transaction summary"
 msgstr ""
 
-#: payment/Vipps.class.php:1885
+#: payment/Vipps.class.php:1873
 msgid "Capured amount"
 msgstr ""
 
-#: payment/Vipps.class.php:1886
+#: payment/Vipps.class.php:1874
 msgid "Remaining amount to capture"
 msgstr ""
 
-#: payment/Vipps.class.php:1887
+#: payment/Vipps.class.php:1875
 msgid "Refunded amount"
 msgstr ""
 
-#: payment/Vipps.class.php:1888
+#: payment/Vipps.class.php:1876
 msgid "Remaining amount to refund"
 msgstr ""
 
-#: payment/Vipps.class.php:1890
+#: payment/Vipps.class.php:1878
 msgid "Cancelled amount"
 msgstr ""
 
-#: payment/Vipps.class.php:1891
+#: payment/Vipps.class.php:1879
 msgid "Remaining amount to cancel"
 msgstr ""
 
-#: payment/Vipps.class.php:1897
+#: payment/Vipps.class.php:1885
 msgid "Shipping details"
 msgstr ""
 
-#: payment/Vipps.class.php:1898
+#: payment/Vipps.class.php:1886
 msgid "Address"
 msgstr ""
 
-#: payment/Vipps.class.php:1899
+#: payment/Vipps.class.php:1887
 msgid "Shipping method"
 msgstr ""
 
-#: payment/Vipps.class.php:1900
+#: payment/Vipps.class.php:1888
 msgid "Shipping cost"
 msgstr ""
 
-#: payment/Vipps.class.php:1901
+#: payment/Vipps.class.php:1889
 msgid "Shipping method ID"
 msgstr ""
 
-#: payment/Vipps.class.php:1904
+#: payment/Vipps.class.php:1892
 msgid "Pickup Point"
 msgstr ""
 
-#: payment/Vipps.class.php:1914
+#: payment/Vipps.class.php:1902
 msgid "Billing details"
 msgstr ""
 
-#: payment/Vipps.class.php:1915
-#: payment/Vipps.class.php:1930
+#: payment/Vipps.class.php:1903
+#: payment/Vipps.class.php:1918
 msgid "First Name"
 msgstr ""
 
-#: payment/Vipps.class.php:1916
-#: payment/Vipps.class.php:1931
+#: payment/Vipps.class.php:1904
+#: payment/Vipps.class.php:1919
 msgid "Last Name"
 msgstr ""
 
-#: payment/Vipps.class.php:1917
-#: payment/Vipps.class.php:1932
+#: payment/Vipps.class.php:1905
+#: payment/Vipps.class.php:1920
 msgid "Mobile Number"
 msgstr ""
 
-#: payment/Vipps.class.php:1918
-#: payment/Vipps.class.php:1924
-#: payment/Vipps.class.php:1933
+#: payment/Vipps.class.php:1906
+#: payment/Vipps.class.php:1912
+#: payment/Vipps.class.php:1921
 msgid "Email"
 msgstr ""
 
-#: payment/Vipps.class.php:1923
-#: payment/Vipps.class.php:1928
+#: payment/Vipps.class.php:1911
+#: payment/Vipps.class.php:1916
 msgid "User details"
 msgstr ""
 
-#: payment/Vipps.class.php:1929
+#: payment/Vipps.class.php:1917
 msgid "User ID"
 msgstr ""
 
-#: payment/Vipps.class.php:1936
+#: payment/Vipps.class.php:1924
 msgid "Transaction Log"
 msgstr ""
 
-#: payment/Vipps.class.php:1941
+#: payment/Vipps.class.php:1929
 msgid "Operation"
 msgstr ""
 
-#: payment/Vipps.class.php:1945
+#: payment/Vipps.class.php:1933
 msgid "Amount"
 msgstr ""
 
-#: payment/Vipps.class.php:1946
+#: payment/Vipps.class.php:1934
 msgid "Success"
 msgstr ""
 
-#: payment/Vipps.class.php:1947
+#: payment/Vipps.class.php:1935
 msgid "Timestamp"
 msgstr ""
 
-#: payment/Vipps.class.php:1948
+#: payment/Vipps.class.php:1936
 msgid "Transaction ID"
 msgstr ""
 
-#: payment/Vipps.class.php:2127
+#: payment/Vipps.class.php:2115
 msgid "Processing order"
 msgstr ""
 
-#: payment/Vipps.class.php:2317
-#: payment/Vipps.class.php:2341
+#: payment/Vipps.class.php:2305
+#: payment/Vipps.class.php:2329
 msgid "Cannot get status of %1$d at %2$s in woocommerce_cancel_unpaid_order, not allowing deletion: %3$s"
 msgstr ""
 
-#: payment/Vipps.class.php:2358
+#: payment/Vipps.class.php:2346
 msgid "Buy now with"
 msgstr ""
 
-#: payment/Vipps.class.php:2359
-#: payment/Vipps.class.php:4756
-#: payment/Vipps.class.php:4986
-#: payment/Vipps.class.php:5035
+#: payment/Vipps.class.php:2347
+#: payment/Vipps.class.php:4744
+#: payment/Vipps.class.php:4974
+#: payment/Vipps.class.php:5023
 msgid "Buy now with %1$s"
 msgstr ""
 
-#: payment/Vipps.class.php:2362
+#: payment/Vipps.class.php:2350
 msgid "Add a %s %s product button"
 msgstr ""
 
-#: payment/Vipps.class.php:2391
+#: payment/Vipps.class.php:2379
 msgid "Company"
 msgstr ""
 
-#: payment/Vipps.class.php:2393
+#: payment/Vipps.class.php:2381
 msgid "Type"
 msgstr ""
 
-#: payment/Vipps.class.php:2395
+#: payment/Vipps.class.php:2383
 msgid "Timeslot"
 msgstr ""
 
-#: payment/Vipps.class.php:2397
+#: payment/Vipps.class.php:2385
 msgid "Timeslot ID"
 msgstr ""
 
-#: payment/Vipps.class.php:2522
+#: payment/Vipps.class.php:2510
 msgid "The entire amount has been captured at %1$s"
 msgstr ""
 
-#: payment/Vipps.class.php:2574
+#: payment/Vipps.class.php:2562
 msgid "Did not understand callback from %1$s:"
 msgstr ""
 
-#: payment/Vipps.class.php:2575
+#: payment/Vipps.class.php:2563
 msgid "Error was: %1$s"
 msgstr ""
 
-#: payment/Vipps.class.php:2581
+#: payment/Vipps.class.php:2569
 msgid "Received a test callback, exiting"
 msgstr ""
 
-#: payment/Vipps.class.php:2598
+#: payment/Vipps.class.php:2586
 msgid "Cannot verify webhook callback for order %1$s - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others."
 msgstr ""
 
-#: payment/Vipps.class.php:2603
+#: payment/Vipps.class.php:2591
 msgid "Cannot verify webhook callback for order %1$s - signature does not match. This may be an attempt to forge callbacks"
 msgstr ""
 
-#: payment/Vipps.class.php:2630
+#: payment/Vipps.class.php:2618
 msgid "The reference %1$s and order id %2$s does not match in webhook event %3$s - callback is invalid for the order."
 msgstr ""
 
-#: payment/Vipps.class.php:2639
+#: payment/Vipps.class.php:2627
 msgid "Could not get orderid of reference %2$s from %1$s: "
 msgstr ""
 
-#: payment/Vipps.class.php:2649
+#: payment/Vipps.class.php:2637
 msgid "Received webhook callback for Checkout order %1$d - ignoring since full callback should come"
 msgstr ""
 
-#: payment/Vipps.class.php:2659
+#: payment/Vipps.class.php:2647
 msgid "Received webhook callback for order %1$s but this is no longer pending."
 msgstr ""
 
-#: payment/Vipps.class.php:2677
+#: payment/Vipps.class.php:2665
 msgid "There is no order with this %1$s orderid, callback fails:"
 msgstr ""
 
-#: payment/Vipps.class.php:2683
+#: payment/Vipps.class.php:2671
 msgid "There is no order with this order id, callback fails:"
 msgstr ""
 
-#: payment/Vipps.class.php:2841
+#: payment/Vipps.class.php:2829
 msgid "Could not restore cart from session of order %1$d"
 msgstr ""
 
-#: payment/Vipps.class.php:2909
+#: payment/Vipps.class.php:2897
 msgid "Error getting customer data in the %1$s shipping details callback: %2$s"
 msgstr ""
 
-#: payment/Vipps.class.php:2910
+#: payment/Vipps.class.php:2898
 msgid "Raw input was "
 msgstr ""
 
-#: payment/Vipps.class.php:2933
+#: payment/Vipps.class.php:2921
 msgid "Could not find %1$s order with id:"
 msgstr ""
 
-#: payment/Vipps.class.php:2933
+#: payment/Vipps.class.php:2921
 msgid "Callback was:"
 msgstr ""
 
-#: payment/Vipps.class.php:2938
+#: payment/Vipps.class.php:2926
 msgid "Received shipping callback for order %d"
 msgstr ""
 
-#: payment/Vipps.class.php:2946
+#: payment/Vipps.class.php:2934
 msgid "Could not find Woo order with id:"
 msgstr ""
 
-#: payment/Vipps.class.php:2952
+#: payment/Vipps.class.php:2940
 msgid "Invalid order for shipping callback:"
 msgstr ""
 
-#: payment/Vipps.class.php:2965
+#: payment/Vipps.class.php:2953
 msgid "Wrong %1$s Orderid on shipping details callback"
 msgstr ""
 
-#: payment/Vipps.class.php:3136
-#: payment/Vipps.class.php:3621
+#: payment/Vipps.class.php:3124
+#: payment/Vipps.class.php:3609
 msgid "No shipping required"
 msgstr ""
 
-#: payment/Vipps.class.php:3158
+#: payment/Vipps.class.php:3146
 msgid "Could not find any applicable shipping methods for %1$s - order %2$d will fail"
 msgstr ""
 
-#: payment/Vipps.class.php:3159
+#: payment/Vipps.class.php:3147
 msgid "Address given for %1$s was %2$s"
 msgstr ""
 
-#: payment/Vipps.class.php:3341
-msgid "Cannot use shipping method %2$s in %1$s Express checkout: the shipping method isn't serializable."
+#: payment/Vipps.class.php:3329
+msgid "Cannot use shipping method %2$s in %1$s %3$s: the shipping method isn't serializable."
 msgstr ""
 
-#: payment/Vipps.class.php:3561
+#: payment/Vipps.class.php:3549
 msgid "No cart, so will try to calculate shipping based on order contents for order %1$d"
 msgstr ""
 
-#: payment/Vipps.class.php:3605
+#: payment/Vipps.class.php:3593
 msgid "Error regenerating cart from order %1$d:  %2$s"
 msgstr ""
 
-#: payment/Vipps.class.php:3766
+#: payment/Vipps.class.php:3754
 msgid "Order %2$d is 'pending' but its %1$s order status is '%3$s'  - this means that the order has been erroneously set to 'pending' after completion or cancellation. Will not process further, please check status of order at %1$s and set to correct status in WooCommerce"
 msgstr ""
 
-#: payment/Vipps.class.php:3782
+#: payment/Vipps.class.php:3770
 msgid "Callback from %1$s delayed or never happened; order status checked by periodic job"
 msgstr ""
 
 #. translators: company name
-#: payment/Vipps.class.php:3790
+#: payment/Vipps.class.php:3778
 msgid "Payment cancelled at %1$s."
 msgstr ""
 
-#: payment/Vipps.class.php:3798
+#: payment/Vipps.class.php:3786
 msgid "For order %2$d order status at %1$s is %3$s"
 msgstr ""
 
-#: payment/Vipps.class.php:3800
+#: payment/Vipps.class.php:3788
 msgid "Error getting order status at %1$s for order %2$d"
 msgstr ""
 
-#: payment/Vipps.class.php:3982
+#: payment/Vipps.class.php:3970
 msgid "Could not get user email from order before thankyou-page"
 msgstr ""
 
-#: payment/Vipps.class.php:4119
-msgid "Error creating customer in express checkout: "
+#: payment/Vipps.class.php:4107
+msgid "Error creating customer in %s: "
 msgstr ""
 
-#: payment/Vipps.class.php:4121
-msgid "Unknown error customer in express checkout."
+#: payment/Vipps.class.php:4109
+msgid "Unknown error customer in %s."
 msgstr ""
 
-#: payment/Vipps.class.php:4154
-#: payment/Vipps.class.php:4158
-#: payment/Vipps.class.php:4167
+#: payment/Vipps.class.php:4142
+#: payment/Vipps.class.php:4146
+#: payment/Vipps.class.php:4155
 msgid "Could not create order"
 msgstr ""
 
-#: payment/Vipps.class.php:4165
+#: payment/Vipps.class.php:4153
 msgid "Error calculating static shipping"
 msgstr ""
 
-#: payment/Vipps.class.php:4233
+#: payment/Vipps.class.php:4221
 #: payment/VippsQRCodeController.class.php:235
 msgid "Are you sure?"
 msgstr ""
 
-#: payment/Vipps.class.php:4234
+#: payment/Vipps.class.php:4222
 msgid "You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?"
 msgstr ""
 
-#: payment/Vipps.class.php:4236
+#: payment/Vipps.class.php:4224
 msgid "It seems a customer is trying to re-order product(s) recently bought in the same session, asking user for confirmation"
 msgstr ""
 
-#: payment/Vipps.class.php:4270
-#: payment/Vipps.class.php:4355
-msgid "No data passed to express checkout"
+#: payment/Vipps.class.php:4258
+#: payment/Vipps.class.php:4343
+msgid "No data passed to %s"
 msgstr ""
 
-#: payment/Vipps.class.php:4290
-#: payment/Vipps.class.php:4457
-#: payment/Vipps.class.php:4494
+#: payment/Vipps.class.php:4278
+#: payment/Vipps.class.php:4445
+#: payment/Vipps.class.php:4482
 msgid "%1$s is not available for this order"
 msgstr ""
 
-#: payment/Vipps.class.php:4308
+#: payment/Vipps.class.php:4296
 msgid "Some of the products in your cart are no longer available in the quantities you have ordered. Please <a href=\"%1$s\">edit your order</a> before continuing the checkout"
 msgstr ""
 
-#: payment/Vipps.class.php:4476
+#: payment/Vipps.class.php:4464
 msgid "Error finding product - cannot create order"
 msgstr ""
 
-#: payment/Vipps.class.php:4481
+#: payment/Vipps.class.php:4469
 msgid "Unknown product, cannot create order"
 msgstr ""
 
-#: payment/Vipps.class.php:4490
+#: payment/Vipps.class.php:4478
 msgid "Selected product variant is not available"
 msgstr ""
 
-#: payment/Vipps.class.php:4500
+#: payment/Vipps.class.php:4488
 msgid "Selected product variant is not available for purchase"
 msgstr ""
 
-#: payment/Vipps.class.php:4505
+#: payment/Vipps.class.php:4493
 msgid "Your product is temporarily no longer available for purchase"
 msgstr ""
 
-#: payment/Vipps.class.php:4602
+#: payment/Vipps.class.php:4590
 msgid "Not a session order"
 msgstr ""
 
-#: payment/Vipps.class.php:4607
+#: payment/Vipps.class.php:4595
 msgid "Not an order"
 msgstr ""
 
-#: payment/Vipps.class.php:4612
-#: payment/Vipps.class.php:4626
+#: payment/Vipps.class.php:4600
+#: payment/Vipps.class.php:4614
 msgid "Waiting on order"
 msgstr ""
 
-#: payment/Vipps.class.php:4617
-#: payment/Vipps.class.php:4645
+#: payment/Vipps.class.php:4605
+#: payment/Vipps.class.php:4633
 msgid "Order failed"
 msgstr ""
 
-#: payment/Vipps.class.php:4634
+#: payment/Vipps.class.php:4622
 msgid "Payment authorized"
 msgstr ""
 
-#: payment/Vipps.class.php:4640
+#: payment/Vipps.class.php:4628
 msgid "Payment captured"
 msgstr ""
 
-#: payment/Vipps.class.php:4648
+#: payment/Vipps.class.php:4636
 msgid "Unknown payment status"
 msgstr ""
 
-#: payment/Vipps.class.php:4871
+#: payment/Vipps.class.php:4859
 msgctxt "Page slug"
 msgid "vipps_checkout"
 msgstr ""
 
-#: payment/Vipps.class.php:4872
+#: payment/Vipps.class.php:4860
 msgctxt "Page title"
 msgid "Vipps MobilePay Checkout"
 msgstr ""
 
 #. translators: company name
-#: payment/Vipps.class.php:4881
+#: payment/Vipps.class.php:4869
 msgid "%s special page"
 msgstr ""
 
-#: payment/Vipps.class.php:4973
+#: payment/Vipps.class.php:4961
 msgid "Product is no longer available"
 msgstr ""
 
-#: payment/Vipps.class.php:4974
+#: payment/Vipps.class.php:4962
 msgid "The link you have followed is for a product that is no longer available at this location. Please return to the store and try again"
 msgstr ""
 
-#: payment/Vipps.class.php:4989
-#: payment/Vipps.class.php:5039
+#: payment/Vipps.class.php:4977
+#: payment/Vipps.class.php:5027
 msgid "Please wait while we are preparing your order"
 msgstr ""
 
-#: payment/Vipps.class.php:5009
-#: payment/Vipps.class.php:5028
+#: payment/Vipps.class.php:4997
+#: payment/Vipps.class.php:5016
 msgid "Link expired, please try again"
 msgstr ""
 
-#: payment/Vipps.class.php:5015
+#: payment/Vipps.class.php:5003
 msgid "Your shopping cart is empty"
 msgstr ""
 
-#: payment/Vipps.class.php:5108
+#: payment/Vipps.class.php:5096
 msgid "In order return: The order %1$d  seems to be deleted"
 msgstr ""
 
-#: payment/Vipps.class.php:5124
+#: payment/Vipps.class.php:5112
 msgid "In order return: Order status of %1$d is %2$s"
 msgstr ""
 
-#: payment/Vipps.class.php:5172
+#: payment/Vipps.class.php:5160
 msgid "Order status of %1$d not ready in order return: payment status %2$s"
 msgstr ""
 
-#: payment/Vipps.class.php:5207
+#: payment/Vipps.class.php:5195
 msgid "Waiting for confirmation of purchase from %1$s"
 msgstr ""
 
-#: payment/Vipps.class.php:5224
+#: payment/Vipps.class.php:5212
 msgid "Error during order confirmation"
 msgstr ""
 
-#: payment/Vipps.class.php:5225
+#: payment/Vipps.class.php:5213
 msgid "An error occured during order confirmation. The error has been logged. Please contact us to determine the status of your order"
 msgstr ""
 
-#: payment/Vipps.class.php:5229
+#: payment/Vipps.class.php:5217
 msgid "Order confirmed"
 msgstr ""
 
-#: payment/Vipps.class.php:5273
-msgid "Whether to hide the %1$s Express Checkout in the cart"
+#: payment/Vipps.class.php:5261
+msgid "Whether to hide the %1$s %2$s in the cart"
 msgstr ""
 
-#: payment/Vipps.class.php:5278
+#: payment/Vipps.class.php:5266
 msgid "True if %1$s is active and the cart supports it"
 msgstr ""
 
-#: payment/Vipps.class.php:5283
+#: payment/Vipps.class.php:5271
 msgid "Current checkout url based on cart state"
 msgstr ""
 
 #. translators: placeholders are arrays
-#: payment/Vipps.class.php:5422
+#: payment/Vipps.class.php:5410
 msgid "Migrating from old button options. Old: %s, new: %s"
 msgstr ""
 
-#: payment/Vipps.class.php:5446
+#: payment/Vipps.class.php:5434
 msgid "Buy now rectangular"
 msgstr ""
 
-#: payment/Vipps.class.php:5447
+#: payment/Vipps.class.php:5435
 msgid "Buy now pill"
 msgstr ""
 
-#: payment/Vipps.class.php:5448
+#: payment/Vipps.class.php:5436
 msgid "Express rectangular"
 msgstr ""
 
-#: payment/Vipps.class.php:5449
+#: payment/Vipps.class.php:5437
 msgid "Express pill"
 msgstr ""
 
-#: payment/Vipps.class.php:5450
+#: payment/Vipps.class.php:5438
 msgid "Express rectangular mini"
 msgstr ""
 
-#: payment/Vipps.class.php:5451
+#: payment/Vipps.class.php:5439
 msgid "Express pill mini"
 msgstr ""
 
@@ -2609,7 +2594,7 @@ msgid "Unknown error creating %1$s partial order"
 msgstr ""
 
 #: payment/VippsCheckout.class.php:572
-#: payment/WC_Gateway_Vipps.class.php:1995
+#: payment/WC_Gateway_Vipps.class.php:2019
 msgid "%1$s payment initiated"
 msgstr ""
 
@@ -2673,7 +2658,7 @@ msgid "Your coupon code %s has been removed from your cart and your Checkout ses
 msgstr ""
 
 #: payment/VippsCheckout.class.php:1100
-#: payment/WC_Gateway_Vipps.class.php:1324
+#: payment/WC_Gateway_Vipps.class.php:1348
 msgid "Coupon code"
 msgstr ""
 
@@ -2698,7 +2683,7 @@ msgid "Add"
 msgstr ""
 
 #: payment/VippsCheckout.class.php:1131
-#: payment/WC_Gateway_Vipps.class.php:1314
+#: payment/WC_Gateway_Vipps.class.php:1338
 msgid "Order notes"
 msgstr ""
 
@@ -2815,11 +2800,11 @@ msgid "Deliver to customers' home address"
 msgstr ""
 
 #: payment/VippsCheckoutShippingMethods.php:198
-msgid "If you are using %1$s, you can select extended delivery method options here. If you do, these methods will not appear in Express Checkout or the standard WooCommerce checkout page."
+msgid "If you are using %1$s, you can select extended delivery method options here. If you do, these methods will not appear in %2$s or the standard WooCommerce checkout page."
 msgstr ""
 
 #: payment/VippsCheckoutShippingMethods.php:473
-#: payment/WC_Gateway_Vipps.class.php:1182
+#: payment/WC_Gateway_Vipps.class.php:1206
 msgid "Posten Norge"
 msgstr ""
 
@@ -2840,12 +2825,12 @@ msgid "Shipping method for %1$s only: %2$s"
 msgstr ""
 
 #: payment/VippsCheckoutShippingMethods.php:489
-#: payment/WC_Gateway_Vipps.class.php:1192
+#: payment/WC_Gateway_Vipps.class.php:1216
 msgid "Posti"
 msgstr ""
 
 #: payment/VippsCheckoutShippingMethods.php:509
-#: payment/WC_Gateway_Vipps.class.php:1245
+#: payment/WC_Gateway_Vipps.class.php:1269
 msgid "Helthjem"
 msgstr ""
 
@@ -2854,7 +2839,7 @@ msgid "Postnord"
 msgstr ""
 
 #: payment/VippsCheckoutShippingMethods.php:547
-#: payment/WC_Gateway_Vipps.class.php:1212
+#: payment/WC_Gateway_Vipps.class.php:1236
 msgid "Porterbuddy"
 msgstr ""
 
@@ -3136,1048 +3121,1048 @@ msgstr ""
 msgid "%1$s QR Code"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:168
+#: payment/WC_Gateway_Vipps.class.php:160
+msgid "Migrating developermode settings"
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:175
+msgid "Migrating single product express settings"
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:209
 msgid "Offer Vipps or MobilePay as a payment method"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:265
-#: payment/WC_Gateway_Vipps.class.php:3701
+#: payment/WC_Gateway_Vipps.class.php:306
+#: payment/WC_Gateway_Vipps.class.php:3719
 msgid "Order not found"
 msgstr ""
 
 #. translators: endpoint path, order id
-#: payment/WC_Gateway_Vipps.class.php:272
+#: payment/WC_Gateway_Vipps.class.php:313
 msgid "Wrong authtoken for rest endpoint %1$s for order %2$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:332
+#: payment/WC_Gateway_Vipps.class.php:373
 msgid "maybe_cancel_reserved_amount we have remaining reserved after capture of total %1$s "
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:343
+#: payment/WC_Gateway_Vipps.class.php:384
 msgid "Order %1$s: %2$s is cancelled to free up the reservation in the customers bank account."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:349
+#: payment/WC_Gateway_Vipps.class.php:390
 msgid "Was not able to cancel remaining amount for the order %1$s: %2$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:487
+#: payment/WC_Gateway_Vipps.class.php:528
 msgid "Could not get webhooks for Merchant Serial Number  %1$s: %2$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:572
+#: payment/WC_Gateway_Vipps.class.php:613
 msgid "Cannot use %1$s as status for non-autocapturable orders: payment is captured on this status. See the woo_vipps_captured_statuses-filter."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:629
+#: payment/WC_Gateway_Vipps.class.php:670
 msgid "Use default template"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:725
-#: payment/WC_Gateway_Vipps.class.php:827
-#: payment/WC_Gateway_Vipps.class.php:947
-#: payment/WC_Gateway_Vipps.class.php:968
+#: payment/WC_Gateway_Vipps.class.php:766
+#: payment/WC_Gateway_Vipps.class.php:868
+#: payment/WC_Gateway_Vipps.class.php:988
+#: payment/WC_Gateway_Vipps.class.php:1009
 msgid "Error getting payment details before doing refund: "
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:751
+#: payment/WC_Gateway_Vipps.class.php:792
 msgid "Error getting payment details before doing cancel: "
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:773
+#: payment/WC_Gateway_Vipps.class.php:814
 msgid "Order with captured funds older than %d days cancelled - because the order is this old, it will not be automatically refunded at Vipps. Manual refund may be required."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:776
+#: payment/WC_Gateway_Vipps.class.php:817
 msgid "Could not cancel %1$s payment"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:777
+#: payment/WC_Gateway_Vipps.class.php:818
 msgid "Order"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:845
+#: payment/WC_Gateway_Vipps.class.php:886
 msgid "Error when refunding payment through %1$s:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:952
+#: payment/WC_Gateway_Vipps.class.php:993
 msgid "Order %2$d: It is not possible to create a manual refund for a %1$s order before it has been captured - doing so makes it impossible to track how much to capture and how much to release. If you create the refund through %1$s, a note will be made internally so that the amount to be refunded will *not* be captured - please do this instead if possible. Otherwise, capture the order then refund either manually or through %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:977
+#: payment/WC_Gateway_Vipps.class.php:1018
 msgid "Cannot refund through %1$s - the payment has not been captured yet."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:980
-#: payment/WC_Gateway_Vipps.class.php:994
+#: payment/WC_Gateway_Vipps.class.php:1021
+#: payment/WC_Gateway_Vipps.class.php:1035
 msgid "Cannot refund through %1$s - the refund amount is too large."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:982
+#: payment/WC_Gateway_Vipps.class.php:1023
 msgid "The money for order %1$d has not been captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1000
-#: payment/WC_Gateway_Vipps.class.php:1017
+#: payment/WC_Gateway_Vipps.class.php:1041
+#: payment/WC_Gateway_Vipps.class.php:1058
 msgid " refunded through %1$s:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1007
+#: payment/WC_Gateway_Vipps.class.php:1048
 msgid "Could not refund %1$s payment for order id:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1010
+#: payment/WC_Gateway_Vipps.class.php:1051
 msgid "Could not refund %1$s payment"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1121
+#: payment/WC_Gateway_Vipps.class.php:1145
 msgid "%1$s is a service from %2$s which replaces the usual WooCommerce checkout page with a custom, simplified checkout screen providing payment with %2$s, card, and some external payment methods.<br>Additionally, your customers will get the option of providing their address information using their %2$s app directly."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1126
-#: payment/WC_Gateway_Vipps.class.php:1528
+#: payment/WC_Gateway_Vipps.class.php:1150
+#: payment/WC_Gateway_Vipps.class.php:1552
 msgid "Enable %s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1129
-msgid "This will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy with %2$s, card, and external payment methods - no need to manually type in addresses!"
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:1134
-#: payment/WC_Gateway_Vipps.class.php:1135
-#: payment/WC_Gateway_Vipps.class.php:1611
-#: payment/WC_Gateway_Vipps.class.php:1612
-msgid "Create new customers for guest checkouts"
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:1137
-msgid "Create and log in new customers during %s."
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:1142
-#: payment/WC_Gateway_Vipps.class.php:1143
-#: payment/WC_Gateway_Vipps.class.php:1603
-#: payment/WC_Gateway_Vipps.class.php:1604
-msgid "Static shipping"
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:1145
-#: payment/WC_Gateway_Vipps.class.php:1606
-msgid "Speed up %s by precalculating shipping options in advance. Should only be used if your shipping options do not depend on the customer's address."
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:1150
-#: payment/WC_Gateway_Vipps.class.php:1151
-msgid "Ask customer to share information"
-msgstr ""
-
 #: payment/WC_Gateway_Vipps.class.php:1153
-msgid "Ask for the customer's consent to share information with the store. This will allow better integration between %s but will add another step to first-time buyers."
+msgid "This will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy with %2$s, card, and external payment methods - no need to manually type in addresses!"
 msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1158
 #: payment/WC_Gateway_Vipps.class.php:1159
-#: payment/WC_Gateway_Vipps.class.php:1168
-msgid "Don't require address fields"
+#: payment/WC_Gateway_Vipps.class.php:1635
+#: payment/WC_Gateway_Vipps.class.php:1636
+msgid "Create new customers for guest checkouts"
 msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1161
+msgid "Create and log in new customers during %s."
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1166
+#: payment/WC_Gateway_Vipps.class.php:1167
+#: payment/WC_Gateway_Vipps.class.php:1627
+#: payment/WC_Gateway_Vipps.class.php:1628
+msgid "Static shipping"
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1169
+#: payment/WC_Gateway_Vipps.class.php:1630
+msgid "Speed up %s by precalculating shipping options in advance. Should only be used if your shipping options do not depend on the customer's address."
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1174
+#: payment/WC_Gateway_Vipps.class.php:1175
+msgid "Ask customer to share information"
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1177
+msgid "Ask for the customer's consent to share information with the store. This will allow better integration between %s but will add another step to first-time buyers."
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1182
+#: payment/WC_Gateway_Vipps.class.php:1183
+#: payment/WC_Gateway_Vipps.class.php:1192
+msgid "Don't require address fields"
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1185
 msgid "Hides the address fields in %1$s, which speeds up the %2$s process if your products <b>don't</b> require shipping (e.g virtual products)<br>NB: If you have plugins that require shipping information, then this is not going to work very well."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1165
-#: payment/WC_Gateway_Vipps.class.php:1166
+#: payment/WC_Gateway_Vipps.class.php:1189
+#: payment/WC_Gateway_Vipps.class.php:1190
 msgid "Don't require contact fields"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1168
+#: payment/WC_Gateway_Vipps.class.php:1192
 msgid "Only works with '%3$s' (see the above option).<br><br>Hides the contact fields in %1$s, which speeds up the %2$s process if you <b>don't</b> care about customer/contact information. These will instead be filled with a placeholder.<br>NB: If you have plugins that require contact information, then this is not going to work very well."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1176
+#: payment/WC_Gateway_Vipps.class.php:1200
 msgid "Shipping Methods"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1178
+#: payment/WC_Gateway_Vipps.class.php:1202
 msgid "Provide external shipping methods in %s."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1202
+#: payment/WC_Gateway_Vipps.class.php:1226
 msgid "PostNord"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1222
+#: payment/WC_Gateway_Vipps.class.php:1246
 msgid "Porterbuddy public token"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1225
+#: payment/WC_Gateway_Vipps.class.php:1249
 msgid "The public key provided to you by Porterbuddy"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1229
+#: payment/WC_Gateway_Vipps.class.php:1253
 msgid "Porterbuddy API key"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1232
+#: payment/WC_Gateway_Vipps.class.php:1256
 msgid "The API key provided to you by Porterbuddy"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1236
+#: payment/WC_Gateway_Vipps.class.php:1260
 msgid "Porterbuddy Phone Number"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1239
+#: payment/WC_Gateway_Vipps.class.php:1263
 msgid "Your phone number where Porterbuddy may send you important messages. Format must be MSISDN (including country code). Example: \"4791234567\""
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1255
+#: payment/WC_Gateway_Vipps.class.php:1279
 msgid "Helthjem Shop Id"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1259
+#: payment/WC_Gateway_Vipps.class.php:1283
 msgid "The ShopId provided to you by Helthjem"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1264
+#: payment/WC_Gateway_Vipps.class.php:1288
 msgid "Helthjem Username"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1267
+#: payment/WC_Gateway_Vipps.class.php:1291
 msgid "The Username provided to you by Helthjem"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1271
+#: payment/WC_Gateway_Vipps.class.php:1295
 msgid "Helthjem Password"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1274
+#: payment/WC_Gateway_Vipps.class.php:1298
 msgid "Password provided to you by Helthjem"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1287
-#: payment/WC_Gateway_Vipps.class.php:1288
+#: payment/WC_Gateway_Vipps.class.php:1311
+#: payment/WC_Gateway_Vipps.class.php:1312
 msgid "Klarna"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1298
+#: payment/WC_Gateway_Vipps.class.php:1322
 msgid "External Payment Methods"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1300
+#: payment/WC_Gateway_Vipps.class.php:1324
 msgid "Allow external payment methods in %s. Selecting one of these returns payment control to WooCommerce."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1309
+#: payment/WC_Gateway_Vipps.class.php:1333
 msgid "Widgets"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1311
+#: payment/WC_Gateway_Vipps.class.php:1335
 msgid "Widgets are elements shown above the %1$s frame with extra functionality."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1317
+#: payment/WC_Gateway_Vipps.class.php:1341
 msgid "Allows the customer to add a customer note with their order."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1327
+#: payment/WC_Gateway_Vipps.class.php:1351
 msgid "Allows the customer to activate coupon codes."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1334
+#: payment/WC_Gateway_Vipps.class.php:1358
 #: recurring/admin/settings/VippsRecurringAdminSettings.class.php:85
 #: recurring/admin/settings/VippsRecurringAdminSettings.class.php:104
 msgid "Main options"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1339
+#: payment/WC_Gateway_Vipps.class.php:1363
 msgid "Enable %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1346
+#: payment/WC_Gateway_Vipps.class.php:1370
 msgid "Skip wizard and set up manually"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1353
+#: payment/WC_Gateway_Vipps.class.php:1377
 msgid "Country"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1357
+#: payment/WC_Gateway_Vipps.class.php:1381
 msgid "Norway"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1358
+#: payment/WC_Gateway_Vipps.class.php:1382
 msgid "Sweden"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1359
+#: payment/WC_Gateway_Vipps.class.php:1383
 msgid "Finland"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1360
+#: payment/WC_Gateway_Vipps.class.php:1384
 msgid "Denmark"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1362
+#: payment/WC_Gateway_Vipps.class.php:1386
 msgid "The country of your merchant serial number. This will determine the appropriate payment method below."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1368
-#: payment/WC_Gateway_Vipps.class.php:1374
+#: payment/WC_Gateway_Vipps.class.php:1392
+#: payment/WC_Gateway_Vipps.class.php:1398
 msgid "Choose which payment method should be displayed to customers at checkout"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1379
-#: payment/WC_Gateway_Vipps.class.php:1380
+#: payment/WC_Gateway_Vipps.class.php:1403
+#: payment/WC_Gateway_Vipps.class.php:1404
 #: recurring/includes/admin/vipps-recurring-settings.php:179
 #: recurring/includes/admin/vipps-recurring-settings.php:180
 msgid "Order ID prefix"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1382
+#: payment/WC_Gateway_Vipps.class.php:1406
 msgid "An alphanumeric textstring to use as a prefix on orders from your shop, to avoid duplicate order-ids"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1387
+#: payment/WC_Gateway_Vipps.class.php:1411
 #: recurring/includes/admin/vipps-recurring-settings.php:192
 msgid "Order status on payment reservation"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1388
+#: payment/WC_Gateway_Vipps.class.php:1412
 msgid "Choose default order status for reserved (not captured) orders"
 msgstr ""
 
 #. translators: placeholders are options for this setting
-#: payment/WC_Gateway_Vipps.class.php:1397
+#: payment/WC_Gateway_Vipps.class.php:1421
 msgid "The order status when the customer's payment is reserved (these are <b>not yet captured</b>)."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1402
+#: payment/WC_Gateway_Vipps.class.php:1426
 msgid "Order status on failed payment (for restartable orders)"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1403
+#: payment/WC_Gateway_Vipps.class.php:1427
 msgid "Choose default order status for failed payments"
 msgstr ""
 
 #. translators: the first placeholder is company name, the rest are woocommerce order statuses
-#: payment/WC_Gateway_Vipps.class.php:1412
+#: payment/WC_Gateway_Vipps.class.php:1436
 msgid "The order status when payment fails, this will only affect orders that truly can be restarted at %1$s."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1417
+#: payment/WC_Gateway_Vipps.class.php:1441
 #: recurring/includes/admin/vipps-recurring-settings.php:37
 msgid "Checkout description"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1419
+#: payment/WC_Gateway_Vipps.class.php:1443
 msgid "The payment method description the customer sees during checkout"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1420
+#: payment/WC_Gateway_Vipps.class.php:1444
 msgid "Pay safely and easily. No fees, no matter the amount."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1424
+#: payment/WC_Gateway_Vipps.class.php:1448
 msgid "Default payment method"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1427
+#: payment/WC_Gateway_Vipps.class.php:1451
 msgid "Use %1$s as the default payment method on the checkout page"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1432
+#: payment/WC_Gateway_Vipps.class.php:1456
 msgid "Phone number transformation for %1$s and %2$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1433
+#: payment/WC_Gateway_Vipps.class.php:1457
 msgid "Choose a transformation to apply to phone numbers for %1$s and %2$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1437
+#: payment/WC_Gateway_Vipps.class.php:1461
 msgid "Prepend '+'"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1438
+#: payment/WC_Gateway_Vipps.class.php:1462
 msgid "Strip country code"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1440
+#: payment/WC_Gateway_Vipps.class.php:1464
 msgid "Phone numbers from %1$s or %2$s are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1447
-#: payment/WC_Gateway_Vipps.class.php:1714
+#: payment/WC_Gateway_Vipps.class.php:1471
+#: payment/WC_Gateway_Vipps.class.php:1738
 #: recurring/admin/settings/VippsRecurringAdminSettings.class.php:91
 msgid "API keys"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1453
-#: payment/WC_Gateway_Vipps.class.php:1454
-#: payment/WC_Gateway_Vipps.class.php:1486
-msgid "Merchant Serial Number"
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:1456
-#: payment/WC_Gateway_Vipps.class.php:1488
-msgid "Your \"Merchant Serial Number\" from the Developer tab on https://portal.vippsmobilepay.com"
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:1460
-#: payment/WC_Gateway_Vipps.class.php:1462
-#: payment/WC_Gateway_Vipps.class.php:1494
-msgid "Client Id"
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:1464
-#: payment/WC_Gateway_Vipps.class.php:1496
-msgid "Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ and choose \"Show keys\". Copy the value of \"client_id\""
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:1468
-#: payment/WC_Gateway_Vipps.class.php:1469
-#: payment/WC_Gateway_Vipps.class.php:1501
-msgid "Client Secret"
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:1472
-#: payment/WC_Gateway_Vipps.class.php:1504
-msgid "Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ and choose \"show keys\". Copy the value of \"client_secret\""
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:1476
 #: payment/WC_Gateway_Vipps.class.php:1477
-#: payment/WC_Gateway_Vipps.class.php:1509
-msgid "Subscription Key"
+#: payment/WC_Gateway_Vipps.class.php:1478
+#: payment/WC_Gateway_Vipps.class.php:1510
+msgid "Merchant Serial Number"
 msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1480
 #: payment/WC_Gateway_Vipps.class.php:1512
-msgid "Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ and choose \"show keys\". Copy the value of \"Ocp-Apim-Subscription-Key\""
+msgid "Your \"Merchant Serial Number\" from the Developer tab on https://portal.vippsmobilepay.com"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1485
-msgid "Test merchant Serial Number"
+#: payment/WC_Gateway_Vipps.class.php:1484
+#: payment/WC_Gateway_Vipps.class.php:1486
+#: payment/WC_Gateway_Vipps.class.php:1518
+msgid "Client Id"
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1488
+#: payment/WC_Gateway_Vipps.class.php:1520
+msgid "Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ and choose \"Show keys\". Copy the value of \"client_id\""
 msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1492
-msgid "Test client Id"
+#: payment/WC_Gateway_Vipps.class.php:1493
+#: payment/WC_Gateway_Vipps.class.php:1525
+msgid "Client Secret"
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1496
+#: payment/WC_Gateway_Vipps.class.php:1528
+msgid "Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ and choose \"show keys\". Copy the value of \"client_secret\""
 msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1500
+#: payment/WC_Gateway_Vipps.class.php:1501
+#: payment/WC_Gateway_Vipps.class.php:1533
+msgid "Subscription Key"
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1504
+#: payment/WC_Gateway_Vipps.class.php:1536
+msgid "Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ and choose \"show keys\". Copy the value of \"Ocp-Apim-Subscription-Key\""
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1509
+msgid "Test merchant Serial Number"
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1516
+msgid "Test client Id"
+msgstr ""
+
+#: payment/WC_Gateway_Vipps.class.php:1524
 msgid "Test client Secret"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1508
+#: payment/WC_Gateway_Vipps.class.php:1532
 msgid "Test subscription Key"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1552
+#: payment/WC_Gateway_Vipps.class.php:1576
 #: recurring/includes/admin/vipps-recurring-settings.php:86
 #: recurring/includes/admin/vipps-recurring-settings.php:87
 msgid "Catalog pages"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1555
-#: payment/WC_Gateway_Vipps.class.php:1564
+#: payment/WC_Gateway_Vipps.class.php:1579
+#: payment/WC_Gateway_Vipps.class.php:1588
 msgid "Only shown for %s supported products"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1561
+#: payment/WC_Gateway_Vipps.class.php:1585
 #: recurring/includes/admin/vipps-recurring-settings.php:80
 #: recurring/includes/admin/vipps-recurring-settings.php:81
 msgid "Product pages"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1569
+#: payment/WC_Gateway_Vipps.class.php:1593
 #: recurring/includes/admin/vipps-recurring-settings.php:70
 msgid "Supported products"
 msgstr ""
 
 #. translators: %s is an option for this setting
-#: payment/WC_Gateway_Vipps.class.php:1573
-#: payment/WC_Gateway_Vipps.class.php:1577
+#: payment/WC_Gateway_Vipps.class.php:1597
+#: payment/WC_Gateway_Vipps.class.php:1601
 msgid "Selected products"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1574
+#: payment/WC_Gateway_Vipps.class.php:1598
 msgid "All products"
 msgstr ""
 
 #. translators: %s is an option for this setting
-#: payment/WC_Gateway_Vipps.class.php:1577
+#: payment/WC_Gateway_Vipps.class.php:1601
 msgid "If you choose %s, enable it individually in product edit."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1583
+#: payment/WC_Gateway_Vipps.class.php:1607
 msgid "Require terms and conditions confirmation"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1585
+#: payment/WC_Gateway_Vipps.class.php:1609
 msgid "Ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1589
+#: payment/WC_Gateway_Vipps.class.php:1613
 msgid "In the store"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1590
+#: payment/WC_Gateway_Vipps.class.php:1614
 msgid "In the app"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1596
-#: payment/WC_Gateway_Vipps.class.php:1597
+#: payment/WC_Gateway_Vipps.class.php:1620
+#: payment/WC_Gateway_Vipps.class.php:1621
 msgid "Always ask for address"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1599
+#: payment/WC_Gateway_Vipps.class.php:1623
 msgid "Always ask customers for their address even when the order only contains products that don't require shipping (e.g \"virtual\" products)"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1614
+#: payment/WC_Gateway_Vipps.class.php:1638
 msgid "Create and log in new customers during %1$s checkout."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1618
-#: payment/WC_Gateway_Vipps.class.php:1619
+#: payment/WC_Gateway_Vipps.class.php:1642
+#: payment/WC_Gateway_Vipps.class.php:1643
 msgid "Compatibility mode"
 msgstr ""
 
 #. translators: this is a description for the %s setting
-#: payment/WC_Gateway_Vipps.class.php:1622
+#: payment/WC_Gateway_Vipps.class.php:1646
 msgid "Use an alternative %s flow for better compatibility with complex product types and plugins."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1626
-#: payment/WC_Gateway_Vipps.class.php:1627
+#: payment/WC_Gateway_Vipps.class.php:1650
+#: payment/WC_Gateway_Vipps.class.php:1651
 msgid "Delete failed orders"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1629
+#: payment/WC_Gateway_Vipps.class.php:1653
 msgid "Automatically delete cancelled %s orders that contain no customer or order information. Make sure to test if other plugins needs these orders intact."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1637
-msgid "Use old-style shipping callback for express checkout"
+#: payment/WC_Gateway_Vipps.class.php:1661
+msgid "Use old-style shipping callback for %s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1638
+#: payment/WC_Gateway_Vipps.class.php:1662
 msgid "Use your current shipping filters"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1641
+#: payment/WC_Gateway_Vipps.class.php:1665
 msgid "Select one"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1642
+#: payment/WC_Gateway_Vipps.class.php:1666
 msgid "Keep using old shipping callback with my custom filter"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1643
+#: payment/WC_Gateway_Vipps.class.php:1667
 msgid "Use new shipping callback"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1645
-msgid "Since version 1.4 this plugin uses a new method of providing shipping methods to %1$s when using Express Checkout. The new method supports metadata in the shipping options, which is neccessary for integration with Bring, Postnord etc. However, the new method is not compatible with the old <code>'woo_vipps_shipping_methods'</code> filter, which your site has overridden in a theme or plugin. If you want to, you can continue using this filter and the old method. If you want to disable your filters and use the new method, you can choose this here. "
+#: payment/WC_Gateway_Vipps.class.php:1669
+msgid "Since version 1.4 this plugin uses a new method of providing shipping methods to %1$s when using %2$s. The new method supports metadata in the shipping options, which is neccessary for integration with Bring, Postnord etc. However, the new method is not compatible with the old <code>'woo_vipps_shipping_methods'</code> filter, which your site has overridden in a theme or plugin. If you want to, you can continue using this filter and the old method. If you want to disable your filters and use the new method, you can choose this here. "
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1654
+#: payment/WC_Gateway_Vipps.class.php:1678
 #: recurring/admin/settings/VippsRecurringAdminSettings.class.php:92
 msgid "Advanced"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1657
+#: payment/WC_Gateway_Vipps.class.php:1681
 msgid "If you have issues with your theme, you might find a setting here that will help. Normally you do not need to change these."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1661
+#: payment/WC_Gateway_Vipps.class.php:1685
 msgid "Support %s API for %s and %s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1665
+#: payment/WC_Gateway_Vipps.class.php:1689
 msgid "Turn this on to add support for Woos Order Attribution API for %s and %s. Some stores have reported problems when using this API together with %s, so be sure to test this if you turn it on."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1669
+#: payment/WC_Gateway_Vipps.class.php:1693
 msgid "Legacy: Override page template used for the special %1$s page"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1670
+#: payment/WC_Gateway_Vipps.class.php:1694
 msgid "Use specific template for %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1673
+#: payment/WC_Gateway_Vipps.class.php:1697
 msgid "Use this template from your theme or child-theme for the special %1$s page.<br>Legacy: This is not necessary anymore - you should instead choose a template by editing the page like any other page."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1678
+#: payment/WC_Gateway_Vipps.class.php:1702
 msgid "Use a real page ID for the special %1$s pages - neccessary for some themes"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1679
+#: payment/WC_Gateway_Vipps.class.php:1703
 msgid "Use a real page ID"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1682
+#: payment/WC_Gateway_Vipps.class.php:1706
 msgid "Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special %1$s pages."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1687
-#: payment/WC_Gateway_Vipps.class.php:1688
+#: payment/WC_Gateway_Vipps.class.php:1711
+#: payment/WC_Gateway_Vipps.class.php:1712
 msgid "Send receipt to app"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1690
+#: payment/WC_Gateway_Vipps.class.php:1714
 msgid "Sends a receipt to the customer's %1$s app, specifying the order items, shipping etc."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1695
-#: payment/WC_Gateway_Vipps.class.php:1696
+#: payment/WC_Gateway_Vipps.class.php:1719
+#: payment/WC_Gateway_Vipps.class.php:1720
 msgid "Store image"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1698
+#: payment/WC_Gateway_Vipps.class.php:1722
 msgid "If set, this image will be used to profile your store in the %1$s app, on certain places like link to the order confirmation."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1703
-#: payment/WC_Gateway_Vipps.class.php:1704
+#: payment/WC_Gateway_Vipps.class.php:1727
+#: payment/WC_Gateway_Vipps.class.php:1728
 msgid "Delete plugin settings on deactivation"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1706
+#: payment/WC_Gateway_Vipps.class.php:1730
 msgid "If set, all plugin settings will be deleted upon plugin deactivation. Warning: there is no recovery after deletion."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1714
+#: payment/WC_Gateway_Vipps.class.php:1738
 msgid "Use the %1$s test environment instead of live production environment. No real transactions will be performed.<br><br>You will need to fill out your test environment keys in the <a href=\"#%2$s\">%2$s</a> tab and install a separate app on your phone for the, see <a href=\"%3$s\" target=\"_blank\">%1$s docs</a> for more info.<br>The constant VIPPS_TEST_MODE in your wp-config file will override this option. "
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1845
+#: payment/WC_Gateway_Vipps.class.php:1869
 msgid "Could not get access token when initiating %1$s payment for order id:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1846
-#: payment/WC_Gateway_Vipps.class.php:1968
+#: payment/WC_Gateway_Vipps.class.php:1870
+#: payment/WC_Gateway_Vipps.class.php:1992
 msgid "Unfortunately, the %1$s payment method is currently unavailable. Please choose another method."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1867
+#: payment/WC_Gateway_Vipps.class.php:1891
 msgid "You need to enter your phone number to pay with %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1876
+#: payment/WC_Gateway_Vipps.class.php:1900
 msgid "Trying to start order %1$s with status %2$s - only 'pending' and 'failed' are allowed, so this will fail"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1877
+#: payment/WC_Gateway_Vipps.class.php:1901
 msgid "This order cannot be paid with %1$s - please try another payment method or try again later"
 msgstr ""
 
 #. translators: company name, order id
-#: payment/WC_Gateway_Vipps.class.php:1900
+#: payment/WC_Gateway_Vipps.class.php:1924
 msgid "Retry-branch: error getting payment details from %1$s for order id %2$s:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1905
+#: payment/WC_Gateway_Vipps.class.php:1929
 msgid "%1$s payment restarted"
 msgstr ""
 
 #. translators: number of attempts, order id.
-#: payment/WC_Gateway_Vipps.class.php:1914
+#: payment/WC_Gateway_Vipps.class.php:1938
 msgid "Order %2$d session could not be restored, creating a new retry session (retry #%1$d)."
 msgstr ""
 
 #. translators: order id.
-#: payment/WC_Gateway_Vipps.class.php:1920
+#: payment/WC_Gateway_Vipps.class.php:1944
 msgid "Order %1$d session could not be restored, and payment retry is disabled. Cancelling the order!"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1921
+#: payment/WC_Gateway_Vipps.class.php:1945
 msgid "Cannot restart order at %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1947
+#: payment/WC_Gateway_Vipps.class.php:1971
 msgid "Setting order status to pending to start payment"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1954
-#: payment/WC_Gateway_Vipps.class.php:1967
+#: payment/WC_Gateway_Vipps.class.php:1978
+#: payment/WC_Gateway_Vipps.class.php:1991
 msgid "Could not initiate %1$s payment"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1955
+#: payment/WC_Gateway_Vipps.class.php:1979
 msgid "Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1963
+#: payment/WC_Gateway_Vipps.class.php:1987
 msgid "Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %1$s Status: %2$s User agent: %3$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1964
+#: payment/WC_Gateway_Vipps.class.php:1988
 msgid "Cannot restart order with same order ID: Must cancel"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:1996
+#: payment/WC_Gateway_Vipps.class.php:2020
 msgid "Awaiting %1$s payment confirmation"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2032
+#: payment/WC_Gateway_Vipps.class.php:2056
 msgid "Filters are setting the payment_complete order status to '%1$s' - will not capture"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2033
+#: payment/WC_Gateway_Vipps.class.php:2057
 msgid "Payment complete set status to \"%1$s\" - will not capture payments automatically"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2044
+#: payment/WC_Gateway_Vipps.class.php:2068
 msgid "Error getting payment details before doing capture: "
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2058
+#: payment/WC_Gateway_Vipps.class.php:2082
 msgid "Could not capture %1$s payment for this order!"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2062
+#: payment/WC_Gateway_Vipps.class.php:2086
 msgid "Could not capture %1$s payment - status set to"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2079
+#: payment/WC_Gateway_Vipps.class.php:2103
 msgid "Trying to capture payment on order not made by %1$s:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2080
+#: payment/WC_Gateway_Vipps.class.php:2104
 msgid "Cannot capture payment on orders not made by %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2099
-#: payment/WC_Gateway_Vipps.class.php:2107
+#: payment/WC_Gateway_Vipps.class.php:2123
+#: payment/WC_Gateway_Vipps.class.php:2131
 msgid "Payment already captured"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2124
+#: payment/WC_Gateway_Vipps.class.php:2148
 msgid "More than %1$d API exceptions trying to capture order - this order cannot be captured."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2140
+#: payment/WC_Gateway_Vipps.class.php:2164
 msgid "Could not capture %1$s payment for order id:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2150
+#: payment/WC_Gateway_Vipps.class.php:2174
 msgid "Could not capture %1$s payment for order_id:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2169
+#: payment/WC_Gateway_Vipps.class.php:2193
 msgid "%1$s Payment captured:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2184
+#: payment/WC_Gateway_Vipps.class.php:2208
 msgid "Trying to cancel payment on order not made by %1$s:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2185
+#: payment/WC_Gateway_Vipps.class.php:2209
 msgid "Cannot cancel payment on orders not made by %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2204
+#: payment/WC_Gateway_Vipps.class.php:2228
 msgid "Could not cancel %1$s payment for order_id:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2208
+#: payment/WC_Gateway_Vipps.class.php:2232
 msgid "Could not cancel %1$s payment for order id:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2231
+#: payment/WC_Gateway_Vipps.class.php:2255
 msgid "%1$s Payment cancelled:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2243
+#: payment/WC_Gateway_Vipps.class.php:2267
 msgid "Trying to refund payment on order not made by %1$s:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2252
+#: payment/WC_Gateway_Vipps.class.php:2276
 msgid "Trying to refund payment on %1$s payment not captured:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2264
+#: payment/WC_Gateway_Vipps.class.php:2288
 msgid "Cannot refund bank transfer order %1$d"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2295
+#: payment/WC_Gateway_Vipps.class.php:2319
 msgid "%1$s Payment Refunded:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2396
+#: payment/WC_Gateway_Vipps.class.php:2420
 msgid "Payment method reset to %1$s - it had been set to another payment method while completing the order for %2$d"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2424
+#: payment/WC_Gateway_Vipps.class.php:2448
 msgid "Order %d is locked when checking order status at %s - the return url or template_redirect may be called repeatedly. This is likely an error"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2444
+#: payment/WC_Gateway_Vipps.class.php:2468
 msgid "%1$s poll: Handling order: "
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2480
+#: payment/WC_Gateway_Vipps.class.php:2504
 msgid "Error getting payment details from %1$s for order_id:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2503
+#: payment/WC_Gateway_Vipps.class.php:2527
 msgid "No shipping details from %1$s for express checkout for order id:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2507
+#: payment/WC_Gateway_Vipps.class.php:2531
 msgid "Order %2$d has no address info and any %1$s session is dead - have to cancel."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2508
+#: payment/WC_Gateway_Vipps.class.php:2532
 msgid "Could not get address info for order from %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2512
+#: payment/WC_Gateway_Vipps.class.php:2536
 msgid "No address information for order %2$d, but there still might be an active %1$s session for it, so do not cancel it."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2526
-#: payment/WC_Gateway_Vipps.class.php:3669
+#: payment/WC_Gateway_Vipps.class.php:2550
+#: payment/WC_Gateway_Vipps.class.php:3687
 msgid "Payment captured directly at %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2527
+#: payment/WC_Gateway_Vipps.class.php:2551
 msgid " - order does not need processing"
 msgstr ""
 
 #. translators: order status name. Cancelled is woocommerce status name
 #. translators: %1 = order status parameter. 'cancelled' is woocommerce order status name
-#: payment/WC_Gateway_Vipps.class.php:2541
-#: payment/WC_Gateway_Vipps.class.php:3682
+#: payment/WC_Gateway_Vipps.class.php:2565
+#: payment/WC_Gateway_Vipps.class.php:3700
 msgid "Unsupported status for payment failure of '%1$s', falling back to cancelled."
 msgstr ""
 
 #. translators: company name
-#: payment/WC_Gateway_Vipps.class.php:2546
+#: payment/WC_Gateway_Vipps.class.php:2570
 msgid "Order failed or rejected at %1$s."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2623
 #: payment/WC_Gateway_Vipps.class.php:2647
+#: payment/WC_Gateway_Vipps.class.php:2671
 msgid "%1$s Order with no order status, so session was never completed; setting status to cancelled"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2646
+#: payment/WC_Gateway_Vipps.class.php:2670
 msgid "Checkout order older than 120 minutes with no order status - cancelled as abandoned: %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2673
+#: payment/WC_Gateway_Vipps.class.php:2697
 msgid "Could not get order status from %1$s using epayment api: "
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2680
-#: payment/WC_Gateway_Vipps.class.php:2934
-#: payment/WC_Gateway_Vipps.class.php:3732
+#: payment/WC_Gateway_Vipps.class.php:2704
+#: payment/WC_Gateway_Vipps.class.php:2958
+#: payment/WC_Gateway_Vipps.class.php:3750
 msgid "Could not get payment results for order %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2681
+#: payment/WC_Gateway_Vipps.class.php:2705
 msgid "Could not get payment results for order %1$s - you may have the wrong MSN for the order. Please check logs for more information"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2903
+#: payment/WC_Gateway_Vipps.class.php:2927
 msgid "Anonymous customer"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2969
-#: payment/WC_Gateway_Vipps.class.php:3440
+#: payment/WC_Gateway_Vipps.class.php:2993
+#: payment/WC_Gateway_Vipps.class.php:3458
 msgid "Credit Card / %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2974
-#: payment/WC_Gateway_Vipps.class.php:3445
+#: payment/WC_Gateway_Vipps.class.php:2998
+#: payment/WC_Gateway_Vipps.class.php:3463
 msgid "Bank Transfer/ %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:2997
+#: payment/WC_Gateway_Vipps.class.php:3021
 msgid "Could not get %1$s order status - it has no %1$s Order Id. Must cancel."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3005
-#: payment/WC_Gateway_Vipps.class.php:3015
+#: payment/WC_Gateway_Vipps.class.php:3029
+#: payment/WC_Gateway_Vipps.class.php:3039
 msgid "Could not get %1$s order status for order id:"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3008
+#: payment/WC_Gateway_Vipps.class.php:3032
 msgid "Could not get %1$s order status"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3011
+#: payment/WC_Gateway_Vipps.class.php:3035
 msgid "Order does not exist at %1$s - cancelling"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3240
+#: payment/WC_Gateway_Vipps.class.php:3258
 msgid "%1$s: Could not deserialize the chosen shipping method %2$s for order %3$d"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3241
+#: payment/WC_Gateway_Vipps.class.php:3259
 msgid "Serialized data was %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3283
+#: payment/WC_Gateway_Vipps.class.php:3301
 msgid "Date: %s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3284
+#: payment/WC_Gateway_Vipps.class.php:3302
 msgid "Start: %s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3285
+#: payment/WC_Gateway_Vipps.class.php:3303
 msgid "End: %s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3296
+#: payment/WC_Gateway_Vipps.class.php:3314
 msgid "Unknown shipping: please check the shipping details at %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3305
+#: payment/WC_Gateway_Vipps.class.php:3323
 msgid "%1$s Could not retrieve any shipping rate for this order, with method %2$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3462
+#: payment/WC_Gateway_Vipps.class.php:3480
 msgid "%1$s callback with wrong merchantSerialNumber - might be forged"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3466
+#: payment/WC_Gateway_Vipps.class.php:3484
 msgid "%1$s callback for unknown order"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3471
+#: payment/WC_Gateway_Vipps.class.php:3489
 msgid "Wrong %1$s Orderid - possibly an attempt to fake a callback "
 msgstr ""
 
 #. translators: payment method name, order id
-#: payment/WC_Gateway_Vipps.class.php:3480
+#: payment/WC_Gateway_Vipps.class.php:3498
 msgid "Message in callback from %1$s for order %2$s: "
 msgstr ""
 
 #. translators: payment method name, message
-#: payment/WC_Gateway_Vipps.class.php:3482
+#: payment/WC_Gateway_Vipps.class.php:3500
 msgid "Message from %1$s: %2$s"
 msgstr ""
 
 #. translators: order id, scheduled time
-#: payment/WC_Gateway_Vipps.class.php:3518
+#: payment/WC_Gateway_Vipps.class.php:3536
 msgid "Callback action scheduled at %2$s for order %1$s"
 msgstr ""
 
 #. translators: order id
-#: payment/WC_Gateway_Vipps.class.php:3522
+#: payment/WC_Gateway_Vipps.class.php:3540
 msgid "Failed to schedule callback process action for order %1$s, check the php error log"
 msgstr ""
 
 #. translators: order id
-#: payment/WC_Gateway_Vipps.class.php:3535
+#: payment/WC_Gateway_Vipps.class.php:3553
 msgid "Callback process action running for order %1$s."
 msgstr ""
 
 #. translators: order id
-#: payment/WC_Gateway_Vipps.class.php:3540
+#: payment/WC_Gateway_Vipps.class.php:3558
 msgid "Callback process action failed, could not find order %1$s"
 msgstr ""
 
 #. translators: order id
-#: payment/WC_Gateway_Vipps.class.php:3550
+#: payment/WC_Gateway_Vipps.class.php:3568
 msgid "Callback process action aborted since %1$s is not pending."
 msgstr ""
 
 #. translators: payment method name
-#: payment/WC_Gateway_Vipps.class.php:3591
+#: payment/WC_Gateway_Vipps.class.php:3609
 msgid "%1$s callback processed"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3653
-#: payment/WC_Gateway_Vipps.class.php:3657
+#: payment/WC_Gateway_Vipps.class.php:3671
+#: payment/WC_Gateway_Vipps.class.php:3675
 msgid "Process callback action failed to finalize shipping through http rest endpoint for order %1$s: %2$s"
 msgstr ""
 
 #. translators: company name
-#: payment/WC_Gateway_Vipps.class.php:3687
+#: payment/WC_Gateway_Vipps.class.php:3705
 msgid "Callback: Payment cancelled at %1$s."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3707
+#: payment/WC_Gateway_Vipps.class.php:3725
 msgid "Order does not need to set shipping"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3756
+#: payment/WC_Gateway_Vipps.class.php:3774
 msgid "Payment authorized at %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3780
+#: payment/WC_Gateway_Vipps.class.php:3798
 msgid "Error calling the Order Management API: %1$s "
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3809
+#: payment/WC_Gateway_Vipps.class.php:3827
 msgid "Could not do all payment-complete actions on %1$s order %2$d: %3$s "
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3870
+#: payment/WC_Gateway_Vipps.class.php:3888
 msgid "%1$s is not an image that can be uploaded to %2$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3871
+#: payment/WC_Gateway_Vipps.class.php:3889
 msgid "File type was %1$s; supported types are %2$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3886
+#: payment/WC_Gateway_Vipps.class.php:3904
 msgid "Image %1$s is too small - height %2$dpx (minimum 167px required)"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:3933
-msgid "Vipps Express Checkout"
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:3934
-msgid "Vipps Checkout"
-msgstr ""
-
-#: payment/WC_Gateway_Vipps.class.php:4080
+#: payment/WC_Gateway_Vipps.class.php:4095
 msgid "%1$s does not support your currency."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:4082
+#: payment/WC_Gateway_Vipps.class.php:4097
 msgid "%1$s supported currencies: %2$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:4090
+#: payment/WC_Gateway_Vipps.class.php:4105
 msgid "%1$s requires that your site uses HTTPS."
 msgstr ""
 
 #. translators: %s is current method name
-#: payment/WC_Gateway_Vipps.class.php:4169
+#: payment/WC_Gateway_Vipps.class.php:4184
 msgid "Missing special page in %s, attempting to fix"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:4198
+#: payment/WC_Gateway_Vipps.class.php:4213
 msgid "For msn %s we have a webhook %s %s which is pointed the wrong way (%s) for this website"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:4201
+#: payment/WC_Gateway_Vipps.class.php:4216
 msgid "Could not delete webhook for this site with url '%2$s' : %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:4270
+#: payment/WC_Gateway_Vipps.class.php:4285
 msgid "Could not initialize webhooks for this site: %1$s"
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:4371
+#: payment/WC_Gateway_Vipps.class.php:4386
 msgid "MSN or subscription key (or both) seem to be wrong: "
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:4379
+#: payment/WC_Gateway_Vipps.class.php:4394
 msgid "Your client key or secret is wrong."
 msgstr ""
 
-#: payment/WC_Gateway_Vipps.class.php:4384
+#: payment/WC_Gateway_Vipps.class.php:4399
 msgid "missing API keys"
 msgstr ""
 
@@ -4212,13 +4197,21 @@ msgstr ""
 msgid "Insufficient privileges"
 msgstr ""
 
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:86
+msgid "Express Checkout"
+msgstr ""
+
 #: recurring/admin/settings/VippsRecurringAdminSettings.class.php:89
 msgid "Orders"
 msgstr ""
 
 #: recurring/admin/settings/VippsRecurringAdminSettings.class.php:90
-#: recurring/includes/admin/vipps-recurring-settings.php:217
+#: recurring/includes/admin/vipps-recurring-settings.php:227
 msgid "Background checks"
+msgstr ""
+
+#: recurring/admin/settings/VippsRecurringAdminSettings.class.php:165
+msgid "Configure placement"
 msgstr ""
 
 #: recurring/admin/settings/VippsRecurringAdminSettings.class.php:169
@@ -4458,28 +4451,45 @@ msgstr ""
 msgid "Set renewal orders to \"Completed\" when %s confirms payment."
 msgstr ""
 
+#: recurring/includes/admin/vipps-recurring-settings.php:217
+msgid "When a customer cancels in the app"
+msgstr ""
+
+#. translators: %s: Vipps MobilePay
 #: recurring/includes/admin/vipps-recurring-settings.php:218
-msgid "Check payment status in the background to keep orders up to date."
+msgid "What happens to the subscription when the customer stops their agreement in the %s app. A note is always added to the subscription."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php:221
+msgid "Cancel the subscription"
 msgstr ""
 
 #: recurring/includes/admin/vipps-recurring-settings.php:222
+msgid "Require manual renewal payments"
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php:228
+msgid "Check payment status in the background to keep orders up to date."
+msgstr ""
+
+#: recurring/includes/admin/vipps-recurring-settings.php:232
 msgid "Payments per check"
 msgstr ""
 
-#: recurring/includes/admin/vipps-recurring-settings.php:223
+#: recurring/includes/admin/vipps-recurring-settings.php:233
 msgid "The number of payments to check at a time. Use 5 to 100. Higher values can slow down your store."
 msgstr ""
 
-#: recurring/includes/admin/vipps-recurring-settings.php:235
+#: recurring/includes/admin/vipps-recurring-settings.php:245
 msgid "Save messages to the WooCommerce logs to help with troubleshooting."
 msgstr ""
 
 #. translators: %s: Vipps MobilePay
-#: recurring/includes/admin/vipps-recurring-settings.php:242
+#: recurring/includes/admin/vipps-recurring-settings.php:252
 msgid "Use the %s test environment to try payments."
 msgstr ""
 
-#: recurring/includes/admin/vipps-recurring-settings.php:245
+#: recurring/includes/admin/vipps-recurring-settings.php:255
 msgid "Test mode is controlled by WC_VIPPS_RECURRING_TEST_MODE."
 msgstr ""
 
@@ -4670,15 +4680,25 @@ msgid "This order was paid with another payment method, but %1$s has already cha
 msgstr ""
 
 #. translators: %s: Vipps or MobilePay
-#: recurring/includes/wc-gateway-vipps-recurring.php:3368
-msgid "Subscription cancelled by the customer via the %s app."
+#: recurring/includes/wc-gateway-vipps-recurring.php:3404
+msgid "The customer cancelled the subscription in the %s app. The subscription was cancelled."
 msgstr ""
 
-#: recurring/includes/wc-gateway-vipps-recurring.php:3570
+#. translators: %s: Vipps or MobilePay
+#: recurring/includes/wc-gateway-vipps-recurring.php:3411
+msgid "The customer cancelled the subscription in the %s app. The subscription now requires manual renewal payments."
+msgstr ""
+
+#. translators: %s: Vipps or MobilePay
+#: recurring/includes/wc-gateway-vipps-recurring.php:3417
+msgid "The customer cancelled the subscription in the %s app. The subscription was not changed."
+msgstr ""
+
+#: recurring/includes/wc-gateway-vipps-recurring.php:3636
 msgid "Anonymous Vipps MobilePay Customer"
 msgstr ""
 
-#: recurring/includes/wc-gateway-vipps-recurring.php:3802
+#: recurring/includes/wc-gateway-vipps-recurring.php:3868
 msgid "This subscription has been automatically marked for deletion as it has no billing details after two hours."
 msgstr ""
 
@@ -4736,7 +4756,7 @@ msgid "Could not start Express checkout. Check your order before trying again."
 msgstr ""
 
 #: recurring/includes/wc-vipps-recurring-express-checkout.php:100
-#: recurring/includes/wc-vipps-recurring-express-checkout.php:652
+#: recurring/includes/wc-vipps-recurring-express-checkout.php:650
 msgid "Select the product options before continuing."
 msgstr ""
 
@@ -4773,27 +4793,27 @@ msgid "You recently completed an order with these products. Confirm that you wan
 msgstr ""
 
 #. translators: %s: Vipps MobilePay
-#: recurring/includes/wc-vipps-recurring-express-checkout.php:603
+#: recurring/includes/wc-vipps-recurring-express-checkout.php:601
 msgid "Recurring agreement creation could not be confirmed. Check the API configuration and reconcile this purchase with %s before creating another agreement or payment."
 msgstr ""
 
-#: recurring/includes/wc-vipps-recurring-express-checkout.php:637
+#: recurring/includes/wc-vipps-recurring-express-checkout.php:635
 msgid "Invalid product options or quantity."
 msgstr ""
 
-#: recurring/includes/wc-vipps-recurring-express-checkout.php:642
+#: recurring/includes/wc-vipps-recurring-express-checkout.php:640
 msgid "This product is not available for Express checkout."
 msgstr ""
 
-#: recurring/includes/wc-vipps-recurring-express-checkout.php:655
+#: recurring/includes/wc-vipps-recurring-express-checkout.php:653
 msgid "Use shop checkout for this product."
 msgstr ""
 
-#: recurring/includes/wc-vipps-recurring-express-checkout.php:660
+#: recurring/includes/wc-vipps-recurring-express-checkout.php:658
 msgid "Could not add this product to the cart. Check its options and quantity."
 msgstr ""
 
-#: recurring/includes/wc-vipps-recurring-express-checkout.php:672
+#: recurring/includes/wc-vipps-recurring-express-checkout.php:670
 msgid "Could not add this product to the cart."
 msgstr ""
 

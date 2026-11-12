@@ -11,7 +11,7 @@ Run these commands from this directory with WP-CLI installed.
 1. Extract source strings and update the language catalogs:
 
    ```bash
-   wp i18n make-pot . woo-vipps.pot --domain=woo-vipps
+   wp i18n make-pot .. woo-vipps.pot --domain=woo-vipps
    wp i18n update-po woo-vipps.pot
    ```
 

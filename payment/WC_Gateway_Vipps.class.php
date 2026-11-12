@@ -1453,15 +1453,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             ),
 
             'checkout_phone_transformation' => array(
-                'title'       => sprintf(__('Phone number transformation for %1$s and %2$s', 'woo-vipps'), 'Checkout', Vipps::ExpressName()),
-                'label'       => sprintf(__('Choose a transformation to apply to phone numbers for %1$s and %2$s', 'woo-vipps'), 'Checkout', Vipps::ExpressName()),
+                'title'       => sprintf(__('Phone number transformation for %1$s and %2$s', 'woo-vipps'), 'Checkout', Vipps::ExpressCheckoutName()),
+                'label'       => sprintf(__('Choose a transformation to apply to phone numbers for %1$s and %2$s', 'woo-vipps'), 'Checkout', Vipps::ExpressCheckoutName()),
                 'type'        => 'select',
                 'options' => array(
                     'none' => __('None', 'woo-vipps'),
                     'ensure_plus' => __('Prepend \'+\'','woo-vipps'),
                     'strip_country_code' => __('Strip country code','woo-vipps'),
                 ), 
-                'description' => sprintf(__('Phone numbers from %1$s or %2$s are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'), 'Checkout', Vipps::ExpressName()),
+                'description' => sprintf(__('Phone numbers from %1$s or %2$s are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'), 'Checkout', Vipps::ExpressCheckoutName()),
                 'default'     => 'none',
             ),
         );
@@ -1541,15 +1541,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
          $expressfields = array(
                 'express_options' => array(
-                        'title' => __('Express Checkout', 'woo-vipps'),
+                        'title' => Vipps::ExpressCheckoutName(),
                         'type'  => 'title',
                         'class' => 'tab',
-                        'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressName())
+                        'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressCheckoutName())
                         ),
 
                 // New master toggle for express. See the specific overrides 'cartexpress', 'express_show_in_checkout', 'singleproductexpress' below. LP 2026-09-28
                 'express_enabled' => [
-                        'title'       => sprintf(__('Enable %s', 'woo-vipps'), Vipps::ExpressName()),
+                        'title'       => sprintf(__('Enable %s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'label'       => '',
                         'type'        => 'checkbox',
                         'description' => '',
@@ -1557,7 +1557,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 ],
 
                 'cartexpress' => array(
-                        'title'       => sprintf(__('Cart', 'woo-vipps'), Vipps::ExpressName()),
+                        'title'       => sprintf(__('Cart', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'label'       => '',
                         'type'        => 'checkbox',
                         'description' => '',
@@ -1565,7 +1565,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
                 'express_show_in_checkout' => array(
-                        'title'       => sprintf(__('Checkout', 'woo-vipps'), Vipps::ExpressName()),
+                        'title'       => sprintf(__('Checkout', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'label'       => '',
                         'type'        => 'checkbox',
                         'description' => '',
@@ -1573,19 +1573,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
                 'singleproductexpressarchives' => array(
-                        'title'       => sprintf(__('Catalog pages', 'woo-vipps'), Vipps::ExpressName()),
+                        'title'       => sprintf(__('Catalog pages', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Only shown for %s supported products', 'woo-vipps'), Vipps::ExpressName()),
+                        'description' => sprintf(__('Only shown for %s supported products', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => 'yes',
                         ),
 
                 // New: Whether to show express on single product pages. LP 2026-09-28
                 'express_singleproduct_enabled' => [
-                        'title'       => sprintf(__('Product pages', 'woo-vipps'), Vipps::ExpressName()),
+                        'title'       => sprintf(__('Product pages', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'label'       => '',
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Only shown for %s supported products', 'woo-vipps'), Vipps::ExpressName()),
+                        'description' => sprintf(__('Only shown for %s supported products', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => $default_express_singleproduct_enabled,
                 ],
                 // Changed option: Which products to support for Express (as long as they are purchasable by Express too). LP 2026-09-28
@@ -1627,7 +1627,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Static shipping', 'woo-vipps'),
                         'label'       => __('Static shipping', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Speed up %s by precalculating shipping options in advance. Should only be used if your shipping options do not depend on the customer\'s address.', 'woo-vipps'), Vipps::ExpressName()),
+                        'description' => sprintf(__('Speed up %s by precalculating shipping options in advance. Should only be used if your shipping options do not depend on the customer\'s address.', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => 'no',
                         ),
 
@@ -1635,7 +1635,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'label'       => __('Create new customers for guest checkouts', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Create and log in new customers during %1$s checkout.', 'woo-vipps'), Vipps::ExpressName()),
+                        'description' => sprintf(__('Create and log in new customers during %1$s checkout.', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => $expresscreateuserdefault,
                         ),
                 'singleproductbuynowcompatmode' => array(
@@ -1643,14 +1643,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'label'       => __('Compatibility mode', 'woo-vipps'),
                         'type'        => 'checkbox',
                         /* translators: this is a description for the %s setting */
-                        'description' => sprintf(__('Use an alternative %s flow for better compatibility with complex product types and plugins.', 'woo-vipps'), Vipps::ExpressName()),
+                        'description' => sprintf(__('Use an alternative %s flow for better compatibility with complex product types and plugins.', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => 'no',
                         ),
                 'deletefailedexpressorders' => array(
                         'title'       => __('Delete failed orders', 'woo-vipps'),
                         'label'       => __('Delete failed orders', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Automatically delete cancelled %s orders that contain no customer or order information. Make sure to test if other plugins needs these orders intact.', 'woo-vipps'), Vipps::ExpressName(), strtolower($mainfields['main_options']['title'])),
+                        'description' => sprintf(__('Automatically delete cancelled %s orders that contain no customer or order information. Make sure to test if other plugins needs these orders intact.', 'woo-vipps'), Vipps::ExpressCheckoutName(), strtolower($mainfields['main_options']['title'])),
                         'default'     => 'no',
                         )
         );
@@ -1658,7 +1658,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
        if (has_action('woo_vipps_shipping_methods')) {
             $shippingoptions = array(
                     'newshippingcallback' => array(
-                        'title'       => __('Use old-style shipping callback for express checkout', 'woo-vipps'),
+                        'title'       => sprintf(__('Use old-style shipping callback for %s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'label'       => __('Use your current shipping filters', 'woo-vipps'),
                         'type'        => 'select',
                         'options' => array(
@@ -1666,7 +1666,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             'old' => __('Keep using old shipping callback with my custom filter', 'woo-vipps'),
                             'new' => __('Use new shipping callback','woo-vipps')
                             ),
-                        'description' => sprintf(__('Since version 1.4 this plugin uses a new method of providing shipping methods to %1$s when using Express Checkout. The new method supports metadata in the shipping options, which is neccessary for integration with Bring, Postnord etc. However, the new method is not compatible with the old <code>\'woo_vipps_shipping_methods\'</code> filter, which your site has overridden in a theme or plugin. If you want to, you can continue using this filter and the old method. If you want to disable your filters and use the new method, you can choose this here. ', 'woo-vipps'), Vipps::CompanyName()),
+                        'description' => sprintf(__('Since version 1.4 this plugin uses a new method of providing shipping methods to %1$s when using %2$s. The new method supports metadata in the shipping options, which is neccessary for integration with Bring, Postnord etc. However, the new method is not compatible with the old <code>\'woo_vipps_shipping_methods\'</code> filter, which your site has overridden in a theme or plugin. If you want to, you can continue using this filter and the old method. If you want to disable your filters and use the new method, you can choose this here. ', 'woo-vipps'), Vipps::CompanyName(), Vipps::ExpressCheckoutName()),
                         'default'     => 'none',
                         )
                     );
@@ -1682,11 +1682,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                    ),
 
                  'vippsorderattribution' => array(
-                     'title'       => sprintf(__( 'Support %s API for %s and %s', 'woo-vipps'), 'WooCommerces Order Attribution', 'Checkout', Vipps::ExpressName()),
+                     'title'       => sprintf(__( 'Support %s API for %s and %s', 'woo-vipps'), 'WooCommerces Order Attribution', 'Checkout', Vipps::ExpressCheckoutName()),
                      'label'       => '',
                      'type'        => 'checkbox',
                      'default'=> 'no',
-                     'description' => sprintf(__('Turn this on to add support for Woos Order Attribution API for %s and %s. Some stores have reported problems when using this API together with %s, so be sure to test this if you turn it on.', 'woo-vipps'), 'Checkout', Vipps::ExpressName(), Vipps::CompanyName()),
+                     'description' => sprintf(__('Turn this on to add support for Woos Order Attribution API for %s and %s. Some stores have reported problems when using this API together with %s, so be sure to test this if you turn it on.', 'woo-vipps'), 'Checkout', Vipps::ExpressCheckoutName(), Vipps::CompanyName()),
 ),
 
                  'vippsspecialpagetemplate' => array(
@@ -1978,16 +1978,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return [];
-        } catch (Exception $e) {
-
+        } catch (VippsAPIDuplicateOrderId $e) {
+            // IOK Prepare to check if this has an active vipps session - in which case this was a double-click. Then we can just return the existing session. IOK 2026-11-12
             // Special case the "duplicate order id" thing to ensure it doesn't happen again, and if it does, at least
             // log some more info IOK 2022-11-02
-            if (preg_match("/Duplicate Order Id/i", $e->getMessage())) {
-               do_action('woo_vipps_duplicate_order_id', $order);
-               $this->log(sprintf(__("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %1\$s Status: %2\$s User agent: %3\$s", 'woo-vipps'), $order->get_meta('_vipps_express_checkout'), $order->get_status(), $order->get_customer_user_agent()), 'error');
-               $order->update_status('cancelled', __('Cannot restart order with same order ID: Must cancel', 'woo-vipps'));
-            }
-
+            do_action('woo_vipps_duplicate_order_id', $order);
+            $this->log(sprintf(__("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %1\$s Status: %2\$s User agent: %3\$s", 'woo-vipps'), $order->get_meta('_vipps_express_checkout'), $order->get_status(), $order->get_customer_user_agent()), 'error');
+            $order->update_status('cancelled', __('Cannot restart order with same order ID: Must cancel', 'woo-vipps'));
+            $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
+            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
+            return [];
+        } catch (Exception $e) {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return [];
@@ -2411,8 +2412,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $express = $order->get_meta('_vipps_express_checkout');
             $checkout = $order->get_meta('_vipps_checkout');
             $order->set_payment_method_title('Vipps');
-            if ($express) $order->set_payment_method_title('Vipps Express Checkout');
-            if ($checkout) $order->set_payment_method_title('Vipps Checkout');
+            if ($express) $order->set_payment_method_title(Vipps::CompanyName() . ' ' . Vipps::ExpressCheckoutName());
+            if ($checkout) $order->set_payment_method_title(Vipps::CheckoutName());
             // paypal gw resets payment gateway on order save because it has this meta, so delete it before save. LP 2026-06-23
             $order->delete_meta_data('_ppcp_paypal_order_id');
             $order->save();
@@ -3939,17 +3940,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->set_payment_method($this);
             if ($ischeckout) {
                 $order->update_meta_data('_vipps_api', 'epayment');
-                $order->set_payment_method_title('Vipps Checkout');
+                $order->set_payment_method_title(Vipps::CheckoutName());
             } else {
-                $order->set_payment_method_title('Vipps Express Checkout');
+                $order->set_payment_method_title(Vipps::CompanyName() . ' ' . Vipps::ExpressCheckoutName());
             }
             // We use 'checkout' as the created_via key as per requests, but allow merchants to use their own. IOK 2022-09-15
             $created_via = apply_filters('woo_vipps_express_checkout_created_via', 'checkout', $order, $ischeckout);
             $order->set_created_via($created_via);
             $order->set_cart_hash($cart_hash);
-
-            $dummy = sprintf(__('Vipps Express Checkout', 'woo-vipps')); //  this is so gettext will find this string.
-            $dummy = sprintf(__('Vipps Checkout', 'woo-vipps')); //  this is so gettext will find this string.
 
             $order->update_meta_data('_vipps_express_checkout',1);
 
