@@ -434,7 +434,7 @@ class VippsAdminSettings
                 'order_status_section' => __('Order status', 'woo-vipps'),
                 'checkout_advanced_section' => __('Advanced settings', 'woo-vipps'),
                 'express_advanced_section' => __('Advanced settings', 'woo-vipps'),
-                'express_placement' => __('Configure placement', 'woo-vipps'),
+                'express_placement' => __('Advanced placement', 'woo-vipps'),
                 'request_error' => __('Could not complete the request. Please try again.', 'woo-vipps'),
                 'save_changes' => __('Save changes', 'woo-vipps'),
                 'upload_image' => __('Upload image', 'woo-vipps'),
