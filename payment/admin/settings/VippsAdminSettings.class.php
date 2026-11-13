@@ -434,7 +434,7 @@ class VippsAdminSettings
                 'order_status_section' => __('Order status', 'woo-vipps'),
                 'checkout_advanced_section' => __('Advanced settings', 'woo-vipps'),
                 'express_advanced_section' => __('Advanced settings', 'woo-vipps'),
-                'express_placement' => __('Configure placement', 'woo-vipps'),
+                'express_placement' => __('Advanced placement', 'woo-vipps'),
                 'request_error' => __('Could not complete the request. Please try again.', 'woo-vipps'),
                 'save_changes' => __('Save changes', 'woo-vipps'),
                 'upload_image' => __('Upload image', 'woo-vipps'),
@@ -526,8 +526,8 @@ class VippsAdminSettings
                     ],
                 ],
             'express_options_wizard' => array(
-                'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::ExpressName()),
-                'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressName()),
+                'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                'description' => sprintf(__("%s is your shortcut to faster and seamless payments. Designed for businesses and customers, it eliminates the hassle of traditional checkout processes, enabling frictionless transactions in seconds.", 'woo-vipps'), Vipps::ExpressCheckoutName()),
                 'readmore' => __('Read more', 'woo-vipps'),
             ),
             'testmode_wizard' => [

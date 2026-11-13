@@ -195,7 +195,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'title'       => __( 'Delivery method', 'woocommerce' ),
                     'type'        => 'select',
                     'class'       => 'wc-enhanced-select',
-                    'description' => sprintf(__( 'If you are using %1$s, you can select extended delivery method options here. If you do, these methods will not appear in Express Checkout or the standard WooCommerce checkout page.', 'woo-vipps' ), Vipps::CheckoutName()),
+                    'description' => sprintf(__( 'If you are using %1$s, you can select extended delivery method options here. If you do, these methods will not appear in %2$s or the standard WooCommerce checkout page.', 'woo-vipps' ), Vipps::CheckoutName(), Vipps::ExpressCheckoutName()),
                     'default'     => $this->default_delivery_method,
                     'options'     => $options,
                     'desc_tip'    => true,

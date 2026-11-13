@@ -45,3 +45,6 @@ class TemporaryVippsAPIException extends VippsAPIException {
 class VippsAPIConfigurationException extends VippsAPIException {
 }
 
+class VippsAPIDuplicateOrderId extends VippsAPIException {
+}
+
