@@ -85,9 +85,13 @@ class WC_Vipps_Recurring_Express_Checkout {
 		return true;
 	}
 
-	public function enqueue_scripts(): void {
+	public function register_scripts(): void {
 		wp_register_script( 'vipps-recurring-express', WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/js/vipps-recurring-express.js',
 			[ 'vipps-gw', 'jquery' ], filemtime( WC_VIPPS_RECURRING_PLUGIN_PATH . '/assets/js/vipps-recurring-express.js' ), true );
+	}
+
+	public function enqueue_scripts(): void {
+		$this->register_scripts();
 
 		if ( ! $this->gateway()->is_available() || ! WC()->session ) {
 			return;
