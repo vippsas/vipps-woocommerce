@@ -49,6 +49,9 @@ final class WC_Vipps_Recurring_Blocks_Support extends AbstractPaymentMethodType 
 	 * @return array
 	 */
 	public function get_payment_method_script_handles(): array {
+		// Blocks can request dependencies before wp_enqueue_scripts runs.
+		WC_Vipps_Recurring_Express_Checkout::get_instance()->register_scripts();
+
 		$version      = filemtime( WC_VIPPS_RECURRING_PLUGIN_PATH . "/assets/js/vipps-recurring-payment-method-block.js" );
 		$path         = WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/js/vipps-recurring-payment-method-block.js';
 		$handle       = 'wc-payment-method-vipps_recurring';

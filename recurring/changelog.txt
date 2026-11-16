@@ -1,6 +1,7 @@
 == Changelog ==
 
 = 2.4.1 =
+* Fix: Register the recurring Express script before WooCommerce checks Cart and Checkout block dependencies, preventing missing dependency warnings and payment method deactivation.
 * Fix: Fixed unnecessary order updates during recurring payment status checks, which could cause repeated sync jobs in Mailchimp and other integrations.
 
 = 2.4.0 =

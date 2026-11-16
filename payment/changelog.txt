@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-11-16 version 6.4.3  =
+Minor fixes in error handling and script registration
+
 = 2026-11-05 version 6.4.2  =
 Fix for 100% cpu-causing spin on the gutenberg checkout block - thanks to @svejor-gd on github for reporting
 Improved handling of migration of certain settings
