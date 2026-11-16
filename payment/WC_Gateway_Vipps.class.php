@@ -1968,20 +1968,67 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             // If the order was 'failed', it isnt any more! yet!
             if ($order->get_status() == 'failed') {
-               $order->set_status('pending', __('Setting order status to pending to start payment', 'woo-vipps'));
+                $order->set_status('pending', __('Setting order status to pending to start payment', 'woo-vipps'));
             }
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
             // Update: replaced requestid with new idempotency key, moved this into epayment_initiate_payment. LP 2026-03-13
             $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken);
+
+            $url = $content['url'];
+            $vippstamp = time();
+
+            // Ensure we only check the status by ajax of our own orders. IOK 2018-05-03
+            $sessionorders= WC()->session->get('_vipps_session_orders');
+            $sessionorders[$order_id] = 1;
+            WC()->session->set('_vipps_session_orders',$sessionorders);
+            WC()->session->set('_vipps_pending_order',$order_id); // Send information to the 'please confirm' screen IOK 2018-04-24
+
+            $order = wc_get_order($order_id);
+            if ($authtoken) {
+                $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
+            }
+            if ($limited_session) {
+                $order->update_meta_data('_vipps_limited_session',wp_hash_password($limited_session));
+            }
+            // Store the "session URL" for restarts of the order in the same session context. IOK 2022-11-02 
+            $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
+            $order->update_meta_data('_vipps_orderurl', $url);
+
+            $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
+
+            $name = $this->get_payment_method_name();
+            $order->add_order_note(sprintf(__('%1$s payment initiated','woo-vipps'), $name));
+            $order->add_order_note(sprintf(__('Awaiting %1$s payment confirmation','woo-vipps'),$name));
+
+            $order->save();
+            // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
+            try {
+                $Vipps->createCallbackSignal($order);
+            } catch (Exception $e) {
+                // Could not create a signal file, but that's ok.
+            }
+            do_action('woo_vipps_before_redirect_to_vipps',$order_id);
+
+            // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
+            return array('result'=>'success','redirect'=>$url);
+
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return [];
         } catch (VippsAPIDuplicateOrderId $e) {
-            // IOK Prepare to check if this has an active vipps session - in which case this was a double-click. Then we can just return the existing session. IOK 2026-11-12
-            // Special case the "duplicate order id" thing to ensure it doesn't happen again, and if it does, at least
-            // log some more info IOK 2022-11-02
+            // Try re-getting the order -- if timestamp is fresh and we have a session URL just return it. This would mean some kind of doubleclick that
+            // defeated the idempotency check. IOK 2026-11-13
+            $order = wc_get_order($order_id);
+            $oldurl = $order->get_meta('_vipps_orderurl');
+            $previous = intval($order->get_meta('_vipps_init_timestamp'));
+            $recent = ($previous > (time() - 10));
+            if ($recent && $oldurl) {
+                $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
+                return array('result'=>'success','redirect'=>$oldurl);
+            }
+            // If not, we have actual duplicate order ids, which is bad and should be logged especially. IOK 2026-11-13
             do_action('woo_vipps_duplicate_order_id', $order);
             $this->log(sprintf(__("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %1\$s Status: %2\$s User agent: %3\$s", 'woo-vipps'), $order->get_meta('_vipps_express_checkout'), $order->get_status(), $order->get_customer_user_agent()), 'error');
             $order->update_status('cancelled', __('Cannot restart order with same order ID: Must cancel', 'woo-vipps'));
@@ -1993,44 +2040,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return [];
         }
-
-        $url = $content['url'];
-        $vippstamp = time();
-
-        // Ensure we only check the status by ajax of our own orders. IOK 2018-05-03
-        $sessionorders= WC()->session->get('_vipps_session_orders');
-        $sessionorders[$order_id] = 1;
-        WC()->session->set('_vipps_session_orders',$sessionorders);
-        WC()->session->set('_vipps_pending_order',$order_id); // Send information to the 'please confirm' screen IOK 2018-04-24
-
-        $order = wc_get_order($order_id);
-        if ($authtoken) {
-            $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
-        }
-        if ($limited_session) {
-            $order->update_meta_data('_vipps_limited_session',wp_hash_password($limited_session));
-        }
-        // Store the "session URL" for restarts of the order in the same session context. IOK 2022-11-02 
-        $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
-        $order->update_meta_data('_vipps_orderurl', $url);
- 
-        $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
-
-        $name = $this->get_payment_method_name();
-        $order->add_order_note(sprintf(__('%1$s payment initiated','woo-vipps'), $name));
-        $order->add_order_note(sprintf(__('Awaiting %1$s payment confirmation','woo-vipps'),$name));
-
-        $order->save();
-        // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
-        try {
-            $Vipps->createCallbackSignal($order);
-        } catch (Exception $e) {
-            // Could not create a signal file, but that's ok.
-        }
-        do_action('woo_vipps_before_redirect_to_vipps',$order_id);
-
-        // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
-        return array('result'=>'success','redirect'=>$url);
     }
 
 
