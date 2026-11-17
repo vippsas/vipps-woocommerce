@@ -43,7 +43,7 @@ class Vipps {
 
     private static $instance = null;
 
-    private static $brand_merged = false;  // to be true after 2027-01-12, when Vipps and MobilePay merge to just Vipps. IOK 2026-11-17
+    public static $brand_merged = false;  // to be true after 2027-01-12, when Vipps and MobilePay merge to just Vipps. IOK 2026-11-17
 
     private $payment_method_name = ""; // set lazily
     private $country = ""; // Set lazily
@@ -2230,7 +2230,7 @@ else:
         if (!$this->payment_method_name) {
             $this->payment_method_name = $this->gateway()->get_option('payment_method_name');
         }
-        return $payment_method_name
+        return $payment_method_name;
     }
 
     public function get_country() {

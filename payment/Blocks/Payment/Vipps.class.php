@@ -24,7 +24,7 @@ final class Vipps extends AbstractPaymentMethodType {
 		$this->settings = get_option( 'woocommerce_vipps_settings', [] );
 		$this->payment_method_name = \WC_Gateway_Vipps::instance()->get_payment_method_name();
                 $this->country = \WC_Gateway_Vipps::instance()->get_option('country');
-                $this->brand_merged \Vipps::$brand_merged;
+                $this->brand_merged = \Vipps::$brand_merged;
 		$this->register_store_api_payment_processor();
 	}
 
