@@ -13,6 +13,8 @@ final class Vipps extends AbstractPaymentMethodType {
 	private static $store_api_payment_processor = null;
 	protected $name = 'vipps';
 	protected $payment_method_name = 'Vipps';
+        protected $country = '';
+        protected $brand_merged;
 	public $vippsJSConfig = [];
 
 	/**
@@ -21,6 +23,8 @@ final class Vipps extends AbstractPaymentMethodType {
 	public function initialize() {
 		$this->settings = get_option( 'woocommerce_vipps_settings', [] );
 		$this->payment_method_name = \WC_Gateway_Vipps::instance()->get_payment_method_name();
+                $this->country = \WC_Gateway_Vipps::instance()->get_option('country');
+                $this->brand_merged \Vipps::$brand_merged;
 		$this->register_store_api_payment_processor();
 	}
 
@@ -264,6 +268,7 @@ final class Vipps extends AbstractPaymentMethodType {
 	 * Expose localized labels, branding and express eligibility as vipps_data for the JS component.
 	 */
 	public function get_payment_method_data() {
+                // IVEROK FIXME: instead, dispatch on $this->country and choose blue or orange vipps logo after $this->brand_merged.
 		$logo = ( $this->payment_method_name == 'Vipps' ) ? plugins_url( '../../img/vipps-mark.svg', __FILE__ ) : plugins_url( '../../img/mobilepay-mark.png', __FILE__ );
 		$brand = ( $this->payment_method_name == 'Vipps' ) ? 'vipps' : 'mobilepay';
 		$Vipps = \Vipps::instance();
