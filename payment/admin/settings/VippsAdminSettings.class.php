@@ -413,6 +413,7 @@ class VippsAdminSettings
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', $translations);
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactOptions', []);
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactMetadata', [
+            'brand_merged' => Vipps::$brand_merged, // Whether Vipps and MobilePay brands are now merged
             'page' => $page, 'company_name' => Vipps::CompanyName(), 'payment_method' => $vipps->get_payment_method_name(), 'page_data' => $data,
             'post_url' => admin_url('admin-post.php'), 'nonce_name' => $nonce_name,
             'nonce' => wp_create_nonce($nonce_action),

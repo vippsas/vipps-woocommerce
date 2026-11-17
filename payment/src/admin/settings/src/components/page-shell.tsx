@@ -5,11 +5,17 @@ type PageShellProps = {
   companyName: string;
   subtitle: string;
   paymentMethod: string;
+  country?: string;
   children: ReactNode;
 };
 
-export function PageShell({ companyName, subtitle, paymentMethod, children }: PageShellProps) {
-  return <div className={`vipps-admin-shell ${paymentMethod}`}>
+export function PageShell({ companyName, subtitle, paymentMethod, country, children }: PageShellProps) {
+
+  const merged = getMetadata('brand_merged');
+  const blue = merged ? (country == 'DA' || country == 'FI')  : ( paymentMethod == 'MobilePay');
+  const blueClass = blue ? "Blue" : "";
+
+  return <div className={`vipps-admin-shell ${blueClass}`}>
     <header className="vipps-admin-header">
       <h1>{companyName}</h1>
       <p className="vipps-admin-subtitle">{subtitle}</p>

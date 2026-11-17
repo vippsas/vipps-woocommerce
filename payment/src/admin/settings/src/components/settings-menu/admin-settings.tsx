@@ -33,6 +33,7 @@ export function AdminSettings(): JSX.Element {
   const companyName = getMetadata('company_name') ?? 'Vipps MobilePay';
   const settingsSubtitle = gettext('settings_subtitle') ?? 'Single payments';
   const paymentMethod = getOption('payment_method_name');
+  const country=getOption('country');
   const showCurrencyWarning = !isPaymentMethodCurrencySupported(paymentMethod, currency);
   // The tabs to render on the admin settings page.
 
@@ -162,7 +163,7 @@ export function AdminSettings(): JSX.Element {
   const selectedTab = visibleTabs.includes(activeTab) ? activeTab : MAIN_TAB_ID;
 
   return (
-    <PageShell companyName={companyName} subtitle={settingsSubtitle} paymentMethod={paymentMethod}>
+    <PageShell companyName={companyName} subtitle={settingsSubtitle} paymentMethod={paymentMethod} country={country}>
       {(banner || showCurrencyWarning) && (
         <div className="vipps-admin-notices" role="status">
           {banner && <NotificationBanner variant={banner.variant} text={banner.text} />}
