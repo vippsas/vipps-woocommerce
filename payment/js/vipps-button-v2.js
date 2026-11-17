@@ -1,8 +1,8 @@
 /* Local Vipps-only variant of button.js.
- * To be enqeued after 12. january 2027.
  * Always uses Vipps wordmark, compact logo and accessible brand name.
- * Finnish is enabled. Existing brand="mobilepay" keeps the blue palette;
- * brand="vipps" keeps the orange palette. Other variants retain their styling.
+ * Finnish is enabled. Blue is forced when brand="mobilepay" or language is
+ * "da" or "fi" (language proxies for Denmark and Finland). Otherwise the
+ * original orange/default and variant styling applies.
  * No date switch: WordPress chooses which SDK file to enqueue.
  * Load only one SDK per page: both register vipps-mobilepay-button.
  */
@@ -148,17 +148,7 @@
     --vm-btn-bg-disabled: var(--vm-vipps-bg-disabled);
   }
 
-  :host([brand='mobilepay']) button {
-    --vm-btn-text: var(--vm-mp-text);
-    --vm-btn-text-disabled: var(--vm-mp-text-disabled);
-    --vm-btn-bg: var(--vm-mp-bg);
-    --vm-btn-bg-hover: var(--vm-mp-bg-hover);
-    --vm-btn-bg-active: var(--vm-mp-bg-active);
-    --vm-btn-bg-focus: var(--vm-mp-bg-focus);
-    --vm-btn-bg-loading: var(--vm-mp-bg-loading);
-    --vm-btn-bg-disabled: var(--vm-mp-bg-disabled);
-    --vm-btn-row-gap: 0.5625rem;
-  }
+
 
   :host([variant='purple']) button,
   :host([variant='dark']) button {
@@ -182,6 +172,24 @@
     --vm-btn-bg-focus: var(--vm-light-bg-focus);
     --vm-btn-bg-loading: var(--vm-light-bg-loading);
     --vm-btn-bg-disabled: var(--vm-light-bg-disabled);
+  }
+
+  /* Keep the blue market palette, including when a variant is specified. */
+  :host([brand='mobilepay' i]) button,
+  :host([brand='mobilepay' i][variant]) button,
+  :host([language='da' i]) button,
+  :host([language='da' i][variant]) button,
+  :host([language='fi' i]) button,
+  :host([language='fi' i][variant]) button {
+    --vm-btn-text: var(--vm-mp-text);
+    --vm-btn-text-disabled: var(--vm-mp-text-disabled);
+    --vm-btn-bg: var(--vm-mp-bg);
+    --vm-btn-bg-hover: var(--vm-mp-bg-hover);
+    --vm-btn-bg-active: var(--vm-mp-bg-active);
+    --vm-btn-bg-focus: var(--vm-mp-bg-focus);
+    --vm-btn-bg-loading: var(--vm-mp-bg-loading);
+    --vm-btn-bg-disabled: var(--vm-mp-bg-disabled);
+    --vm-btn-row-gap: 0.5625rem;
   }
 
   :host([branded='false']) button {

@@ -43,6 +43,8 @@ class Vipps {
 
     private static $instance = null;
 
+    private static $brand_merged = false;  // to be true after 2027-01-12, when Vipps and MobilePay merge to just Vipps. IOK 2026-11-17
+
     public $payment_method_name = "";
 
     /* Used to interact with other payment gateways if neccessary (for 'external payment gateways') IOK 2024-05-27 */
@@ -77,7 +79,13 @@ class Vipps {
    }
 
     public static function instance()  {
-        if (!static::$instance) static::$instance = new Vipps();
+        if (!static::$instance) {
+           static::$instance = new Vipps();
+           //if (date('Y-m-d') >= '2027-01-12') {
+           if (date('Y-m-d') >= '2026-01-12') {  // For testing IOK FIXME 2026-11-17
+               static::$brand_merged = true;
+           } 
+        }
         return static::$instance;
     }
 
@@ -1231,10 +1239,12 @@ EOF;
         );
 
         // Button web component downloaded from https://cdn.vippsmobilepay.com/js/button/button.js. LP 2026-06-24
+        // Changes after brand merge on 12. january. IOK 2026-11-17
+        $button_sdk_name = static::$brand_merged ? 'vipps-button-v2.js' : 'vipps-button.js'; 
         wp_register_script('vipps-button-webcomponent',
-                plugins_url('js/vipps-button.js', WC_VIPPS_PAYMENT_MAIN_FILE),
+                plugins_url('js/' . $button_sdk_name, WC_VIPPS_PAYMENT_MAIN_FILE),
                 array(),
-                filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/vipps-button.js'),
+                filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/' . $button_sdk_name),
                 [
                 'in_footer' => false
                 ]
@@ -2209,6 +2219,8 @@ else:
     }
 
     public function get_payment_method_name() {
+        // After 2027-01-12 we'll only use the name 'Vipps';
+        if (static::$brand_merged) return 'Vipps';
         return $this->gateway()->get_option('payment_method_name');
     }
 
