@@ -2203,6 +2203,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$campaign_period = null;
 
 			if ( $has_trial ) {
+				if ( ! $is_zero_amount && ! $is_subscription_switch && ! wcs_order_contains_renewal( $order )
+				     && ( $sign_up_fee || (float) WC_Subscriptions_Product::get_sign_up_fee( $product ) > 0 ) ) {
+					$campaign_price = $order->get_line_total( $subscription_item, true );
+				}
+
 				$campaign_type     = WC_Vipps_Agreement_Campaign::TYPE_PERIOD_CAMPAIGN;
 				$campaign_end_date = null;
 				$campaign_period   = ( new WC_Vipps_Agreement_Campaign_Period() )
