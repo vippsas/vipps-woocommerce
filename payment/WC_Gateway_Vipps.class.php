@@ -3663,6 +3663,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // NB: This is and must be a *synchronous call*. When done, the order will have shipping, addresses etc. IOK 2026-05-06.
         $shipping_set = $order->get_meta('_vipps_shipping_set');
         if ($ready && $is_express_or_checkout && !$shipping_set) {
+            $order->save(); // Keep the transaction meta set above, the order is reloaded after the request
             $token = $order->get_meta('_vipps_authtoken');
             $args = [
                 'body' => [
@@ -3684,6 +3685,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $response_msg = print_r($response['body'] ?? ['Missing response body'], true);
                 $this->log(sprintf(__('Process callback action failed to finalize shipping through http rest endpoint for order %1$s: %2$s', 'woo-vipps'), $order->get_id(), $response_msg), 'error');
             }
+
+            // The endpoint set the address and email in another request, so reload the order. On the old copy
+            // the billing email is empty and WooCommerce skips the order confirmation to the customer.
+            if (class_exists('Automattic\WooCommerce\Caches\OrderCache')) {
+                wc_get_container()->get('Automattic\WooCommerce\Caches\OrderCache')->remove($order_id);
+            }
+            $order = wc_get_order($order_id) ?: $order;
         }
 
         // This must happen *after* finalization for Express, as above. IOK 2026-05-06
