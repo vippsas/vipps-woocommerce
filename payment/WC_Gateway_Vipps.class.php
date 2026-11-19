@@ -210,14 +210,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->method_description = __('Offer Vipps as a payment method', 'woo-vipps');
             $this->method_title = 'Vipps';
             $this->title = 'Vipps';
-        } else {
-            $this->method_description = __('Offer Vipps or MobilePay as a payment method', 'woo-vipps');
-            $this->method_title = __('Vipps MobilePay','woo-vipps');
-            $this->title = __('Vipps MobilePay','woo-vipps');
-        }
 
-        // IOK FIXME on brand merge, move below settings then choose blue or orange vipps smily 2026-11-17
-        $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
+            // After the merger with MobilePay, the combined logo, then after the brand merge, either an orange or blue smily. IOK 2026-11-19
+            if (static::$brand_merged) {
+                $country = $this->get_country();
+                if (in_array($country, ['DK','FI'])) {
+                    $this->icon = plugins_url('img/Vipps_symbol_DK-FI_blue_RGB.png',__FILE__);
+                } else {
+                    $this->icon = plugins_url('img/vipps-smile-orange.png',__FILE__);
+                }
+            } else {
+                $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
+            }
+        } 
+
         $this->maybe_migrate_settings();
         $this->init_form_fields();
         $this->init_settings();

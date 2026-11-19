@@ -47,6 +47,7 @@ class Vipps {
 
     private $payment_method_name = ""; // set lazily
     private $country = ""; // Set lazily
+    private $company_logo = ""; // Set lazily
 
     /* Used to interact with other payment gateways if neccessary (for 'external payment gateways') IOK 2024-05-27 */
     public static $installed_gateways = [];
@@ -1037,7 +1038,7 @@ EOF;
                     if (isset($dismissed[$key])) return;
                 }
                 add_action('admin_notices', function() use ($text,$type, $key, $extraclasses) {
-                        $logo = plugins_url('img/vmp-logo.png',__FILE__);
+                        $logo = $this->get_company_logo();
                         $message = "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
                         echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
                         });
@@ -1109,7 +1110,7 @@ EOF;
 
     public function admin_head() {
         // Add some styling to the Vipps product-meta box
-        $smile= plugins_url('img/vmp-logo.png',__FILE__);
+        $smile= $this->get_company_logo();
         ?>
             <style>
             @media only screen and (max-width: 900px) {
@@ -1149,7 +1150,7 @@ EOF;
     public function admin_menu () {
         // IOK 2023-12-01 replace old Vipps smile in larger contexts
         // $logo= plugins_url('img/vipps-smile-orange.png',__FILE__);
-        $logo = plugins_url('img/vmp-logo.png', __FILE__);
+        $logo = $this->get_company_logo();
         require_once(dirname(__FILE__) . "/admin/settings/VippsAdminSettings.class.php");
         $adminSettings = VippsAdminSettings::instance();
 
@@ -2241,6 +2242,24 @@ else:
         return $this->country;
     }
 
+    // After the merger with MobilePay, the combined logo, then after the brand merge, either an orange or blue smily. IOK 2026-11-19
+    public function get_company_logo() {
+        if (!$this->company_logo) {
+           if (static::$brand_merged) {
+              $country = $this->get_country();
+              if (in_array($country, ['DK','FI'])) {
+                  $this->company_logo = plugins_url('img/Vipps_symbol_DK-FI_blue_RGB.png',__FILE__);
+              } else {
+                  $this->company_logo = plugins_url('img/vipps-smile-orange.png',__FILE__);
+              }
+           } else {
+               $this->company_logo = plugins_url('img/vmp-logo.png',__FILE__);
+           }
+        }
+        return $this->company_logo;
+    }
+      
+
     public function plugins_loaded() {
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
@@ -2374,7 +2393,7 @@ else:
         $this->vippsJSConfig['vippsajaxurl'] =  admin_url('admin-ajax.php');
         $this->vippsJSConfig['BuyNowWith'] = __('Buy now with', 'woo-vipps');
         $this->vippsJSConfig['BuyNowWithVipps'] = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->get_payment_method_name());
-        $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vmp-logo.png',__FILE__);
+        $this->vippsJSConfig['vippssmileurl'] = $this->get_company_logo();
         $this->vippsJSConfig['vippsbuynowbutton'] = $this->get_payment_method_name() . ' ' . Vipps::ExpressCheckoutName();
         $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %s %s product button', 'woo-vipps'), $this->get_payment_method_name(), Vipps::ExpressCheckoutName());
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
