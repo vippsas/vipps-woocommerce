@@ -201,7 +201,6 @@ li.wc_payment_method.payment_method_vipps img {
    float: right;
 }  
 .woocommerce-checkout #payment ul.payment_methods li.wc_payment_method.payment_method_vipps_card img {
-    height: 3.5rem;
     float:right;
 }
 
@@ -678,5 +677,8 @@ vipps-mobilepay-button[type="button"], vipps-mobilepay-button[type="button"]:act
 }
 /* The same themes use a reset that sets the label to inline-block IOK 2026-11-03 */
 #payment .payment_methods li[class*=payment_method_vipps] label {
-    display: inline;
+    display: block; 
+}
+#payment .payment_methods li[class*=payment_method_vipps_card] label {
+    display: block;
 }
