@@ -62,7 +62,16 @@ class WC_Gateway_VippsCard extends WC_Gateway_Vipps {
         $this->method_title = sprintf(__('Card payments with %1$s','woo-vipps'), Vipps::CompanyName());
         $this->title = sprintf(__('Card payments with %1$s','woo-vipps'), Vipps::CompanyName());
 
-        $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
+        if (Vipps::$brand_merged) {
+            $country = $this->get_option('country');
+            if (in_array($country, ['DK','FI'])) {
+                $this->icon = plugins_url('img/Vipps_symbol_DK-FI_blue_RGB.png',__FILE__);
+            } else {
+                $this->icon = plugins_url('img/vipps-smile-orange.png',__FILE__);
+            }
+        } else {
+            $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
+        }
 
         $this->init_form_fields();
         $this->init_settings();
