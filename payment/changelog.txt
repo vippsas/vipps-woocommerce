@@ -1,4 +1,8 @@
 == Changelog ==
+= 2026-11-23 version 6.4.4  =
+Fix possible bug in order confirmation email for express
+Fix CSS-issues
+
 = 2026-11-16 version 6.4.3  =
 Minor fixes in error handling and script registration
 
