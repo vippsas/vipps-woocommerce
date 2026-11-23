@@ -2523,6 +2523,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $transaction['paymentmethod'] = $paymentMethod;
                 $this->order_set_transaction_metadata($order, $transaction);
             }
+            $order->save();
 
         } catch (Exception $e) {
             $this->log(sprintf(__("Error getting payment details from %1\$s for order_id:",'woo-vipps'), $this->get_payment_method_name()) . $orderid . "\n" . $e->getMessage(), 'error');
@@ -2533,7 +2534,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             static::unlockOrder($lock);
         }
 
-        $order->save();
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if (($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
