@@ -2621,12 +2621,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $orderid = $order instanceof WC_Order ? $order->get_id() : absint($order);
         $lockid = '_vipps_order_lock_' . $orderid;
 
+        // Remove stale leases if possible, 
+        $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name = %s AND option_value <= %d", $lockid, time()));
+
         // wait for the lock and return it, or fail
         $start = microtime(true);
         $until = $start + max(0, $wait_for_milliseconds) / 1000;
         while (true) {
             $now = time();
-            $expire = time()+$seconds;
+            $expire = $now+$seconds;
             $stm = $wpdb->prepare("INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %d, 'no')", $lockid, $expire);
             $success = $wpdb->query($stm);
             if ($success === false) {
@@ -2641,8 +2644,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return false;
             }
             usleep(10000); // Twiddle thumbs for 10ms
-                           // Remove stale leases if possible, 
-            $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name = %s AND option_value <= %d", $lockid, time()));
         }
         return false;
     }
