@@ -1850,6 +1850,8 @@ else:
             exit();
         }
 
+
+
         print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";
         print "<p>";
         print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
@@ -1936,6 +1938,15 @@ else:
                 print __('Transaction ID','woo-vipps') . ": " . htmlspecialchars(@$td['pspReference']) . "<br>";
             }
         }
+
+        /* For debugging situations in express where user data is lost IOK 2026-11-24  */
+        $cd = $order->get_meta('_vipps_callback_data');
+        if (!empty($cd)) {
+            print "<h2>" .. __('Callback data being processed', 'woo-vipps') . "</h2>";
+            print "<pre> " .json_encode($cd, JSON_PRETTY_PRINT) . "</pre>";
+        }
+
+
         exit();
     }
 
