@@ -1942,7 +1942,7 @@ else:
         /* For debugging situations in express where user data is lost IOK 2026-11-24  */
         $cd = $order->get_meta('_vipps_callback_data');
         if (!empty($cd)) {
-            print "<h2>" .. __('Callback data being processed', 'woo-vipps') . "</h2>";
+            print "<h2>" . __('Callback data being processed', 'woo-vipps') . "</h2>";
             print "<pre> " .json_encode($cd, JSON_PRETTY_PRINT) . "</pre>";
         }
 

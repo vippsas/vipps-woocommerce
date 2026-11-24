@@ -3661,7 +3661,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // We're done, so delete the callback data. IOK 2026-04-22
             $order->delete_meta_data('_vipps_callback_data');
         } else {
-            $order->add_order_note(sprintf(__('%1$s callback processessing resulted in errors','woo-vipps'), $this->get_payment_method_name()));
+            $msg = sprintf(__('%1$s callback processessing resulted in errors','woo-vipps'), $this->get_payment_method_name());
+            $this->log($order->get_id() . ":" . $msg);
+            $order->add_order_note($msg);
         }
     }
 
@@ -3675,17 +3677,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $vippsstatus = $data['status']; // Will exist now, because of the normalization IOK 2025-08-13
         $newstatus = $this->interpret_vipps_order_status($vippsstatus);
-
-        // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
-        $transaction = array();
-        $stamp = ($data['timestamp'] ?? false) ? strtotime($data['timestamp']) : time(); 
-        $transaction['timeStamp'] = date('Y-m-d H:i:s', $stamp);
-        $transaction['amount'] = $details['amount']['value'];
-        $transaction['currency'] = $details['amount']['currency'];
-        $transaction['status'] = ($data['state'] ?? $details['state']);
-        $transaction['paymentmethod'] = $details['paymentMethod'] ?? "";
-        $this->order_set_transaction_metadata($order, $transaction);
-
+        
         // Dont do anything if order is not finalized. LP 2026-08-31
         if (!in_array($newstatus, ['authorized', 'complete', 'cancelled'])) {
             return true;
@@ -3701,10 +3693,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $is_express_or_checkout = $order->get_meta('_vipps_express_checkout');
-
         // Handle session and shipping through http, because we dont want to mess with session here in wp cron (action scheduler). LP 2026-03-30
         // NB: This is and must be a *synchronous call*. When done, the order will have shipping, addresses etc. IOK 2026-05-06.
         $shipping_set = $order->get_meta('_vipps_shipping_set');
+
         if ($ready && $is_express_or_checkout && !$shipping_set) {
             $order->save(); // Keep the transaction meta set above, the order is reloaded after the request
             $token = $order->get_meta('_vipps_authtoken');
@@ -3743,6 +3735,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $shipping_set = $order->get_meta('_vipps_shipping_set');
             return false;
         }
+
+        // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
+        $transaction = array();
+        $stamp = ($data['timestamp'] ?? false) ? strtotime($data['timestamp']) : time(); 
+        $transaction['timeStamp'] = date('Y-m-d H:i:s', $stamp);
+        $transaction['amount'] = $details['amount']['value'];
+        $transaction['currency'] = $details['amount']['currency'];
+        $transaction['status'] = ($data['state'] ?? $details['state']);
+        $transaction['paymentmethod'] = $details['paymentMethod'] ?? "";
+        $this->order_set_transaction_metadata($order, $transaction);
 
         // This must happen *after* finalization for Express, as above. IOK 2026-05-06
         // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
