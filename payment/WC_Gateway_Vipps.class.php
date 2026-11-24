@@ -2006,6 +2006,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->update_meta_data('_vipps_orderurl', $url);
 
                 $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
+                $order->delete_meta_data('_vipps_attempt_finalized'); // This is no longer true, so set it to nothing
 
                 $name = $this->get_payment_method_name();
                 $order->add_order_note(sprintf(__('%1$s payment initiated','woo-vipps'), $name));
@@ -2497,6 +2498,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->reset_erroneous_payment_method($order);
             }
 
+            // Note that this order is indeed completed; this gets reset in process_payment when required. IOK 2026-11-24
+            $order->set_meta_data('_vipps_attempt_finalized', time());
             $order->update_meta_data('_vipps_status',$newvippsstatus);
             if ($paymentdetails['captureGuaranteedUntil'] ?? 0) {
                 $order->update_meta_data('_vipps_capture_guaranteed_until', strtotime($paymentdetails['captureGuaranteedUntil']));
@@ -3613,6 +3616,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($oldstatus != 'pending') {
             // Actually, we are ok with this order, abort the callback handler. IOK 2018-05-30
             $order->delete_meta_data('_vipps_callback_data');
+            $order->save_meta_data();
             clean_post_cache($order->get_id());
             /* translators: order id */
             $this->log(sprintf(__('Callback process action aborted since %1$s is not pending.','woo-vipps'), $order_id), 'info');
@@ -3680,6 +3684,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsstatus = $data['status']; // Will exist now, because of the normalization IOK 2025-08-13
         $newstatus = $this->interpret_vipps_order_status($vippsstatus);
 
+        // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
+        $transaction = array();
+        $stamp = ($data['timestamp'] ?? false) ? strtotime($data['timestamp']) : time(); 
+        $transaction['timeStamp'] = date('Y-m-d H:i:s', $stamp);
+        $transaction['amount'] = $details['amount']['value'];
+        $transaction['currency'] = $details['amount']['currency'];
+        $transaction['status'] = ($data['state'] ?? $details['state']);
+        $transaction['paymentmethod'] = $details['paymentMethod'] ?? "";
+        $this->order_set_transaction_metadata($order, $transaction);
+
         // Dont do anything if order is not finalized. LP 2026-08-31
         if (!in_array($newstatus, ['authorized', 'complete', 'cancelled'])) {
             return true;
@@ -3741,15 +3755,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
-        // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
-        $transaction = array();
-        $stamp = ($data['timestamp'] ?? false) ? strtotime($data['timestamp']) : time(); 
-        $transaction['timeStamp'] = date('Y-m-d H:i:s', $stamp);
-        $transaction['amount'] = $details['amount']['value'];
-        $transaction['currency'] = $details['amount']['currency'];
-        $transaction['status'] = ($data['state'] ?? $details['state']);
-        $transaction['paymentmethod'] = $details['paymentMethod'] ?? "";
-        $this->order_set_transaction_metadata($order, $transaction);
+        // Note that this order is indeed done. Gets reset when calling initiate payment for failed or newly pending orders. IOK 2026-11-24
+        // NB: This is called AFTER the call to order-set-shipping. This is important as this field is used by the periodic job to avoid 
+        // checking the order status of orders that have somehow been set back to 'pending'. If the call to order set shipping fails, we'll still
+        // have the correct vipps-status, but this value should still be empty. 
+        $order->set_meta_data('_vipps_attempt_finalized', time());
 
         // This must happen *after* finalization for Express, as above. IOK 2026-05-06
         // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.

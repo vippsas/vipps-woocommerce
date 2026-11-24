@@ -3767,10 +3767,9 @@ else:
             if (!$o->get_meta('_vipps_orderid')) continue; # ditto
             if ($then > $eightminutesago) continue;
 
-            $vippstatus = $o->get_meta('_vipps_status');
-            $currentstatus = $this->gateway()->interpret_vipps_order_status($vippstatus);
-            if ($currentstatus != 'initiated') {
-                $this->log(sprintf(__("Order %2\$d is 'pending' but its %1\$s order status is '%3\$s'  - this means that the order has been erroneously set to 'pending' after completion or cancellation. Will not process further, please check status of order at %1\$s and set to correct status in WooCommerce", 'woo-vipps'), $this->get_payment_method_name(), $o->get_id(), $currentstatus), 'debug');
+            $finalized = $order->get_meta_data('_vipps_attempt_finalized');
+            if ($finalized) {
+                $this->log(sprintf(__("Order %2\$d is 'pending' but it was marked as finalized at %3\$s  - this means that the order has been erroneously set to 'pending' after completion or cancellation. Will not process further, please check status of order at %1\$s and set to correct status in WooCommerce", 'woo-vipps'), $this->get_payment_method_name(), $o->get_id(), date('Y-m-d H:i:s', $finalized)), 'debug');
                 return;
             }
             $this->check_status_of_pending_order($o, false);
