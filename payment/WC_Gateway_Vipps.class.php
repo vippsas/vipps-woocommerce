@@ -3677,7 +3677,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $vippsstatus = $data['status']; // Will exist now, because of the normalization IOK 2025-08-13
         $newstatus = $this->interpret_vipps_order_status($vippsstatus);
-        
+
         // Dont do anything if order is not finalized. LP 2026-08-31
         if (!in_array($newstatus, ['authorized', 'complete', 'cancelled'])) {
             return true;
@@ -3693,6 +3693,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $is_express_or_checkout = $order->get_meta('_vipps_express_checkout');
+
         // Handle session and shipping through http, because we dont want to mess with session here in wp cron (action scheduler). LP 2026-03-30
         // NB: This is and must be a *synchronous call*. When done, the order will have shipping, addresses etc. IOK 2026-05-06.
         $shipping_set = $order->get_meta('_vipps_shipping_set');
@@ -3733,7 +3734,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($ready && $is_express_or_checkout) {
             // Check to see if we succeded in setting shipping by the rest call above. If not, this failed, and we should re-schedule.
             $shipping_set = $order->get_meta('_vipps_shipping_set');
-            return false;
+            if (!$shipping_set) {
+                return false;
+            }
         }
 
         // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
