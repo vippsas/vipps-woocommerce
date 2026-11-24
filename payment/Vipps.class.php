@@ -1842,7 +1842,15 @@ else:
                }
             }
             $order->update_meta_data('_vipps_capture_failures', 0); // Reset this if getting full data
-            $order =   $gw->update_vipps_payment_details($order, $details);
+
+            // We'll update the local metadata from Vipps if the order is not still pending. If it is,
+            // there would be an issue because the cron job that periodically checks order status for ordres where we have no 
+            // successful callback, checks the _vipps_status to see if it should run or not -- see cron_check_for_missing_callbacks. 
+            // This should be fixed by us setting a specific _vipps_finalized on payment_complete and checking that instead in cron_check_missing_callbacks, but for now, the "get complete transaction details will only modify the order if it is processing, failed or later.
+            if ($order->get_status() != 'pending') {
+               $order =   $gw->update_vipps_payment_details($order, $details);
+            }
+
         } catch (Exception $e) {
             print "<p>"; 
             print __('Transaction details not retrievable: ','woo-vipps') . $e->getMessage();
