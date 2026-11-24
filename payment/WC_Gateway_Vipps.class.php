@@ -3661,6 +3661,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // We're done, so delete the callback data. IOK 2026-04-22
             // This is not ran if the order is completed by the periodic status checker. IOK 2026-11-24
             $order->delete_meta_data('_vipps_callback_data');
+            $order->save_meta_data();
         } else {
             $msg = sprintf(__('%1$s callback processessing resulted in errors','woo-vipps'), $this->get_payment_method_name());
             $this->log($order->get_id() . ":" . $msg);
