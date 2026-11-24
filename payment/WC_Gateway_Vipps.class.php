@@ -3613,13 +3613,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $data['paymentDetails'] = $details;
 
         // Do the actual work with a function shared with the periodic job.
-        $this->set_order_status_by_payment_details($order,$data);
+        $ok = $this->set_order_status_by_payment_details($order,$data);
 
-        /* translators: payment method name */
-        $order->add_order_note(sprintf(__('%1$s callback processed','woo-vipps'), $this->get_payment_method_name()));
-
-        // We're done, so delete the callback data. IOK 2026-04-22
-        $order->delete_meta_data('_vipps_callback_data');
+        if ($ok) {
+            /* translators: payment method name */
+            $order->add_order_note(sprintf(__('%1$s callback processed','woo-vipps'), $this->get_payment_method_name()));
+            // We're done, so delete the callback data. IOK 2026-04-22
+            $order->delete_meta_data('_vipps_callback_data');
+        } else {
+            $order->add_order_note(sprintf(__('%1$s callback processessing resulted in errors','woo-vipps'), $this->get_payment_method_name()));
+        }
     }
 
 
@@ -3645,7 +3648,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Dont do anything if order is not finalized. LP 2026-08-31
         if (!in_array($newstatus, ['authorized', 'complete', 'cancelled'])) {
-            return;
+            return true;
         }
 
         // This order is ready to set order shipping details etc for IOK 2025-09-19
@@ -3694,6 +3697,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order = wc_get_order($order_id) ?: $order;
         }
 
+        // Test is done here instead of checking error on the call above; that may time out with the order still in a valid state. IOK 2026-11-24
+        if ($ready && $is_express_or_checkout) {
+            // Check to see if we succeded in setting shipping by the rest call above. If not, this failed, and we should re-schedule.
+            $shipping_set = $order->get_meta('_vipps_shipping_set');
+            return false;
+        }
+
         // This must happen *after* finalization for Express, as above. IOK 2026-05-06
         // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
         if ($vippsstatus == 'AUTHORIZED') {
@@ -3725,6 +3735,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->save();
         clean_post_cache($order_id);
+        return true;
     }
 
     /* finalize shipping for express/checkout order. LP 2026-03-30 */
