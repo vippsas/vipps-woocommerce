@@ -1,4 +1,7 @@
 == Changelog ==
+= 2026-1x-xx version 6.4.5  =
+Improve error-handling for customers not returning to the store
+
 = 2026-11-23 version 6.4.4  =
 Fix possible bug in order confirmation email for express
 Fix CSS-issues

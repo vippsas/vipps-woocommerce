@@ -117,6 +117,8 @@ If you have questions, you can check our [FAQ](https://vippsmobilepay.com/vippsm
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 6.4.5
+Improve error-handling for customers not returning to the store
 Version 6.4.4
 Fixes in order confirmation email for express
 Fixes for CSS in classic checkout for credit cards
@@ -306,6 +308,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ===
+= 2026-1x-xx version 6.4.5  =
+Improve error-handling for customers not returning to the store
+
 = 2026-11-23 version 6.4.4  =
 Fix possible bug in order confirmation email for express
 Fix CSS-issues
