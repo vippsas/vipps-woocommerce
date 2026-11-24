@@ -1951,7 +1951,7 @@ else:
         $cd = $order->get_meta('_vipps_callback_data');
         if (!empty($cd)) {
             print "<h2>" . __('Callback data being processed', 'woo-vipps') . "</h2>";
-            print "<pre> " .json_encode($cd, JSON_PRETTY_PRINT) . "</pre>";
+            print "<pre> " . esc_html(json_encode($cd, JSON_PRETTY_PRINT)) . "</pre>";
         }
 
 
