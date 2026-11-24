@@ -1859,186 +1859,199 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         do_action('woo_vipps_before_process_payment',$order_id);
 
-        // Get current merchant serial
-        $msn = $this->get_merchant_serial();
 
-        // Do a quick check for correct setup first - this is the most critical point IOK 2018-05-11 
+        // Wait for a lock for 5 seconds, which should be enough if we are in a double-click scenario here
+        $lock = static::lockOrder($order_id, 10, 5000);
+        if (!$lock) {
+            $msg = sprintf(__('Cannot get order lock in process_payment for order %1$d after 5 seconds. Please contact the developers', 'woo-vipps'), $order_id);
+            $this->log($msg, 'error');
+            wc_add_notice( __('Unable to start payment right now. Please try again shortly.', 'woo-vipps'), 'error');
+            return [];
+        }
+        // with-lock-held starts here
         try {
-            $at = $this->api->get_access_token($msn);
-        } catch (Exception $e) {
-            $this->log(sprintf(__('Could not get access token when initiating %1$s payment for order id:','woo-vipps'), $this->get_payment_method_name()) . $order_id .":\n" . $e->getMessage(), 'error');
-            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
-            return [];
-        }
+            // Get current merchant serial
+            $msn = $this->get_merchant_serial();
 
-        // From the request, get either    [billing_phone] =>  or [vipps phone]
-        $phone = '';
-        if (isset($_POST['vippsphone'])) {
-            $phone = trim(sanitize_text_field($_POST['vippsphone']));
-        }
-        if (!$phone && isset($_POST['billing_phone'])) {
-            $phone = trim(sanitize_text_field($_POST['billing_phone']));
-        }
-
-        // This is for express checkout if we know the customers' phone.
-        // thanks to sOndre @ github for reporting , https://github.com/vippsas/vipps-woocommerce/issues/22
-        if (!$phone && WC()->customer) {
-            $phone = WC()->customer->get_billing_phone();
-        }
-
-        // No longer the case for V2 of the API
-        if (false && !$phone) {
-            wc_add_notice(sprintf(__('You need to enter your phone number to pay with %1$s','woo-vipps'), $this->get_payment_method_name()) ,'error');
-            return [];
-        }
-
-        $order = wc_get_order($order_id);
-        $content = null;
-
-        // Should be impossible, but there we go IOK 2022-04-21
-        if (! $order->has_status(['pending', 'failed'])) {
-             $this->log(sprintf(__("Trying to start order %1\$s with status %2\$s - only 'pending' and 'failed' are allowed, so this will fail", 'woo-vipps'), $order_id, $order->get_status()));
-             wc_add_notice(sprintf(__('This order cannot be paid with %1$s - please try another payment method or try again later', 'woo-vipps'), $this->get_payment_method_name()), 'error');
-             return [];
-        }
-
-        // If the Vipps order already has an init-timestamp, we should *not* call init_payment again,
-        // in the *normal* case, this is a user who have lost their vipps session, so it suffices to 
-        // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
-        // order will eventually be cancelled. Changes in the cart will result in a new order anyway.
-        // Note: we now also support restarting the payment with a new retry session if there is no stored vipps session. LP 2026-03-12
-        if ($order->get_meta('_vipps_init_timestamp')) {
-            $oldurl = $order->get_meta('_vipps_orderurl');
-
-            // Poll status at VMP here to verify session is still open. LP 2026-02-27
-            $vipps_status = 'unknown';
-            $vipps_session_open = false;
+            // Do a quick check for correct setup first - this is the most critical point IOK 2018-05-11 
             try {
-                $vipps_status = $this->get_payment_details($order)['status'] ?? 'unknown';
-                if ('unknown' !== $vipps_status) {
-                    $vipps_status = $this->interpret_vipps_order_status($vipps_status);
-                    $vipps_session_open = 'initiated' === $vipps_status;
-                }
+                $at = $this->api->get_access_token($msn);
             } catch (Exception $e) {
-                /* translators: company name, order id */
-                $this->log(sprintf(__('Retry-branch: error getting payment details from %1$s for order id %2$s:','woo-vipps'), $this->get_payment_method_name(), $order->get_id()) . "\n" . $e->getMessage(), 'error');
-            }
-
-            // Do we have an active session we can redirect to? LP 2026-02-27
-            if ($vipps_session_open && $oldurl) {
-                $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
-                return array('result'=>'success','redirect'=>$oldurl);
-            }
-            
-            // If not, then we need to create a new retry session with incrementing index. LP 2026-03-12
-            $retry_count = intval($order->get_meta('_vipps_retry_count')) + 1;
-            $enable_payment_retry = 'unknown' !== $vipps_status; // dont retry unknown statuses. LP 2026-03-18
-            if (apply_filters('woo_vipps_enable_payment_retry', $enable_payment_retry, $order, $vipps_status, $retry_count)) {
-                /* translators: number of attempts, order id. */
-                $this->log(sprintf(__('Order %2$d session could not be restored, creating a new retry session (retry #%1$d).', 'woo-vipps'), $retry_count, $order_id), 'info');
-                $order->update_meta_data('_vipps_retry_count', $retry_count);
-                $order->save_meta_data();
-            } else {
-                // If restarting is disabled, then we have to cancel the order. LP 2026-03-12
-                /* translators: order id. */
-                $this->log(sprintf(__('Order %1$d session could not be restored, and payment retry is disabled. Cancelling the order!', 'woo-vipps'), $order_id), 'info');
-                $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+                $this->log(sprintf(__('Could not get access token when initiating %1$s payment for order id:','woo-vipps'), $this->get_payment_method_name()) . $order_id .":\n" . $e->getMessage(), 'error');
+                wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
                 return [];
             }
-        }
 
-        // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
-        $this->save_session_in_order($order);
-
-        // Vipps-terminal-page return url to poll/await return
-        $returnurl= $Vipps->payment_return_url();
-        // If we are using express checkout, use this to handle the address stuff
-        // IOK 2018-11-19 also when *not* using express checkout. This allows us to pass the order-id in the return URL and use this as a password in case the sesson has been lost.
-        $authtoken = $this->generate_authtoken();
-
-        // IOK 2019-11-19 We have to do this because even though we actually store the order ID in the session, we can a) be redirected to another browser than the one with
-        // the session, and b) some plugins wipe the session for guest purchases. 
-        // So we might need to restore (enough of the) session to get to the than you page, even if the session is gone
-        // or in another castle.
-        // IOK 2023-01-23 store the limited session in the order instead and separeted it from the authtoken
-        $limited_session = $this->generate_authtoken();
-        $returnurl = add_query_arg('ls',$limited_session,$returnurl);
-        $returnurl = add_query_arg('id', $order_id, $returnurl);
-
-        try {
-            // If the order was 'failed', it isnt any more! yet!
-            if ($order->get_status() == 'failed') {
-                $order->set_status('pending', __('Setting order status to pending to start payment', 'woo-vipps'));
+            // From the request, get either    [billing_phone] =>  or [vipps phone]
+            $phone = '';
+            if (isset($_POST['vippsphone'])) {
+                $phone = trim(sanitize_text_field($_POST['vippsphone']));
             }
-            // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
-            // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
-            // Update: replaced requestid with new idempotency key, moved this into epayment_initiate_payment. LP 2026-03-13
-            $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken);
+            if (!$phone && isset($_POST['billing_phone'])) {
+                $phone = trim(sanitize_text_field($_POST['billing_phone']));
+            }
 
-            $url = $content['url'];
-            $vippstamp = time();
+            // This is for express checkout if we know the customers' phone.
+            // thanks to sOndre @ github for reporting , https://github.com/vippsas/vipps-woocommerce/issues/22
+            if (!$phone && WC()->customer) {
+                $phone = WC()->customer->get_billing_phone();
+            }
 
-            // Ensure we only check the status by ajax of our own orders. IOK 2018-05-03
-            $sessionorders= WC()->session->get('_vipps_session_orders');
-            $sessionorders[$order_id] = 1;
-            WC()->session->set('_vipps_session_orders',$sessionorders);
-            WC()->session->set('_vipps_pending_order',$order_id); // Send information to the 'please confirm' screen IOK 2018-04-24
+            // No longer the case for V2 of the API
+            if (false && !$phone) {
+                wc_add_notice(sprintf(__('You need to enter your phone number to pay with %1$s','woo-vipps'), $this->get_payment_method_name()) ,'error');
+                return [];
+            }
 
+            $content = null;
             $order = wc_get_order($order_id);
-            if ($authtoken) {
-                $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
+
+            // Should be impossible, but there we go IOK 2022-04-21
+            if (! $order->has_status(['pending', 'failed'])) {
+                $this->log(sprintf(__("Trying to start order %1\$s with status %2\$s - only 'pending' and 'failed' are allowed, so this will fail", 'woo-vipps'), $order_id, $order->get_status()));
+                wc_add_notice(sprintf(__('This order cannot be paid with %1$s - please try another payment method or try again later', 'woo-vipps'), $this->get_payment_method_name()), 'error');
+                return [];
             }
-            if ($limited_session) {
-                $order->update_meta_data('_vipps_limited_session',wp_hash_password($limited_session));
+
+            // If the Vipps order already has an init-timestamp, we should *not* call init_payment again,
+            // in the *normal* case, this is a user who have lost their vipps session, so it suffices to 
+            // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
+            // order will eventually be cancelled. Changes in the cart will result in a new order anyway.
+            // Note: we now also support restarting the payment with a new retry session if there is no stored vipps session. LP 2026-03-12
+            if ($order->get_meta('_vipps_init_timestamp')) {
+                $oldurl = $order->get_meta('_vipps_orderurl');
+
+                // Poll status at VMP here to verify session is still open. LP 2026-02-27
+                $vipps_status = 'unknown';
+                $vipps_session_open = false;
+                try {
+                    $vipps_status = $this->get_payment_details($order)['status'] ?? 'unknown';
+                    if ('unknown' !== $vipps_status) {
+                        $vipps_status = $this->interpret_vipps_order_status($vipps_status);
+                        $vipps_session_open = 'initiated' === $vipps_status;
+                    }
+                } catch (Exception $e) {
+                    /* translators: company name, order id */
+                    $this->log(sprintf(__('Retry-branch: error getting payment details from %1$s for order id %2$s:','woo-vipps'), $this->get_payment_method_name(), $order->get_id()) . "\n" . $e->getMessage(), 'error');
+                }
+
+                // Do we have an active session we can redirect to? LP 2026-02-27
+                if ($vipps_session_open && $oldurl) {
+                    $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
+                    return array('result'=>'success','redirect'=>$oldurl);
+                }
+
+                // If not, then we need to create a new retry session with incrementing index. LP 2026-03-12
+                $retry_count = intval($order->get_meta('_vipps_retry_count')) + 1;
+                $enable_payment_retry = 'unknown' !== $vipps_status; // dont retry unknown statuses. LP 2026-03-18
+                if (apply_filters('woo_vipps_enable_payment_retry', $enable_payment_retry, $order, $vipps_status, $retry_count)) {
+                    /* translators: number of attempts, order id. */
+                    $this->log(sprintf(__('Order %2$d session could not be restored, creating a new retry session (retry #%1$d).', 'woo-vipps'), $retry_count, $order_id), 'info');
+                    $order->update_meta_data('_vipps_retry_count', $retry_count);
+                    $order->save_meta_data();
+                } else {
+                    // If restarting is disabled, then we have to cancel the order. LP 2026-03-12
+                    /* translators: order id. */
+                    $this->log(sprintf(__('Order %1$d session could not be restored, and payment retry is disabled. Cancelling the order!', 'woo-vipps'), $order_id), 'info');
+                    $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+                    return [];
+                }
             }
-            // Store the "session URL" for restarts of the order in the same session context. IOK 2022-11-02 
-            $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
-            $order->update_meta_data('_vipps_orderurl', $url);
 
-            $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
+            // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
+            $this->save_session_in_order($order);
 
-            $name = $this->get_payment_method_name();
-            $order->add_order_note(sprintf(__('%1$s payment initiated','woo-vipps'), $name));
-            $order->add_order_note(sprintf(__('Awaiting %1$s payment confirmation','woo-vipps'),$name));
+            // Vipps-terminal-page return url to poll/await return
+            $returnurl= $Vipps->payment_return_url();
+            // If we are using express checkout, use this to handle the address stuff
+            // IOK 2018-11-19 also when *not* using express checkout. This allows us to pass the order-id in the return URL and use this as a password in case the sesson has been lost.
+            $authtoken = $this->generate_authtoken();
 
-            $order->save();
-            // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
+            // IOK 2019-11-19 We have to do this because even though we actually store the order ID in the session, we can a) be redirected to another browser than the one with
+            // the session, and b) some plugins wipe the session for guest purchases. 
+            // So we might need to restore (enough of the) session to get to the than you page, even if the session is gone
+            // or in another castle.
+            // IOK 2023-01-23 store the limited session in the order instead and separeted it from the authtoken
+            $limited_session = $this->generate_authtoken();
+            $returnurl = add_query_arg('ls',$limited_session,$returnurl);
+            $returnurl = add_query_arg('id', $order_id, $returnurl);
+
             try {
-                $Vipps->createCallbackSignal($order);
+                // If the order was 'failed', it isnt any more! yet!
+                if ($order->get_status() == 'failed') {
+                    $order->set_status('pending', __('Setting order status to pending to start payment', 'woo-vipps'));
+                }
+                // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
+                // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
+                // Update: replaced requestid with new idempotency key, moved this into epayment_initiate_payment. LP 2026-03-13
+                $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken);
+
+                $url = $content['url'];
+                $vippstamp = time();
+
+                // Ensure we only check the status by ajax of our own orders. IOK 2018-05-03
+                $sessionorders= WC()->session->get('_vipps_session_orders');
+                $sessionorders[$order_id] = 1;
+                WC()->session->set('_vipps_session_orders',$sessionorders);
+                WC()->session->set('_vipps_pending_order',$order_id); // Send information to the 'please confirm' screen IOK 2018-04-24
+
+                if ($authtoken) {
+                    $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
+                }
+                if ($limited_session) {
+                    $order->update_meta_data('_vipps_limited_session',wp_hash_password($limited_session));
+                }
+                // Store the "session URL" for restarts of the order in the same session context. IOK 2022-11-02 
+                $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
+                $order->update_meta_data('_vipps_orderurl', $url);
+
+                $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
+
+                $name = $this->get_payment_method_name();
+                $order->add_order_note(sprintf(__('%1$s payment initiated','woo-vipps'), $name));
+                $order->add_order_note(sprintf(__('Awaiting %1$s payment confirmation','woo-vipps'),$name));
+
+                $order->save();
+                // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
+                try {
+                    $Vipps->createCallbackSignal($order);
+                } catch (Exception $e) {
+                    // Could not create a signal file, but that's ok.
+                }
+                do_action('woo_vipps_before_redirect_to_vipps',$order_id);
+
+                // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
+                return array('result'=>'success','redirect'=>$url);
+
+            } catch (TemporaryVippsApiException $e) {
+                $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
+                wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
+                return [];
+            } catch (VippsAPIDuplicateOrderId $e) {
+                // Try re-getting the order -- if timestamp is fresh and we have a session URL just return it. This would mean some kind of doubleclick that
+                // defeated the idempotency check. IOK 2026-11-13
+                $order = wc_get_order($order_id);
+                $oldurl = $order->get_meta('_vipps_orderurl');
+                $previous = intval($order->get_meta('_vipps_init_timestamp'));
+                $recent = ($previous > (time() - 10));
+                if ($recent && $oldurl) {
+                    $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
+                    return array('result'=>'success','redirect'=>$oldurl);
+                }
+                // If not, we have actual duplicate order ids, which is bad and should be logged especially. IOK 2026-11-13
+                do_action('woo_vipps_duplicate_order_id', $order);
+                $this->log(sprintf(__("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %1\$s Status: %2\$s User agent: %3\$s", 'woo-vipps'), $order->get_meta('_vipps_express_checkout'), $order->get_status(), $order->get_customer_user_agent()), 'error');
+                $order->update_status('cancelled', __('Cannot restart order with same order ID: Must cancel', 'woo-vipps'));
+                $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
+                wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
+                return [];
             } catch (Exception $e) {
-                // Could not create a signal file, but that's ok.
+                $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
+                wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
+                return [];
             }
-            do_action('woo_vipps_before_redirect_to_vipps',$order_id);
-
-            // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
-            return array('result'=>'success','redirect'=>$url);
-
-        } catch (TemporaryVippsApiException $e) {
-            $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
-            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
-            return [];
-        } catch (VippsAPIDuplicateOrderId $e) {
-            // Try re-getting the order -- if timestamp is fresh and we have a session URL just return it. This would mean some kind of doubleclick that
-            // defeated the idempotency check. IOK 2026-11-13
-            $order = wc_get_order($order_id);
-            $oldurl = $order->get_meta('_vipps_orderurl');
-            $previous = intval($order->get_meta('_vipps_init_timestamp'));
-            $recent = ($previous > (time() - 10));
-            if ($recent && $oldurl) {
-                $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
-                return array('result'=>'success','redirect'=>$oldurl);
-            }
-            // If not, we have actual duplicate order ids, which is bad and should be logged especially. IOK 2026-11-13
-            do_action('woo_vipps_duplicate_order_id', $order);
-            $this->log(sprintf(__("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %1\$s Status: %2\$s User agent: %3\$s", 'woo-vipps'), $order->get_meta('_vipps_express_checkout'), $order->get_status(), $order->get_customer_user_agent()), 'error');
-            $order->update_status('cancelled', __('Cannot restart order with same order ID: Must cancel', 'woo-vipps'));
-            $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
-            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
-            return [];
-        } catch (Exception $e) {
-            $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
-            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
-            return [];
+        } finally {
+            static::unlockOrder($lock);
         }
     }
 
@@ -2454,7 +2467,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         /* Now read the payment details and update the order with the relevant values, finding the new Vipps status IOK 2021-01-20 */
         $paymentdetails = array();
 
-        if (!static::lockOrder($order)) {
+        $lock = static::lockOrder($order);
+        if (!$lock) {
            $msg = sprintf(__("Order %d is locked when checking order status at %s - the return url or template_redirect may be called repeatedly. This is likely an error", 'woo-vipps'), $orderid, Vipps::CompanyName());
            $this->log($msg);
            return $oldstatus;
@@ -2509,13 +2523,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $transaction['paymentmethod'] = $paymentMethod;
                 $this->order_set_transaction_metadata($order, $transaction);
             }
+            $order->save();
 
         } catch (Exception $e) {
             $this->log(sprintf(__("Error getting payment details from %1\$s for order_id:",'woo-vipps'), $this->get_payment_method_name()) . $orderid . "\n" . $e->getMessage(), 'error');
             clean_post_cache($order->get_id());
+           
             return $oldstatus;
+        } finally {
+            static::unlockOrder($lock);
         }
-        $order->save();
+
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if (($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
@@ -2587,41 +2605,63 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $newstatus;
     }
 
-    // Unfortunately, we cannot do any form of portable locking. The new setup should eliminate most race conditions, but in poll_and_check_order_status we do
-    // side-effect the order object, so we want to make as sure as possible that we don't poll twice at the same time (two tabs open, or something). This actually
-    // happened with the new SDK system, because the iframe'd shopping widget still redirected to the store before being closed - before the user in the parent window
-    // was redirected, sometimes. This caused duplicate emails etc. We will now consider this to be a bug so that we'll log it as such . If it should trigger, the customer
-    // will be sent to a waiting page, which should resolve the issue pretty quick. IOK 2026-10-13
-    // Returns true if lock succeeds, or false.
-    // The "lock" is actually a lease, implemented with a 30 second transient. Of course, if two polls arrive *exactly* at the same time, this will still fail.
-    // This should mostly be called in poll_and_check_order_status.
-    public static function lockOrder($order) {
+
+    // Reworked completely because somehow the "pay for order"-endpoint can very rarely do two process_payment calls, so we need a
+    // lock that allows for waiting (via spins). We implement this portably using the wp_options table instead of the mysql locking mechanism -
+    // that one is global and not per database, so this seems safer - even though we have to handle our own timeouts. IOK 2026-11-20
+    public static function lockOrder($order, $seconds=30, $wait_for_milliseconds=0) {
+        $seconds = max(1, (int) ceil($seconds));
+        // First, allow users to override using whatever lock they have available. IOK 2026-11-20
         if (has_filter('woo_vipps_lock_order')) {
-            $ok = apply_filters('woo_vipps_lock_order', $order);
-            if (!$ok) return false;
-        } else {
-            $orderid = $order->get_id();
-            if(get_transient('order_lock_'.$orderid)) {
+            // Should return a lock object that woo_vipps_unlock_order can handle IOK 2026-11-20
+            return apply_filters('woo_vipps_lock_order', $order, $seconds, $wait_for_milliseconds);
+        }
+
+        global $wpdb; 
+        $orderid = $order instanceof WC_Order ? $order->get_id() : absint($order);
+        $lockid = '_vipps_order_lock_' . $orderid;
+
+        // Remove stale leases if possible, 
+        $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name = %s AND option_value <= %d", $lockid, time()));
+
+        // wait for the lock and return it, or fail
+        $start = microtime(true);
+        $until = $start + max(0, $wait_for_milliseconds) / 1000;
+        while (true) {
+            $now = time();
+            $expire = $now+$seconds;
+            $stm = $wpdb->prepare("INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %d, 'no')", $lockid, $expire);
+            $success = $wpdb->query($stm);
+            if ($success === false) {
+                return false; // Database error
+            }
+            if (1 === $success) { // One row changed
+                $lock =[$wpdb->insert_id, $expire]; 
+                add_action('shutdown', function () use ($lock) { WC_Gateway_Vipps::unlockOrder($lock); });
+                return $lock; 
+            }
+            if (!$wait_for_milliseconds || microtime(true) > $until) { // Time's up
                 return false;
             }
-            $lockKey = uniqid();
-            set_transient('order_lock_' . $orderid, $lockKey, 30);
+            usleep(10000); // Twiddle thumbs for 10ms
         }
-        add_action('shutdown', function () use ($order) { WC_Gateway_Vipps::unlockOrder($order); });
-        return true;
+        return false;
     }
     public static function isLocked ($order) {
-        $orderid = $order->get_id();
-        $locked = get_transient('order_lock_'.$orderid);
+        global $wpdb;
+        $orderid = $order instanceof WC_Order ? $order->get_id() : absint($order);
+        $lockid = '_vipps_order_lock_' . $orderid;
+        $dblock =  $wpdb->get_row($wpdb->prepare("SELECT option_id, option_value FROM {$wpdb->options} WHERE option_name = %s AND option_value > %d", $lockid, time()), ARRAY_N);
+        $locked = $dblock ? [(int) $dblock[0], (int) $dblock[1]] : false;
         return apply_filters('woo_vipps_order_locked', $locked, $order);
     }
-    public static function unlockOrder($order) {
+    public static function unlockOrder($lock) {
         if (has_action('woo_vipps_unlock_order')) {
-            do_action('woo_vipps_unlock_order', $order); 
-        } else {
-            $orderid = $order->get_id();
-            delete_transient('order_lock_'.$orderid);
+            return do_action('woo_vipps_unlock_order', $lock); 
         }
+        global $wpdb;
+        list($lockid, $expire) = $lock;
+        $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_id=%d", $lockid));
     }
 
     // IOK 2020-01-20 Previously was just a debugging tool, then was used to update postmeta values. Now is used as the main source of info
