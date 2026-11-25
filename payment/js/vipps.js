@@ -144,7 +144,7 @@
         actionCancel.textContent = "×";
 
         actionConfirm.id = "action-required-confirm";
-        actionConfirm.setAttribute("brand", "vipps");
+        actionConfirm.setAttribute("brand", window.VippsConfig?.paymentMethodSlug ?? 'vipps');
         actionConfirm.setAttribute("language", window.VippsConfig?.webcomponentLanguage);
         actionConfirm.setAttribute("verb", "continue");
         actionConfirm.setAttribute("variant", "primary");
