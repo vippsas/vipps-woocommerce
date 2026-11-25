@@ -2516,7 +2516,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
 
                 // Note that this order is indeed completed; this gets reset in process_payment when required. IOK 2026-11-24
-                $order->set_meta_data('_vipps_attempt_finalized', time());
+                $order->update_meta_data('_vipps_attempt_finalized', time());
                 $order->update_meta_data('_vipps_status',$newvippsstatus);
                 if ($paymentdetails['captureGuaranteedUntil'] ?? 0) {
                     $order->update_meta_data('_vipps_capture_guaranteed_until', strtotime($paymentdetails['captureGuaranteedUntil']));
@@ -3776,7 +3776,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // NB: This is called AFTER the call to order-set-shipping. This is important as this field is used by the periodic job to avoid 
         // checking the order status of orders that have somehow been set back to 'pending'. If the call to order set shipping fails, we'll still
         // have the correct vipps-status, but this value should still be empty. 
-        $order->set_meta_data('_vipps_attempt_finalized', time());
+        $order->update_meta_data('_vipps_attempt_finalized', time());
 
         // This must happen *after* finalization for Express, as above. IOK 2026-05-06
         // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
