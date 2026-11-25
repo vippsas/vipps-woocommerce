@@ -677,8 +677,9 @@ vipps-mobilepay-button[type="button"], vipps-mobilepay-button[type="button"]:act
 }
 /* The same themes use a reset that sets the label to inline-block IOK 2026-11-03 */
 #payment .payment_methods li[class*=payment_method_vipps] label {
-    display: block; 
+    display: inline; 
 }
-#payment .payment_methods li[class*=payment_method_vipps_card] label {
+/* Storefront needs block though! */
+body.wp-theme-storefront #payment .payment_methods li[class*=payment_method_vipps] label {
     display: block;
 }
