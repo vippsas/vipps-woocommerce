@@ -2475,138 +2475,139 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            return $oldstatus;
         }
 
-        try {
-            $paymentdetails = $this->get_payment_details($order);
-            $newvippsstatus = $paymentdetails['status'];
-            $vippsstatus = $this->interpret_vipps_order_status($newvippsstatus);
+        try { // unlock order at end
+            try {
+                $paymentdetails = $this->get_payment_details($order);
+                $newvippsstatus = $paymentdetails['status'];
+                $vippsstatus = $this->interpret_vipps_order_status($newvippsstatus);
 
-            $ready = false; // True if money is authorized or complete
-            if (in_array($vippsstatus, ['authorized', 'complete'])) {
-                $ready = true;
-            }
+                $ready = false; // True if money is authorized or complete
+                if (in_array($vippsstatus, ['authorized', 'complete'])) {
+                    $ready = true;
+                }
 
-            // No change == nothing to do. Ensure we don't modify the order at this point. IOK 2025-10-24
-            if ($vippsstatus == $oldvippsstatus) {
+                // No change == nothing to do. Ensure we don't modify the order at this point. IOK 2025-10-24
+                if ($vippsstatus == $oldvippsstatus) {
+                    return $oldstatus;
+                }
+                // Something changed, so we are now going to sideeffect the order. IOK 2025-10-15
+                $this->log(sprintf(__("%1\$s poll: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
+
+                // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
+                // IOK 2024-01-09 ensure this is called only when order is complete/authorized
+                if ($ready) {
+                    $this->reset_erroneous_payment_method($order);
+                }
+
+                // Note that this order is indeed completed; this gets reset in process_payment when required. IOK 2026-11-24
+                $order->set_meta_data('_vipps_attempt_finalized', time());
+                $order->update_meta_data('_vipps_status',$newvippsstatus);
+                if ($paymentdetails['captureGuaranteedUntil'] ?? 0) {
+                    $order->update_meta_data('_vipps_capture_guaranteed_until', strtotime($paymentdetails['captureGuaranteedUntil']));
+                }
+
+                // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
+                if (!empty($paymentdetails)) {
+                    // checkout has a string, epayment has an array with upper case "type" and apparently, cardBin IOK 2025-08-12
+                    $paymentMethod = $paymentdetails['paymentMethod'] ?? "epayment";
+                    // After normalization, all APIs will have data here.
+                    $details = $paymentdetails['paymentDetails'];
+                    if (isset($details['paymentMethod'])) {
+                        $paymentMethod = $details['paymentMethod'];
+                    }
+                    if (!is_string($paymentMethod)) {
+                        // should be WALLET
+                        $paymentMethod = $paymentMethod['type'] ?? "epayment";
+                    }
+                    $transaction = array();
+                    $transaction['timeStamp'] = date('Y-m-d H:i:s', time());
+                    $transaction['amount'] = $details['amount']['value'];
+                    $transaction['currency'] = $details['amount']['currency'];
+                    $transaction['status'] = $details['state'];
+                    $transaction['paymentmethod'] = $paymentMethod;
+                    $this->order_set_transaction_metadata($order, $transaction);
+                }
+                $order->save();
+
+            } catch (Exception $e) {
+                $this->log(sprintf(__("Error getting payment details from %1\$s for order_id:",'woo-vipps'), $this->get_payment_method_name()) . $orderid . "\n" . $e->getMessage(), 'error');
+                clean_post_cache($order->get_id());
+               
                 return $oldstatus;
             }
-            // Something changed, so we are now going to sideeffect the order. IOK 2025-10-15
-            $this->log(sprintf(__("%1\$s poll: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
 
-            // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
-            // IOK 2024-01-09 ensure this is called only when order is complete/authorized
-            if ($ready) {
-                $this->reset_erroneous_payment_method($order);
-            }
+            // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
+            if (($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
 
-            // Note that this order is indeed completed; this gets reset in process_payment when required. IOK 2026-11-24
-            $order->set_meta_data('_vipps_attempt_finalized', time());
-            $order->update_meta_data('_vipps_status',$newvippsstatus);
-            if ($paymentdetails['captureGuaranteedUntil'] ?? 0) {
-                $order->update_meta_data('_vipps_capture_guaranteed_until', strtotime($paymentdetails['captureGuaranteedUntil']));
-            }
+                do_action('woo_vipps_express_checkout_get_order_status', $paymentdetails);
+                $address_set = $order->get_meta('_vipps_shipping_set');
 
-            // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
-            if (!empty($paymentdetails)) {
-                // checkout has a string, epayment has an array with upper case "type" and apparently, cardBin IOK 2025-08-12
-                $paymentMethod = $paymentdetails['paymentMethod'] ?? "epayment";
-                // After normalization, all APIs will have data here.
-                $details = $paymentdetails['paymentDetails'];
-                if (isset($details['paymentMethod'])) {
-                    $paymentMethod = $details['paymentMethod'];
+                if ($address_set) {
+                    // Callback has handled the situation, do nothing
+                } elseif ($paymentdetails['shippingDetails'] ?? "") {
+                    // We need to set shipping details here
+                    $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
+                    $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails);
+                } else {
+                    //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
+                    //  But first check to see if it has customer info! 
+                    // Cancel any orders where the Checkout session is dead and there is no address info available
+                    if (!$order->has_shipping_address() && !$order->has_billing_address()) {
+                        $this->log(sprintf(__("No shipping details from %1\$s for express checkout for order id:",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid, 'error');
+                        $sessiontimeout = time() - (60*90);
+                        $then = intval($order->get_meta('_vipps_init_timestamp'));
+                        if ($then < $sessiontimeout)  {
+                            $this->log(sprintf(__("Order %2\$d has no address info and any %1\$s session is dead - have to cancel.", 'woo-vipps'), Vipps::CheckoutName(), $order->get_id()));
+                            $order->update_status('cancelled', sprintf(__('Could not get address info for order from %1$s', 'woo-vipps'), Vipps::CompanyName()));
+                            $order->save();
+                        } else {
+                            // NOOP - the vipps checkout session can still be active, so we need to let it be
+                            $this->log(sprintf(__("No address information for order %2\$d, but there still might be an active %1\$s session for it, so do not cancel it.", 'woo-vipps'), Vipps::CheckoutName(), $order->get_id()));
+                        }
+                    }
+                    clean_post_cache($order->get_id());
+                    return $oldstatus; 
                 }
-                if (!is_string($paymentMethod)) {
-                    // should be WALLET
-                    $paymentMethod = $paymentMethod['type'] ?? "epayment";
-                }
-                $transaction = array();
-                $transaction['timeStamp'] = date('Y-m-d H:i:s', time());
-                $transaction['amount'] = $details['amount']['value'];
-                $transaction['currency'] = $details['amount']['currency'];
-                $transaction['status'] = $details['state'];
-                $transaction['paymentmethod'] = $paymentMethod;
-                $this->order_set_transaction_metadata($order, $transaction);
             }
+
+            # Since the order is pending, and the vipps status has changed, switch to the correct vipps status in woo too IOK 2025-10-24
+            switch ($vippsstatus) {
+                case 'authorized':
+                    $this->payment_complete($order);
+                    break;
+                case 'complete':
+                    $msg = sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name());
+                    $msg = $msg . __(" - order does not need processing", 'woo-vipps');
+                    $order->add_order_note($msg);
+                    $order = $this->update_vipps_payment_details($order, $paymentdetails); 
+                    $order->payment_complete();
+                    break;
+                case 'cancelled':
+                    $order_is_retryable = $allow_retry && Vipps::order_is_vipps_retryable($order->get_id());
+                    $status_on_fail = $this->get_option('status_on_fail');
+                    $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+                    if ($cancel_on_fail || !$order_is_retryable) {
+                        $status_on_fail = 'cancelled';
+                    }
+                    if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
+                        /* translators: order status name. Cancelled is woocommerce status name */
+                        $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
+                        $status_on_fail = 'cancelled';
+                    }
+
+                    /* translators: company name */
+                    $order->update_status($status_on_fail, sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
+                    break;
+            }
+
             $order->save();
-
-        } catch (Exception $e) {
-            $this->log(sprintf(__("Error getting payment details from %1\$s for order_id:",'woo-vipps'), $this->get_payment_method_name()) . $orderid . "\n" . $e->getMessage(), 'error');
             clean_post_cache($order->get_id());
-           
-            return $oldstatus;
+            $newstatus = $order->get_status();
+            return $newstatus;
         } finally {
             static::unlockOrder($lock);
         }
-
-
-        // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
-        if (($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
-
-            do_action('woo_vipps_express_checkout_get_order_status', $paymentdetails);
-            $address_set = $order->get_meta('_vipps_shipping_set');
-
-            if ($address_set) {
-                // Callback has handled the situation, do nothing
-            } elseif ($paymentdetails['shippingDetails'] ?? "") {
-                // We need to set shipping details here
-                $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
-                $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails);
-            } else {
-                //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
-                //  But first check to see if it has customer info! 
-                // Cancel any orders where the Checkout session is dead and there is no address info available
-                if (!$order->has_shipping_address() && !$order->has_billing_address()) {
-                    $this->log(sprintf(__("No shipping details from %1\$s for express checkout for order id:",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid, 'error');
-                    $sessiontimeout = time() - (60*90);
-                    $then = intval($order->get_meta('_vipps_init_timestamp'));
-                    if ($then < $sessiontimeout)  {
-                        $this->log(sprintf(__("Order %2\$d has no address info and any %1\$s session is dead - have to cancel.", 'woo-vipps'), Vipps::CheckoutName(), $order->get_id()));
-                        $order->update_status('cancelled', sprintf(__('Could not get address info for order from %1$s', 'woo-vipps'), Vipps::CompanyName()));
-                        $order->save();
-                    } else {
-                        // NOOP - the vipps checkout session can still be active, so we need to let it be
-                        $this->log(sprintf(__("No address information for order %2\$d, but there still might be an active %1\$s session for it, so do not cancel it.", 'woo-vipps'), Vipps::CheckoutName(), $order->get_id()));
-                    }
-                }
-                clean_post_cache($order->get_id());
-                return $oldstatus; 
-            }
-        }
-
-        # Since the order is pending, and the vipps status has changed, switch to the correct vipps status in woo too IOK 2025-10-24
-        switch ($vippsstatus) {
-            case 'authorized':
-                $this->payment_complete($order);
-                break;
-            case 'complete':
-                $msg = sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name());
-                $msg = $msg . __(" - order does not need processing", 'woo-vipps');
-                $order->add_order_note($msg);
-                $order = $this->update_vipps_payment_details($order, $paymentdetails); 
-                $order->payment_complete();
-                break;
-            case 'cancelled':
-                $order_is_retryable = $allow_retry && Vipps::order_is_vipps_retryable($order->get_id());
-                $status_on_fail = $this->get_option('status_on_fail');
-                $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
-                if ($cancel_on_fail || !$order_is_retryable) {
-                    $status_on_fail = 'cancelled';
-                }
-                if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
-                    /* translators: order status name. Cancelled is woocommerce status name */
-                    $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
-                    $status_on_fail = 'cancelled';
-                }
-
-                /* translators: company name */
-                $order->update_status($status_on_fail, sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
-                break;
-        }
-
-        $order->save();
-        clean_post_cache($order->get_id());
-        $newstatus = $order->get_status();
-        return $newstatus;
-    }
+   }
 
 
     // Reworked completely because somehow the "pay for order"-endpoint can very rarely do two process_payment calls, so we need a
