@@ -1,6 +1,9 @@
 == Changelog ==
-= 2026-1x-xx version 6.4.5  =
+= 2026-11-25 version 6.4.5  =
 Improve error-handling for customers not returning to the store
+Lock orders to eliminate race conditions on pay-for-orders
+Fix some issues with english text on finnish stores
+Improve css for some buttons
 
 = 2026-11-23 version 6.4.4  =
 Fix possible bug in order confirmation email for express
