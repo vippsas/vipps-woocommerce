@@ -1859,13 +1859,23 @@ else:
                }
             }
             $order->update_meta_data('_vipps_capture_failures', 0); // Reset this if getting full data
-            $order =   $gw->update_vipps_payment_details($order, $details);
+
+            // We'll update the local metadata from Vipps if the order is not still pending. If it is,
+            // there would be an issue because the cron job that periodically checks order status for ordres where we have no 
+            // successful callback, checks the _vipps_status to see if it should run or not -- see cron_check_for_missing_callbacks. 
+            // This should be fixed by us setting a specific _vipps_finalized on payment_complete and checking that instead in cron_check_missing_callbacks, but for now, the "get complete transaction details will only modify the order if it is processing, failed or later.
+            if ($order->get_status() != 'pending') {
+               $order =   $gw->update_vipps_payment_details($order, $details);
+            }
+
         } catch (Exception $e) {
             print "<p>"; 
             print __('Transaction details not retrievable: ','woo-vipps') . $e->getMessage();
             print "</p>";
             exit();
         }
+
+
 
         print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";
         print "<p>";
@@ -1953,6 +1963,15 @@ else:
                 print __('Transaction ID','woo-vipps') . ": " . htmlspecialchars(@$td['pspReference']) . "<br>";
             }
         }
+
+        /* For debugging situations in express where user data is lost IOK 2026-11-24  */
+        $cd = $order->get_meta('_vipps_callback_data');
+        if (!empty($cd)) {
+            print "<h2>" . __('Callback data being processed', 'woo-vipps') . "</h2>";
+            print "<pre> " . esc_html(json_encode($cd, JSON_PRETTY_PRINT)) . "</pre>";
+        }
+
+
         exit();
     }
 
@@ -3796,10 +3815,9 @@ else:
             if (!$o->get_meta('_vipps_orderid')) continue; # ditto
             if ($then > $eightminutesago) continue;
 
-            $vippstatus = $o->get_meta('_vipps_status');
-            $currentstatus = $this->gateway()->interpret_vipps_order_status($vippstatus);
-            if ($currentstatus != 'initiated') {
-                $this->log(sprintf(__("Order %2\$d is 'pending' but its %1\$s order status is '%3\$s'  - this means that the order has been erroneously set to 'pending' after completion or cancellation. Will not process further, please check status of order at %1\$s and set to correct status in WooCommerce", 'woo-vipps'), $this->get_payment_method_name(), $o->get_id(), $currentstatus), 'debug');
+            $finalized = $o->get_meta('_vipps_attempt_finalized');
+            if ($finalized) {
+                $this->log(sprintf(__("Order %2\$d is 'pending' but it was marked as finalized at %3\$s  - this means that the order has been erroneously set to 'pending' after completion or cancellation. Will not process further, please check status of order at %1\$s and set to correct status in WooCommerce", 'woo-vipps'), $this->get_payment_method_name(), $o->get_id(), date('Y-m-d H:i:s', $finalized)), 'debug');
                 return;
             }
             $this->check_status_of_pending_order($o, false);

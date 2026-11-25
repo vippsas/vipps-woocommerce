@@ -209,7 +209,7 @@ a.button.vipps-buy-now:focus {
 }
 .wc-block-grid__products .wc-block-grid__product .wp-block-button__link.vipps-buy-now, .woocommerce ul.products li.product .button.vipps-buy-now, a.button.vipps-buy-now {
  color: #fff;
- background-color:transparent;
+ background-color:transparent !important;
 }
 .wc-block-grid__products .wc-block-grid__product .wp-block-button__link.vipps-buy-now:hover, .woocommerce ul.products li.product .button.vipps-buy-now:hover, a.button.vipps-buy-now:hover {
     opacity: 0.9;
@@ -672,8 +672,8 @@ div.vipps-qr-purchase a.single-product.vipps-buy-now {
 
 /* Defeat certain themes adding css to type=button IOK 2026-11-03 */
 vipps-mobilepay-button[type="button"], vipps-mobilepay-button[type="button"]:active, vipps-mobilepay-button[type="button"]:hover {
-    background:transparent;
-    border:0;
+    background-color:transparent !important;
+    border:0 !important;
 }
 /* The same themes use a reset that sets the label to inline-block IOK 2026-11-03 */
 #payment .payment_methods li[class*=payment_method_vipps] label {

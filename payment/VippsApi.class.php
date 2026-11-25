@@ -760,7 +760,7 @@ class VippsApi {
                 }
         }
 
-        $this->log("Initiating Vipps MobilePay epayment session for $vippsorderid", 'debug');
+        $this->log(sprintf("Initiating %s epayment session for $vippsorderid" . ($express ? ' (express)' : ''), Vipps::CompanyName()), 'debug');
         $data = apply_filters('woo_vipps_epayment_initiate_payment_data', $data);
 
         // Now for QR, this value will be an URL to the QR code, or the target URL. If the flow is PUSH_MESSAGE, nothing will be returned.
