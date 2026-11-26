@@ -268,10 +268,20 @@ final class Vipps extends AbstractPaymentMethodType {
 	 * Expose localized labels, branding and express eligibility as vipps_data for the JS component.
 	 */
 	public function get_payment_method_data() {
-                // IVEROK FIXME: instead, dispatch on $this->country and choose blue or orange vipps logo after $this->brand_merged.
-		$logo = ( $this->payment_method_name == 'Vipps' ) ? plugins_url( '../../img/vipps-mark.svg', __FILE__ ) : plugins_url( '../../img/mobilepay-mark.png', __FILE__ );
-		$brand = ( $this->payment_method_name == 'Vipps' ) ? 'vipps' : 'mobilepay';
 		$Vipps = \Vipps::instance();
+                $brand = "";
+                $logo = "";
+                if ($this->brand_merged) {
+                    if (in_array($this->country, ['DK', 'FI'])) {
+                        $logo = plugins_url( '../../img/Vipps_Pay_Mark_Small_blue.svg', __FILE__);
+                    } else {
+                        $logo = plugins_url( '../../img/vipps-mark.svg', __FILE__ );
+                    }
+                    $brand = 'vipps';
+                } else {
+                    $brand = ( $this->payment_method_name == 'Vipps' ) ? 'vipps' : 'mobilepay';
+                    $logo = ( $this->payment_method_name == 'Vipps' ) ? plugins_url( '../../img/vipps-mark.svg', __FILE__ ) : plugins_url( '../../img/mobilepay-mark.png', __FILE__ );
+                }
 		$language = $Vipps->resolve_html_button_language($Vipps->get_html_button_attrs_for_context()['language']);
 		$this->vippsJSConfig['webcomponentLanguage'] = $language;
 
