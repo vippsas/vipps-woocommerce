@@ -644,6 +644,11 @@ class Vipps {
             $brand = $this->get_payment_method_name();
             if ($brand) $attr .= " brand='". strtolower($brand) . "' ";
 
+            // Add country to handle brand merge IOK 2026-11-26
+            if (static::$brand_merged) {
+                $country = $this->get_country();
+                $attr .= " country='" . esc_attr($country) . "' ";
+            }
 
             $badge = "<vipps-mobilepay-badge $attr></vipps-mobilepay-badge>";
 
@@ -665,6 +670,7 @@ class Vipps {
 
         $attributes = [];
         $attributes['brand'] = strtolower($this->get_payment_method_name());
+        if (static::$brand_merged) $attributes['country'] = strtolower($this->get_country();
         if ($variant) $attributes['variant'] = $variant;
         if ($language) $attributes['language'] = $language;
         if ($id) $attributes['id'] = $id;
@@ -674,32 +680,6 @@ class Vipps {
         foreach($attributes as $key=>$value) $badgeatts .= " $key=\"" . esc_attr($value) . '"';
 
         return "<vipps-mobilepay-badge $badgeatts></vipps-mobilepay-badge>";
-    }
-
-    // legacy vipps_badge shortcode, the new one is vipps_mobilepay_badge_shortcode. LP 19.11.2024
-    // Diff: this one doesn't support brand (JUST VIPPS). LP 2026-08-11
-    public function vipps_badge_shortcode($atts) {
-        $args = shortcode_atts( array('id'=>'', 'class'=>'','variant' => '','language'=>''), $atts );
-        
-        $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple']) ? $args['variant'] : "";
-        $language = in_array($args['language'], ['en', 'no', 'sv', 'da', 'dk', 'fi']) ? $args['language'] : $this->get_customer_language();
-        if ('se' === $language) $language = 'sv';
-        // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
-        if ('dk' === $language) $language = 'da';
-
-        $id = sanitize_title($args['id']);
-        $class = sanitize_text_field($args['class']);
-
-        $attributes = [];
-        if ($variant) $attributes['variant'] = $variant;
-        if ($language) $attributes['language'] = $language;
-        if ($id) $attributes['id'] = $id;
-        if ($class) $attributes['class'] = $class;
-
-        $badgeatts = "";
-        foreach($attributes as $key=>$value) $badgeatts .= " $key=\"" . esc_attr($value) . '"';
-
-        return "<vipps-badge $badgeatts></vipps-badge>";
     }
 
     public function get_html_button_default_attrs() {
@@ -828,7 +808,7 @@ EOF;
         $logspage = admin_url('/admin.php?page=wc-status&tab=logs');
         $forumpage = 'https://wordpress.org/support/plugin/woo-vipps/';
 
-        $portalurl = 'https://portal.vippsmobilepay.com';
+        $portalurl = (static::$brand_merged) ? 'https://portal.vipps.no' : 'https://portal.vippsmobilepay.com';
 
         $installed = get_plugins();
 
@@ -1354,7 +1334,8 @@ EOF;
         // New vipps-mobilepay-badge shortcode. LP 19.11.2024
         add_shortcode('vipps-mobilepay-badge', array($this, 'vipps_mobilepay_badge_shortcode'));
         // Legacy vipps-badge shortcode. LP 19.11.2024
-        add_shortcode('vipps-badge', array($this, 'vipps_badge_shortcode'));
+        // Now uses same code as above. Brand will be ignored. IOK 2026-11-26
+        add_shortcode('vipps-badge', array($this, 'vipps_mobilepay_badge_shortcode'));
 
         // special page handling, previously a fake page. LP 2026-08-25
         add_shortcode('vipps_special_page', array($this, 'vipps_special_page_shortcode'));

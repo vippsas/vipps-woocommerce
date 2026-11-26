@@ -1837,8 +1837,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Get supported currencies for payment method NT 2023-12-04
-    // IOK FIXME no longer relevant, or use country?
     public function get_supported_currencies($payment_method) {
+        if (Vipps::$brand_merged) {
+            // IOK 2026-11-27  or should we use country here? The MSN governs what is accepted, but it isn't a very likely error anyway. FIXME?
+            return ['NOK', 'SEK', 'DKK', 'EUR'];
+        }
         switch ($payment_method) {
             case 'Vipps': return array('NOK', 'SEK');
             case 'MobilePay': return array('DKK', 'EUR');
