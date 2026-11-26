@@ -1,7 +1,7 @@
 /* Local Vipps-only variant of button.js.
  * Always uses Vipps wordmark, compact logo and accessible brand name.
  * Finnish is enabled. Blue is forced when brand="mobilepay" or language is
- * "da" or "fi" (language proxies for Denmark and Finland). Otherwise the
+ * "da" or "fi", or country is "DK" or "FI". Otherwise the
  * original orange/default and variant styling applies.
  * No date switch: WordPress chooses which SDK file to enqueue.
  * Load only one SDK per page: both register vipps-mobilepay-button.
@@ -180,7 +180,11 @@
   :host([language='da' i]) button,
   :host([language='da' i][variant]) button,
   :host([language='fi' i]) button,
-  :host([language='fi' i][variant]) button {
+  :host([language='fi' i][variant]) button,
+  :host([country='DK' i]) button,
+  :host([country='DK' i][variant]) button,
+  :host([country='FI' i]) button,
+  :host([country='FI' i][variant]) button {
     --vm-btn-text: var(--vm-mp-text);
     --vm-btn-text-disabled: var(--vm-mp-text-disabled);
     --vm-btn-bg: var(--vm-mp-bg);

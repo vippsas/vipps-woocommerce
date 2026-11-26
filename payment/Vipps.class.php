@@ -758,6 +758,10 @@ class Vipps {
         if (in_array($attrs['verb'], ['login', 'register'])) $attrs['verb'] = 'buy';
 
         $attrs['language'] = $this->resolve_html_button_language($attrs['language']);
+
+        // Add 'country' to support switching color based on country IOK 2026-11-26
+        $attrs['country']  = $this->get_country();
+  
         $escaped_attrs = [];
         foreach($attrs as $k => $v) {
            $escaped_attrs[$k] = esc_attr($v);
@@ -785,6 +789,7 @@ class Vipps {
     type="{$escaped_attrs['type']}"
     brand="{$escaped_attrs['brand']}"
     language="{$escaped_attrs['language']}"
+    country="{$escaped_attrs['country']}"
     variant="{$escaped_attrs['variant']}"
     rounded="{$escaped_attrs['rounded']}"
     verb="{$escaped_attrs['verb']}"

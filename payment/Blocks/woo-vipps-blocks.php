@@ -64,7 +64,7 @@ add_action('enqueue_block_editor_assets', function () {
     $badge_config = [
         'title' => sprintf(__('%1$s On-Site Messaging Badge', 'woo-vipps'), Vipps::CompanyName()),
         'variants' => $badge_variants,
-        'iconSrc' => plugins_url('../img/vipps-mobilepay-logo-only.png', __FILE__),
+        'iconSrc' => $vipps->get_company_logo(),
         'brand' => strtolower($vipps->get_payment_method_name()),
         'languages' => $languages,
     ];
@@ -83,20 +83,7 @@ add_action('enqueue_block_editor_assets', function () {
         $store_language = Vipps::instance()->get_customer_language();
         // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
         if ('dk' === $store_language) $store_language = 'da';
-
-
-        switch ($payment_method) {
-            case 'Vipps':
-                $buy_now_languages = [
-                    ['label' => __('Store language', 'woo-vipps'), 'value' => "store"],
-                    ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
-                    ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
-                    ['label' => __('Swedish', 'woo-vipps'), 'value' => 'sv'],
-                    ['label' => __('Danish', 'woo-vipps'), 'value' => 'da'],
-                ];
-                break;
-            case 'MobilePay':
-                $buy_now_languages = [
+        $buy_now_languages = [
                     ['label' => __('Store language', 'woo-vipps'), 'value' => "store"],
                     ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                     ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
@@ -104,9 +91,6 @@ add_action('enqueue_block_editor_assets', function () {
                     ['label' => __('Danish', 'woo-vipps'), 'value' => 'da'],
                     ['label' => __('Finnish', 'woo-vipps'), 'value' => 'fi'],
                 ];
-                break;
-        }
-
         $buy_now_variants = [
             ['label' => __('Primary', 'woo-vipps'), 'value' => 'primary'],
             ['label' => __('Dark', 'woo-vipps'), 'value' => 'dark'],
