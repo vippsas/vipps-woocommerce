@@ -292,6 +292,7 @@ final class Vipps extends AbstractPaymentMethodType {
 			'brand'                 => apply_filters( 'woo_vipps_block_widget_brand', $brand ),
 			'language'              => apply_filters( 'woo_vipps_block_widget_language', $language ),
 			'show_express_checkout' => $this->show_express_checkout_button(),
+                        'country'               => $this->country,
 			'expressbutton'         => $this->get_express_checkout_button(),
 		];
 

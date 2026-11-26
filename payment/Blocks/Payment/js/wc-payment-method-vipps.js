@@ -725,6 +725,7 @@ const VippsCheckoutPlaceOrderButton = (props) => {
                 verb: 'continue',
                 variant: 'primary',
                 branded: 'true',
+                country: settings.country || 'NO',
                 rounded: 'true',
                 stretched: 'true',
                 className: `vipps-checkout-widget-button${busy ? ' loading' : ''}`,
