@@ -1,6 +1,6 @@
 import { detectPaymentMethodName, getPaymentMethodSupportedCurrencies, isPaymentMethodCurrencySupported } from '../../lib/payment-method';
 import { useWP } from '../../wp-options-provider';
-import { getMetadata, gettext } from '../../lib/wp-data';
+import { getMetadata, gettext, isBrandMerged } from '../../lib/wp-data';
 import { SwitchFormField, InputFormField, SelectFormField, TextareaFormField } from '../options-form-fields';
 import { truthToBool } from '../form-elements';
 import { Collapsible } from '../collapsible';
@@ -14,6 +14,30 @@ import { InfoTooltip } from '../info-tooltip';
 export function AdminSettingsMainOptionsTab(): JSX.Element {
   const { setOption, getOption } = useWP();
   const gwEnabled = truthToBool(getOption('enabled'));
+
+  let paymentMethodField: JSX.Element | null;
+  if (isBrandMerged()) {
+    paymentMethodField = null;
+  } else {
+    paymentMethodField = (
+      <SelectFormField
+        name="payment_method_name"
+        titleKey="payment_method_name.title"
+        descriptionKey="payment_method_name.description"
+        includeEmptyOption={false}
+        required
+        error={
+          !isPaymentMethodCurrencySupported(getOption('payment_method_name'), getMetadata('currency'))
+            ? `${getOption('payment_method_name')} does not support your store currency (${getMetadata('currency')}). Supported currencies: ${getPaymentMethodSupportedCurrencies(getOption('payment_method_name')).join(', ')}`
+            : undefined
+        }
+        options={[
+          { label: gettext('payment_method_name.options.Vipps'), value: 'Vipps' },
+          { label: gettext('payment_method_name.options.MobilePay'), value: 'MobilePay' }
+        ]}
+      />
+    );
+  }
 
   return (
     <div>
@@ -46,11 +70,16 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
           includeEmptyOption={false}
           required
           onChange={(e) => {
-            // Set the payment method name based on the selected country
-            const paymentMethod = detectPaymentMethodName(e.target.value);
-            // Only update the payment method name if it is not already set
-            if (!getOption('payment_method_name')) {
-              setOption('payment_method_name', paymentMethod);
+            if (isBrandMerged()) {
+              // brand_merge: country changes color without changing the stored brand.
+              return;
+            } else {
+              // Set the payment method name based on the selected country
+              const paymentMethod = detectPaymentMethodName(e.target.value);
+              // Only update the payment method name if it is not already set
+              if (!getOption('payment_method_name')) {
+                setOption('payment_method_name', paymentMethod);
+              }
             }
           }}
           options={[
@@ -61,23 +90,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
           ]}
         />
 
-        {/* Renders a select field that specifies the payment method name (Vipps or MobilePay) */}
-        <SelectFormField
-          name="payment_method_name"
-          titleKey="payment_method_name.title"
-          descriptionKey="payment_method_name.description"
-          includeEmptyOption={false}
-          required
-          error={
-            !isPaymentMethodCurrencySupported(getOption('payment_method_name'), getMetadata('currency'))
-              ? `${getOption('payment_method_name')} does not support your store currency (${getMetadata('currency')}). Supported currencies: ${getPaymentMethodSupportedCurrencies(getOption('payment_method_name')).join(', ')}`
-              : undefined
-          }
-          options={[
-            { label: gettext('payment_method_name.options.Vipps'), value: 'Vipps' },
-            { label: gettext('payment_method_name.options.MobilePay'), value: 'MobilePay' }
-          ]}
-        />
+        {paymentMethodField}
 
         {/* Renders an input field for the order prefix */}
         <InputFormField

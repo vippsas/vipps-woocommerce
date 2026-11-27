@@ -29,6 +29,7 @@ export function BadgesPage() {
       companyName={getMetadata("company_name") ?? "Vipps MobilePay"}
       subtitle={gettext("title")}
       paymentMethod={getMetadata("payment_method") ?? ""}
+      country={getMetadata("country") ?? ""}
     >
       {banner && (
         <div className="vipps-admin-notices" role="status">
@@ -85,6 +86,7 @@ export function BadgesPage() {
             <div className="vipps-admin-preview">
               <vipps-mobilepay-badge
                 brand={brand}
+                country={getMetadata("country") ?? ""}
                 language={language}
                 variant={variant || undefined}
               ></vipps-mobilepay-badge>

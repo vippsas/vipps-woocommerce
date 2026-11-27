@@ -205,12 +205,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function __construct() {
         $this->testapiurl = 'https://apitest.vipps.no';
         $this->apiurl = 'https://api.vipps.no';
-        
-        $this->method_description = __('Offer Vipps or MobilePay as a payment method', 'woo-vipps');
-        $this->method_title = __('Vipps MobilePay','woo-vipps');
-        $this->title = __('Vipps MobilePay','woo-vipps');
 
-        $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
+        if (Vipps::$brand_merged) {
+            $this->method_description = __('Offer Vipps as a payment method', 'woo-vipps');
+            $this->method_title = 'Vipps';
+            $this->title = 'Vipps';
+            $country = $this->get_option('country');
+            if (in_array($country, ['DK','FI'])) {
+                $this->icon = plugins_url('img/Vipps_symbol_DK-FI_blue_RGB.png',__FILE__);
+            } else {
+                $this->icon = plugins_url('img/vipps-smile-orange.png',__FILE__);
+            }
+        } else {
+            $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
+        } 
+
         $this->maybe_migrate_settings();
         $this->init_form_fields();
         $this->init_settings();
@@ -232,10 +241,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action('admin_init', array($this, 'add_image_upload_setting_widget'));
 
         //  Capturing, refunding and cancelling the order when transitioning states:
-        //   This are the statuses for which the Vipps MobilePay plugin should try to ensure capture has been made.
+        //   This are the statuses for which the Vipps plugin should try to ensure capture has been made.
         //   Normally, this is 'processing' and 'completed', but plugins may define other statuses. IOK 2018-10-05
         //  It is also possible to remove 'processing' from this list. If you do, you may use it as the end-state of the
-        //  Vipps MobilePay transaction (see below in after_vipps_order_status) IOK 2018-12-05
+        //  Vipps transaction (see below in after_vipps_order_status) IOK 2018-12-05
         $resultstatus = $this->get_option('result_status');
         $captured_statuses = apply_filters('woo_vipps_captured_statuses', array('processing', 'completed'));
         $captured_statuses = array_diff($captured_statuses, array($resultstatus));
@@ -591,7 +600,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
 
-    // Return the status to use after return from Vipps MobilePay for orders that are not both "virtual" and "downloadable".
+    // Return the status to use after return from Vipps for orders that are not both "virtual" and "downloadable".
     // These orders are *not* complete, and payment is *not* captured, which is why the default status is 'on-hold'.
     // If you use custom order statuses, or if you don't capture on 'processing' - see filter 'woo_vipps_captured_statuses' -
     // you can instead use 'processing' here - which is much nicer. 
@@ -616,7 +625,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
       return $newstatus;
     }
 
-    // Create callback urls' using WC's callback API in a way that works with Vipps MobilePay callbacks and both pretty and not so pretty urls.
+    // Create callback urls' using WC's callback API in a way that works with Vipps callbacks and both pretty and not so pretty urls.
     private function make_callback_urls($forwhat,$token='', $reference=0) {
         // Passing the token as GET arguments, as the Authorize header is stripped. IOK 2018-06-13
         // This applies to Ecom, Checkout and Express Checkout callbacks.  For epayment, we instead need to use 
@@ -664,7 +673,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $this->make_callback_urls('vipps_shipping_details',$token,$reference);
     }
 
-    // Allow user to select the template to be used for the special Vipps MobilePay pages. IOK 2020-02-17
+    // Allow user to select the template to be used for the special Vipps pages. IOK 2020-02-17
     public function get_theme_page_templates() {
         if (!$this->page_templates) {
             $choices = array('' => __('Use default template', 'woo-vipps'));
@@ -680,6 +689,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function product_supports_express_checkout($product) {
         // IOK 2023-12-12 Can only support express checkout for Vipps - not MobilePay (yet!)
         // IOK 2025-09-01 Now supports mobilepay
+        // IOK 2026-11-17 These are now merged
         return apply_filters('woo_vipps_product_supports_express_checkout', $this->product_supports_checkout($product), $product);
     }
 
@@ -696,7 +706,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function cart_supports_checkout($cart=null) {
         if (!$cart) $cart = WC()->cart;
         if (!$cart) return false;
-        # Not supported by Vipps MobilePay
+        # Not supported by Vipps
         if ($cart->cart_contents_total <= 0) return false;
 
         $supports  = true;
@@ -718,7 +728,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$cart) $cart = WC()->cart;
         $supports  = true;
         if (!$cart) return $supports;
-        # Not supported by Vipps MobilePay
+        # Not supported by Vipps 
         if ($cart->cart_contents_total <= 0) return false;
 
         foreach($cart->get_cart() as $key=>$val) {
@@ -1062,10 +1072,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Detect default payment method based on country code NT-2024-10-15
     public function detect_default_payment_method_from_country($country_code) {
-        // Default to MobilePay
-        $payment_method_name = 'MobilePay';
-        // Default to Vipps if country is Norway or Sweden
-        if($country_code == 'NO' || $country_code == 'SE') {
+        if (Vipps::$brand_merged) {
+            // Default to MobilePay
+            $payment_method_name = 'MobilePay';
+            // Default to Vipps if country is Norway or Sweden
+            if($country_code == 'NO' || $country_code == 'SE') {
+                $payment_method_name = 'Vipps';
+            }
+        } else {
             $payment_method_name = 'Vipps';
         }
         return $payment_method_name;
@@ -1135,6 +1149,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $country_code = $current['country'] ?? $countries->get_base_country();
 
         // Same issue as above: We need the default payment method name before it is set to be able to provide defaults IOK 2023-12-01
+        // IOK FIXME after brand merge, no longer relevant.
         $payment_method_name = $current['payment_method_name'] ?? $this->detect_default_payment_method_from_country($country_code);
 
         $checkoutfields = array(
@@ -1823,6 +1838,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Get supported currencies for payment method NT 2023-12-04
     public function get_supported_currencies($payment_method) {
+        if (Vipps::$brand_merged) {
+            // IOK 2026-11-27  or should we use country here? The MSN governs what is accepted, but it isn't a very likely error anyway. FIXME?
+            return ['NOK', 'SEK', 'DKK', 'EUR'];
+        }
         switch ($payment_method) {
             case 'Vipps': return array('NOK', 'SEK');
             case 'MobilePay': return array('DKK', 'EUR');

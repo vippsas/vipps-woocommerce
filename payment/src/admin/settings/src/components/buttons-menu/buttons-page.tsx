@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAdminPost } from "../../hooks/use-admin-post";
 import { NotificationBanner } from "../notification-banner";
-import { getMetadata, getPageData, gettext } from "../../lib/wp-data";
+import { getMetadata, getPageData, gettext, isBrandMerged } from "../../lib/wp-data";
 import { WPButton, WPFormField, WPLabel, WPSelect } from "../form-elements";
 import { PageShell, PostForm } from "../page-shell";
 import { Tabs } from "../tabs";
@@ -88,11 +88,23 @@ export function ButtonsPage() {
     config.language === "store"
       ? language
       : String(config.language ?? language);
+  let languageChoices: string[];
+  let finnishHelp: JSX.Element | null;
+  if (isBrandMerged()) {
+    languageChoices = choices.language;
+    finnishHelp = null;
+  } else {
+    languageChoices = choices.language.filter((value) => value !== "fi" || isMobilePay);
+    finnishHelp = !isMobilePay ? (
+      <p className="vipps-admin-prose">{gettext("finnishHelp")}</p>
+    ) : null;
+  }
   return (
     <PageShell
       companyName={getMetadata("company_name") ?? "Vipps MobilePay"}
       subtitle={gettext("title")}
       paymentMethod={getMetadata("payment_method") ?? ""}
+      country={getMetadata("country") ?? ""}
     >
       {banner && (
         <div className="vipps-admin-notices" role="status">
@@ -190,18 +202,11 @@ export function ButtonsPage() {
                 {Object.entries(choices).map(([key, values]) => (
                   <fieldset key={key} className="vipps-admin-choices">
                     <legend>{gettext(labels[key] ?? key)}</legend>
-                    {values
-                      .filter(
-                        (value) =>
-                          key !== "language" || value !== "fi" || isMobilePay,
-                      )
+                    {(key === "language" ? languageChoices : values)
                       .map((value) => (
                         <label key={value}>
                           <input
-                            disabled={
-                              inherited ||
-                              (key === "language" && value === "fi")
-                            }
+                            disabled={inherited}
                             type="radio"
                             name={`ui-${key}`}
                             checked={config[key] === value}
@@ -210,11 +215,7 @@ export function ButtonsPage() {
                           {gettext(labels[value] ?? value)}
                         </label>
                       ))}
-                    {key === "language" && !isMobilePay && (
-                      <p className="vipps-admin-prose">
-                        {gettext("finnishHelp")}
-                      </p>
-                    )}
+                    {key === "language" && finnishHelp}
                   </fieldset>
                 ))}
               </div>
@@ -222,6 +223,7 @@ export function ButtonsPage() {
                 <vipps-mobilepay-button
                   type="button"
                   brand={brand}
+                  country={getMetadata("country") ?? ""}
                   language={
                     previewLanguage === "dk"
                       ? "da"

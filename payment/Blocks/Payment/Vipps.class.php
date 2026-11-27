@@ -13,6 +13,8 @@ final class Vipps extends AbstractPaymentMethodType {
 	private static $store_api_payment_processor = null;
 	protected $name = 'vipps';
 	protected $payment_method_name = 'Vipps';
+        protected $country = '';
+        protected $brand_merged;
 	public $vippsJSConfig = [];
 
 	/**
@@ -21,6 +23,8 @@ final class Vipps extends AbstractPaymentMethodType {
 	public function initialize() {
 		$this->settings = get_option( 'woocommerce_vipps_settings', [] );
 		$this->payment_method_name = \WC_Gateway_Vipps::instance()->get_payment_method_name();
+                $this->country = \WC_Gateway_Vipps::instance()->get_option('country');
+                $this->brand_merged = \Vipps::$brand_merged;
 		$this->register_store_api_payment_processor();
 	}
 
@@ -264,9 +268,20 @@ final class Vipps extends AbstractPaymentMethodType {
 	 * Expose localized labels, branding and express eligibility as vipps_data for the JS component.
 	 */
 	public function get_payment_method_data() {
-		$logo = ( $this->payment_method_name == 'Vipps' ) ? plugins_url( '../../img/vipps-mark.svg', __FILE__ ) : plugins_url( '../../img/mobilepay-mark.png', __FILE__ );
-		$brand = ( $this->payment_method_name == 'Vipps' ) ? 'vipps' : 'mobilepay';
 		$Vipps = \Vipps::instance();
+                $brand = "";
+                $logo = "";
+                if ($this->brand_merged) {
+                    if (in_array($this->country, ['DK', 'FI'])) {
+                        $logo = plugins_url( '../../img/Vipps_Pay_Mark_Small_blue.svg', __FILE__);
+                    } else {
+                        $logo = plugins_url( '../../img/vipps-mark.svg', __FILE__ );
+                    }
+                    $brand = 'vipps';
+                } else {
+                    $brand = ( $this->payment_method_name == 'Vipps' ) ? 'vipps' : 'mobilepay';
+                    $logo = ( $this->payment_method_name == 'Vipps' ) ? plugins_url( '../../img/vipps-mark.svg', __FILE__ ) : plugins_url( '../../img/mobilepay-mark.png', __FILE__ );
+                }
 		$language = $Vipps->resolve_html_button_language($Vipps->get_html_button_attrs_for_context()['language']);
 		$this->vippsJSConfig['webcomponentLanguage'] = $language;
 
@@ -277,6 +292,7 @@ final class Vipps extends AbstractPaymentMethodType {
 			'brand'                 => apply_filters( 'woo_vipps_block_widget_brand', $brand ),
 			'language'              => apply_filters( 'woo_vipps_block_widget_language', $language ),
 			'show_express_checkout' => $this->show_express_checkout_button(),
+                        'country'               => $this->country,
 			'expressbutton'         => $this->get_express_checkout_button(),
 		];
 

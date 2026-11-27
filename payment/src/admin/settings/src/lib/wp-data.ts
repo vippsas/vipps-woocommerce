@@ -77,6 +77,11 @@ export function getMetadata(key: string): string | null {
   return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : null;
 }
 
+// brand_merge: normalize the PHP flag without treating the string "false" as true.
+export function isBrandMerged(): boolean {
+  return ['true', '1', 'yes'].includes(getMetadata('brand_merged') ?? '');
+}
+
 export function getPageData<T>(): T {
   return (wpWindow.VippsMobilePayReactMetadata?.page_data ?? {}) as T;
 }

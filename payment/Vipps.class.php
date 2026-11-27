@@ -43,7 +43,11 @@ class Vipps {
 
     private static $instance = null;
 
-    public $payment_method_name = "";
+    public static $brand_merged = false;  // to be true after 2027-01-12, when Vipps and MobilePay merge to just Vipps. IOK 2026-11-17
+
+    private $payment_method_name = ""; // set lazily
+    private $country = ""; // Set lazily
+    private $company_logo = ""; // Set lazily
 
     /* Used to interact with other payment gateways if neccessary (for 'external payment gateways') IOK 2024-05-27 */
     public static $installed_gateways = [];
@@ -63,10 +67,13 @@ class Vipps {
     public $button_options_express_version = '2.0';
 
     // IOK 2023-11-29 Vipps merging with MobilePay causes some challenges which we solve by abstraction
+    // IOK 2026-11-17 As does the merging back into Vipps
     public static function CompanyName() { 
+        if (static::$brand_merged) return __("Vipps", 'woo-vipps'); 
         return __("Vipps MobilePay", 'woo-vipps');
     }
     public static function CheckoutName($order=null) {
+        if (static::$brand_merged) return "Vipps Checkout";  // Do not translate
         return "Vipps MobilePay Checkout"; // Do not translate
     }
     public static function ExpressCheckoutName($order=null) {
@@ -76,8 +83,19 @@ class Vipps {
         return __("Login with Vipps", 'woo-vipps');
    }
 
+   
+    // Set certain static values in the constructor.
+    public function __construct() {
+        // Brands are merged after 12. january 2027, but it can be tested by defining the constant below in wp-config.php IOK 2026-11-27
+        if ((defined("WOO_VIPPS_BRAND_MERGED") && ("yes" === WOO_VIPPS_BRAND_MERGED)) || (date('Y-m-d') >= '2027-01-12')) {
+            static::$brand_merged = true;
+        } 
+    }
+
     public static function instance()  {
-        if (!static::$instance) static::$instance = new Vipps();
+        if (!static::$instance) {
+           static::$instance = new Vipps();
+        }
         return static::$instance;
     }
 
@@ -176,7 +194,7 @@ class Vipps {
         add_action( 'woocommerce_blocks_loaded',  [$Vipps, 'woocommerce_blocks_loaded']);
         // Express Checkout and Checkout supports the new pickup_location shipping method, but the admin interface for this may
         // not have loaded if the default checkout solution isn't the Checkout block. We'll load it anyway if the user has any local pickup locations
-        // stored in the database since we support this for both Vipps MobilePay checkokut and Express.  IOK 2026-02-25
+        // stored in the database since we support this for both Vipps Checkokut and Express.  IOK 2026-02-25
         add_action('woocommerce_load_shipping_methods', array($Vipps, 'maybe_load_pickup_locations'), 90);
 
         // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
@@ -626,6 +644,11 @@ class Vipps {
             $brand = $this->get_payment_method_name();
             if ($brand) $attr .= " brand='". strtolower($brand) . "' ";
 
+            // Add country to handle brand merge IOK 2026-11-26
+            if (static::$brand_merged) {
+                $country = $this->get_country();
+                $attr .= " country='" . esc_attr($country) . "' ";
+            }
 
             $badge = "<vipps-mobilepay-badge $attr></vipps-mobilepay-badge>";
 
@@ -647,6 +670,9 @@ class Vipps {
 
         $attributes = [];
         $attributes['brand'] = strtolower($this->get_payment_method_name());
+        if (static::$brand_merged) {
+             $attributes['country'] = strtolower($this->get_country());
+        }
         if ($variant) $attributes['variant'] = $variant;
         if ($language) $attributes['language'] = $language;
         if ($id) $attributes['id'] = $id;
@@ -656,32 +682,6 @@ class Vipps {
         foreach($attributes as $key=>$value) $badgeatts .= " $key=\"" . esc_attr($value) . '"';
 
         return "<vipps-mobilepay-badge $badgeatts></vipps-mobilepay-badge>";
-    }
-
-    // legacy vipps_badge shortcode, the new one is vipps_mobilepay_badge_shortcode. LP 19.11.2024
-    // Diff: this one doesn't support brand (JUST VIPPS). LP 2026-08-11
-    public function vipps_badge_shortcode($atts) {
-        $args = shortcode_atts( array('id'=>'', 'class'=>'','variant' => '','language'=>''), $atts );
-        
-        $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple']) ? $args['variant'] : "";
-        $language = in_array($args['language'], ['en', 'no', 'sv', 'da', 'dk', 'fi']) ? $args['language'] : $this->get_customer_language();
-        if ('se' === $language) $language = 'sv';
-        // Looks like button and badge web components now use 'da' instead of 'dk' for danish. LP 2026-08-11
-        if ('dk' === $language) $language = 'da';
-
-        $id = sanitize_title($args['id']);
-        $class = sanitize_text_field($args['class']);
-
-        $attributes = [];
-        if ($variant) $attributes['variant'] = $variant;
-        if ($language) $attributes['language'] = $language;
-        if ($id) $attributes['id'] = $id;
-        if ($class) $attributes['class'] = $class;
-
-        $badgeatts = "";
-        foreach($attributes as $key=>$value) $badgeatts .= " $key=\"" . esc_attr($value) . '"';
-
-        return "<vipps-badge $badgeatts></vipps-badge>";
     }
 
     public function get_html_button_default_attrs() {
@@ -728,7 +728,7 @@ class Vipps {
         return $this->get_html_button($this->get_html_button_attrs_for_context($context));
     }
 
-    // Generic Vipps/MobilePay button html, as of now a web component hosted locally. LP 2026-06-24
+    // Generic Vipps button html, as of now a web component hosted locally. LP 2026-06-24
     // See info and attributes at https://developer.vippsmobilepay.com/docs/knowledge-base/buttons/
     public function get_html_button($attrs = []) {
         $payment_method = $this->get_payment_method_name();
@@ -740,6 +740,10 @@ class Vipps {
         if (in_array($attrs['verb'], ['login', 'register'])) $attrs['verb'] = 'buy';
 
         $attrs['language'] = $this->resolve_html_button_language($attrs['language']);
+
+        // Add 'country' to support switching color based on country IOK 2026-11-26
+        $attrs['country']  = $this->get_country();
+  
         $escaped_attrs = [];
         foreach($attrs as $k => $v) {
            $escaped_attrs[$k] = esc_attr($v);
@@ -767,6 +771,7 @@ class Vipps {
     type="{$escaped_attrs['type']}"
     brand="{$escaped_attrs['brand']}"
     language="{$escaped_attrs['language']}"
+    country="{$escaped_attrs['country']}"
     variant="{$escaped_attrs['variant']}"
     rounded="{$escaped_attrs['rounded']}"
     verb="{$escaped_attrs['verb']}"
@@ -788,7 +793,18 @@ EOF;
     }
 
     public function admin_menu_page () {
-        $flavour = sanitize_title($this->get_payment_method_name());
+
+        $flavour = "";
+        if (static::$brand_merged) {
+            $country = $this->get_country();
+            if (in_array($country, ['DK', 'FI'])) {
+                $flavour = " blue ";
+            }
+        } else {
+            if ("mobilepay" == sanitize_title($this->get_payment_method_name())) {
+                $flavour = " blue ";
+            }
+        }
 
         // The function which is hooked in to handle the output of the page must check that the user has the required capability as well.  (manage_woocommerce)
         if (!current_user_can('manage_woocommerce')) {
@@ -805,7 +821,7 @@ EOF;
         $logspage = admin_url('/admin.php?page=wc-status&tab=logs');
         $forumpage = 'https://wordpress.org/support/plugin/woo-vipps/';
 
-        $portalurl = 'https://portal.vippsmobilepay.com';
+        $portalurl = (static::$brand_merged) ? 'https://portal.vipps.no' : 'https://portal.vippsmobilepay.com';
 
         $installed = get_plugins();
 
@@ -841,9 +857,6 @@ EOF;
 
                <p><?php echo sprintf(__("This plugin gives you %1\$s in WooCommerce, either as a fully fledged Checkout, or as a flexible payment method.",'woo-vipps'), WC_Gateway_Vipps::instance()->get_payment_method_name()); ?></p>
                <p><?php echo sprintf(__("With Checkout, you’ll also get access to shipping addresses, shipping selection and other payment options. Currently Checkout supports %1\$s and bank transfer; VISA and MasterCard payments will be added later.",'woo-vipps'), WC_Gateway_Vipps::instance()->get_payment_method_name()); ?></p>
-
-               <p><strong><?php echo sprintf(__("NB! Checkout for MobilePay is currently in beta mode; Bank Transfer has limited availability", 'woo-vipps')); ?></strong></p>
-
                <p><?php echo sprintf(__("Configure the plugin on its <a href='%1\$s'>settings page</a> and  get your keys from the <a target='_blank' href='%2\$s'>%3\$s portal</a>.",'woo-vipps'), $checkoutsettings, $portalurl, Vipps::CompanyName());?></p>
                <p><?php echo sprintf(__("If you experience problems or unexpected results, please check the 'fatal-errors' and 'woo-vipps' logs at <a href='%1\$s'>WooCommerce logs page</a>.", 'woo-vipps'), $logspage); ?></p>
                <p><?php echo sprintf(__("If you need support, please use the <a href='%1\$s'>forum page</a> for the plugin. If you cannot post your question publicly, contact WP-Hosting directly at support@wp-hosting.no.", 'woo-vipps'), $forumpage); ?></p>
@@ -1022,10 +1035,18 @@ EOF;
                     $dismissed = get_option('_vipps_dismissed_notices');
                     if (isset($dismissed[$key])) return;
                 }
-                add_action('admin_notices', function() use ($text,$type, $key, $extraclasses) {
-                        $logo = plugins_url('img/vmp-logo.png',__FILE__);
+                $color = "";
+                if (static::$brand_merged) {
+                  $color = " blue";
+                } else {
+                  $color = "";
+                }
+error_log("Adding notice $text");
+                add_action('admin_notices', function() use ($text,$type, $key, $extraclasses, $color) {
+error_log("Adding notice $text with color $color");
+                        $logo = $this->get_company_logo();
                         $message = "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
-                        echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
+                        echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible$color'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
                         });
     }
 
@@ -1095,7 +1116,7 @@ EOF;
 
     public function admin_head() {
         // Add some styling to the Vipps product-meta box
-        $smile= plugins_url('img/vmp-logo.png',__FILE__);
+        $smile= $this->get_company_logo();
         ?>
             <style>
             @media only screen and (max-width: 900px) {
@@ -1135,7 +1156,7 @@ EOF;
     public function admin_menu () {
         // IOK 2023-12-01 replace old Vipps smile in larger contexts
         // $logo= plugins_url('img/vipps-smile-orange.png',__FILE__);
-        $logo = plugins_url('img/vmp-logo.png', __FILE__);
+        $logo = $this->get_company_logo();
         require_once(dirname(__FILE__) . "/admin/settings/VippsAdminSettings.class.php");
         $adminSettings = VippsAdminSettings::instance();
 
@@ -1205,7 +1226,7 @@ EOF;
         //  (which it only is if Gutenberg is active) or not provided at all, add it now.
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks', 'wp-api-fetch','vipps-widget-sdk'),filemtime(dirname(__FILE__) . "/js/vipps.js"), true);
 
-        // Badges - web components provided by Vipps MobilePay to display payment options in-store.
+        // Badges - web components provided by Vipps to display payment options in-store.
         wp_register_script('vipps-onsite-messageing',
                 plugins_url('js/vipps-on-site-messaging.js', WC_VIPPS_PAYMENT_MAIN_FILE),
                 array(),
@@ -1231,10 +1252,12 @@ EOF;
         );
 
         // Button web component downloaded from https://cdn.vippsmobilepay.com/js/button/button.js. LP 2026-06-24
+        // Changes after brand merge on 12. january. IOK 2026-11-17
+        $button_sdk_name = static::$brand_merged ? 'vipps-button-v2.js' : 'vipps-button.js'; 
         wp_register_script('vipps-button-webcomponent',
-                plugins_url('js/vipps-button.js', WC_VIPPS_PAYMENT_MAIN_FILE),
+                plugins_url('js/' . $button_sdk_name, WC_VIPPS_PAYMENT_MAIN_FILE),
                 array(),
-                filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/vipps-button.js'),
+                filemtime(dirname(WC_VIPPS_PAYMENT_MAIN_FILE) . '/js/' . $button_sdk_name),
                 [
                 'in_footer' => false
                 ]
@@ -1332,7 +1355,8 @@ EOF;
         // New vipps-mobilepay-badge shortcode. LP 19.11.2024
         add_shortcode('vipps-mobilepay-badge', array($this, 'vipps_mobilepay_badge_shortcode'));
         // Legacy vipps-badge shortcode. LP 19.11.2024
-        add_shortcode('vipps-badge', array($this, 'vipps_badge_shortcode'));
+        // Now uses same code as above. Brand will be ignored. IOK 2026-11-26
+        add_shortcode('vipps-badge', array($this, 'vipps_mobilepay_badge_shortcode'));
 
         // special page handling, previously a fake page. LP 2026-08-25
         add_shortcode('vipps_special_page', array($this, 'vipps_special_page_shortcode'));
@@ -2228,8 +2252,39 @@ else:
     }
 
     public function get_payment_method_name() {
-        return $this->gateway()->get_option('payment_method_name');
+        // After 2027-01-12 we'll only use the name 'Vipps';
+        if (static::$brand_merged) return 'Vipps';
+        if (!$this->payment_method_name) {
+            $this->payment_method_name = $this->gateway()->get_option('payment_method_name');
+        }
+        return $this->payment_method_name;
     }
+
+    public function get_country() {
+        // After 2027-01-12 this will be used for certain things like color
+        if (!$this->country) {
+           $this->country = $this->gateway()->get_option('country');
+        }
+        return $this->country;
+    }
+
+    // After the merger with MobilePay, the combined logo, then after the brand merge, either an orange or blue smily. IOK 2026-11-19
+    public function get_company_logo() {
+        if (!$this->company_logo) {
+           if (static::$brand_merged) {
+              $country = $this->get_country();
+              if (in_array($country, ['DK','FI'])) {
+                  $this->company_logo = plugins_url('img/Vipps_symbol_DK-FI_blue_RGB.png',__FILE__);
+              } else {
+                  $this->company_logo = plugins_url('img/vipps-smile-orange.png',__FILE__);
+              }
+           } else {
+               $this->company_logo = plugins_url('img/vmp-logo.png',__FILE__);
+           }
+        }
+        return $this->company_logo;
+    }
+      
 
     public function plugins_loaded() {
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
@@ -2364,7 +2419,7 @@ else:
         $this->vippsJSConfig['vippsajaxurl'] =  admin_url('admin-ajax.php');
         $this->vippsJSConfig['BuyNowWith'] = __('Buy now with', 'woo-vipps');
         $this->vippsJSConfig['BuyNowWithVipps'] = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->get_payment_method_name());
-        $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vmp-logo.png',__FILE__);
+        $this->vippsJSConfig['vippssmileurl'] = $this->get_company_logo();
         $this->vippsJSConfig['vippsbuynowbutton'] = $this->get_payment_method_name() . ' ' . Vipps::ExpressCheckoutName();
         $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %s %s product button', 'woo-vipps'), $this->get_payment_method_name(), Vipps::ExpressCheckoutName());
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
@@ -2374,6 +2429,7 @@ else:
         $this->vippsJSConfig['paymentMethodName'] = $this->get_payment_method_name();
         $wc_lang = $this->resolve_html_button_language($this->get_html_button_attrs_for_context()['language']);
         $this->vippsJSConfig['webcomponentLanguage'] = $wc_lang;
+        $this->vippsJSConfig['country'] = $this->get_country();
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
         if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
@@ -3006,7 +3062,7 @@ else:
         exit();
     }
   
-    // This function calculates and returns one of two possible JSON representations to Vipps MobilePay, one for Express and one for Checkout.
+    // This function calculates and returns one of two possible JSON representations to Vipps, one for Express and one for Checkout.
     // First, an intermediate representation is created, based on the original Express API. This is kept because users may still have filters
     // that expects this representation. Later, these are transformed and augmented for the newer APIs.  IOK 2025-08-14
     // Also used for Static Shipping for both representations.  IOK 2025-08-14
@@ -4571,7 +4627,7 @@ else:
     }
 
     // Support local pickup. This is normally only registered when the Gutenberg Checkout block is either on the
-    // 'checkout-page' or in some template; but that's not nececssarily the case if Vipps MobilePay checkout is active.
+    // 'checkout-page' or in some template; but that's not nececssarily the case if Vipps Checkout is active.
     // Supported also in express checkout. 2026-02-25
     // We'll add this if admin has stored *any* pickup locations at any point. IOK 2026-02-25
     // Afterwards, we need to post-process this, because *each* location gets a different rate. See the VippsCheckout class.
@@ -4686,7 +4742,17 @@ else:
 
     // Just create a spinner and a overlay.
     public function spinner () {
-        $flavour = sanitize_title($this->get_payment_method_name());
+        $flavour = "";
+        if (static::$brand_merged) {
+            $country = $this->get_country();
+            if (in_array($country, ['DK', 'FI'])) {
+                $flavour = " blue ";
+            }
+        } else {
+            if ("mobilepay" == sanitize_title($this->get_payment_method_name())) {
+                $flavour = " blue ";
+            }
+        }
         ob_start();
         ?>
             <div class="vippsoverlay">
@@ -4718,18 +4784,6 @@ else:
     // NB: previously this returned the url to a svg logo. We don't do this anymore, so it returns html. LP 2026-06-30
     public function get_payment_logo($context = 'global') {
         return $this->get_express_logo(null, null, null, $context);
-    }
-
-    // Get express banner logo based on payment method. LP 2025-09-03
-    private function get_express_banner_logo() {
-        $payment_method = $this->get_payment_method_name();
-
-        if($payment_method === "Vipps"){
-            return plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__); 
-        } else if($payment_method === "MobilePay"){
-            return plugins_url('img/mobilepay-white.svg',__FILE__); 
-        }
-        return null;
     }
 
     // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
@@ -5415,11 +5469,14 @@ else:
             }
 
             if ($this->get_payment_method_name() !== 'MobilePay') {
-                // Finnish is only available in the MobilePay component right now, so reset language in any configs. LP 2026-07-01
-                foreach(($new_options['express']['configs'] ?? []) as $context => $config) {
-                    if ('fi' === ($config['language'] ?? '')) {
-                        $config['language'] = 'store';
-                        $new_options['express']['configs'][$context] = $config;
+                if (! static::$brand_merged) {
+                    // Finnish is only available in the MobilePay component right now, so reset language in any configs. LP 2026-07-01
+                    // Not relevant after the brand merge. IOK 2026-11-17
+                    foreach(($new_options['express']['configs'] ?? []) as $context => $config) {
+                        if ('fi' === ($config['language'] ?? '')) {
+                            $config['language'] = 'store';
+                            $new_options['express']['configs'][$context] = $config;
+                        }
                     }
                 }
             }

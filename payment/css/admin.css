@@ -10,7 +10,7 @@
   --vipps-color-primary-hover: #E94C18;
   --vipps-color-primary-shadow: rgb(255 91 36 / 16%);
 }
-.vipps-shell.MobilePay {
+.vipps-shell.Blue {
   --vipps-color-primary: #5a78ff;
   --vipps-color-primary-dark: #354fc7;
   --vipps-color-primary-tint: #f2f4ff;
@@ -35,6 +35,10 @@ table.webhook-table td.actions {
     border-left-color: #fe5b24;
     min-height: 56px;
 }
+.notice.notice-vipps.notice-info.blue {
+    border-left-color: #5a78ff;
+}
+
 .notice.notice-vipps.notice-info > div {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
@@ -46,6 +50,12 @@ table.webhook-table td.actions {
     color: white !important;
     min-height: 56px;
 }
+.notice.notice-vipps.notice-info.notice-vipps-neg.blue {
+    border-color: #5a78ff !important;
+    background-color: #5a78ff !important;
+}
+
+
 .notice.notice-vipps.notice-info.notice-vipps-neg a {
    color: white !important;
 }
@@ -97,6 +107,7 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     color: #fe5b24;
     font-family: "Vipps Display", Roboto, Helvetica, Arial, sans-serif;
 }
+
 .vipps-admin-page-header {
     font-family: "Vipps Display", Roboto, Helvetica, Arial, sans-serif;
     min-height: 2rem;
@@ -109,11 +120,11 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     padding-bottom: 0.2rem;
 }
 
-.vipps-admin-page-header.mobilepay h1 {
+.vipps-admin-page-header.blue h1 {
     color: #5a78fff7;
 }
 
-.vipps-admin-page-header.mobilepay {
+.vipps-admin-page-header.blue {
     background-color: #f2f4ff;
     color: #5a78fff7;
 }
@@ -128,7 +139,7 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     padding-bottom: .2rem;
     padding-top: .2rem;
 }
-.vipps-admin-page .vipps_admin_highlighted_section.mobilepay {
+.vipps-admin-page .vipps_admin_highlighted_section.blue {
     background-color: #f2f4ff;
     color: #5a78fff7;
 }
