@@ -793,7 +793,18 @@ EOF;
     }
 
     public function admin_menu_page () {
-        $flavour = sanitize_title($this->get_payment_method_name());
+
+        $flavour = "";
+        if (static::$brand_merged) {
+            $country = $this->get_country();
+            if (in_array($country, ['DK', 'FI'])) {
+                $flavour = " blue ";
+            }
+        } else {
+            if ("mobilepay" == sanitize_title($this->get_payment_method_name())) {
+                $flavour = " blue ";
+            }
+        }
 
         // The function which is hooked in to handle the output of the page must check that the user has the required capability as well.  (manage_woocommerce)
         if (!current_user_can('manage_woocommerce')) {
@@ -1024,10 +1035,18 @@ EOF;
                     $dismissed = get_option('_vipps_dismissed_notices');
                     if (isset($dismissed[$key])) return;
                 }
-                add_action('admin_notices', function() use ($text,$type, $key, $extraclasses) {
+                $color = "";
+                if (static::$brand_merged) {
+                  $color = " blue";
+                } else {
+                  $color = "";
+                }
+error_log("Adding notice $text");
+                add_action('admin_notices', function() use ($text,$type, $key, $extraclasses, $color) {
+error_log("Adding notice $text with color $color");
                         $logo = $this->get_company_logo();
                         $message = "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
-                        echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
+                        echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible$color'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
                         });
     }
 
