@@ -2238,7 +2238,7 @@ else:
         if (!$this->payment_method_name) {
             $this->payment_method_name = $this->gateway()->get_option('payment_method_name');
         }
-        return $payment_method_name;
+        return $this->payment_method_name;
     }
 
     public function get_country() {
