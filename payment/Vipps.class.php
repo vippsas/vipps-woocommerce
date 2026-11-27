@@ -4741,7 +4741,17 @@ else:
 
     // Just create a spinner and a overlay.
     public function spinner () {
-        $flavour = sanitize_title($this->get_payment_method_name());
+        $flavour = "";
+        if (static::$brand_merged) {
+            $country = $this->get_country();
+            if (in_array($country, ['DK', 'FI'])) {
+                $flavour = " blue ";
+            }
+        } else {
+            if ("mobilepay" == sanitize_title($this->get_payment_method_name())) {
+                $flavour = " blue ";
+            }
+        }
         ob_start();
         ?>
             <div class="vippsoverlay">
@@ -4773,19 +4783,6 @@ else:
     // NB: previously this returned the url to a svg logo. We don't do this anymore, so it returns html. LP 2026-06-30
     public function get_payment_logo($context = 'global') {
         return $this->get_express_logo(null, null, null, $context);
-    }
-
-    // Get express banner logo based on payment method. LP 2025-09-03
-    private function get_express_banner_logo() {
-        $payment_method = $this->get_payment_method_name();
-        $country = $this->get_country();
-        // This is the same for blue + orange IOK 2026-11-27
-        if($payment_method === "Vipps"){
-            return plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__); 
-        } else if($payment_method === "MobilePay"){
-            return plugins_url('img/mobilepay-white.svg',__FILE__); 
-        }
-        return null;
     }
 
     // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
