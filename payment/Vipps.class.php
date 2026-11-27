@@ -87,7 +87,7 @@ class Vipps {
     // Set certain static values in the constructor.
     public function __construct() {
         // Brands are merged after 12. january 2027, but it can be tested by defining the constant below in wp-config.php IOK 2026-11-27
-        if ((defined("WOO_VIPPS_BRAND_MERGED") && WOO_VIPPS_BRAND_MERGED) || (date('Y-m-d') >= '2027-01-12')) {
+        if ((defined("WOO_VIPPS_BRAND_MERGED") && ("yes" === WOO_VIPPS_BRAND_MERGED)) || (date('Y-m-d') >= '2027-01-12')) {
             static::$brand_merged = true;
         } 
     }
