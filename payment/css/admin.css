@@ -10,7 +10,7 @@
   --vipps-color-primary-hover: #E94C18;
   --vipps-color-primary-shadow: rgb(255 91 36 / 16%);
 }
-.vipps-shell.MobilePay {
+.vipps-shell.Blue {
   --vipps-color-primary: #5a78ff;
   --vipps-color-primary-dark: #354fc7;
   --vipps-color-primary-tint: #f2f4ff;
@@ -109,11 +109,11 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     padding-bottom: 0.2rem;
 }
 
-.vipps-admin-page-header.mobilepay h1 {
+.vipps-admin-page-header.blue h1 {
     color: #5a78fff7;
 }
 
-.vipps-admin-page-header.mobilepay {
+.vipps-admin-page-header.blue {
     background-color: #f2f4ff;
     color: #5a78fff7;
 }
@@ -128,7 +128,7 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     padding-bottom: .2rem;
     padding-top: .2rem;
 }
-.vipps-admin-page .vipps_admin_highlighted_section.mobilepay {
+.vipps-admin-page .vipps_admin_highlighted_section.blue {
     background-color: #f2f4ff;
     color: #5a78fff7;
 }

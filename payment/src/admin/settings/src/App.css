@@ -14,7 +14,7 @@
 }
 
 .vipps-admin-shell {
-  /* Vipps is the default; the MobilePay class restores the existing blue palette. */
+  /* Vipps is the default; the Blue class restores the existing blue palette. */
   --vipps-admin-primary: #FF5B24;
   --vipps-admin-primary-dark: #FF5B24;
   --vipps-admin-primary-tint: #FFF4EC;

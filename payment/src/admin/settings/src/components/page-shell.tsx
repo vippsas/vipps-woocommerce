@@ -1,5 +1,5 @@
 import { ComponentProps, ReactNode } from 'react';
-import { getMetadata } from '../lib/wp-data';
+import { getMetadata, isBrandMerged } from '../lib/wp-data';
 
 type PageShellProps = {
   companyName: string;
@@ -11,8 +11,12 @@ type PageShellProps = {
 
 export function PageShell({ companyName, subtitle, paymentMethod, country, children }: PageShellProps) {
 
-  const merged = getMetadata('brand_merged');
-  const blue = merged ? (country == 'DA' || country == 'FI')  : ( paymentMethod == 'MobilePay');
+  let blue: boolean;
+  if (isBrandMerged()) {
+    blue = country === 'DK' || country === 'FI';
+  } else {
+    blue = paymentMethod === 'MobilePay';
+  }
   const blueClass = blue ? "Blue" : "";
 
   return <div className={`vipps-admin-shell ${blueClass}`}>

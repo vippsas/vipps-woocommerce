@@ -413,7 +413,8 @@ class VippsAdminSettings
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', $translations);
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactOptions', []);
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactMetadata', [
-            'brand_merged' => Vipps::$brand_merged, // Whether Vipps and MobilePay brands are now merged
+            'brand_merged' => Vipps::$brand_merged, // brand_merge
+            'country' => $this->gateway()->get_option('country'),
             'page' => $page, 'company_name' => Vipps::CompanyName(), 'payment_method' => $vipps->get_payment_method_name(), 'page_data' => $data,
             'post_url' => admin_url('admin-post.php'), 'nonce_name' => $nonce_name,
             'nonce' => wp_create_nonce($nonce_action),
@@ -497,6 +498,7 @@ class VippsAdminSettings
         $metadata = array(
             'admin_url' => admin_url('admin-ajax.php'),
             'page' => 'admin_settings_page',
+            'brand_merged' => Vipps::$brand_merged, // brand_merge
             'company_name' => Vipps::CompanyName(),
             'currency' => get_woocommerce_currency(),
             // for debugging/testing: show wizard screen always IOK 2025-01-20
@@ -569,8 +571,13 @@ class VippsAdminSettings
 
     // Submenu page with button to install/activate (if installed) login with vipps. LP 2026-10-09
     public function login_plugin_install_menu() {
-        $paymentmethod = Vipps::instance()->get_payment_method_name();
-        echo "<div class='vipps-shell $paymentmethod'>";
+        if (Vipps::$brand_merged) {
+            $blue = in_array($this->gateway()->get_option('country'), ['FI', 'DK'], true);
+        } else {
+            $blue = Vipps::instance()->get_payment_method_name() === 'MobilePay';
+        }
+        $colorclass = $blue ? 'Blue' : '';
+        echo "<div class='vipps-shell $colorclass'>";
 
         $plugin = 'login-with-vipps/login-with-vipps.php';
         if (is_plugin_active($plugin)) {
@@ -603,7 +610,7 @@ class VippsAdminSettings
             echo '<input type="hidden" name="action" value="vipps_install_login_plugin">';
             wp_nonce_field('vipps_install_login_plugin');
 
-            echo "<div class='vipps-shell $paymentmethod'>";
+            echo "<div class='vipps-shell $colorclass'>";
             submit_button(sprintf(__('Install %s', 'woo-vipps'), Vipps::LoginName()),
                     'primary',
                     'vipps_install_login_plugin',

@@ -1,4 +1,4 @@
-import { gettext, getMetadata } from '../../lib/wp-data';
+import { gettext, getMetadata, isBrandMerged } from '../../lib/wp-data';
 import { Tabs } from '../tabs';
 import { AdminSettingsMainOptionsTab } from './main-options-tab';
 import { AdminSettingsCCOptionsTab } from './cc-options-tab.tsx';
@@ -32,9 +32,16 @@ export function AdminSettings(): JSX.Element {
   const currency = getMetadata('currency');  // Get currency from metadata
   const companyName = getMetadata('company_name') ?? 'Vipps MobilePay';
   const settingsSubtitle = gettext('settings_subtitle') ?? 'Single payments';
-  const paymentMethod = getOption('payment_method_name');
+  let paymentMethod: string;
+  let showCurrencyWarning: boolean;
+  if (isBrandMerged()) {
+    paymentMethod = 'Vipps';
+    showCurrencyWarning = false;
+  } else {
+    paymentMethod = getOption('payment_method_name');
+    showCurrencyWarning = !isPaymentMethodCurrencySupported(paymentMethod, currency);
+  }
   const country=getOption('country');
-  const showCurrencyWarning = !isPaymentMethodCurrencySupported(paymentMethod, currency);
   // The tabs to render on the admin settings page.
 
   const MAIN_TAB_ID = gettext('main_options.title');
@@ -137,7 +144,7 @@ export function AdminSettings(): JSX.Element {
       getOption('secret') &&
       getOption('Ocp_Apim_Key_eCommerce') &&
       getOption('country') &&
-      getOption('payment_method_name');
+      paymentMethod;
     
     const isTestMode = truthToBool(getOption('testmode'));
 
@@ -146,7 +153,7 @@ export function AdminSettings(): JSX.Element {
       getOption('clientId_test') &&
       getOption('secret_test') &&
       getOption('Ocp_Apim_Key_eCommerce_test') &&
-      getOption('payment_method_name') &&
+      paymentMethod &&
       getOption('country');
     return !skipWizard && !hasImportantSettings && !hasImportantSettingsTest && !isTestMode;
   }

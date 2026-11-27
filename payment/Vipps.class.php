@@ -86,10 +86,10 @@ class Vipps {
    
     // Set certain static values in the constructor.
     public function __construct() {
-           //if (date('Y-m-d') >= '2027-01-12') {
-           if (date('Y-m-d') >= '2026-01-12') {  // For testing IOK FIXME 2026-11-17
-               static::$brand_merged = true;
-           } 
+        // Brands are merged after 12. january 2027, but it can be tested by defining the constant below in wp-config.php IOK 2026-11-27
+        if ((defined("WOO_VIPPS_BRAND_MERGED") && WOO_VIPPS_BRAND_MERGED) || (date('Y-m-d') >= '2027-01-12')) {
+            static::$brand_merged = true;
+        } 
     }
 
     public static function instance()  {
@@ -670,7 +670,9 @@ class Vipps {
 
         $attributes = [];
         $attributes['brand'] = strtolower($this->get_payment_method_name());
-        if (static::$brand_merged) $attributes['country'] = strtolower($this->get_country();
+        if (static::$brand_merged) {
+             $attributes['country'] = strtolower($this->get_country());
+        }
         if ($variant) $attributes['variant'] = $variant;
         if ($language) $attributes['language'] = $language;
         if ($id) $attributes['id'] = $id;

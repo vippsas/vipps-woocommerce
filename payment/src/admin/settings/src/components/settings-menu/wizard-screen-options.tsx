@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { detectPaymentMethodName } from '../../lib/payment-method';
-import { gettext } from '../../lib/wp-data';
+import { gettext, isBrandMerged } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
 import { WPButton, WPFormField, WPLabel } from '../form-elements';
 import { SwitchFormField, InputFormField, SelectFormField } from '../options-form-fields';
@@ -42,6 +42,31 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
     >{gettext('skip_wizard.title')}</WPButton>
   );
 
+  let paymentMethodField: JSX.Element | null;
+  if (isBrandMerged()) {
+    paymentMethodField = null;
+  } else {
+    paymentMethodField = (
+      <SelectFormField
+        name="payment_method_name"
+        titleKey="payment_method_name.title"
+        descriptionKey="payment_method_name.description"
+        required
+        includeEmptyOption={false}
+        options={[
+          {
+            label: gettext('payment_method_name.options.Vipps'),
+            value: 'Vipps'
+          },
+          {
+            label: gettext('payment_method_name.options.MobilePay'),
+            value: 'MobilePay'
+          }
+        ]}
+      />
+    );
+  }
+
   return (
     <>
       {step === 'ESSENTIAL' && (
@@ -61,9 +86,14 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 titleKey="country.title"
                 descriptionKey="country.description"
                 onChange={(e) => {
-                  // Set the payment method name based on the selected country
-                  const paymentMethod = detectPaymentMethodName(e.target.value);
-                  setOption('payment_method_name', paymentMethod);
+                  if (isBrandMerged()) {
+                    // brand_merge: country changes color without changing the stored brand.
+                    return;
+                  } else {
+                    // Set the payment method name based on the selected country
+                    const paymentMethod = detectPaymentMethodName(e.target.value);
+                    setOption('payment_method_name', paymentMethod);
+                  }
                 }}
                 required
                 includeEmptyOption={false}
@@ -75,24 +105,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 ]}
               />
 
-              {/* Renders a select field that specifies the payment method name (Vipps or MobilePay) */}
-              <SelectFormField
-                name="payment_method_name"
-                titleKey="payment_method_name.title"
-                descriptionKey="payment_method_name.description"
-                required
-                includeEmptyOption={false}
-                options={[
-                  {
-                    label: gettext('payment_method_name.options.Vipps'),
-                    value: 'Vipps'
-                  },
-                  {
-                    label: gettext('payment_method_name.options.MobilePay'),
-                    value: 'MobilePay'
-                  }
-                ]}
-              />
+              {paymentMethodField}
 
               {/* Renders an input field for the merchant serial number */}
               <InputFormField

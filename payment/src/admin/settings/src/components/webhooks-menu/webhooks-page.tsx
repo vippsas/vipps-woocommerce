@@ -36,6 +36,7 @@ export function WebhooksPage() {
       companyName={getMetadata("company_name") ?? "Vipps MobilePay"}
       subtitle={gettext("title")}
       paymentMethod={getMetadata("payment_method") ?? ""}
+      country={getMetadata("country") ?? ""}
     >
       {banner && !addMsn && (
         <div className="vipps-admin-notices" role="status">
