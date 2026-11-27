@@ -2429,6 +2429,7 @@ else:
         $this->vippsJSConfig['paymentMethodName'] = $this->get_payment_method_name();
         $wc_lang = $this->resolve_html_button_language($this->get_html_button_attrs_for_context()['language']);
         $this->vippsJSConfig['webcomponentLanguage'] = $wc_lang;
+        $this->vippsJSConfig['country'] = $this->get_country();
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
         if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
